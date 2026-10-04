@@ -1,0 +1,6 @@
+{
+  "name": "Kite Execution Engine — High-Density Blocker & Triage Platform",
+  "description": "High-density, low-ceremony execution engine with first-class blocker and dependency management for multi-team software delivery.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
