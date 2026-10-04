@@ -2,7 +2,7 @@
 
 **Platform**: Unblok — High-Density Engineering Execution & Dependency Intelligence  
 **Document**: Canonical Route Hierarchy & Parameter Specification  
-**Status**: HUMAN REVIEW — NOT FROZEN  
+**Status**: APPROVED — UX-00 FROZEN  
 
 ---
 
@@ -58,8 +58,9 @@ The Unblok route architecture cleanly decouples the human-facing route hierarchy
 2. **Tenant Boundary & Cross-Workspace Isolation**:
    - Route identifiers (`:projectKey`, `:issueKey`, `:teamKey`) are always evaluated and resolved within the active workspace authorization context.
    - Cross-workspace dependencies remain strictly forbidden.
-3. **Future Deployment Compatibility**:
-   - Because all page components resolve data through workspace context, future production deployments may adopt slug-prefixed routing (e.g., `/:workspaceSlug/my-work`) or subdomain-based routing (e.g., `acme.unblok.io/my-work`) without changing page semantics, component contracts, or internal view logic.
+3. **Deliberate Deferral of Deployment URL Strategy**:
+   - The decision between path-prefixed routing (`/:workspaceSlug/my-work`) and subdomain-based routing (`acme.unblok.io/my-work`) is **intentionally deferred until tenancy, authentication, and system architecture are designed**.
+   - This deferral is deliberate: because all page components resolve data through workspace context, future production deployments may adopt either strategy without altering page semantics, route names, or component contracts.
 
 ---
 

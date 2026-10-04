@@ -2,7 +2,7 @@
 
 **Platform**: Unblok — High-Density Engineering Execution & Dependency Intelligence  
 **Document**: Canonical Page Registry  
-**Status**: HUMAN REVIEW — NOT FROZEN  
+**Status**: APPROVED — UX-00 FROZEN  
 **Specification Depth**: Full 22-Point Specification per Page  
 
 ---
@@ -223,7 +223,7 @@
 * **Secondary Actions**: `Filter Bar Toggle`.
 * **Major Sections**:
   - Columns: `BACKLOG`, `TODO`, `IN_PROGRESS`, `IN_REVIEW`, `DONE`.
-  - Column Headers: Column name, issue count.
+  - Column Headers: Column name, issue count, soft WIP limit indicator (displays visual overload signal, does not block transitions).
 * **Supported Views/Tabs**: Standard Kanban, Compact Board.
 * **Contextual Actions**: Move card, inspect blockers, assign member.
 * **Reusable Existing Components**: `IssueBoard`, `IssueCard`, `IssueDrawer`, `CompletionGuardDialog`, `FilterToolbar`.
@@ -319,7 +319,7 @@
   1. *Main Content Column (Left ~65%)*:
      - Editable Title
      - Markdown Description Editor
-     - Subtasks & Checklist
+     - Subtasks & Flat Checklist (Hierarchical sub-issues deferred)
      - Blockers & Dependencies section with interactive visual mini-graph
      - Threaded Discussion Stream (`CommentThread`)
      - Complete Audit Trail & Activity Log (`ActivityTimeline`)
@@ -538,27 +538,35 @@
 
 ### `PAGE-ROADMAP`
 * **Route**: `/roadmap`
-* **Purpose**: High-craft calendar timeline schedule for multi-week execution across teams.
-* **Primary User Goal**: Visualize workstreams across dates, balance engineer workloads, and review scheduled sprints.
-* **Entry Points**: Global sidebar "Roadmap & Schedule" link.
+* **Purpose**: Primary planning and visualization surface answering: *"How is planned work distributed across time, teams, assignees, cycles, milestones, and delivery dependencies?"*.
+* **Primary User Goal**: Visualize workstreams across dates, balance team and assignee capacity, and inspect dependency alignments. (Must NOT take ownership of cycle publishing or completion; cycle lifecycle operations belong exclusively to the Cycle experience).
+* **Entry Points**: Global sidebar "Roadmap & Schedule" link, hotkey `G` then `R`.
 * **Page Header**:
   * Title: "Schedule & Roadmap"
-  * Date Range Navigator: `< 28 Sep - 04 Oct 2026 >` with `Today` jump
-  * View Switcher: `View by: Team Workstream` vs. `View by: Assignee Workload`
-* **Primary Action**: `Publish Sprint`.
-* **Secondary Actions**: `Rebalance Workload`, `Export Schedule`, `Reset Filters`.
+  * Primary Action: `Schedule Work`
+  * Secondary Controls: `Today`, Date range navigation (`< >`), View grouping (`Group by Team` vs. `Group by Assignee`), Relevant filters, `Reset Filters`.
+* **Primary Action**: `Schedule Work`.
+* **Secondary Actions & Controls**:
+  - `Today` jump
+  - Date range navigation (`< Prev Week / Next Week >`)
+  - Grouping toggle (`Group by Team Workstream` / `Group by Assignee Workload`)
+  - Quick filters (by Cycle, by Milestone, by Blocker status)
+  - `Reset Filters`
 * **Major Sections**:
-  1. *Left Pinned Assignee / Team Roster*: Quick search, engineer cards with role tags, task counts, and blocker shields (`🛡️ 1`).
-  2. *Right Calendar Grid*: 7-day or 14-day columns with collapsible swimlanes, interactive task cards, and inline `(+)` day scheduling.
+  1. *Left Pinned Group Roster*: Quick search, team or assignee workload summary cards, task count, and active blocker indicators.
+  2. *Right Calendar Timeline Grid*: 7-day or 14-day columns with collapsible swimlanes, interactive task schedule bars, and inline `(+)` day scheduling.
 * **Supported Views/Tabs**: `Team Workstreams`, `Assignee Workload`.
-* **Contextual Actions**: Click engineer to isolate workload, click card to open issue drawer, click `(+)` to schedule.
+* **Contextual Actions**:
+  - Open issue (opens drawer)
+  - Move/reschedule issue where the user's role permits it
+  - Inspect blocker/dependency context
 * **Reusable Existing Components**: `TimelineRoadmapView`, `PriorityIcon`, `Avatar`, `BlockerBadge`, `IssueDrawer`.
 * **New Components Required**: None.
-* **Entities / Data Consumed**: `issues`, `teams`, `users`, `dependencies`, `activeCycle`.
-* **Navigation Destinations**: Issue Drawer.
+* **Entities / Data Consumed**: `issues`, `teams`, `users`, `dependencies`, `cycles`, `milestones`.
+* **Navigation Destinations**: Issue Drawer (inline).
 * **Drawer Behavior**: Clicking any card opens `IssueDrawer` on the right.
-* **Modal / Popover Behavior**: Quick schedule prompt on `(+)` click.
-* **Empty State**: Empty swimlanes show subtle dashed `(+)` buttons.
+* **Modal / Popover Behavior**: Quick schedule popover on `(+)` click.
+* **Empty State**: Empty swimlanes show subtle dashed `(+)` schedule slots.
 * **Loading State**: Grid skeletons.
 * **Error State**: Standard error banner.
 * **Responsive Considerations**: Horizontal scroll on calendar grid with pinned left roster.

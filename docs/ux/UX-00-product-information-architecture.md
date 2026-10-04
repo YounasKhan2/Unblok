@@ -2,7 +2,7 @@
 
 **Platform**: Unblok — High-Density Engineering Execution & Dependency Intelligence  
 **Document**: Product Information Architecture Specification  
-**Status**: HUMAN REVIEW — NOT FROZEN  
+**Status**: APPROVED — UX-00 FROZEN  
 **Target Milestone**: Architecture Definition (UX-00)  
 **Parent Ownership Hierarchy**: `Workspace → Team → Project → Issue`
 
@@ -61,17 +61,23 @@ While conventional tools treat blockers as mere text tags or passive metadata fl
    - All domain queries, issue collections, and mutations are workspace-scoped.
    - Cross-project and cross-team dependencies are fully supported within a workspace.
    - **Cross-workspace dependencies are strictly forbidden**.
+   - **Deployment URL Strategy**: Intentionally deferred until system/tenancy architecture; active workspace remains application context for UX-00.
 3. **Teams vs. Projects**:
    - **Team**: A persistent engineering organizational unit (e.g., Core Platform, Infrastructure, Web Apps). A team owns projects and sprint cycles.
    - **Project**: A bounded scope of engineering output (e.g., Auth V2, Postgres Migration). Projects have unique human-facing identifier keys (e.g., `ENG`, `INF`) and issue sequence counters. A project belongs to exactly one owning Team.
-4. **Issues**: Atomic units of execution with 6 deterministic lifecycle states (`BACKLOG`, `TODO`, `IN_PROGRESS`, `IN_REVIEW`, `DONE`, `CANCELLED`).
+4. **Issues (Atomic Graph Nodes)**:
+   - Atomic units of execution with 6 deterministic lifecycle states (`BACKLOG`, `TODO`, `IN_PROGRESS`, `IN_REVIEW`, `DONE`, `CANCELLED`).
+   - **Sub-Issue Hierarchy Deferred**: Hierarchical sub-issues are deferred from the core product contract. Subtasks remain flat checklist items without nested DAG rules or lifecycle propagation.
 5. **Users / Members**:
    - Users belong directly to the Workspace.
    - Users may participate in one or more Teams.
    - Users are evaluated under the canonical three-role authorization model: `ADMIN`, `MEMBER`, `OBSERVER`. Users are *not* nodes in the project hierarchy.
 6. **Cadences (Cycles & Milestones)**:
-   - **Cycles are Team-scoped**: A cycle belongs to exactly one Team. A cycle contains issues from multiple projects owned by that Team. There are no workspace-owned cycles.
+   - **Cycles are Team-scoped**: A cycle belongs to exactly one Team. A cycle contains issues from multiple projects owned by that Team. There are no workspace-owned cycles. Cycle publishing and rollover belong exclusively to the Cycle experience.
    - **Milestones are Workspace-scoped**: Strategic release targets (e.g., Q4 General Availability) that aggregate issues across multiple teams, projects, and cycles.
+7. **Execution Signals vs. Hard Invariants**:
+   - **WIP Limits**: Soft execution signals displaying column/team overload and visual warnings. They do **not** block lifecycle state transitions.
+   - **Completion Guards**: Hard domain invariants. An issue cannot transition to `DONE` while upstream blockers are unresolved.
 
 ---
 
@@ -166,6 +172,6 @@ Dependencies are elevated beyond standard relational foreign keys.
 
 ### Multi-Tier Dependency Surfaces
 1. **Micro-Level (Issue Drawer & Row)**: Immediate blocker alert badge, prerequisite inspection, and completion guard modal.
-2. **Meso-Level (Project Board & Issue List)**: Visual blocker indicators, filtering by `is:blocked`.
+2. **Meso-Level (Project Board & Issue List)**: Visual blocker indicators, filtering by `is:blocked`, soft WIP limit warnings.
 3. **Macro-Level (Workspace Dependency Intelligence)**: Interactive topological DAG canvas (`/dependencies`), pairwise dependency matrix, and cross-team bottleneck views.
 4. **Strategic-Level (Insights & Milestones)**: Milestone risk rollups and blocker aging metrics.

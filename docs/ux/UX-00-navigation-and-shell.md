@@ -2,7 +2,7 @@
 
 **Platform**: Unblok — High-Density Engineering Execution & Dependency Intelligence  
 **Document**: Application Shell & Navigation Specification  
-**Status**: HUMAN REVIEW — NOT FROZEN  
+**Status**: APPROVED — UX-00 FROZEN  
 
 ---
 

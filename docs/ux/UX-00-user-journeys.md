@@ -2,7 +2,7 @@
 
 **Platform**: Unblok — High-Density Engineering Execution & Dependency Intelligence  
 **Document**: Canonical User Journey Validation & Navigation Flow  
-**Status**: HUMAN REVIEW — NOT FROZEN  
+**Status**: APPROVED — UX-00 FROZEN  
 
 ---
 
@@ -78,7 +78,7 @@ Step 4: Inspect & Expedite Blocker
 ## Journey 3: Team Sprint Planning & Milestone Alignment
 
 **Actor**: Squad Engineer / Lead (`MEMBER`)  
-**Objective**: Plan Cycle 25 for Team Core Platform, review unassigned backlog items, link deliverables to Q4 Milestone, and verify Roadmap schedule.
+**Objective**: Plan Cycle 25 for Team Core Platform, review unassigned backlog items, link deliverables to Q4 Milestone, and inspect Roadmap schedule.
 
 ```
 Step 1: Open Team Cycle Planning
@@ -99,7 +99,7 @@ Step 3: Align to Strategic Milestone
 Step 4: Cross-Check Roadmap
   Action: User presses G then R.
   URL: /roadmap
-  Result: Multi-week timeline loads. User verifies that all Cycle 25 workstreams fall within the scheduled window.
+  Result: Multi-week timeline loads. User verifies that all Cycle 25 workstreams fall within the scheduled window and checks team capacity.
 ```
 
 *Dead End Check*: Passed. Clean hand-off between Team Cycle, Bulk Actions, Milestone, and Roadmap.
