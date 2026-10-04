@@ -2,7 +2,7 @@
 
 **Platform**: Unblok — High-Density Engineering Execution & Dependency Intelligence  
 **Document**: Application Shell & Navigation Specification  
-**Status**: APPROVED / FROZEN CONTRACT  
+**Status**: HUMAN REVIEW — NOT FROZEN  
 
 ---
 
@@ -35,13 +35,13 @@ The Unblok authenticated shell is engineered for **uninterrupted desktop flow, h
 * **Height**: 44px (hairline border bottom `1px solid #e5e3df`).
 * **Background**: Clean white (`#ffffff`).
 * **Elements (Left to Right)**:
-  1. *Brand Identifier*: Compact Unblok geometric mark.
-  2. *Workspace Switcher Popover*: Displays current active workspace (e.g., `Kite Core Engineering`), allows switching tenants or opening `/settings/workspace`.
+  1. *Brand Identifier*: Compact Unblok mark.
+  2. *Workspace Switcher*: Displays the active workspace context (e.g., `Kite Core Engineering`). Allows switching the active tenant context without altering human-facing route structure.
   3. *Global Command Palette Trigger*: Compact search bar displaying `Search or jump to... (⌘K)`. Clicking or pressing `Cmd+K` opens the modal command palette.
-  4. *Global Create Button*: High-visibility purple button (`+ New Issue`, hotkey `C`).
+  4. *Global Create Button*: Purple action button (`+ New Issue`, hotkey `C`).
   5. *Notification Bell*: Unread inbox indicator badge (`/inbox`).
   6. *Help & Shortcuts Button*: Triggers `ShortcutsHelpModal` (`?`).
-  7. *User Profile Avatar*: Profile menu with links to `/settings/preferences` and sign-out.
+  7. *User Profile Avatar*: Profile menu with links to `/settings/preferences`, workspace administration (`/settings/workspace` for Admins), and sign-out.
 
 ### Zone 2: Navigation Rail (Sidebar)
 * **Modes**:
@@ -66,7 +66,7 @@ The Unblok authenticated shell is engineered for **uninterrupted desktop flow, h
   ├── [BarChart] Insights         → /insights
   │
   └── [Bottom Pinned]
-      └── [Settings] Settings     → /settings/workspace
+      └── [Settings] Settings     → /settings (resolves by role)
   ```
 
 ### Zone 3: Contextual Page Header
@@ -82,17 +82,13 @@ The Unblok authenticated shell is engineered for **uninterrupted desktop flow, h
 * **Width**: Fixed 440px desktop width.
 * **Layering**: Slides over the main viewport from the right (`z-index: 30`).
 * **Non-Modal Nature**: The main view remains visible, interactive, and scrollable behind the drawer.
-* **Keyboard Focus Trap**: The drawer does *not* trap keyboard focus, allowing the user to press `J` or `K` to jump to adjacent rows while the drawer updates in real time.
+* **Keyboard Focus Flow**: The drawer does *not* trap keyboard focus, allowing the user to press `J` or `K` to jump to adjacent rows while the drawer updates in real time.
 * **Header Controls**:
-  - Issue Key (`ENG-101`) with copy-to-clipboard button.
+  - Issue Key (`ENG-101`) with copy action.
   - State pill dropdown.
   - Open in Full-Page Page icon (`/issues/:issueKey`).
   - Close button (`Esc`).
-* **Sub-Tabs**:
-  1. *Properties*: Assignee, priority, dates, cycle, milestone, project.
-  2. *Blockers*: `DependencyManager` with upstream/downstream prerequisites.
-  3. *Discussion*: `CommentThread` with markdown code blocks and `@mention` autocomplete.
-  4. *Audit Trail*: `ActivityTimeline` recording chronological transitions.
+* **Closing Semantics**: Closing removes drawer query parameters while strictly preserving the base page route, active filters, search, and scroll context.
 
 ---
 
@@ -117,6 +113,6 @@ Unblok uses a disciplined z-index stack to prevent modal collision or backdrop b
 
 | Viewport | Screen Width | Shell Transformation |
 | :--- | :--- | :--- |
-| **Desktop** | $\ge 1280\text{px}$ | Full multi-pane desktop mode. 52px navigation rail, full table columns, persistent 440px slide-over drawer alongside main content. |
+| **Desktop** | $\ge 1280\text{px}$ | Multi-pane desktop mode. 52px navigation rail, full table columns, persistent 440px slide-over drawer alongside main content. |
 | **Tablet** | $768\text{px} - 1279\text{px}$ | Navigation rail collapses to bottom bar or hamburger menu. Issue drawer occupies 50% screen width or overlays with backdrop. |
 | **Mobile** | $< 768\text{px}$ | Bottom navigation bar (`My Work`, `Projects`, `Inbox`, `More`). Issue drawer transforms into a full-screen sheet with top drag handle. Table columns condense to card rows. |

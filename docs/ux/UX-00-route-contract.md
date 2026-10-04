@@ -2,7 +2,7 @@
 
 **Platform**: Unblok — High-Density Engineering Execution & Dependency Intelligence  
 **Document**: Canonical Route Hierarchy & Parameter Specification  
-**Status**: APPROVED / FROZEN CONTRACT  
+**Status**: HUMAN REVIEW — NOT FROZEN  
 
 ---
 
@@ -36,7 +36,7 @@
 ├── dependencies                                  [PAGE-DEPENDENCIES]
 ├── insights                                      [PAGE-INSIGHTS]
 │
-└── settings                                      
+└── settings                                      [PAGE-SETTINGS-INDEX]
     ├── workspace                                 [PAGE-SETTINGS-WORKSPACE]
     ├── members                                   [PAGE-SETTINGS-MEMBERS]
     ├── teams                                     [PAGE-SETTINGS-TEAMS]
@@ -46,86 +46,125 @@
 
 ---
 
-## 2. Path Parameters vs. Query Parameters Contract
+## 2. Workspace Routing & Context Architecture
 
-To guarantee clean browser history, bookmarking, and future API mapping, Unblok strictly demarcates between **Path Parameters** (Resource Identity) and **Query Parameters** (View State & Filters).
+The Unblok route architecture cleanly decouples the human-facing route hierarchy from workspace multi-tenancy:
+
+1. **Active Workspace as Application Context**:
+   - The active workspace is an **application-level context**, not currently encoded in every URL path.
+   - Human-facing routes remain clean and bookmarkable (`/my-work`, `/projects/ENG/issues`, `/issues/ENG-101`).
+   - All domain queries, issue collections, cycle schedules, and mutations execute within the scope of the active workspace context.
+   - Switching the workspace changes the application context, reloading workspace-scoped datasets while preserving page intent where valid.
+2. **Tenant Boundary & Cross-Workspace Isolation**:
+   - Route identifiers (`:projectKey`, `:issueKey`, `:teamKey`) are always evaluated and resolved within the active workspace authorization context.
+   - Cross-workspace dependencies remain strictly forbidden.
+3. **Future Deployment Compatibility**:
+   - Because all page components resolve data through workspace context, future production deployments may adopt slug-prefixed routing (e.g., `/:workspaceSlug/my-work`) or subdomain-based routing (e.g., `acme.unblok.io/my-work`) without changing page semantics, component contracts, or internal view logic.
+
+---
+
+## 3. Separation of Internal Identity and Human-Facing Routing Identity
+
+A strict architectural distinction is enforced between **Internal Entity Identity** and **Human-Facing Routing Identifiers**:
+
+* **Conceptual Rule**:
+  > **Internal identity and human-facing routing identity are separate concerns.**
+
+* **Internal IDs**: Entities possess immutable internal identifiers (e.g., `workspaceId`, `teamId`, `projectId`, `issueId`, `cycleId`, `milestoneId`). Database storage, foreign keys, graph edges, and domain invariants bind exclusively to internal IDs.
+* **Human-Facing Routing Identifiers**:
+  - `:projectKey`: Human-readable project key (e.g., `ENG`, `INF`, `WEB`).
+  - `:issueKey`: Human-readable atomic issue identifier (e.g., `ENG-101`, `INF-42`).
+  - `:teamKey`: Human-readable team slug (e.g., `core-platform`, `infra`).
+  - `:cycleId`: Human-readable team cycle identifier (e.g., `cycle-24`).
+  - `:milestoneId`: Human-readable milestone slug (e.g., `q4-ga`).
+* **Controlled Mutability**: Human-readable keys (e.g., renaming a team slug or updating a project key) may have controlled mutability in the future without corrupting internal entity identity or breaking DAG dependency linkages.
+* **Resolution Contract**: Deep links and route loaders resolve human-facing identifiers to stable internal entity IDs within the active workspace context.
+
+---
+
+## 4. Path Parameters vs. Query Parameters Contract
+
+Unblok strictly demarcates between **Path Parameters** (Resource Identity) and **Query Parameters** (View State & Filters):
 
 ### Path Parameters (Resource Identity)
-Path parameters are reserved exclusively for permanent, addressable resource identities. They must be human-readable, stable, and unique within the workspace.
+Reserved exclusively for addressable resource identities.
 
-| Parameter | Type | Example | Validation / Constraints | Resource Identity |
-| :--- | :--- | :--- | :--- | :--- |
-| `:projectKey` | String | `ENG`, `INF`, `WEB` | 2–6 uppercase alphanumeric characters; unique per workspace. | Canonical project key. |
-| `:issueKey` | String | `ENG-101`, `INF-42` | `^[A-Z]{2,6}-[0-9]+$`; globally unique within workspace. | Canonical atomic issue identifier. |
-| `:teamKey` | String | `core-platform`, `infra` | Lowercase kebab-case slug; unique per workspace. | Permanent team slug. |
-| `:cycleId` | String | `cycle_24`, `cycle_25` | Lowercase identifier or sequential number. | Time-boxed sprint cadence. |
-| `:milestoneId` | String | `q4_ga`, `soc2_comp` | Lowercase kebab-case slug. | Strategic release milestone. |
+| Parameter | Example | Target Resource |
+| :--- | :--- | :--- |
+| `:projectKey` | `ENG`, `INF` | Project resource identity. |
+| `:issueKey` | `ENG-101`, `INF-42` | Canonical atomic issue identity. |
+| `:teamKey` | `core-platform` | Team squad identity. |
+| `:cycleId` | `cycle-24` | Team-scoped sprint cadence identity. |
+| `:milestoneId` | `q4-ga` | Workspace strategic milestone identity. |
 
 ### Query Parameters (View State & Filtering)
-Transient UI state, search filters, and active tab selectors must be stored in the URL query string to enable deep linking to filtered views without altering path hierarchies.
+Transient UI state, search filters, and active tab selectors are stored in URL query strings.
 
-| Query Parameter | Allowed Values | Default | Purpose |
-| :--- | :--- | :--- | :--- |
-| `?state=` | `ALL`, `BACKLOG`, `TODO`, `IN_PROGRESS`, `IN_REVIEW`, `DONE`, `CANCELLED` | `ALL` | Filters issues by lifecycle state. |
-| `?priority=` | `ALL`, `URGENT`, `HIGH`, `MEDIUM`, `LOW` | `ALL` | Filters issues by operational priority. |
-| `?assignee=` | `ALL`, `me`, `unassigned`, or user UUID | `ALL` | Filters issues by assigned engineer. |
-| `?cycle=` | `ALL`, `current`, `upcoming`, or cycle ID | `ALL` | Filters issues by sprint cycle. |
-| `?milestone=` | `ALL`, or milestone ID | `ALL` | Filters issues by linked strategic milestone. |
-| `?blocker=` | `ALL`, `BLOCKED_ONLY`, `BLOCKING_OTHERS`, `UNBLOCKED` | `ALL` | Filters issues by dependency status. |
-| `?q=` | String (e.g., `postgres pool`) | `""` | Full-text query string or power syntax (`is:blocked`). |
-| `?view=` | `list`, `board`, `matrix`, `graph` | Page default | Switches presentation layout without changing underlying route. |
-| `?drawer=` | `:issueKey` (e.g., `?drawer=ENG-101`) | `null` | Deep links the active slide-over issue drawer over any base page. |
-| `?tab=` | String (e.g., `properties`, `dependencies`, `comments`, `audit`) | `properties` | Sets active sub-tab inside the issue drawer or detail view. |
+| Query Parameter | Example Values | Purpose |
+| :--- | :--- | :--- |
+| `?state=` | `TODO`, `IN_PROGRESS`, `DONE` | Filters issues by lifecycle state. |
+| `?priority=` | `URGENT`, `HIGH`, `MEDIUM`, `LOW` | Filters issues by operational priority. |
+| `?assignee=` | `me`, `unassigned`, or user ID | Filters issues by assigned engineer. |
+| `?cycle=` | `current`, `upcoming`, or cycle ID | Filters issues by sprint cycle. |
+| `?milestone=` | Milestone ID | Filters issues by linked milestone. |
+| `?blocker=` | `BLOCKED_ONLY`, `BLOCKING_OTHERS` | Filters issues by dependency status. |
+| `?q=` | `postgres pool` | Text query or power syntax (`is:blocked`). |
+| `?view=` | `list`, `board` | Switches presentation layout. |
+| `?drawer=` | `ENG-101` | Deep links the active slide-over issue drawer. |
+| `?tab=` | `properties`, `dependencies`, `comments` | Sets active sub-tab inside the drawer. |
 
 ---
 
-## 3. Deep Linking & Drawer URL Architecture
+## 5. Dual-Surface Issue Interaction & Drawer History Semantics
 
-A common failure mode in modern web apps is losing slide-over context when refreshing or sharing a link. Unblok solves this via the **Secondary Drawer Query State**:
+Unblok formalizes the interaction contract between the slide-over drawer and the dedicated issue detail page:
 
-### The Dual-URL Model
-1. **Full Page Canonical Link**:
+### The Dual-Surface Model
+1. **Contextual Drawer Link**:
+   `/projects/ENG/issues?drawer=ENG-101`
+   - Use Case: Rapid inspection, property edits, and triage without losing list/board context.
+   - Deep Linking: Directly loading a URL containing `?drawer=` must safely render the base page and open the drawer without assuming any previous history entry.
+2. **Full Page Canonical Link**:
    `/issues/ENG-101`
-   - Use Case: Sharing in Slack/PRs, deep technical reading, full-screen comment authoring.
-   - Behavior: Renders the full 2-column detail view without background list.
+   - Use Case: Deep focus, full specification authoring, extensive discussions, permanent links for code reviews.
 
-2. **Context-Preserved Drawer Link**:
-   `/projects/ENG/issues?drawer=ENG-101&tab=dependencies`
-   - Use Case: Reviewing an issue in the context of its project backlog, allowing immediate `J`/`K` navigation to adjacent issues upon closing.
-   - Behavior: Renders `/projects/ENG/issues` in the main canvas and automatically opens the 440px `IssueDrawer` on the `DEPENDENCIES` tab.
-   - Browser History: Opening the drawer pushes a shallow URL state (`history.pushState`). Pressing `Esc` or clicking the drawer close button invokes `history.back()`, seamlessly returning the URL to `/projects/ENG/issues`.
-
----
-
-## 4. Future API Mapping & Workspace Boundaries
-
-Unblok's route design mirrors RESTful resource boundaries for seamless future backend integration:
-
-| Frontend Route | Future Backend API Endpoint | HTTP Method |
-| :--- | :--- | :--- |
-| `/projects/:projectKey/issues` | `/api/v1/workspaces/:wsId/projects/:projectKey/issues` | `GET` |
-| `/issues/:issueKey` | `/api/v1/workspaces/:wsId/issues/:issueKey` | `GET`, `PATCH` |
-| `/issues/:issueKey/dependencies` | `/api/v1/workspaces/:wsId/issues/:issueKey/dependencies` | `POST`, `DELETE` |
-| `/cycles/:cycleId/rollover` | `/api/v1/workspaces/:wsId/cycles/:cycleId/rollover` | `POST` |
-| `/dependencies` (Graph) | `/api/v1/workspaces/:wsId/dependencies/dag` | `GET` |
-| `/insights` | `/api/v1/workspaces/:wsId/insights/velocity` | `GET` |
-
-### Multi-Tenancy & Workspace Scoping
-- **Prototype Mode**: Single workspace context stored in memory/session.
-- **Enterprise Multi-Workspace Future**: The route contract is designed to cleanly support tenant prefixes (e.g., `/:workspaceSlug/my-work` or subdomain routing `acme.unblok.io/my-work`) without changing any internal route patterns.
+### Drawer Closing Semantics
+- **Closing the Drawer**:
+  - Closing the drawer (via `Esc`, close icon, or backdrop click) removes the drawer-specific query parameter (`?drawer=...` and `?tab=...`) from the URL.
+  - It strictly preserves the base route, active filters, search queries, sort orders, view mode, and scroll/cursor context.
+- **Browser History**:
+  - Browser Back behaves naturally according to the user's actual navigation history stack.
+  - The URL contract does not hard-code `history.back()` assumptions on drawer closure.
 
 ---
 
-## 5. Authorization & Route Guard Matrix
+## 6. Conceptual Future API Compatibility
 
-Every route in the registry maps to an explicit role permission gate:
+In accordance with frontend architecture discipline, concrete REST endpoint paths, HTTP verbs, DTO schemas, and pagination protocols are intentionally deferred to the System Design phase.
 
-| Route Pattern | Required Role | Unauthorized Behavior |
-| :--- | :--- | :--- |
-| `/my-work`, `/inbox` | Any Authenticated Member | Redirect to login |
-| `/projects/*` (Read) | Workspace Member | 404 / 403 Forbidden Page |
-| `/projects/:key/settings` | Project Admin or Workspace Admin | Redirect to `/projects/:key` with error toast |
-| `/issues/:issueKey` (Read) | Workspace Member | 404 Issue Not Found |
-| `/cycles/*`, `/milestones/*` (Edit) | Team Lead or Workspace Admin | Action controls disabled / read-only view |
-| `/settings/workspace`, `/settings/members` | Workspace Admin | 403 Access Denied |
-| `/settings/preferences` | Any Authenticated Member | Accessible to all users |
+Conceptually, the route architecture maps cleanly to 6 high-level resource boundaries:
+1. **Workspace Context**: Tenant metadata, workspace membership, and configuration.
+2. **Issue Collections**: Filterable, paginated, and virtualizable issue sets (by project, team, cycle, milestone, or assignee).
+3. **Individual Issues**: Granular read and mutation operations for issue state, properties, and descriptions.
+4. **Dependencies**: DAG relation management (`A BLOCKS B`), prerequisite validation, and cycle verification queries.
+5. **Planning Resources**: Team-scoped cycles, cycle rollover operations, and workspace-scoped milestones.
+6. **Analytics & Intelligence**: Blocker aging metrics, delivery velocity, and graph bottleneck queries.
+
+---
+
+## 7. Role-Based Route Access Matrix
+
+Every route in the registry maps to the canonical three-role model:
+
+| Route Pattern | `OBSERVER` | `MEMBER` | `ADMIN` | Unauthorized Behavior |
+| :--- | :--- | :--- | :--- | :--- |
+| `/my-work`, `/inbox` | Read | Read / Write | Read / Write | Redirect to login |
+| `/projects`, `/projects/:key/*` (Except settings) | Read | Read / Write | Read / Write | 404 Not Found |
+| `/projects/:key/settings` | No Access | No Access | Read / Write | Redirect to `/projects/:key` with notice |
+| `/issues/:issueKey` | Read | Read / Write | Read / Write | 404 Issue Not Found |
+| `/teams`, `/teams/:key` | Read | Read / Write | Read / Write | 404 Team Not Found |
+| `/cycles`, `/cycles/:id` | Read | Read / Write | Read / Write | Read-only mode |
+| `/milestones`, `/milestones/:id` | Read | Read / Write | Read / Write | Read-only mode |
+| `/roadmap`, `/dependencies`, `/insights` | Read | Read / Write | Read / Write | Read-only mode |
+| `/settings/preferences` | Read / Write | Read / Write | Read / Write | Accessible to all users |
+| `/settings/workspace`, `/settings/members`, `/settings/teams`, `/settings/integrations` | No Access | No Access | Read / Write | Redirect to `/settings/preferences` |

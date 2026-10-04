@@ -2,13 +2,13 @@
 
 **Platform**: Unblok — High-Density Engineering Execution & Dependency Intelligence  
 **Document**: Canonical User Journey Validation & Navigation Flow  
-**Status**: APPROVED / FROZEN CONTRACT  
+**Status**: HUMAN REVIEW — NOT FROZEN  
 
 ---
 
 ## Journey 1: Daily Engineering Execution & Rapid Triage
 
-**Actor**: Staff Software Engineer  
+**Actor**: Software Engineer (`MEMBER`)  
 **Objective**: Review personal morning priorities, inspect active blockers, update status, and dive into technical code review.
 
 ```
@@ -34,18 +34,18 @@ Step 4: Navigate to Upstream Blocker
   Result: Direct navigation to the blocker issue. User leaves a comment: "@David Kim is the replica ready?".
 
 Step 5: Return to Personal Context
-  Action: User hits browser Back button (or presses Esc / G then M).
+  Action: User navigates back (via browser back or G then M).
   URL: /my-work
-  Result: Seamless return to personal work queue with exact scroll position preserved.
+  Result: Seamless return to personal work queue with exact scroll and filter position preserved.
 ```
 
-*Dead End Check*: Passed. No dead-ends; browser back stack and global shortcuts (`G M`) cleanly return to initial context.
+*Dead End Check*: Passed. No dead-ends; browser history and global shortcuts (`G M`) cleanly return to initial context.
 
 ---
 
 ## Journey 2: Project Delivery & Status Transition with Completion Guard
 
-**Actor**: Squad Tech Lead  
+**Actor**: Squad Contributor / Lead (`MEMBER`)  
 **Objective**: Review sprint board, transition an in-review issue to DONE, encounter and resolve a hard completion guard.
 
 ```
@@ -68,28 +68,28 @@ Step 3: Hard Completion Guard Triggered
 Step 4: Inspect & Expedite Blocker
   Action: User clicks "Inspect Blocker" in the modal.
   URL: /projects/ENG/board?drawer=INF-204
-  Result: Modal dismisses and IssueDrawer opens directly focused on INF-204. User checks ETA and closes drawer.
+  Result: Modal dismisses and IssueDrawer opens directly focused on INF-204. User checks status and closes drawer.
 ```
 
 *Dead End Check*: Passed. Guard provides explicit actionable paths to inspect blockers rather than a generic error toast.
 
 ---
 
-## Journey 3: Sprint Planning & Milestone Alignment
+## Journey 3: Team Sprint Planning & Milestone Alignment
 
-**Actor**: Engineering Manager / Release Lead  
-**Objective**: Plan Cycle 25, review unassigned backlog items, link to Q4 Milestone, and verify Roadmap schedule.
+**Actor**: Squad Engineer / Lead (`MEMBER`)  
+**Objective**: Plan Cycle 25 for Team Core Platform, review unassigned backlog items, link deliverables to Q4 Milestone, and verify Roadmap schedule.
 
 ```
-Step 1: Open Cycle Planning
-  URL: /cycles/cycle_24
-  State: Cycle 24 active burndown. 3 incomplete items remain.
+Step 1: Open Team Cycle Planning
+  URL: /cycles/cycle-24
+  State: Cycle 24 active burndown for Team Core Platform. 3 incomplete items remain.
 
 Step 2: Complete Cycle & Rollover
   Action: User clicks "Complete Cycle & Rollover" button in header.
   Modal: RolloverIncompleteIssuesDialog opens.
-  Options: User selects "Rollover 3 incomplete issues to Cycle 25" and clicks [Confirm & Start Cycle 25].
-  URL: /cycles/cycle_25
+  Options: User selects "Rollover 3 incomplete issues to Cycle 25" and confirms.
+  URL: /cycles/cycle-25
   Result: Cycle 25 initializes with rolled-over issues in the TODO column.
 
 Step 3: Align to Strategic Milestone
@@ -99,36 +99,36 @@ Step 3: Align to Strategic Milestone
 Step 4: Cross-Check Roadmap
   Action: User presses G then R.
   URL: /roadmap
-  Result: High-craft timeline loads. User verifies that all Cycle 25 workstreams fall within the 2-week window.
+  Result: Multi-week timeline loads. User verifies that all Cycle 25 workstreams fall within the scheduled window.
 ```
 
-*Dead End Check*: Passed. Clean hand-off between Cycle, Bulk Actions, Milestone, and Roadmap.
+*Dead End Check*: Passed. Clean hand-off between Team Cycle, Bulk Actions, Milestone, and Roadmap.
 
 ---
 
 ## Journey 4: Workspace Dependency Investigation & DAG Cycle Prevention
 
-**Actor**: Principal Systems Architect  
+**Actor**: Systems Engineer (`MEMBER`)  
 **Objective**: Investigate a multi-team delivery bottleneck and verify zero circular deadlocks.
 
 ```
 Step 1: Open Dependency Intelligence Hub
   URL: /dependencies
   State: Full topological DAG canvas renders 18 interconnected issues across 3 teams.
-  Highlight: Critical path is automatically outlined in vibrant purple edge glow.
+  Highlight: Critical path is outlined in edge glow.
 
 Step 2: Trace Bottleneck
   Action: User inspects the cluster with the highest in-degree. Identifies INF-101 blocking 4 downstream API tasks.
   Action: User clicks INF-101 node.
   Result: IssueDrawer slides open on the right displaying DependencyManager.
 
-Step 3: Attempt Circular Dependency Edge (Safety Test)
+Step 3: Attempt Circular Dependency Edge (Interactive Safety Test)
   Action: User clicks "Add Prerequisite Blocker" in DependencyManager and enters ENG-101.
-  System Invariant Check: Depth-First Search (DFS) detects that ENG-101 is already downstream of INF-101.
+  System Invariant Check: Domain DFS detects that ENG-101 is already downstream of INF-101.
   Modal: CycleErrorDialog opens.
     - Title: "Circular Dependency Detected"
     - Body: "Adding this prerequisite would create an illegal circular dependency loop (INF-101 → ENG-101 → INF-101)."
-    - Action: Graph edge is rejected and database invariants remain 100% pristine.
+    - Action: Graph edge is rejected and graph invariants remain intact.
 ```
 
 *Dead End Check*: Passed. The system prevents corruption before network transmission and provides an explicit path explanation.
@@ -137,21 +137,21 @@ Step 3: Attempt Circular Dependency Edge (Safety Test)
 
 ## Journey 5: Inbox Collaboration & @Mention Response
 
-**Actor**: Senior Frontend Engineer  
+**Actor**: Frontend Engineer (`MEMBER`)  
 **Objective**: Respond to a teammate's technical question from an inbox notification.
 
 ```
 Step 1: Notification Alert
   URL: /inbox
-  State: Inbox displays unread item: "@Sarah Chen mentioned you on WEB-302: Migration to Tailwind v4".
+  State: Inbox displays unread item: "@Sarah Chen mentioned you on WEB-302".
 
 Step 2: Open Thread
   Action: User clicks the notification row.
   URL: /inbox?drawer=WEB-302&tab=comments
   Result: IssueDrawer opens immediately on the DISCUSSIONS tab with the mention highlighted.
 
-Step 3: Inline Reply with Code Snippet
-  Action: User clicks "Reply", types "@Elena Rostova Here is the updated config:", clicks Code button, pastes config snippet, presses Cmd+Enter.
+Step 3: Inline Reply
+  Action: User clicks "Reply", types "@Elena Rostova Config has been updated in the repo:", presses Cmd+Enter.
   Result: Reply appends to the nested comment thread; audit event USER_MENTIONED is logged.
   Action: User presses E to mark notification as read and close drawer.
 ```
@@ -162,7 +162,7 @@ Step 3: Inline Reply with Code Snippet
 
 ## Journey 6: Strategic Organizational Investigation
 
-**Actor**: VP of Engineering  
+**Actor**: Engineering Contributor / Manager (`MEMBER`)  
 **Objective**: Diagnose why Q4 release milestones are flagged as "AT RISK".
 
 ```
@@ -172,13 +172,12 @@ Step 1: Strategic Milestones Overview
 
 Step 2: Drill into Milestone Detail
   Action: User clicks "v2.0 GA".
-  URL: /milestones/q4_ga
-  State: Critical path analysis exposes that Infrastructure squad has 3 unresolved blockers aging past 14 days.
+  URL: /milestones/q4-ga
+  State: Critical path analysis exposes that Infrastructure squad has unresolved blockers aging past target thresholds.
 
 Step 3: Investigate Organizational Insights
   Action: User navigates to /insights.
-  State: Blocker Aging chart confirms Infra team average resolution time is 9.2 days vs. workspace target of 3.0 days.
-  Action: User exports summary brief for the weekly engineering leadership sync.
+  State: Blocker Aging chart confirms average resolution times across squads.
 ```
 
 *Dead End Check*: Passed. Seamless drill-down from company goal to team metric to individual blocker root cause.
@@ -187,21 +186,21 @@ Step 3: Investigate Organizational Insights
 
 ## Journey 7: Workspace Administration & Team Configuration
 
-**Actor**: Workspace Administrator  
-**Objective**: Provision a new "Security & Compliance" engineering team and invite the team lead.
+**Actor**: Workspace Administrator (`ADMIN`)  
+**Objective**: Provision a new "Security & Compliance" engineering team and invite a team member.
 
 ```
 Step 1: Open Settings
   URL: /settings/teams
-  State: List of active teams (Core Platform, Infrastructure, Web Frontend).
+  State: List of active teams.
 
 Step 2: Create Team
-  Action: User clicks [Create Team], enters Name: "Security & Compliance", Key: "SEC", Color: "#dd5b00".
+  Action: User clicks [Create Team], enters Name: "Security & Compliance", Key: "SEC".
   Result: Team SEC is initialized.
 
-Step 3: Invite Tech Lead
-  Action: User navigates to /settings/members, clicks [Invite Member], enters email and selects Role: TECH_LEAD, Team: SEC.
-  Result: Invitation dispatched; member roster updates in real time.
+Step 3: Invite Member
+  Action: User navigates to /settings/members, clicks [Invite Member], enters email and selects Role: MEMBER.
+  Result: Invitation record initialized; member roster updates.
 ```
 
 *Dead End Check*: Passed. Standard administrative CRUD with clear confirmation dialogs.
