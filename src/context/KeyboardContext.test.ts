@@ -270,5 +270,110 @@ describe('Keyboard Architecture & Scope Hierarchy', () => {
         })
       ).toBe('OPEN_PALETTE');
     });
+
+    it('opens full issue with Cmd+O or Ctrl+O in drawer scopes', () => {
+      expect(
+        evaluateKeyAction({
+          key: 'o',
+          metaKey: true,
+          isInputFocused: false,
+          scope: 'DRAWER_NAV',
+          hasSelection: false,
+        })
+      ).toBe('DRAWER_OPEN_FULL');
+
+      expect(
+        evaluateKeyAction({
+          key: 'o',
+          ctrlKey: true,
+          isInputFocused: false,
+          scope: 'DRAWER_EDIT',
+          hasSelection: false,
+        })
+      ).toBe('DRAWER_OPEN_FULL');
+    });
+  });
+
+  describe('Issue Detail & Property Shortcuts (S, P, A, M)', () => {
+    it('dispatches picker and comment shortcuts when not editing', () => {
+      expect(
+        evaluateKeyAction({
+          key: 's',
+          isInputFocused: false,
+          scope: 'CANVAS',
+          hasSelection: false,
+        })
+      ).toBe('OPEN_STATUS_PICKER');
+
+      expect(
+        evaluateKeyAction({
+          key: 'S',
+          isInputFocused: false,
+          scope: 'CANVAS',
+          hasSelection: false,
+        })
+      ).toBe('OPEN_STATUS_PICKER');
+
+      expect(
+        evaluateKeyAction({
+          key: 'p',
+          isInputFocused: false,
+          scope: 'CANVAS',
+          hasSelection: false,
+        })
+      ).toBe('OPEN_PRIORITY_PICKER');
+
+      expect(
+        evaluateKeyAction({
+          key: 'a',
+          isInputFocused: false,
+          scope: 'CANVAS',
+          hasSelection: false,
+        })
+      ).toBe('OPEN_ASSIGNEE_PICKER');
+
+      expect(
+        evaluateKeyAction({
+          key: 'm',
+          isInputFocused: false,
+          scope: 'CANVAS',
+          hasSelection: false,
+        })
+      ).toBe('FOCUS_COMMENT_COMPOSER');
+    });
+
+    it('suppresses S, P, A, M shortcuts when typing in inputs', () => {
+      const keys = ['s', 'S', 'p', 'P', 'a', 'A', 'm', 'M'];
+      for (const key of keys) {
+        expect(
+          evaluateKeyAction({
+            key,
+            isInputFocused: true,
+            scope: 'CANVAS',
+            hasSelection: false,
+          })
+        ).toBe('NONE');
+      }
+    });
+
+    it('suppresses S, P, A, M shortcuts when in MODAL or POPOVER scope', () => {
+      expect(
+        evaluateKeyAction({
+          key: 's',
+          isInputFocused: false,
+          scope: 'MODAL',
+          hasSelection: false,
+        })
+      ).toBe('NONE');
+
+      expect(
+        evaluateKeyAction({
+          key: 'p',
+          isInputFocused: false,
+          scope: 'POPOVER',
+          hasSelection: false,
+        })
+      ).toBe('NONE');
+    });
   });
 });

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   ShieldAlert,
   CheckCircle2,
@@ -18,19 +19,37 @@ import { PriorityIcon } from '../ui/PriorityIcon';
 
 interface DependencyManagerProps {
   issue: Issue;
+  isReadOnly?: boolean;
 }
 
-export const DependencyManager: React.FC<DependencyManagerProps> = ({ issue }) => {
+export const DependencyManager: React.FC<DependencyManagerProps> = ({
+  issue,
+  isReadOnly: propReadOnly,
+}) => {
   const {
     issues,
     dependencies,
     addDependency,
     removeDependency,
     setSelectedIssueId,
+    currentUser,
   } = useProject();
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const isReadOnly = propReadOnly ?? (currentUser.role === 'OBSERVER');
 
   const [isAddingBlocker, setIsAddingBlocker] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+
+  const handleIssueClick = (targetIssue: Issue) => {
+    if (location.pathname.startsWith('/issues/')) {
+      navigate(`/issues/${targetIssue.key}`);
+    } else {
+      setSelectedIssueId(targetIssue.id);
+    }
+  };
 
   const issuesMap = useMemo(() => new Map(issues.map(i => [i.id, i])), [issues]);
 
@@ -122,7 +141,7 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({ issue }) =
             </span>
           </div>
 
-          {!isAddingBlocker && (
+          {!isReadOnly && !isAddingBlocker && (
             <button
               onClick={() => setIsAddingBlocker(true)}
               className="inline-flex items-center gap-1 text-xs font-medium text-[#5645d4] hover:text-[#4534b3] px-2 py-0.5 rounded hover:bg-purple-50 transition-colors cursor-pointer"
@@ -134,7 +153,7 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({ issue }) =
         </div>
 
         {/* Add Blocker Combobox */}
-        {isAddingBlocker && (
+        {!isReadOnly && isAddingBlocker && (
           <div className="p-2.5 mb-3 bg-[#fafaf9] rounded-lg border border-[#e5e3df] text-xs space-y-2 animate-in fade-in duration-100">
             <div className="flex items-center justify-between font-medium text-[#1a1a1a]">
               <span>Select an issue that BLOCKS {issue.key}:</span>
@@ -225,7 +244,7 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({ issue }) =
                 >
                   <div
                     className="flex items-center gap-2 truncate mr-2 cursor-pointer group"
-                    onClick={() => setSelectedIssueId(blocker.id)}
+                    onClick={() => handleIssueClick(blocker)}
                   >
                     {isActive ? (
                       <ShieldAlert className="w-3.5 h-3.5 text-[#dd5b00] shrink-0" />
@@ -240,16 +259,18 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({ issue }) =
 
                   <div className="flex items-center gap-2 shrink-0">
                     <StatePill state={blocker.state} size="sm" />
-                    <button
-                      onClick={e => {
-                        e.stopPropagation();
-                        removeDependency(dependencyId);
-                      }}
-                      className="p-1 text-[#a4a097] hover:text-red-600 rounded hover:bg-white transition-colors cursor-pointer"
-                      title="Remove dependency"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    {!isReadOnly && (
+                      <button
+                        onClick={e => {
+                          e.stopPropagation();
+                          removeDependency(dependencyId);
+                        }}
+                        className="p-1 text-[#a4a097] hover:text-red-600 rounded hover:bg-white transition-colors cursor-pointer"
+                        title="Remove dependency"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -278,7 +299,7 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({ issue }) =
             {downstreamDependencies.map(({ dependencyId, issue: downstream }) => (
               <div
                 key={dependencyId}
-                onClick={() => setSelectedIssueId(downstream.id)}
+                onClick={() => handleIssueClick(downstream)}
                 className="flex items-center justify-between p-2 rounded-lg border border-[#e5e3df] bg-white hover:border-[#5645d4] text-xs cursor-pointer group transition-colors"
               >
                 <div className="flex items-center gap-2 truncate mr-2">

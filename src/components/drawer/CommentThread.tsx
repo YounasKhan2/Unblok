@@ -15,10 +15,18 @@ import {
 
 interface CommentThreadProps {
   issueId: string;
+  isReadOnly?: boolean;
+  textareaRef?: React.RefObject<HTMLTextAreaElement | null>;
 }
 
-export const CommentThread: React.FC<CommentThreadProps> = ({ issueId }) => {
+export const CommentThread: React.FC<CommentThreadProps> = ({
+  issueId,
+  isReadOnly: propReadOnly,
+  textareaRef: propTextareaRef,
+}) => {
   const { comments, addComment, deleteComment, users, currentUser } = useProject();
+
+  const isReadOnly = propReadOnly ?? (currentUser.role === 'OBSERVER');
 
   const [commentText, setCommentText] = useState('');
   const [replyingTo, setReplyingTo] = useState<IssueComment | null>(null);
@@ -26,7 +34,8 @@ export const CommentThread: React.FC<CommentThreadProps> = ({ issueId }) => {
   const [mentionFilter, setMentionFilter] = useState('');
   const [mentionIndex, setMentionIndex] = useState(0);
 
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const localTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const textareaRef = propTextareaRef || localTextareaRef;
 
   // Filter comments for this issue
   const issueComments = useMemo(() => {
@@ -251,17 +260,19 @@ export const CommentThread: React.FC<CommentThreadProps> = ({ issueId }) => {
                     </div>
 
                     <div className="flex items-center gap-1 opacity-80 hover:opacity-100">
-                      <button
-                        onClick={() => {
-                          setReplyingTo(comment);
-                          textareaRef.current?.focus();
-                        }}
-                        className="p-1 text-[#787671] hover:text-[#5645d4] hover:bg-[#ede9e4] rounded transition-colors cursor-pointer"
-                        title="Reply to thread"
-                      >
-                        <CornerDownRight className="w-3 h-3" />
-                      </button>
-                      {isAuthor && (
+                      {!isReadOnly && (
+                        <button
+                          onClick={() => {
+                            setReplyingTo(comment);
+                            textareaRef.current?.focus();
+                          }}
+                          className="p-1 text-[#787671] hover:text-[#5645d4] hover:bg-[#ede9e4] rounded transition-colors cursor-pointer"
+                          title="Reply to thread"
+                        >
+                          <CornerDownRight className="w-3 h-3" />
+                        </button>
+                      )}
+                      {!isReadOnly && isAuthor && (
                         <button
                           onClick={() => deleteComment(comment.id)}
                           className="p-1 text-[#787671] hover:text-[#d83a52] hover:bg-red-50 rounded transition-colors cursor-pointer"
@@ -310,7 +321,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({ issueId }) => {
                               </span>
                             </div>
 
-                            {isReplyAuthor && (
+                            {!isReadOnly && isReplyAuthor && (
                               <button
                                 onClick={() => deleteComment(reply.id)}
                                 className="p-1 text-[#787671] hover:text-[#d83a52] hover:bg-red-50 rounded transition-colors cursor-pointer"
@@ -336,7 +347,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({ issueId }) => {
       </div>
 
       {/* Reply Banner if Replying to a thread */}
-      {replyingTo && (
+      {!isReadOnly && replyingTo && (
         <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-purple-50 border border-purple-200 text-xs">
           <div className="flex items-center gap-1.5 text-[#5645d4]">
             <CornerDownRight className="w-3.5 h-3.5" />
@@ -353,88 +364,94 @@ export const CommentThread: React.FC<CommentThreadProps> = ({ issueId }) => {
         </div>
       )}
 
-      {/* Composer Input Box */}
-      <div className="relative border border-[#e5e3df] rounded-lg bg-white overflow-hidden shadow-2xs focus-within:border-[#5645d4] transition-colors">
-        <textarea
-          ref={textareaRef}
-          rows={3}
-          value={commentText}
-          onChange={handleTextChange}
-          onKeyDown={handleKeyDown}
-          placeholder={replyingTo ? 'Write a reply...' : 'Add a technical comment or mention someone with @...'}
-          className="w-full p-2.5 text-xs text-[#1a1a1a] bg-transparent focus:outline-none resize-none leading-relaxed"
-        />
-
-        {/* Action Toolbar */}
-        <div className="flex items-center justify-between px-2.5 py-1.5 border-t border-[#e5e3df] bg-[#fafaf9]">
-          <div className="flex items-center gap-1 text-[#787671]">
-            <button
-              type="button"
-              onClick={() => {
-                setCommentText(prev => prev + '@');
-                setShowMentionPicker(true);
-                setMentionFilter('');
-                textareaRef.current?.focus();
-              }}
-              className="p-1 hover:text-[#5645d4] hover:bg-[#ede9e4] rounded transition-colors cursor-pointer"
-              title="Mention teammate (@)"
-            >
-              <AtSign className="w-3.5 h-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={insertCodeBlock}
-              className="p-1 hover:text-[#5645d4] hover:bg-[#ede9e4] rounded transition-colors cursor-pointer"
-              title="Insert code block"
-            >
-              <Code className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-[#a4a097] hidden sm:inline">
-              ⌘ + Enter
-            </span>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={!commentText.trim()}
-              className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded bg-[#5645d4] hover:bg-[#4838bd] text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-            >
-              <Send className="w-3 h-3" />
-              <span>Send</span>
-            </button>
-          </div>
+      {/* Composer Input Box or ReadOnly Notice */}
+      {isReadOnly ? (
+        <div className="p-3 text-center text-xs text-[#787671] bg-[#fafaf9] rounded-lg border border-[#e5e3df]">
+          Viewing in read-only mode (Observer). Commenting is disabled.
         </div>
+      ) : (
+        <div className="relative border border-[#e5e3df] rounded-lg bg-white overflow-hidden shadow-2xs focus-within:border-[#5645d4] transition-colors">
+          <textarea
+            ref={textareaRef}
+            rows={3}
+            value={commentText}
+            onChange={handleTextChange}
+            onKeyDown={handleKeyDown}
+            placeholder={replyingTo ? 'Write a reply...' : 'Add a technical comment or mention someone with @...'}
+            className="w-full p-2.5 text-xs text-[#1a1a1a] bg-transparent focus:outline-none resize-none leading-relaxed"
+          />
 
-        {/* Live Teammate Mention Autocomplete Popover */}
-        {showMentionPicker && (
-          <div className="absolute left-2 bottom-12 z-50 w-56 bg-white border border-[#e5e3df] rounded-lg shadow-xl p-1 max-h-48 overflow-y-auto">
-            <div className="text-[10px] font-semibold text-[#787671] uppercase tracking-wider px-2 py-1">
-              Mention Teammate
+          {/* Action Toolbar */}
+          <div className="flex items-center justify-between px-2.5 py-1.5 border-t border-[#e5e3df] bg-[#fafaf9]">
+            <div className="flex items-center gap-1 text-[#787671]">
+              <button
+                type="button"
+                onClick={() => {
+                  setCommentText(prev => prev + '@');
+                  setShowMentionPicker(true);
+                  setMentionFilter('');
+                  textareaRef.current?.focus();
+                }}
+                className="p-1 hover:text-[#5645d4] hover:bg-[#ede9e4] rounded transition-colors cursor-pointer"
+                title="Mention teammate (@)"
+              >
+                <AtSign className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={insertCodeBlock}
+                className="p-1 hover:text-[#5645d4] hover:bg-[#ede9e4] rounded transition-colors cursor-pointer"
+                title="Insert code block"
+              >
+                <Code className="w-3.5 h-3.5" />
+              </button>
             </div>
-            {filteredUsers.length === 0 ? (
-              <div className="px-2 py-1.5 text-xs text-[#787671]">No matching member</div>
-            ) : (
-              filteredUsers.map((user, idx) => (
-                <button
-                  key={user.id}
-                  onClick={() => handleSelectMention(user)}
-                  className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-left cursor-pointer transition-colors ${
-                    idx === mentionIndex ? 'bg-[#5645d4]/10 text-[#5645d4] font-medium' : 'hover:bg-[#f6f5f4]'
-                  }`}
-                >
-                  <Avatar user={user} size="xs" />
-                  <div className="flex-1 min-w-0">
-                    <div className="truncate font-semibold text-[#1a1a1a]">{user.name}</div>
-                    <div className="text-[10px] text-[#787671] truncate">{user.email}</div>
-                  </div>
-                </button>
-              ))
-            )}
+
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-[#a4a097] hidden sm:inline">
+                ⌘ + Enter
+              </span>
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={!commentText.trim()}
+                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded bg-[#5645d4] hover:bg-[#4838bd] text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              >
+                <Send className="w-3 h-3" />
+                <span>Send</span>
+              </button>
+            </div>
           </div>
-        )}
-      </div>
+
+          {/* Live Teammate Mention Autocomplete Popover */}
+          {showMentionPicker && (
+            <div className="absolute left-2 bottom-12 z-50 w-56 bg-white border border-[#e5e3df] rounded-lg shadow-xl p-1 max-h-48 overflow-y-auto">
+              <div className="text-[10px] font-semibold text-[#787671] uppercase tracking-wider px-2 py-1">
+                Mention Teammate
+              </div>
+              {filteredUsers.length === 0 ? (
+                <div className="px-2 py-1.5 text-xs text-[#787671]">No matching member</div>
+              ) : (
+                filteredUsers.map((user, idx) => (
+                  <button
+                    key={user.id}
+                    onClick={() => handleSelectMention(user)}
+                    className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-left cursor-pointer transition-colors ${
+                      idx === mentionIndex ? 'bg-[#5645d4]/10 text-[#5645d4] font-medium' : 'hover:bg-[#f6f5f4]'
+                    }`}
+                  >
+                    <Avatar user={user} size="xs" />
+                    <div className="flex-1 min-w-0">
+                      <div className="truncate font-semibold text-[#1a1a1a]">{user.name}</div>
+                      <div className="text-[10px] text-[#787671] truncate">{user.email}</div>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

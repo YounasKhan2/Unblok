@@ -21,6 +21,11 @@ export interface DrawerKeyHandlers {
   onNext?: () => void;
   onPrev?: () => void;
   onClose?: () => void;
+  onOpenFull?: () => void;
+}
+
+export interface DetailKeyHandlers {
+  onFocusComment?: () => void;
 }
 
 export type KeyAction =
@@ -35,11 +40,16 @@ export type KeyAction =
   | 'CANVAS_TOGGLE_SELECT'
   | 'DRAWER_NEXT'
   | 'DRAWER_PREV'
+  | 'DRAWER_OPEN_FULL'
   | 'CREATE_ISSUE'
   | 'TOGGLE_RAIL'
   | 'OPEN_PALETTE'
   | 'OPEN_HELP'
   | 'FOCUS_SEARCH'
+  | 'OPEN_STATUS_PICKER'
+  | 'OPEN_PRIORITY_PICKER'
+  | 'OPEN_ASSIGNEE_PICKER'
+  | 'FOCUS_COMMENT_COMPOSER'
   | 'NONE';
 
 /**
@@ -65,9 +75,15 @@ export function evaluateKeyAction(params: {
 }): KeyAction {
   const { key, metaKey, ctrlKey, shiftKey, isInputFocused, scope, hasSelection } = params;
 
-  // 1. Meta shortcuts (Command palette, etc.)
+  // 1. Meta shortcuts (Command palette, drawer open full)
   if ((metaKey || ctrlKey) && key.toLowerCase() === 'k') {
     return 'OPEN_PALETTE';
+  }
+
+  if ((metaKey || ctrlKey) && key.toLowerCase() === 'o') {
+    if (scope === 'DRAWER_NAV' || scope === 'DRAWER_EDIT') {
+      return 'DRAWER_OPEN_FULL';
+    }
   }
 
   // 2. Escape Hierarchy
@@ -115,7 +131,24 @@ export function evaluateKeyAction(params: {
     return 'FOCUS_SEARCH';
   }
 
-  // 8. Drawer Navigation Scope
+  // 8. Issue Property and Detail shortcuts (S, P, A, M)
+  if (!metaKey && !ctrlKey) {
+    const lowerKey = key.toLowerCase();
+    if (lowerKey === 's') {
+      return 'OPEN_STATUS_PICKER';
+    }
+    if (lowerKey === 'p') {
+      return 'OPEN_PRIORITY_PICKER';
+    }
+    if (lowerKey === 'a') {
+      return 'OPEN_ASSIGNEE_PICKER';
+    }
+    if (lowerKey === 'm') {
+      return 'FOCUS_COMMENT_COMPOSER';
+    }
+  }
+
+  // 9. Drawer Navigation Scope
   if (scope === 'DRAWER_NAV') {
     if (key === 'j' || key === 'ArrowDown') {
       return 'DRAWER_NEXT';
@@ -126,7 +159,7 @@ export function evaluateKeyAction(params: {
     return 'NONE';
   }
 
-  // 9. Canvas Scope
+  // 10. Canvas Scope
   if (scope === 'CANVAS') {
     if (key === 'j' || key === 'ArrowDown') {
       return 'CANVAS_NEXT';
@@ -152,7 +185,7 @@ interface KeyboardContextType {
   scope: KeyboardScope;
   setScope: (scope: KeyboardScope) => void;
   activePicker: ActivePickerType;
-  setActivePicker: (picker: ActivePickerType) => void;
+  setActivePicker: (picker: ActivePickerType | ((prev: ActivePickerType) => ActivePickerType)) => void;
   isCreateModalOpen: boolean;
   setIsCreateModalOpen: (open: boolean) => void;
   isHelpModalOpen: boolean;
@@ -160,6 +193,7 @@ interface KeyboardContextType {
   searchInputRef: React.RefObject<HTMLInputElement | null>;
   registerCanvasHandlers: (handlers: CanvasKeyHandlers | null) => void;
   registerDrawerHandlers: (handlers: DrawerKeyHandlers | null) => void;
+  registerDetailHandlers: (handlers: DetailKeyHandlers | null) => void;
 }
 
 const KeyboardContext = createContext<KeyboardContextType | undefined>(undefined);
@@ -182,6 +216,7 @@ export const KeyboardProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const canvasHandlersRef = useRef<CanvasKeyHandlers | null>(null);
   const drawerHandlersRef = useRef<DrawerKeyHandlers | null>(null);
+  const detailHandlersRef = useRef<DetailKeyHandlers | null>(null);
 
   const registerCanvasHandlers = useCallback((handlers: CanvasKeyHandlers | null) => {
     canvasHandlersRef.current = handlers;
@@ -189,6 +224,10 @@ export const KeyboardProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const registerDrawerHandlers = useCallback((handlers: DrawerKeyHandlers | null) => {
     drawerHandlersRef.current = handlers;
+  }, []);
+
+  const registerDetailHandlers = useCallback((handlers: DetailKeyHandlers | null) => {
+    detailHandlersRef.current = handlers;
   }, []);
 
   // Compute scope dynamically based on active layers and focus
@@ -302,6 +341,31 @@ export const KeyboardProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           drawerHandlersRef.current?.onPrev?.();
           break;
 
+        case 'DRAWER_OPEN_FULL':
+          e.preventDefault();
+          drawerHandlersRef.current?.onOpenFull?.();
+          break;
+
+        case 'OPEN_STATUS_PICKER':
+          e.preventDefault();
+          setActivePicker(prev => (prev === 'STATUS' ? null : 'STATUS'));
+          break;
+
+        case 'OPEN_PRIORITY_PICKER':
+          e.preventDefault();
+          setActivePicker(prev => (prev === 'PRIORITY' ? null : 'PRIORITY'));
+          break;
+
+        case 'OPEN_ASSIGNEE_PICKER':
+          e.preventDefault();
+          setActivePicker(prev => (prev === 'ASSIGNEE' ? null : 'ASSIGNEE'));
+          break;
+
+        case 'FOCUS_COMMENT_COMPOSER':
+          e.preventDefault();
+          detailHandlersRef.current?.onFocusComment?.();
+          break;
+
         case 'CANVAS_NEXT':
           e.preventDefault();
           if (canvasHandlersRef.current?.onNext) {
@@ -379,6 +443,7 @@ export const KeyboardProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         searchInputRef,
         registerCanvasHandlers,
         registerDrawerHandlers,
+        registerDetailHandlers,
       }}
     >
       {children}

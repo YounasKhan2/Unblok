@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   X,
   ChevronUp,
@@ -39,6 +39,7 @@ export const IssueDrawer: React.FC = () => {
   } = useProject();
 
   const location = useLocation();
+  const navigate = useNavigate();
 
   const {
     isOpen,
@@ -61,6 +62,20 @@ export const IssueDrawer: React.FC = () => {
     }
     return null;
   }, [drawerIssueKey, selectedIssueId, issues]);
+
+  // Origin return URL preserving search without drawer/tab query params
+  const returnUrl = useMemo(() => {
+    const returnSearch = location.search
+      .replace(/([?&])drawer=[^&]*(&|$)/, '$1')
+      .replace(/([?&])tab=[^&]*(&|$)/, '$1')
+      .replace(/[?&]$/, '');
+    return location.pathname + returnSearch;
+  }, [location.pathname, location.search]);
+
+  const handleOpenFullIssue = useCallback(() => {
+    if (!activeIssue) return;
+    navigate(`/issues/${activeIssue.key}`, { state: { from: returnUrl } });
+  }, [activeIssue, navigate, returnUrl]);
 
   // Sync tab state with URL parameter if present
   const activeTab = React.useMemo(() => {
@@ -117,6 +132,7 @@ export const IssueDrawer: React.FC = () => {
         onNext: () => handleAdjacentNavigate(1),
         onPrev: () => handleAdjacentNavigate(-1),
         onClose: closeDrawer,
+        onOpenFull: handleOpenFullIssue,
       });
       return () => {
         registerDrawerHandlers(null);
@@ -124,7 +140,7 @@ export const IssueDrawer: React.FC = () => {
     } else {
       registerDrawerHandlers(null);
     }
-  }, [isOpen, activeIssue, registerDrawerHandlers, handleAdjacentNavigate, closeDrawer]);
+  }, [isOpen, activeIssue, registerDrawerHandlers, handleAdjacentNavigate, closeDrawer, handleOpenFullIssue]);
 
   const handleTitleBlur = () => {
     if (activeIssue && title.trim() && title !== activeIssue.title) {
@@ -138,7 +154,7 @@ export const IssueDrawer: React.FC = () => {
     }
   };
 
-  if (!isOpen || !activeIssue) {
+  if (!isOpen || !activeIssue || location.pathname.startsWith('/issues/')) {
     return null;
   }
 
@@ -174,8 +190,9 @@ export const IssueDrawer: React.FC = () => {
             {/* Open Full Issue Canonical Link */}
             <Link
               to={`/issues/${activeIssue.key}`}
+              state={{ from: returnUrl }}
               className="p-1 hover:text-[#1a1a1a] hover:bg-[#ede9e4] rounded transition-colors"
-              title="Open full issue page (/issues/:key)"
+              title="Open full issue page (Cmd+O)"
             >
               <ExternalLink className="w-3.5 h-3.5" />
             </Link>
