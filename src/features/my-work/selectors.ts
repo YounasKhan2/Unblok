@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Issue, Dependency, IssueState, IssuePriority } from '../../types';
+import { Issue, Dependency, IssueState, IssuePriority, Cycle } from '../../types';
 import { getBlockerStatus } from '../../domain/dependency';
 
 export interface MyWorkGroup {
@@ -48,6 +48,7 @@ export interface MyWorkSelectionResult {
   blockingOthers: BlockingOtherItem[];
   summary: MyWorkSummary;
   groups: MyWorkGroup[];
+  activeCycles: Cycle[];
 }
 
 /**
@@ -58,21 +59,24 @@ export interface MyWorkSelectionResult {
  *   1. Needs Attention (Blocked, Urgent, or Overdue/Due today)
  *   2. In Progress (Active execution)
  *   3. In Review (Under technical/design review)
- *   4. Up Next (Planned for current cycle / Todo)
+ *   4. Up Next (Planned for team's active cycle / Todo)
  *   5. Recently Completed (Done in current sprint/cadence)
  *
  * "Blocking Others" is evaluated as a dependency-impact surface exposing
  * downstream blast radius without duplicating issues in standard execution lists.
+ *
+ * CYCLES ARE TEAM-SCOPED:
+ * A cycle belongs to exactly one Team. My Work derives active cycles on a per-team basis.
  */
 export function selectMyWorkData(
   allIssues: Issue[],
   dependencies: Dependency[],
   currentUserId: string,
   filters: MyWorkFilterParams = {},
-  todayDateStr: string = new Date().toISOString().split('T')[0]
+  todayDateStr: string = new Date().toISOString().split('T')[0],
+  cycles: Cycle[] = [],
+  userTeamId?: string | string[]
 ): MyWorkSelectionResult {
-  const issuesMap = new Map(allIssues.map(i => [i.id, i]));
-
   // 1. Filter issues assigned to current user
   const userAssignedIssues = allIssues.filter(issue => issue.assigneeId === currentUserId);
 
@@ -81,7 +85,26 @@ export function selectMyWorkData(
     allIssues.map(issue => [issue.id, getBlockerStatus(issue.id, allIssues, dependencies)])
   );
 
-  // Apply search and filters if provided
+  // 3. Resolve Team-Scoped Active Cycles
+  const activeCyclesByTeam = new Map<string, Cycle>();
+  for (const c of cycles) {
+    if (c.status === 'ACTIVE' && c.teamId) {
+      activeCyclesByTeam.set(c.teamId, c);
+    }
+  }
+
+  // Derive relevant teams for the current user
+  const userTeams: string[] = Array.isArray(userTeamId)
+    ? userTeamId
+    : userTeamId
+    ? [userTeamId]
+    : Array.from(new Set(userAssignedIssues.map(i => i.teamId).filter(Boolean)));
+
+  const activeCycles: Cycle[] = userTeams
+    .map(tid => activeCyclesByTeam.get(tid))
+    .filter((c): c is Cycle => Boolean(c));
+
+  // 4. Apply search and canonical filters
   const query = (filters.searchQuery || '').trim().toLowerCase();
   const stateFilter = filters.lifecycleFilter || 'ALL';
   const blockerFilter = filters.blockerFilter || 'ALL';
@@ -95,17 +118,18 @@ export function selectMyWorkData(
       if (!matchesKey && !matchesTitle) return false;
     }
 
-    // Lifecycle state filter
+    // Lifecycle state filter (canonical: TODO, IN_PROGRESS, IN_REVIEW, DONE, etc.)
     if (stateFilter !== 'ALL' && issue.state !== stateFilter) {
       return false;
     }
 
-    // Priority filter
+    // Priority filter (canonical: URGENT, HIGH, MEDIUM, LOW)
     if (priorityFilter !== 'ALL' && issue.priority !== priorityFilter) {
       return false;
     }
 
-    // Blocker filter
+    // Canonical Blocker filter: ONLY accepts 'BLOCKED_ONLY' and 'UNBLOCKED_ONLY'
+    // Lifecycle states (IN_PROGRESS, IN_REVIEW, DONE, etc.) MUST NOT be accepted here.
     if (blockerFilter === 'BLOCKED_ONLY') {
       const status = blockerStatusMap.get(issue.id);
       if (!status || !status.isBlocked) return false;
@@ -113,6 +137,7 @@ export function selectMyWorkData(
       const status = blockerStatusMap.get(issue.id);
       if (status && status.isBlocked) return false;
     }
+    // Any unrecognized blocker filter value (e.g. lifecycle strings) is ignored to preserve contract separation.
 
     return true;
   };
@@ -168,7 +193,7 @@ export function selectMyWorkData(
     }
   }
 
-  // 3. Derive "Blocking Others" (Dependency-impact surface)
+  // 5. Derive "Blocking Others" (Dependency-impact surface)
   // Find all issues where current user is assigned, issue is NOT DONE/CANCELLED,
   // and this issue actively blocks one or more downstream issues.
   const blockingOthers: BlockingOtherItem[] = [];
@@ -194,7 +219,7 @@ export function selectMyWorkData(
     }
   }
 
-  // 4. Compute High-Density Summary Metrics
+  // 6. Compute High-Density Summary Metrics
   const blockedCount = userAssignedIssues.filter(
     i => i.state !== 'DONE' && (blockerStatusMap.get(i.id)?.isBlocked ?? false)
   ).length;
@@ -213,6 +238,10 @@ export function selectMyWorkData(
     upNextCount: upNext.length,
     completedCount: recentlyCompleted.length,
   };
+
+  const cycleSubtitle = activeCycles.length > 0
+    ? `Current cycle: ${activeCycles.map(c => c.name).join(', ')}`
+    : 'Planned tasks and backlog';
 
   const groups: MyWorkGroup[] = [
     {
@@ -241,8 +270,8 @@ export function selectMyWorkData(
     },
     {
       id: 'upNext',
-      title: 'Up Next',
-      subtitle: 'Planned tasks for active team cycle',
+      title: activeCycles.length > 0 ? 'Up Next · Current cycle' : 'Up Next',
+      subtitle: cycleSubtitle,
       count: upNext.length,
       issues: upNext,
       emptyMessage: 'No planned backlog items assigned for the current cycle.',
@@ -266,5 +295,6 @@ export function selectMyWorkData(
     blockingOthers,
     summary,
     groups,
+    activeCycles,
   };
 }

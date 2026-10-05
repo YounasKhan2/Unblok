@@ -16,6 +16,22 @@
     --color-surface: #f6f5f4;
     --color-surface-soft: #fafaf9;
     --color-canvas: #ffffff;
+
+    /* Canonical Semantic Tokens (Future Theme-Ready) */
+    --color-accent: #5645d4;
+    --color-blocker: #dd5b00;
+    --color-danger: #e03e3e;
+    --color-warning: #d9730d;
+    --color-success: #0f7b6c;
+    --color-border: #e5e3df;
+    --color-border-subtle: #ede9e4;
+    --color-border-strong: #c8c4be;
+    --color-text-primary: #1a1a1a;
+    --color-text-secondary: #5d5b54;
+    --color-text-muted: #787671;
+    --color-surface-base: #ffffff;
+    --color-surface-subtle: #fafaf9;
+    --color-surface-muted: #f6f5f4;
   }
 
   body {

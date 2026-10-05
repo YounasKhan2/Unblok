@@ -4,127 +4,100 @@
  */
 
 import React from 'react';
-import { ShieldAlert, GitFork, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ShieldAlert, GitFork, X, Filter } from 'lucide-react';
 import { MyWorkSummary } from './selectors';
 
 interface PersonalBlockerSummaryBannerProps {
   summary: MyWorkSummary;
-  activeFilter: string;
-  onFilterChange: (filter: string) => void;
-  activeCycleName?: string;
+  blockerFilter: string;
+  onBlockerFilterChange: (filter: string) => void;
+  hasActiveFilters?: boolean;
+  onClearFilters?: () => void;
+  onJumpToBlockingOthers?: () => void;
 }
 
+/**
+ * Compact, operational execution and dependency signal bar.
+ * Adheres strictly to the canonical filter contract:
+ * - blockerFilter only accepts 'BLOCKED_ONLY', 'UNBLOCKED_ONLY', or 'ALL'
+ * - Lifecycle states (TODO, IN_PROGRESS, IN_REVIEW, DONE) are NEVER written here.
+ * - Avoids large dashboard KPI cards in favor of a dense, actionable signal strip.
+ */
 export const PersonalBlockerSummaryBanner: React.FC<PersonalBlockerSummaryBannerProps> = ({
   summary,
-  activeFilter,
-  onFilterChange,
-  activeCycleName = 'Cycle 24',
+  blockerFilter,
+  onBlockerFilterChange,
+  hasActiveFilters = false,
+  onClearFilters,
+  onJumpToBlockingOthers,
 }) => {
+  // If there are no active blockers, no blocking issues, and no active filters, render a minimal subtle bar
+  const isBlockedActive = blockerFilter === 'BLOCKED_ONLY';
+
   return (
-    <div className="bg-[#fafaf9] border-b border-[#e5e3df] px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
-      {/* Left: Summary Metrics */}
-      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-        {/* Blocked Alert Indicator */}
-        <button
-          onClick={() => onFilterChange(activeFilter === 'BLOCKED_ONLY' ? 'ALL' : 'BLOCKED_ONLY')}
-          className={`flex items-center gap-1.5 px-2 py-1 rounded-[5px] transition-colors cursor-pointer border ${
-            activeFilter === 'BLOCKED_ONLY'
-              ? 'bg-[#ffe8d4] border-[#f5b38a] text-[#c24e00] font-semibold'
-              : summary.blockedCount > 0
-              ? 'bg-[#fff5ee] border-[#ffd8be] text-[#dd5b00] hover:bg-[#ffe8d4]'
-              : 'bg-white border-[#e5e3df] text-[#787671]'
-          }`}
-          title="Filter for blocked work requiring upstream unblocking"
-        >
-          <ShieldAlert className="w-3.5 h-3.5 text-[#dd5b00]" />
-          <span>
-            <strong className="font-semibold">{summary.blockedCount}</strong>{' '}
-            {summary.blockedCount === 1 ? 'task blocked' : 'tasks blocked'}
-          </span>
-        </button>
-
-        {/* Blocking Others Indicator */}
-        <button
-          onClick={() => onFilterChange(activeFilter === 'BLOCKING_OTHERS' ? 'ALL' : 'BLOCKING_OTHERS')}
-          className={`flex items-center gap-1.5 px-2 py-1 rounded-[5px] transition-colors cursor-pointer border ${
-            activeFilter === 'BLOCKING_OTHERS'
-              ? 'bg-purple-100 border-purple-300 text-[#5645d4] font-semibold'
-              : summary.blockingCount > 0
-              ? 'bg-purple-50/70 border-purple-200 text-[#5645d4] hover:bg-purple-100'
-              : 'bg-white border-[#e5e3df] text-[#787671]'
-          }`}
-          title="Tasks where your work is an active prerequisite for peers"
-        >
-          <GitFork className="w-3.5 h-3.5 text-[#5645d4]" />
-          <span>
-            Blocking <strong className="font-semibold">{summary.blockingCount}</strong> downstream
-          </span>
-        </button>
-
-        {/* In Progress Indicator */}
-        <button
-          onClick={() => onFilterChange(activeFilter === 'IN_PROGRESS' ? 'ALL' : 'IN_PROGRESS')}
-          className={`flex items-center gap-1.5 px-2 py-1 rounded-[5px] transition-colors cursor-pointer border ${
-            activeFilter === 'IN_PROGRESS'
-              ? 'bg-blue-100 border-blue-300 text-blue-800 font-semibold'
-              : 'bg-white border-[#e5e3df] text-[#37352f] hover:bg-[#f6f5f4]'
-          }`}
-        >
-          <Clock className="w-3.5 h-3.5 text-blue-600" />
-          <span>
-            <strong className="font-semibold">{summary.inProgressCount}</strong> in progress
-          </span>
-        </button>
-
-        {/* In Review Indicator */}
-        {summary.inReviewCount > 0 && (
+    <div className="bg-[#fafaf9] border-b border-[#e5e3df] px-4 py-1.5 flex items-center justify-between gap-3 text-xs shrink-0 select-none">
+      {/* Left: Compact operational signals */}
+      <div className="flex items-center gap-2 flex-wrap">
+        {/* Blocked Signal Button */}
+        {summary.blockedCount > 0 ? (
           <button
-            onClick={() => onFilterChange(activeFilter === 'IN_REVIEW' ? 'ALL' : 'IN_REVIEW')}
-            className={`hidden md:flex items-center gap-1.5 px-2 py-1 rounded-[5px] transition-colors cursor-pointer border ${
-              activeFilter === 'IN_REVIEW'
-                ? 'bg-amber-100 border-amber-300 text-amber-900 font-semibold'
-                : 'bg-white border-[#e5e3df] text-[#37352f] hover:bg-[#f6f5f4]'
+            onClick={() => onBlockerFilterChange(isBlockedActive ? 'ALL' : 'BLOCKED_ONLY')}
+            className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border text-xs font-medium transition-colors cursor-pointer ${
+              isBlockedActive
+                ? 'bg-[#ffe8d4] border-[#f5b38a] text-[#c24e00] font-semibold ring-1 ring-[#f5b38a]'
+                : 'bg-[#fff5ee] border-[#ffd8be] text-[#dd5b00] hover:bg-[#ffe8d4]'
             }`}
+            title={isBlockedActive ? 'Click to show all tasks' : 'Click to filter only blocked tasks'}
           >
-            <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+            <ShieldAlert className="w-3.5 h-3.5 text-[#dd5b00]" />
             <span>
-              <strong className="font-semibold">{summary.inReviewCount}</strong> in review
+              <strong>{summary.blockedCount}</strong> {summary.blockedCount === 1 ? 'task blocked' : 'tasks blocked'}
             </span>
           </button>
+        ) : (
+          <span className="inline-flex items-center gap-1 text-[#787671] text-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#0f7b6c]" />
+            <span>No active blockers</span>
+          </span>
         )}
 
-        {/* Recently Completed */}
-        {summary.completedCount > 0 && (
+        <span className="text-[#c8c4be]">·</span>
+
+        {/* Blocking Others Signal */}
+        {summary.blockingCount > 0 ? (
           <button
-            onClick={() => onFilterChange(activeFilter === 'DONE' ? 'ALL' : 'DONE')}
-            className={`hidden lg:flex items-center gap-1.5 px-2 py-1 rounded-[5px] transition-colors cursor-pointer border ${
-              activeFilter === 'DONE'
-                ? 'bg-emerald-100 border-emerald-300 text-emerald-900 font-semibold'
-                : 'bg-white border-[#e5e3df] text-[#787671] hover:bg-[#f6f5f4]'
-            }`}
+            onClick={onJumpToBlockingOthers}
+            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] border border-purple-200 bg-purple-50 text-[#5645d4] hover:bg-purple-100 transition-colors cursor-pointer text-xs font-medium"
+            title="View tasks where you are an active prerequisite for teammates"
           >
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            <GitFork className="w-3.5 h-3.5 text-[#5645d4]" />
             <span>
-              <strong className="font-semibold">{summary.completedCount}</strong> done
+              Blocking <strong>{summary.blockingCount}</strong> downstream
             </span>
           </button>
+        ) : (
+          <span className="text-xs text-[#787671]">Not blocking teammates</span>
         )}
       </div>
 
-      {/* Right: Active Cycle Badge & Clear Filter */}
-      <div className="flex items-center gap-2 ml-auto">
-        {activeFilter !== 'ALL' && (
-          <button
-            onClick={() => onFilterChange('ALL')}
-            className="text-[11px] text-[#5645d4] hover:underline cursor-pointer font-medium"
-          >
-            Clear filter
-          </button>
-        )}
-        <div className="text-[11px] font-mono text-[#787671] bg-white border border-[#e5e3df] px-2 py-0.5 rounded-[4px]">
-          {activeCycleName}
+      {/* Right: Active filter indicator & reset */}
+      {hasActiveFilters && (
+        <div className="flex items-center gap-1.5">
+          <span className="text-[11px] text-[#787671] flex items-center gap-1">
+            <Filter className="w-3 h-3 text-[#5645d4]" />
+            <span>Filtered queue</span>
+          </span>
+          {onClearFilters && (
+            <button
+              onClick={onClearFilters}
+              className="inline-flex items-center gap-1 text-[11px] text-[#5645d4] hover:text-[#4534b3] font-medium hover:underline cursor-pointer"
+            >
+              <X className="w-3 h-3" />
+              <span>Reset</span>
+            </button>
+          )}
         </div>
-      </div>
+      )}
     </div>
   );
 };

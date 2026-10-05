@@ -17,6 +17,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { useProject } from '../../context/ProjectContext';
+import { useKeyboard } from '../../context/KeyboardContext';
 import { useDrawerRoute } from '../../app/router/useDrawerRoute';
 import { PropertyGrid } from './PropertyGrid';
 import { DependencyManager } from './DependencyManager';
@@ -44,6 +45,8 @@ export const IssueDrawer: React.FC = () => {
     setDrawerTab,
     navigateToAdjacentIssue,
   } = useDrawerRoute();
+
+  const { registerDrawerHandlers } = useKeyboard();
 
   // Find the active issue either from drawerIssueKey in URL or selectedIssueId
   const activeIssue = React.useMemo(() => {
@@ -78,22 +81,21 @@ export const IssueDrawer: React.FC = () => {
     }
   }, [activeIssue, selectedIssueId, setSelectedIssueId]);
 
-  // Handle Esc key to close drawer
+  // Register drawer keyboard handlers with KeyboardContext
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        const target = e.target as HTMLElement;
-        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
-          target.blur();
-          return;
-        }
-        e.preventDefault();
-        closeDrawer();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, closeDrawer]);
+    if (isOpen && activeIssue) {
+      registerDrawerHandlers({
+        onNext: () => handleAdjacentNavigate(1),
+        onPrev: () => handleAdjacentNavigate(-1),
+        onClose: closeDrawer,
+      });
+      return () => {
+        registerDrawerHandlers(null);
+      };
+    } else {
+      registerDrawerHandlers(null);
+    }
+  }, [isOpen, activeIssue, registerDrawerHandlers, closeDrawer, issues]);
 
   if (!isOpen || !activeIssue) {
     return null;

@@ -71,11 +71,11 @@ export const INITIAL_MILESTONES: Milestone[] = [
 export const INITIAL_CYCLES: Cycle[] = [
   {
     id: 'cycle_24',
-    name: 'Cycle 24 (Active)',
+    name: 'Cycle 24',
     startDate: '2026-10-01',
     endDate: '2026-10-14',
     status: 'ACTIVE',
-    teamId: 'ALL',
+    teamId: 'team_eng',
     description: 'Q4 Core Platform hardening & OAuth token revocation rollout.',
   },
   {
@@ -84,8 +84,8 @@ export const INITIAL_CYCLES: Cycle[] = [
     startDate: '2026-10-15',
     endDate: '2026-10-28',
     status: 'UPCOMING',
-    teamId: 'ALL',
-    description: 'Frontend seat management & billing analytics transition.',
+    teamId: 'team_eng',
+    description: 'Core platform telemetry & security review.',
   },
   {
     id: 'cycle_23',
@@ -93,8 +93,26 @@ export const INITIAL_CYCLES: Cycle[] = [
     startDate: '2026-09-17',
     endDate: '2026-09-30',
     status: 'COMPLETED',
-    teamId: 'ALL',
+    teamId: 'team_eng',
     description: 'Initial infrastructure baselines and schema migrations.',
+  },
+  {
+    id: 'cycle_web_18',
+    name: 'Cycle 18',
+    startDate: '2026-10-01',
+    endDate: '2026-10-14',
+    status: 'ACTIVE',
+    teamId: 'team_web',
+    description: 'Frontend seat management & billing analytics transition.',
+  },
+  {
+    id: 'cycle_inf_12',
+    name: 'Cycle 12',
+    startDate: '2026-10-01',
+    endDate: '2026-10-14',
+    status: 'ACTIVE',
+    teamId: 'team_inf',
+    description: 'PgBouncer connection scaling and us-east4 replication.',
   },
 ];
 

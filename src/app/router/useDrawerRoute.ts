@@ -61,7 +61,7 @@ export function useDrawerRoute(): DrawerRouteState {
         pathname: location.pathname,
         search: searchString ? `?${searchString}` : '',
       },
-      { replace: false }
+      { replace: true }
     );
   }, [searchParams, location.pathname, navigate]);
 

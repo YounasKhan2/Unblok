@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   ShieldAlert,
@@ -13,8 +13,6 @@ import {
   X,
   Plus,
   GitFork,
-  ArrowUpDown,
-  Sparkles,
 } from 'lucide-react';
 import { useProject } from '../../context/ProjectContext';
 import { useKeyboard } from '../../context/KeyboardContext';
@@ -38,10 +36,16 @@ export const MyWorkPage: React.FC = () => {
     setSelectedIssueId,
   } = useProject();
 
-  const { setIsCreateModalOpen } = useKeyboard();
+  const { setIsCreateModalOpen, registerCanvasHandlers } = useKeyboard();
   const { openDrawer, drawerIssueKey, navigateToAdjacentIssue } = useDrawerRoute();
 
-  // Read URL-backed filters
+  const blockingOthersRef = useRef<HTMLDivElement>(null);
+
+  // Read URL-backed filters strictly separated by query parameter:
+  // state= lifecycle filtering (TODO, IN_PROGRESS, IN_REVIEW, DONE)
+  // priority= priority filtering (URGENT, HIGH, MEDIUM, LOW)
+  // blocker= blocker filtering (BLOCKED_ONLY, UNBLOCKED_ONLY, ALL)
+  // q= search query
   const searchQuery = searchParams.get('q') || '';
   const lifecycleFilter = searchParams.get('state') || 'ALL';
   const blockerFilter = searchParams.get('blocker') || 'ALL';
@@ -57,10 +61,7 @@ export const MyWorkPage: React.FC = () => {
     [searchQuery, lifecycleFilter, blockerFilter, priorityFilter]
   );
 
-  // Active Team Cycle
-  const activeCycle = cycles.find(c => c.status === 'ACTIVE') || cycles[0];
-
-  // Pure domain selector for My Work
+  // Pure domain selector for My Work with team-scoped active cycle derivation
   const {
     needsAttention,
     inProgress,
@@ -70,12 +71,22 @@ export const MyWorkPage: React.FC = () => {
     blockingOthers,
     summary,
     groups,
+    activeCycles,
   } = useMemo(
-    () => selectMyWorkData(issues, dependencies, currentUser.id, filterParams),
-    [issues, dependencies, currentUser.id, filterParams]
+    () =>
+      selectMyWorkData(
+        issues,
+        dependencies,
+        currentUser.id,
+        filterParams,
+        undefined,
+        cycles,
+        currentUser.teamId
+      ),
+    [issues, dependencies, currentUser.id, currentUser.teamId, filterParams, cycles]
   );
 
-  // Filter update helper that updates URL query state
+  // Filter update helper that updates URL query state cleanly
   const updateFilters = useCallback(
     (updates: Partial<Record<'q' | 'state' | 'blocker' | 'priority', string>>) => {
       const nextParams = new URLSearchParams(searchParams);
@@ -132,21 +143,10 @@ export const MyWorkPage: React.FC = () => {
     }
   }, [drawerIssueKey, issues, setSelectedIssueId]);
 
-  // Keyboard navigation across visible issues
+  // Register canvas keyboard commands with KeyboardContext (replaces ad-hoc keydown listener)
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore if user is inside an input, textarea, or contentEditable
-      const target = e.target as HTMLElement;
-      if (
-        target.tagName === 'INPUT' ||
-        target.tagName === 'TEXTAREA' ||
-        target.isContentEditable
-      ) {
-        return;
-      }
-
-      if (e.key === 'j' || e.key === 'J' || e.key === 'ArrowDown') {
-        e.preventDefault();
+    registerCanvasHandlers({
+      onNext: () => {
         setFocusedIndex(prev => {
           const next = Math.min(prev + 1, visibleIssues.length - 1);
           const nextIssue = visibleIssues[next];
@@ -155,8 +155,8 @@ export const MyWorkPage: React.FC = () => {
           }
           return next;
         });
-      } else if (e.key === 'k' || e.key === 'K' || e.key === 'ArrowUp') {
-        e.preventDefault();
+      },
+      onPrev: () => {
         setFocusedIndex(prev => {
           const next = Math.max(prev - 1, 0);
           const nextIssue = visibleIssues[next];
@@ -165,35 +165,36 @@ export const MyWorkPage: React.FC = () => {
           }
           return next;
         });
-      } else if (e.key === ' ' || e.key === 'Enter') {
+      },
+      onOpen: () => {
         if (currentFocusedIssue) {
-          e.preventDefault();
           openDrawer(currentFocusedIssue.key);
         }
-      } else if (e.key === 'x' || e.key === 'X') {
+      },
+      onToggleSelect: () => {
         if (currentFocusedIssue) {
-          e.preventDefault();
           toggleSelectIssue(currentFocusedIssue.id);
         }
-      }
-    };
+      },
+    });
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      registerCanvasHandlers(null);
+    };
   }, [
     visibleIssues,
-    focusedIndex,
     currentFocusedIssue,
     drawerIssueKey,
     openDrawer,
     navigateToAdjacentIssue,
     toggleSelectIssue,
+    registerCanvasHandlers,
   ]);
 
   const handleSelectRow = (issue: Issue) => {
     const index = visibleIssues.findIndex(i => i.id === issue.id);
     if (index !== -1) setFocusedIndex(index);
-    openDrawer(issue.key);
+    setSelectedIssueId(issue.id);
   };
 
   const handleToggleMultiSelect = (issueId: string, isShift: boolean) => {
@@ -210,11 +211,13 @@ export const MyWorkPage: React.FC = () => {
           <h1 className="text-sm font-bold text-[#1a1a1a] tracking-tight">My Work</h1>
           <span className="text-xs text-[#787671] hidden sm:inline">·</span>
           <span className="text-xs text-[#787671] hidden sm:inline">
-            Personal Execution Queue
+            Execution Queue
           </span>
-          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-purple-100 text-[#5645d4] font-semibold">
-            {activeCycle?.name || 'Cycle 24'}
-          </span>
+          {activeCycles.length > 0 && (
+            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-purple-100 text-[#5645d4] font-semibold truncate max-w-[140px]">
+              {activeCycles.map(c => c.name).join(', ')}
+            </span>
+          )}
         </div>
 
         {/* Search & Filter Toolbar Controls */}
@@ -227,19 +230,20 @@ export const MyWorkPage: React.FC = () => {
               value={searchQuery}
               onChange={e => updateFilters({ q: e.target.value })}
               placeholder="Filter tasks... (/)"
-              className="h-7 w-36 sm:w-48 pl-8 pr-2.5 bg-[#f6f5f4] border border-[#e5e3df] rounded-[5px] text-xs text-[#1a1a1a] placeholder-[#a4a097] focus:bg-white focus:border-[#5645d4] focus:outline-none transition-all"
+              className="h-7 w-32 sm:w-48 pl-8 pr-2.5 bg-[#f6f5f4] border border-[#e5e3df] rounded-[5px] text-xs text-[#1a1a1a] placeholder-[#a4a097] focus:bg-white focus:border-[#5645d4] focus:outline-none transition-all"
             />
             {searchQuery && (
               <button
                 onClick={() => updateFilters({ q: '' })}
                 className="absolute right-2 text-[#787671] hover:text-[#1a1a1a]"
+                title="Clear search"
               >
                 <X className="w-3 h-3" />
               </button>
             )}
           </div>
 
-          {/* State Filter */}
+          {/* Canonical State Filter */}
           <select
             value={lifecycleFilter}
             onChange={e => updateFilters({ state: e.target.value })}
@@ -253,7 +257,7 @@ export const MyWorkPage: React.FC = () => {
             <option value="DONE">Done</option>
           </select>
 
-          {/* Priority Filter */}
+          {/* Canonical Priority Filter */}
           <select
             value={priorityFilter}
             onChange={e => updateFilters({ priority: e.target.value })}
@@ -275,7 +279,8 @@ export const MyWorkPage: React.FC = () => {
             onClick={() => setIsCreateModalOpen(true)}
             className="font-semibold shadow-2xs"
           >
-            <span>Create Task</span>
+            <span className="hidden sm:inline">Create Task</span>
+            <span className="sm:hidden">New</span>
             <kbd className="hidden sm:inline-block ml-1 font-mono text-[9px] bg-white/20 px-1 py-0.2 rounded text-white">
               C
             </kbd>
@@ -283,45 +288,20 @@ export const MyWorkPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. Personal Blocker Posture Banner */}
+      {/* 2. Compact Operational Execution/Dependency Signal Bar */}
       <PersonalBlockerSummaryBanner
         summary={summary}
-        activeFilter={blockerFilter}
-        onFilterChange={filter => updateFilters({ blocker: filter })}
-        activeCycleName={activeCycle?.name}
+        blockerFilter={blockerFilter}
+        onBlockerFilterChange={filter => updateFilters({ blocker: filter })}
+        hasActiveFilters={hasActiveFilters}
+        onClearFilters={clearAllFilters}
+        onJumpToBlockingOthers={() => {
+          blockingOthersRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }}
       />
 
-      {/* 3. Main Scrollable Execution Canvas */}
+      {/* 3. Main Scrollable Execution Canvas (Front and center!) */}
       <div className="flex-1 overflow-y-auto min-h-0 bg-white" tabIndex={0}>
-        {/* Blocking Others: Distinct Dependency Impact Surface */}
-        {blockingOthers.length > 0 && blockerFilter !== 'BLOCKED_ONLY' && (
-          <div className="p-4 bg-purple-50/20 border-b border-[#e5e3df]">
-            <div className="flex items-center gap-2 mb-2.5">
-              <GitFork className="w-4 h-4 text-[#5645d4]" />
-              <h2 className="text-xs font-bold text-[#1a1a1a] uppercase tracking-wider">
-                Blocking Others (Downstream Impact)
-              </h2>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-[#5645d4]">
-                {blockingOthers.length}
-              </span>
-              <span className="text-[11px] text-[#787671] ml-1">
-                Your tasks that teammates are waiting on
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-              {blockingOthers.map(item => (
-                <BlockingOthersCard
-                  key={item.issue.id}
-                  item={item}
-                  onOpenIssue={openDrawer}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Deduplicated Actionable Execution Groups */}
         {isTotalQueueEmpty ? (
           <div className="flex flex-col items-center justify-center p-12 text-center">
             <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-3">
@@ -366,31 +346,91 @@ export const MyWorkPage: React.FC = () => {
               <div className="w-20 shrink-0 hidden md:block">Team</div>
             </div>
 
-            {/* Execution Sections */}
-            {groups.map(group => {
-              // Hide empty sections unless it's Needs Attention or In Progress
-              if (group.count === 0 && group.id !== 'needsAttention' && group.id !== 'inProgress') {
-                return null;
-              }
+            {/* Primary Actionable Execution Groups (Needs Attention, In Progress, In Review, Up Next) */}
+            {groups
+              .filter(g => g.id !== 'recentlyCompleted')
+              .map(group => {
+                // Hide empty sections unless it's Needs Attention or In Progress
+                if (
+                  group.count === 0 &&
+                  group.id !== 'needsAttention' &&
+                  group.id !== 'inProgress'
+                ) {
+                  return null;
+                }
 
-              return (
-                <MyWorkSection
-                  key={group.id}
-                  id={group.id}
-                  title={group.title}
-                  subtitle={group.subtitle}
-                  count={group.count}
-                  issues={group.issues}
-                  emptyMessage={group.emptyMessage}
-                  selectedIssueKey={drawerIssueKey || currentFocusedIssue?.key || null}
-                  selectedIssueIds={selectedIssueIds}
-                  onSelectRow={handleSelectRow}
-                  onToggleMultiSelect={handleToggleMultiSelect}
-                  onOpenIssue={openDrawer}
-                  defaultCollapsed={group.id === 'recentlyCompleted'}
-                />
-              );
-            })}
+                return (
+                  <MyWorkSection
+                    key={group.id}
+                    id={group.id}
+                    title={group.title}
+                    subtitle={group.subtitle}
+                    count={group.count}
+                    issues={group.issues}
+                    emptyMessage={group.emptyMessage}
+                    selectedIssueKey={drawerIssueKey || currentFocusedIssue?.key || null}
+                    selectedIssueIds={selectedIssueIds}
+                    onSelectRow={handleSelectRow}
+                    onToggleMultiSelect={handleToggleMultiSelect}
+                    onOpenIssue={openDrawer}
+                  />
+                );
+              })}
+
+            {/* 4. Secondary Dependency-Impact Context: Blocking Others */}
+            {blockingOthers.length > 0 && blockerFilter !== 'BLOCKED_ONLY' && (
+              <div
+                ref={blockingOthersRef}
+                className="mt-4 mx-3 p-3.5 bg-purple-50/30 rounded-lg border border-purple-200/80 mb-3"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <GitFork className="w-4 h-4 text-[#5645d4]" />
+                  <h2 className="text-xs font-bold text-[#1a1a1a] uppercase tracking-wider">
+                    Blocking Others (Downstream Impact)
+                  </h2>
+                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-[#5645d4]">
+                    {blockingOthers.length}
+                  </span>
+                  <span className="text-[11px] text-[#787671] ml-1">
+                    Your assigned work that teammates are actively waiting on
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                  {blockingOthers.map(item => (
+                    <BlockingOthersCard
+                      key={item.issue.id}
+                      item={item}
+                      onOpenIssue={openDrawer}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 5. Recently Completed Group (Collapsible at bottom) */}
+            {groups
+              .filter(g => g.id === 'recentlyCompleted')
+              .map(group => {
+                if (group.count === 0) return null;
+                return (
+                  <MyWorkSection
+                    key={group.id}
+                    id={group.id}
+                    title={group.title}
+                    subtitle={group.subtitle}
+                    count={group.count}
+                    issues={group.issues}
+                    emptyMessage={group.emptyMessage}
+                    selectedIssueKey={drawerIssueKey || currentFocusedIssue?.key || null}
+                    selectedIssueIds={selectedIssueIds}
+                    onSelectRow={handleSelectRow}
+                    onToggleMultiSelect={handleToggleMultiSelect}
+                    onOpenIssue={openDrawer}
+                    defaultCollapsed={true}
+                  />
+                );
+              })}
           </div>
         )}
       </div>

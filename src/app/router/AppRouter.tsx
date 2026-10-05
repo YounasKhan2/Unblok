@@ -27,7 +27,7 @@ export const AppRouter: React.FC = () => {
               <PlaceholderPage
                 pageTitle="Inbox"
                 targetPhase="UX-04"
-                description="High-signal collaboration inbox collecting mentions, blocker resolutions, and cycle updates."
+                description="Workspace inbox for team notifications, blocker updates, and assignments."
               />
             }
           />
@@ -39,7 +39,7 @@ export const AppRouter: React.FC = () => {
               <PlaceholderPage
                 pageTitle="Projects Directory"
                 targetPhase="UX-02"
-                description="Workspace directory of all engineering projects, team ownership, and delivery health."
+                description="Workspace directory of engineering projects and team delivery streams."
               />
             }
           />
@@ -49,7 +49,7 @@ export const AppRouter: React.FC = () => {
               <PlaceholderPage
                 pageTitle="Project Overview"
                 targetPhase="UX-02"
-                description="Project executive dashboard, delivery progress snapshot, and active blockers."
+                description="Project executive summary and delivery health overview."
               />
             }
           />
@@ -59,7 +59,7 @@ export const AppRouter: React.FC = () => {
               <PlaceholderPage
                 pageTitle="Project Issues"
                 targetPhase="UX-02"
-                description="High-density tabular triage list of all issues belonging to this project."
+                description="High-density issue list and backlog triage for this project."
               />
             }
           />
@@ -69,7 +69,7 @@ export const AppRouter: React.FC = () => {
               <PlaceholderPage
                 pageTitle="Project Board"
                 targetPhase="UX-02"
-                description="Kanban board visualization with completion guard enforcement."
+                description="Project board visualization organized by workflow state."
               />
             }
           />
@@ -79,7 +79,7 @@ export const AppRouter: React.FC = () => {
               <PlaceholderPage
                 pageTitle="Project Planning"
                 targetPhase="UX-02"
-                description="Sprint cycle and milestone allocation specifically for this project."
+                description="Cycle planning and milestone allocation for this project."
               />
             }
           />
@@ -89,7 +89,7 @@ export const AppRouter: React.FC = () => {
               <PlaceholderPage
                 pageTitle="Project Settings"
                 targetPhase="UX-02"
-                description="Project configuration, key management, and danger zone."
+                description="Project configuration and access controls."
               />
             }
           />
@@ -101,7 +101,7 @@ export const AppRouter: React.FC = () => {
               <PlaceholderPage
                 pageTitle="Issue Detail"
                 targetPhase="UX-03"
-                description="Canonical full-screen issue destination with multi-hop dependencies and full audit trail."
+                description="Full-page issue view with dependency context, discussions, and audit history."
               />
             }
           />
@@ -113,7 +113,7 @@ export const AppRouter: React.FC = () => {
               <PlaceholderPage
                 pageTitle="Teams Directory"
                 targetPhase="UX-04"
-                description="Workspace team directory displaying all squads, lead engineers, and active projects."
+                description="Engineering teams directory and ownership map."
               />
             }
           />
@@ -123,7 +123,7 @@ export const AppRouter: React.FC = () => {
               <PlaceholderPage
                 pageTitle="Team Hub"
                 targetPhase="UX-04"
-                description="Dedicated team hub presenting squad members, owned projects, and cross-team dependencies."
+                description="Team overview, active cycles, and owned projects."
               />
             }
           />
@@ -135,7 +135,7 @@ export const AppRouter: React.FC = () => {
               <PlaceholderPage
                 pageTitle="Delivery Cycles"
                 targetPhase="UX-04"
-                description="Team sprint cadences, active cycles, and rollover velocity."
+                description="Delivery cycles and iteration schedules for engineering teams."
               />
             }
           />
@@ -145,7 +145,7 @@ export const AppRouter: React.FC = () => {
               <PlaceholderPage
                 pageTitle="Cycle Detail"
                 targetPhase="UX-04"
-                description="Detailed sprint execution view and 1-click rollover."
+                description="Team cycle execution view and issue progress."
               />
             }
           />
@@ -155,7 +155,7 @@ export const AppRouter: React.FC = () => {
               <PlaceholderPage
                 pageTitle="Strategic Milestones"
                 targetPhase="UX-04"
-                description="Directory of organizational release targets and aggregate health rollups."
+                description="Strategic milestones and target release tracking."
               />
             }
           />
@@ -165,7 +165,7 @@ export const AppRouter: React.FC = () => {
               <PlaceholderPage
                 pageTitle="Milestone Detail"
                 targetPhase="UX-04"
-                description="Deep-dive milestone tracking and critical path blocker trees."
+                description="Milestone scope, progress rollups, and associated issues."
               />
             }
           />
@@ -175,7 +175,7 @@ export const AppRouter: React.FC = () => {
               <PlaceholderPage
                 pageTitle="Schedule & Roadmap"
                 targetPhase="UX-04"
-                description="Multi-week timeline schedule and team capacity distribution."
+                description="Timeline visualization across team schedules and milestones."
               />
             }
           />
@@ -187,7 +187,7 @@ export const AppRouter: React.FC = () => {
               <PlaceholderPage
                 pageTitle="Dependency Intelligence"
                 targetPhase="UX-04"
-                description="Topological DAG graph canvas, bottleneck heatmap, and active blocker queue."
+                description="Topological dependency visualization, active blockers, and delivery critical path."
               />
             }
           />
@@ -199,7 +199,7 @@ export const AppRouter: React.FC = () => {
               <PlaceholderPage
                 pageTitle="Delivery Insights"
                 targetPhase="UX-04"
-                description="Blocker aging velocity, cycle lead times, and cross-team blast radius metrics."
+                description="Delivery velocity metrics, blocker frequency, and cycle lead-time trends."
               />
             }
           />
@@ -212,7 +212,7 @@ export const AppRouter: React.FC = () => {
               <PlaceholderPage
                 pageTitle="Workspace Settings"
                 targetPhase="UX-04"
-                description="Organization settings, tenant configuration, and workflow definitions."
+                description="Workspace preferences and organization defaults."
               />
             }
           />
@@ -222,7 +222,7 @@ export const AppRouter: React.FC = () => {
               <PlaceholderPage
                 pageTitle="Members & Permissions"
                 targetPhase="UX-04"
-                description="Workspace member directory and role-based access control."
+                description="Workspace member directory and permission management."
               />
             }
           />
@@ -232,7 +232,7 @@ export const AppRouter: React.FC = () => {
               <PlaceholderPage
                 pageTitle="Team Management"
                 targetPhase="UX-04"
-                description="Squad administration, team keys, and member rosters."
+                description="Engineering squad administration and team configurations."
               />
             }
           />
@@ -242,7 +242,7 @@ export const AppRouter: React.FC = () => {
               <PlaceholderPage
                 pageTitle="Engineering Integrations"
                 targetPhase="UX-04"
-                description="Repository connections, webhook dispatch, and notification channels."
+                description="Configure the engineering tools and external services connected to this workspace."
               />
             }
           />
@@ -252,7 +252,7 @@ export const AppRouter: React.FC = () => {
               <PlaceholderPage
                 pageTitle="My Preferences"
                 targetPhase="UX-04"
-                description="Personal density, appearance theme, and personal notification rules."
+                description="Personal display, notification, and workflow preferences."
               />
             }
           />

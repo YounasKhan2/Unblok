@@ -18,6 +18,18 @@ import {
   ChevronDown,
   Building2,
   Check,
+  Menu,
+  X,
+  CheckSquare,
+  Inbox,
+  FolderKanban,
+  Users,
+  Clock,
+  Target,
+  CalendarRange,
+  GitFork,
+  BarChart3,
+  Settings,
 } from 'lucide-react';
 
 export const WorkspaceHeader: React.FC = () => {
@@ -32,13 +44,36 @@ export const WorkspaceHeader: React.FC = () => {
   };
 
   const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   const blockedCount = issues.filter(i => getIssueBlockerStatus(i.id).isBlocked).length;
 
+  const mobileNavItems = [
+    { to: '/my-work', label: 'My Work', icon: CheckSquare },
+    { to: '/inbox', label: 'Inbox', icon: Inbox },
+    { to: '/projects', label: 'Projects', icon: FolderKanban },
+    { to: '/teams', label: 'Teams', icon: Users },
+    { to: '/cycles', label: 'Cycles', icon: Clock },
+    { to: '/milestones', label: 'Milestones', icon: Target },
+    { to: '/roadmap', label: 'Roadmap', icon: CalendarRange },
+    { to: '/dependencies', label: 'Dependencies', icon: GitFork },
+    { to: '/insights', label: 'Insights', icon: BarChart3 },
+    { to: '/settings', label: 'Settings', icon: Settings },
+  ];
+
   return (
     <header className="h-[44px] bg-white border-b border-[#e5e3df] px-3.5 flex items-center justify-between shrink-0 select-none z-40 sticky top-0 shadow-2xs">
-      {/* 1. Left: Brand & Workspace Switcher Context */}
-      <div className="flex items-center gap-2.5">
+      {/* 1. Left: Mobile Menu Toggle + Brand & Workspace Switcher Context */}
+      <div className="flex items-center gap-2">
+        {/* Mobile Hamburger Menu Toggle */}
+        <button
+          onClick={() => setIsMobileNavOpen(true)}
+          className="p-1 md:hidden text-[#787671] hover:text-[#1a1a1a] hover:bg-[#f6f5f4] rounded-[5px] transition-colors cursor-pointer"
+          aria-label="Open mobile navigation"
+        >
+          <Menu className="w-4 h-4" />
+        </button>
+
         {/* Unblok Brand Mark */}
         <Link to="/my-work" className="flex items-center gap-2 group">
           <div className="w-6 h-6 rounded-[5px] bg-[#5645d4] text-white flex items-center justify-center font-bold text-xs shadow-2xs group-hover:bg-[#4838b9] transition-colors">
@@ -188,6 +223,44 @@ export const WorkspaceHeader: React.FC = () => {
           <Avatar user={currentUser} size="xs" />
         </Link>
       </div>
+
+      {/* Mobile Navigation Drawer Overlay */}
+      {isMobileNavOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          <div
+            className="fixed inset-0 bg-black/40 animate-in fade-in"
+            onClick={() => setIsMobileNavOpen(false)}
+          />
+          <div className="relative w-64 max-w-[80vw] bg-white h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-left duration-150">
+            <div className="h-[44px] px-3.5 border-b border-[#e5e3df] flex items-center justify-between">
+              <span className="font-bold text-xs text-[#1a1a1a]">Unblok Navigation</span>
+              <button
+                onClick={() => setIsMobileNavOpen(false)}
+                className="p-1 text-[#787671] hover:text-[#1a1a1a] rounded cursor-pointer"
+                aria-label="Close mobile menu"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
+              {mobileNavItems.map(item => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setIsMobileNavOpen(false)}
+                    className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#37352f] hover:bg-[#f6f5f4] rounded-[5px] transition-colors"
+                  >
+                    <Icon className="w-4 h-4 text-[#787671]" />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

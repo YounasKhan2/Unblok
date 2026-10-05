@@ -41,22 +41,6 @@ export const NavigationRail: React.FC = () => {
 
   const totalBlockedCount = issues.filter(i => getIssueBlockerStatus(i.id).isBlocked).length;
 
-  // Global keyboard shortcut '[' or ']' to toggle rail
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
-        return;
-      }
-      if (e.key === '[' || e.key === ']') {
-        e.preventDefault();
-        setIsNavCollapsed(!isNavCollapsed);
-      }
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [isNavCollapsed, setIsNavCollapsed]);
-
   const navItems = [
     {
       to: '/my-work',
@@ -137,7 +121,7 @@ export const NavigationRail: React.FC = () => {
     <nav
       className={`${
         isNavCollapsed ? 'w-[52px]' : 'w-[220px]'
-      } shrink-0 bg-[#fafaf9] border-r border-[#e5e3df] h-full flex flex-col justify-between select-none transition-all duration-150 z-30`}
+      } shrink-0 bg-[#fafaf9] border-r border-[#e5e3df] h-full hidden md:flex flex-col justify-between select-none transition-all duration-150 z-30`}
       aria-label="Application Navigation"
     >
       {/* 1. Header & Collapse Toggle */}
