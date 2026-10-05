@@ -2,6 +2,7 @@ import React from 'react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { useProject } from '../../context/ProjectContext';
+import { useDrawerRoute } from '../../app/router/useDrawerRoute';
 import { ShieldAlert, ExternalLink, ArrowRight } from 'lucide-react';
 import { StatePill } from '../ui/StatePill';
 
@@ -12,15 +13,20 @@ export const CompletionGuardDialog: React.FC = () => {
     setSelectedIssueId,
     setIsDrawerOpen,
   } = useProject();
+  const { openDrawer } = useDrawerRoute();
 
   if (!completionGuardError) return null;
 
   const { issue, blockers } = completionGuardError;
 
-  const handleInspectBlocker = (blockerId: string) => {
+  const handleInspectBlocker = (blockerId: string, blockerKey?: string) => {
     clearCompletionGuardError();
     setSelectedIssueId(blockerId);
-    setIsDrawerOpen(true);
+    if (blockerKey) {
+      openDrawer(blockerKey);
+    } else {
+      setIsDrawerOpen(true);
+    }
   };
 
   return (
@@ -67,7 +73,7 @@ export const CompletionGuardDialog: React.FC = () => {
                   <Button
                     size="sm"
                     variant="ghost"
-                    onClick={() => handleInspectBlocker(blocker.id)}
+                    onClick={() => handleInspectBlocker(blocker.id, blocker.key)}
                     className="text-[#5645d4] hover:bg-purple-50"
                   >
                     <span>Inspect</span>

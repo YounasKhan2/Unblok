@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import {
   X,
   ChevronUp,
@@ -28,6 +28,7 @@ import { BlockerBadge } from '../ui/BlockerBadge';
 export const IssueDrawer: React.FC = () => {
   const {
     issues,
+    projects,
     selectedIssueId,
     setSelectedIssueId,
     navigateIssue,
@@ -36,6 +37,8 @@ export const IssueDrawer: React.FC = () => {
     teams,
     comments,
   } = useProject();
+
+  const location = useLocation();
 
   const {
     isOpen,
@@ -67,6 +70,20 @@ export const IssueDrawer: React.FC = () => {
     return 'DETAILS';
   }, [drawerTab]);
 
+  const relevantIssues = useMemo(() => {
+    const match = location.pathname.match(/^\/projects\/([^/]+)/);
+    if (match && match[1]) {
+      const keyOrId = match[1].toLowerCase();
+      const proj = projects.find(
+        p => p.key.toLowerCase() === keyOrId || p.id.toLowerCase() === keyOrId
+      );
+      if (proj) {
+        return issues.filter(i => i.projectId === proj.id);
+      }
+    }
+    return issues;
+  }, [location.pathname, projects, issues]);
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
 
@@ -80,6 +97,18 @@ export const IssueDrawer: React.FC = () => {
       }
     }
   }, [activeIssue, selectedIssueId, setSelectedIssueId]);
+
+  const handleAdjacentNavigate = useCallback((direction: -1 | 1) => {
+    if (!activeIssue) return;
+    const currentIndex = relevantIssues.findIndex(i => i.id === activeIssue.id);
+    if (currentIndex === -1) return;
+    const nextIndex = currentIndex + direction;
+    if (nextIndex >= 0 && nextIndex < relevantIssues.length) {
+      const next = relevantIssues[nextIndex];
+      navigateToAdjacentIssue(next.key);
+      setSelectedIssueId(next.id);
+    }
+  }, [activeIssue, relevantIssues, navigateToAdjacentIssue, setSelectedIssueId]);
 
   // Register drawer keyboard handlers with KeyboardContext
   useEffect(() => {
@@ -95,7 +124,19 @@ export const IssueDrawer: React.FC = () => {
     } else {
       registerDrawerHandlers(null);
     }
-  }, [isOpen, activeIssue, registerDrawerHandlers, closeDrawer, issues]);
+  }, [isOpen, activeIssue, registerDrawerHandlers, handleAdjacentNavigate, closeDrawer]);
+
+  const handleTitleBlur = () => {
+    if (activeIssue && title.trim() && title !== activeIssue.title) {
+      updateIssueDetails(activeIssue.id, title.trim(), description);
+    }
+  };
+
+  const handleDescriptionBlur = () => {
+    if (activeIssue && description !== activeIssue.description) {
+      updateIssueDetails(activeIssue.id, title, description);
+    }
+  };
 
   if (!isOpen || !activeIssue) {
     return null;
@@ -104,29 +145,6 @@ export const IssueDrawer: React.FC = () => {
   const blockerStatus = getIssueBlockerStatus(activeIssue.id);
   const team = teams.find(t => t.id === activeIssue.teamId);
   const issueCommentCount = comments.filter(c => c.issueId === activeIssue.id).length;
-
-  const handleTitleBlur = () => {
-    if (title.trim() && title !== activeIssue.title) {
-      updateIssueDetails(activeIssue.id, title.trim(), description);
-    }
-  };
-
-  const handleDescriptionBlur = () => {
-    if (description !== activeIssue.description) {
-      updateIssueDetails(activeIssue.id, title, description);
-    }
-  };
-
-  const handleAdjacentNavigate = (direction: -1 | 1) => {
-    const currentIndex = issues.findIndex(i => i.id === activeIssue.id);
-    if (currentIndex === -1) return;
-    const nextIndex = currentIndex + direction;
-    if (nextIndex >= 0 && nextIndex < issues.length) {
-      const next = issues[nextIndex];
-      navigateToAdjacentIssue(next.key);
-      setSelectedIssueId(next.id);
-    }
-  };
 
   return (
     <>

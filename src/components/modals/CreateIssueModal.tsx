@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { useProject } from '../../context/ProjectContext';
@@ -8,6 +9,7 @@ import { IssuePriority } from '../../types';
 export const CreateIssueModal: React.FC = () => {
   const { projects, users, issues, createIssue } = useProject();
   const { isCreateModalOpen, setIsCreateModalOpen } = useKeyboard();
+  const location = useLocation();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -15,6 +17,26 @@ export const CreateIssueModal: React.FC = () => {
   const [priority, setPriority] = useState<IssuePriority>('MEDIUM');
   const [assigneeId, setAssigneeId] = useState<string>('');
   const [upstreamBlockerId, setUpstreamBlockerId] = useState<string>('');
+
+  // Automatically preselect current project if on /projects/:projectKey/* route
+  useEffect(() => {
+    if (isCreateModalOpen) {
+      const match = location.pathname.match(/^\/projects\/([^/]+)/);
+      if (match && match[1]) {
+        const keyOrId = match[1].toLowerCase();
+        const matchedProj = projects.find(
+          p => p.key.toLowerCase() === keyOrId || p.id.toLowerCase() === keyOrId
+        );
+        if (matchedProj) {
+          setProjectId(matchedProj.id);
+          return;
+        }
+      }
+      if (!projectId && projects.length > 0) {
+        setProjectId(projects[0].id);
+      }
+    }
+  }, [isCreateModalOpen, location.pathname, projects]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

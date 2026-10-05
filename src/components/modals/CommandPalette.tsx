@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useProject } from '../../context/ProjectContext';
 import { useKeyboard } from '../../context/KeyboardContext';
+import { useDrawerRoute } from '../../app/router/useDrawerRoute';
 import {
   Search,
   Plus,
@@ -16,6 +18,7 @@ import {
   Calendar,
   Target,
   CalendarRange,
+  FolderKanban,
 } from 'lucide-react';
 import { PriorityIcon } from '../ui/PriorityIcon';
 import { StatePill } from '../ui/StatePill';
@@ -23,7 +26,7 @@ import { StatePill } from '../ui/StatePill';
 interface CommandItem {
   id: string;
   title: string;
-  category: 'ISSUES' | 'VIEWS' | 'FILTERS' | 'TEAMS' | 'ACTIONS';
+  category: 'ISSUES' | 'VIEWS' | 'FILTERS' | 'TEAMS' | 'PROJECTS' | 'ACTIONS';
   icon?: React.ReactNode;
   shortcut?: string;
   onSelect: () => void;
@@ -32,9 +35,12 @@ interface CommandItem {
 }
 
 export const CommandPalette: React.FC = () => {
+  const navigate = useNavigate();
+  const { openDrawer } = useDrawerRoute();
   const {
     issues,
     teams,
+    projects,
     setSelectedIssueId,
     setIsDrawerOpen,
     setViewMode,
@@ -199,6 +205,32 @@ export const CommandPalette: React.FC = () => {
       },
     ];
 
+    // Navigation: Projects
+    list.push({
+      id: 'cmd_nav_projects_directory',
+      title: 'Go to Projects Directory',
+      category: 'PROJECTS',
+      icon: <FolderKanban className="w-4 h-4 text-[#5645d4]" />,
+      shortcut: 'G P',
+      onSelect: () => {
+        setIsOpen(false);
+        navigate('/projects');
+      },
+    });
+
+    for (const project of projects) {
+      list.push({
+        id: `cmd_proj_${project.id}`,
+        title: `Open project: ${project.name} (${project.key})`,
+        category: 'PROJECTS',
+        icon: <FolderKanban className="w-4 h-4 text-[#5645d4]" />,
+        onSelect: () => {
+          setIsOpen(false);
+          navigate(`/projects/${project.key}/issues`);
+        },
+      });
+    }
+
     // Teams
     for (const team of teams) {
       list.push({
@@ -225,13 +257,13 @@ export const CommandPalette: React.FC = () => {
         onSelect: () => {
           setIsOpen(false);
           setSelectedIssueId(issue.id);
-          setIsDrawerOpen(true);
+          openDrawer(issue.key);
         },
       });
     }
 
     return list;
-  }, [issues, teams, setViewMode, setFilters, setIsCreateModalOpen, resetToDemoData, setSelectedIssueId, setIsDrawerOpen]);
+  }, [issues, teams, projects, navigate, openDrawer, setViewMode, setFilters, setIsCreateModalOpen, resetToDemoData, setSelectedIssueId]);
 
   // Filter commands by query
   const filteredCommands = useMemo(() => {

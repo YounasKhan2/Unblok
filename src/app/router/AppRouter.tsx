@@ -7,6 +7,13 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppShellLayout } from '../layouts/AppShellLayout';
 import { MyWorkPage } from '../../pages/my-work/MyWorkPage';
+import { ProjectsDirectoryPage } from '../../pages/projects/ProjectsDirectoryPage';
+import { ProjectContextLayout } from '../../features/projects/components/ProjectContextLayout';
+import { ProjectOverviewPage } from '../../pages/projects/ProjectOverviewPage';
+import { ProjectIssuesPage } from '../../pages/projects/ProjectIssuesPage';
+import { ProjectBoardPage } from '../../pages/projects/ProjectBoardPage';
+import { ProjectPlanningPage } from '../../pages/projects/ProjectPlanningPage';
+import { ProjectSettingsPage } from '../../pages/projects/ProjectSettingsPage';
 import { PlaceholderPage } from '../../pages/placeholder/PlaceholderPage';
 
 export const AppRouter: React.FC = () => {
@@ -32,67 +39,15 @@ export const AppRouter: React.FC = () => {
             }
           />
 
-          {/* Projects Space */}
-          <Route
-            path="/projects"
-            element={
-              <PlaceholderPage
-                pageTitle="Projects Directory"
-                targetPhase="UX-02"
-                description="Workspace directory of engineering projects and team delivery streams."
-              />
-            }
-          />
-          <Route
-            path="/projects/:projectKey"
-            element={
-              <PlaceholderPage
-                pageTitle="Project Overview"
-                targetPhase="UX-02"
-                description="Project executive summary and delivery health overview."
-              />
-            }
-          />
-          <Route
-            path="/projects/:projectKey/issues"
-            element={
-              <PlaceholderPage
-                pageTitle="Project Issues"
-                targetPhase="UX-02"
-                description="High-density issue list and backlog triage for this project."
-              />
-            }
-          />
-          <Route
-            path="/projects/:projectKey/board"
-            element={
-              <PlaceholderPage
-                pageTitle="Project Board"
-                targetPhase="UX-02"
-                description="Project board visualization organized by workflow state."
-              />
-            }
-          />
-          <Route
-            path="/projects/:projectKey/planning"
-            element={
-              <PlaceholderPage
-                pageTitle="Project Planning"
-                targetPhase="UX-02"
-                description="Cycle planning and milestone allocation for this project."
-              />
-            }
-          />
-          <Route
-            path="/projects/:projectKey/settings"
-            element={
-              <PlaceholderPage
-                pageTitle="Project Settings"
-                targetPhase="UX-02"
-                description="Project configuration and access controls."
-              />
-            }
-          />
+          {/* Projects Space (UX-02 Fully Implemented) */}
+          <Route path="/projects" element={<ProjectsDirectoryPage />} />
+          <Route path="/projects/:projectKey" element={<ProjectContextLayout />}>
+            <Route index element={<ProjectOverviewPage />} />
+            <Route path="issues" element={<ProjectIssuesPage />} />
+            <Route path="board" element={<ProjectBoardPage />} />
+            <Route path="planning" element={<ProjectPlanningPage />} />
+            <Route path="settings" element={<ProjectSettingsPage />} />
+          </Route>
 
           {/* Issues Space */}
           <Route
