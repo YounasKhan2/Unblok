@@ -308,8 +308,11 @@ export const KeyboardProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     detailHandlersRef.current = handlers;
   }, []);
 
+  const [dependencyRegVersion, setDependencyRegVersion] = useState<number>(0);
+
   const registerDependencyHandlers = useCallback((handlers: DependencyKeyHandlers | null) => {
     dependencyHandlersRef.current = handlers;
+    setDependencyRegVersion((v) => v + 1);
   }, []);
 
   // Compute scope dynamically based on active layers and focus
@@ -333,7 +336,7 @@ export const KeyboardProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     } else {
       setScope('CANVAS');
     }
-  }, [isCreateModalOpen, isHelpModalOpen, activePicker, isDrawerOpen]);
+  }, [isCreateModalOpen, isHelpModalOpen, activePicker, isDrawerOpen, dependencyRegVersion]);
 
   const handleGlobalKeyDown = useCallback(
     (e: KeyboardEvent) => {

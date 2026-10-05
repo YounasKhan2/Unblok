@@ -836,5 +836,324 @@ describe('Keyboard Architecture & Scope Hierarchy', () => {
         }
       });
     });
+
+    describe('Composed Dependency Handler Ownership & Dispatching', () => {
+      // Simulates the centralized dispatcher logic matching KeyboardProvider
+      function createKeyboardDispatcher() {
+        let dependencyHandlers: any = null;
+        let drawerHandlers: any = null;
+        let isDrawerOpen = false;
+        let isCreateModalOpen = false;
+        let isHelpModalOpen = false;
+        let activePicker: string | null = null;
+        let isInputFocused = false;
+        let userRole = 'ADMIN';
+
+        const registerDependencyHandlers = (handlers: any) => {
+          dependencyHandlers = handlers;
+        };
+
+        const registerDrawerHandlers = (handlers: any) => {
+          drawerHandlers = handlers;
+        };
+
+        const setDrawerOpen = (open: boolean) => {
+          isDrawerOpen = open;
+        };
+
+        const setModalOpen = (open: boolean) => {
+          isCreateModalOpen = open;
+        };
+
+        const setPicker = (picker: string | null) => {
+          activePicker = picker;
+        };
+
+        const setInputFocused = (focused: boolean) => {
+          isInputFocused = focused;
+        };
+
+        const dispatchKey = (key: string, metaKey = false, ctrlKey = false) => {
+          let scope: KeyboardScope = 'CANVAS';
+          if (isCreateModalOpen || isHelpModalOpen) {
+            scope = 'MODAL';
+          } else if (activePicker !== null) {
+            scope = 'POPOVER';
+          } else if (isDrawerOpen || drawerHandlers !== null) {
+            scope = isInputFocused ? 'DRAWER_EDIT' : 'DRAWER_NAV';
+          } else if (dependencyHandlers !== null) {
+            scope = dependencyHandlers.onZoomIn ? 'DEPENDENCY_GRAPH' : 'DEPENDENCY_PAGE';
+          }
+
+          const action = evaluateKeyAction({
+            key,
+            metaKey,
+            ctrlKey,
+            isInputFocused,
+            scope,
+            hasSelection: false,
+            canEdit: userRole !== 'OBSERVER',
+            userRole: userRole as any,
+          });
+
+          switch (action) {
+            case 'DEPENDENCY_VIEW_GRAPH':
+              dependencyHandlers?.onSelectGraphView?.();
+              break;
+            case 'DEPENDENCY_VIEW_MATRIX':
+              dependencyHandlers?.onSelectMatrixView?.();
+              break;
+            case 'DEPENDENCY_VIEW_BLOCKERS':
+              dependencyHandlers?.onSelectBlockersView?.();
+              break;
+            case 'GRAPH_ZOOM_IN':
+              dependencyHandlers?.onZoomIn?.();
+              break;
+            case 'GRAPH_ZOOM_OUT':
+              dependencyHandlers?.onZoomOut?.();
+              break;
+            case 'GRAPH_RESET_ZOOM':
+              dependencyHandlers?.onResetZoom?.();
+              break;
+            default:
+              break;
+          }
+
+          return action;
+        };
+
+        return {
+          registerDependencyHandlers,
+          registerDrawerHandlers,
+          setDrawerOpen,
+          setModalOpen,
+          setPicker,
+          setInputFocused,
+          dispatchKey,
+          getHandlers: () => dependencyHandlers,
+        };
+      }
+
+      it('1 & 4. Graph mode simultaneously retains view switching and zoom handlers, invoking graph operations on +, -, and 0', () => {
+        const dispatcher = createKeyboardDispatcher();
+        const calls: string[] = [];
+
+        // DependenciesPage registers a composed handler when in Graph mode with zoom controls active
+        const zoomControls = {
+          zoomIn: () => calls.push('zoomIn'),
+          zoomOut: () => calls.push('zoomOut'),
+          resetZoom: () => calls.push('resetZoom'),
+        };
+
+        const viewMode = 'graph';
+        dispatcher.registerDependencyHandlers({
+          onSelectGraphView: () => calls.push('selectGraph'),
+          onSelectMatrixView: () => calls.push('selectMatrix'),
+          onSelectBlockersView: () => calls.push('selectBlockers'),
+          ...(viewMode === 'graph' && zoomControls
+            ? {
+                onZoomIn: zoomControls.zoomIn,
+                onZoomOut: zoomControls.zoomOut,
+                onResetZoom: zoomControls.resetZoom,
+              }
+            : {}),
+        });
+
+        // Test +, -, 0 in Graph mode
+        dispatcher.dispatchKey('+');
+        dispatcher.dispatchKey('=');
+        dispatcher.dispatchKey('-');
+        dispatcher.dispatchKey('_');
+        dispatcher.dispatchKey('0');
+
+        expect(calls).toEqual(['zoomIn', 'zoomIn', 'zoomOut', 'zoomOut', 'resetZoom']);
+      });
+
+      it('2. Pressing 2 while Graph is mounted invokes Matrix switching', () => {
+        const dispatcher = createKeyboardDispatcher();
+        let switchedTo: string | null = null;
+
+        const zoomControls = {
+          zoomIn: () => {},
+          zoomOut: () => {},
+          resetZoom: () => {},
+        };
+
+        dispatcher.registerDependencyHandlers({
+          onSelectGraphView: () => { switchedTo = 'graph'; },
+          onSelectMatrixView: () => { switchedTo = 'matrix'; },
+          onSelectBlockersView: () => { switchedTo = 'blockers'; },
+          onZoomIn: zoomControls.zoomIn,
+          onZoomOut: zoomControls.zoomOut,
+          onResetZoom: zoomControls.resetZoom,
+        });
+
+        const action = dispatcher.dispatchKey('2');
+        expect(action).toBe('DEPENDENCY_VIEW_MATRIX');
+        expect(switchedTo).toBe('matrix');
+      });
+
+      it('3. Pressing 3 while Graph is mounted invokes Blockers switching', () => {
+        const dispatcher = createKeyboardDispatcher();
+        let switchedTo: string | null = null;
+
+        const zoomControls = {
+          zoomIn: () => {},
+          zoomOut: () => {},
+          resetZoom: () => {},
+        };
+
+        dispatcher.registerDependencyHandlers({
+          onSelectGraphView: () => { switchedTo = 'graph'; },
+          onSelectMatrixView: () => { switchedTo = 'matrix'; },
+          onSelectBlockersView: () => { switchedTo = 'blockers'; },
+          onZoomIn: zoomControls.zoomIn,
+          onZoomOut: zoomControls.zoomOut,
+          onResetZoom: zoomControls.resetZoom,
+        });
+
+        const action = dispatcher.dispatchKey('3');
+        expect(action).toBe('DEPENDENCY_VIEW_BLOCKERS');
+        expect(switchedTo).toBe('blockers');
+      });
+
+      it('5. Switching Graph -> Matrix removes Graph zoom capability without losing 1/2/3', () => {
+        const dispatcher = createKeyboardDispatcher();
+        const calls: string[] = [];
+
+        // 1. Initially in Graph view
+        let viewMode: 'graph' | 'matrix' | 'blockers' = 'graph';
+        let zoomControls: { zoomIn: () => void; zoomOut: () => void; resetZoom: () => void } | null = {
+          zoomIn: () => calls.push('zoomIn'),
+          zoomOut: () => calls.push('zoomOut'),
+          resetZoom: () => calls.push('resetZoom'),
+        };
+
+        const updateRegistration = () => {
+          dispatcher.registerDependencyHandlers({
+            onSelectGraphView: () => { calls.push('selectGraph'); viewMode = 'graph'; },
+            onSelectMatrixView: () => { calls.push('selectMatrix'); viewMode = 'matrix'; },
+            onSelectBlockersView: () => { calls.push('selectBlockers'); viewMode = 'blockers'; },
+            ...(viewMode === 'graph' && zoomControls
+              ? {
+                  onZoomIn: zoomControls.zoomIn,
+                  onZoomOut: zoomControls.zoomOut,
+                  onResetZoom: zoomControls.resetZoom,
+                }
+              : {}),
+          });
+        };
+
+        updateRegistration();
+
+        // Verify zoom works in Graph mode
+        dispatcher.dispatchKey('+');
+        expect(calls).toEqual(['zoomIn']);
+
+        // 2. Switch to Matrix view: viewMode becomes 'matrix'
+        viewMode = 'matrix';
+        zoomControls = null; // GraphCanvas unmounts in matrix view
+        updateRegistration();
+
+        // Zoom should now return NONE and not invoke any zoom handler
+        const zoomAction = dispatcher.dispatchKey('+');
+        expect(zoomAction).toBe('NONE');
+        const resetAction = dispatcher.dispatchKey('0');
+        expect(resetAction).toBe('NONE');
+
+        // View switching 1/2/3 must still be fully retained
+        dispatcher.dispatchKey('1');
+        dispatcher.dispatchKey('2');
+        dispatcher.dispatchKey('3');
+
+        expect(calls).toContain('selectGraph');
+        expect(calls).toContain('selectMatrix');
+        expect(calls).toContain('selectBlockers');
+      });
+
+      it('6. GraphCanvas unmount/cleanup cannot clear the page view handlers', () => {
+        const dispatcher = createKeyboardDispatcher();
+        const calls: string[] = [];
+
+        // DependenciesPage registers view handlers
+        let zoomControls: { zoomIn: () => void; zoomOut: () => void; resetZoom: () => void } | null = {
+          zoomIn: () => calls.push('zoomIn'),
+          zoomOut: () => calls.push('zoomOut'),
+          resetZoom: () => calls.push('resetZoom'),
+        };
+
+        const registerComposed = () => {
+          dispatcher.registerDependencyHandlers({
+            onSelectGraphView: () => calls.push('selectGraph'),
+            onSelectMatrixView: () => calls.push('selectMatrix'),
+            onSelectBlockersView: () => calls.push('selectBlockers'),
+            ...(zoomControls
+              ? {
+                  onZoomIn: zoomControls.zoomIn,
+                  onZoomOut: zoomControls.zoomOut,
+                  onResetZoom: zoomControls.resetZoom,
+                }
+              : {}),
+          });
+        };
+
+        registerComposed();
+
+        // Simulate GraphCanvas unmounting: it calls onRegisterZoomControls(null)
+        zoomControls = null;
+        // DependenciesPage re-composes its handlers without zoom
+        registerComposed();
+
+        // Crucial test: page handlers (1, 2, 3) must NOT be null!
+        expect(dispatcher.getHandlers()).not.toBeNull();
+        expect(dispatcher.getHandlers().onSelectGraphView).toBeDefined();
+
+        dispatcher.dispatchKey('2');
+        expect(calls).toContain('selectMatrix');
+      });
+
+      it('7. Drawer/modal/popover/editing still suppress dependency actions appropriately', () => {
+        const dispatcher = createKeyboardDispatcher();
+        const calls: string[] = [];
+
+        dispatcher.registerDependencyHandlers({
+          onSelectGraphView: () => calls.push('selectGraph'),
+          onSelectMatrixView: () => calls.push('selectMatrix'),
+          onSelectBlockersView: () => calls.push('selectBlockers'),
+          onZoomIn: () => calls.push('zoomIn'),
+          onZoomOut: () => calls.push('zoomOut'),
+          onResetZoom: () => calls.push('resetZoom'),
+        });
+
+        // 7a. Modal open -> suppresses 1, 2, 3, +, -, 0
+        dispatcher.setModalOpen(true);
+        expect(dispatcher.dispatchKey('1')).toBe('NONE');
+        expect(dispatcher.dispatchKey('+')).toBe('NONE');
+        dispatcher.setModalOpen(false);
+
+        // 7b. Popover active -> suppresses 1, 2, 3, +, -, 0
+        dispatcher.setPicker('STATUS');
+        expect(dispatcher.dispatchKey('2')).toBe('NONE');
+        expect(dispatcher.dispatchKey('-')).toBe('NONE');
+        dispatcher.setPicker(null);
+
+        // 7c. Drawer open -> suppresses dependency actions
+        dispatcher.setDrawerOpen(true);
+        expect(dispatcher.dispatchKey('3')).toBe('NONE');
+        expect(dispatcher.dispatchKey('0')).toBe('NONE');
+        dispatcher.setDrawerOpen(false);
+
+        // 7d. Text input focused -> suppresses dependency actions
+        dispatcher.setInputFocused(true);
+        expect(dispatcher.dispatchKey('1')).toBe('NONE');
+        expect(dispatcher.dispatchKey('+')).toBe('NONE');
+        dispatcher.setInputFocused(false);
+
+        // When all overlays are closed, actions fire normally
+        dispatcher.dispatchKey('1');
+        dispatcher.dispatchKey('+');
+        expect(calls).toEqual(['selectGraph', 'zoomIn']);
+      });
+    });
   });
 });

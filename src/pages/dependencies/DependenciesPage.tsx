@@ -24,7 +24,10 @@ import {
 } from '../../features/dependencies/selectors';
 import { DependencySummaryBar } from '../../features/dependencies/components/DependencySummaryBar';
 import { DependencyViewTabs } from '../../features/dependencies/components/DependencyViewTabs';
-import { DependencyGraphCanvas } from '../../features/dependencies/components/DependencyGraphCanvas';
+import {
+  DependencyGraphCanvas,
+  DependencyGraphZoomControls,
+} from '../../features/dependencies/components/DependencyGraphCanvas';
 import { BottleneckPanel } from '../../features/dependencies/components/BottleneckPanel';
 import { DependencyMatrix } from '../../features/dependencies/components/DependencyMatrix';
 import { ActiveBlockerRegistry } from '../../features/dependencies/components/ActiveBlockerRegistry';
@@ -52,6 +55,9 @@ export const DependenciesPage: React.FC = () => {
   // Modal state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
+
+  // Upward zoom controls registered from DependencyGraphCanvas
+  const [zoomControls, setZoomControls] = useState<DependencyGraphZoomControls | null>(null);
 
   // URL state synchronization
   const rawView = searchParams.get('view');
@@ -176,17 +182,27 @@ export const DependenciesPage: React.FC = () => {
     return count;
   }, [filters]);
 
-  // Centralized keyboard navigation via KeyboardContext (view mode switching: 1, 2, 3)
+  // Centralized keyboard navigation via KeyboardContext
+  // DependenciesPage owns ONE composed registration:
+  // - Always provides view switching: 1 (Graph), 2 (Matrix), 3 (Blockers)
+  // - Composes Graph zoom actions (+, -, 0) strictly when Graph view is active
   useEffect(() => {
     registerDependencyHandlers({
       onSelectGraphView: () => handleViewChange('graph'),
       onSelectMatrixView: () => handleViewChange('matrix'),
       onSelectBlockersView: () => handleViewChange('blockers'),
+      ...(viewMode === 'graph' && zoomControls
+        ? {
+            onZoomIn: zoomControls.zoomIn,
+            onZoomOut: zoomControls.zoomOut,
+            onResetZoom: zoomControls.resetZoom,
+          }
+        : {}),
     });
     return () => {
       registerDependencyHandlers(null);
     };
-  }, [handleViewChange, registerDependencyHandlers]);
+  }, [handleViewChange, registerDependencyHandlers, viewMode, zoomControls]);
 
   // Pure graph intelligence selectors
   const resolvedAllEdges = useMemo(
@@ -311,6 +327,7 @@ export const DependenciesPage: React.FC = () => {
                 onSelectIssue={setSelectedIssueId}
                 onOpenDrawer={handleOpenDrawer}
                 onRemoveDependency={removeDependency}
+                onRegisterZoomControls={setZoomControls}
                 isObserver={isObserver}
               />
               {/* Ranked Bottleneck Panel */}

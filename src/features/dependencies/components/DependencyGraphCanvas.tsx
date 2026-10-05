@@ -7,8 +7,13 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { ShieldAlert, Flame, CheckCircle2, Trash2, ExternalLink } from 'lucide-react';
 import { GraphLayoutData, CriticalChainResult } from '../types';
 import { DependencyGraphControls } from './DependencyGraphControls';
-import { useKeyboard } from '../../../context/KeyboardContext';
 import { GRAPH_SEMANTIC_PALETTE, DEPENDENCY_STATE_CLASSES } from '../tokens';
+
+export interface DependencyGraphZoomControls {
+  zoomIn: () => void;
+  zoomOut: () => void;
+  resetZoom: () => void;
+}
 
 interface DependencyGraphCanvasProps {
   layout: GraphLayoutData;
@@ -17,6 +22,7 @@ interface DependencyGraphCanvasProps {
   onSelectIssue: (issueId: string | null) => void;
   onOpenDrawer: (issueKey: string) => void;
   onRemoveDependency?: (dependencyId: string) => void;
+  onRegisterZoomControls?: (controls: DependencyGraphZoomControls | null) => void;
   isObserver: boolean;
 }
 
@@ -27,6 +33,7 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
   onSelectIssue,
   onOpenDrawer,
   onRemoveDependency,
+  onRegisterZoomControls,
   isObserver,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -49,8 +56,6 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
   const nodesById = useMemo(() => {
     return new Map(layout.nodes.map((n) => [n.id, n]));
   }, [layout.nodes]);
-
-  const { registerDependencyHandlers } = useKeyboard();
 
   // Zoom handlers
   const handleZoomIn = useCallback(() => {
@@ -106,17 +111,19 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
     setZoom((z) => Math.min(2.0, Math.max(0.3, Number((z + zoomFactor).toFixed(2)))));
   };
 
-  // Centralized keyboard navigation registered via KeyboardContext
+  // Expose zoom controls upward to parent page (DependenciesPage owns composed registration)
   useEffect(() => {
-    registerDependencyHandlers({
-      onZoomIn: handleZoomIn,
-      onZoomOut: handleZoomOut,
-      onResetZoom: handleResetView,
-    });
+    if (onRegisterZoomControls) {
+      onRegisterZoomControls({
+        zoomIn: handleZoomIn,
+        zoomOut: handleZoomOut,
+        resetZoom: handleResetView,
+      });
+    }
     return () => {
-      registerDependencyHandlers(null);
+      onRegisterZoomControls?.(null);
     };
-  }, [handleZoomIn, handleZoomOut, handleResetView, registerDependencyHandlers]);
+  }, [handleZoomIn, handleZoomOut, handleResetView, onRegisterZoomControls]);
 
   if (layout.nodes.length === 0) {
     return (
