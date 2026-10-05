@@ -24,6 +24,7 @@ import { DependencyManager } from './DependencyManager';
 import { ActivityTimeline } from './ActivityTimeline';
 import { CommentThread } from './CommentThread';
 import { BlockerBadge } from '../ui/BlockerBadge';
+import { getDrawerPermissions, canMutateDrawerField } from './drawerPermissions';
 
 export const IssueDrawer: React.FC = () => {
   const {
@@ -36,6 +37,7 @@ export const IssueDrawer: React.FC = () => {
     getIssueBlockerStatus,
     teams,
     comments,
+    currentUser,
   } = useProject();
 
   const location = useLocation();
@@ -142,13 +144,18 @@ export const IssueDrawer: React.FC = () => {
     }
   }, [isOpen, activeIssue, registerDrawerHandlers, handleAdjacentNavigate, closeDrawer, handleOpenFullIssue]);
 
+  const permissions = getDrawerPermissions(currentUser.role);
+  const isReadOnly = permissions.isReadOnly;
+
   const handleTitleBlur = () => {
+    if (!canMutateDrawerField(currentUser.role)) return;
     if (activeIssue && title.trim() && title !== activeIssue.title) {
       updateIssueDetails(activeIssue.id, title.trim(), description);
     }
   };
 
   const handleDescriptionBlur = () => {
+    if (!canMutateDrawerField(currentUser.role)) return;
     if (activeIssue && description !== activeIssue.description) {
       updateIssueDetails(activeIssue.id, title, description);
     }
@@ -292,35 +299,51 @@ export const IssueDrawer: React.FC = () => {
 
         {/* 3. Main Drawer Content */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {/* Title Input */}
+          {/* Title */}
           <div>
-            <textarea
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-              onBlur={handleTitleBlur}
-              rows={2}
-              className="w-full text-base font-semibold text-text-primary bg-transparent border-0 focus:ring-1 focus:ring-accent rounded p-1 resize-none leading-snug hover:bg-surface-subtle transition-colors"
-              placeholder="Issue title..."
-            />
+            {isReadOnly ? (
+              <h1 className="w-full text-base font-semibold text-text-primary p-1 leading-snug break-words">
+                {activeIssue.title}
+              </h1>
+            ) : (
+              <textarea
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+                onBlur={handleTitleBlur}
+                rows={2}
+                className="w-full text-base font-semibold text-text-primary bg-transparent border-0 focus:ring-1 focus:ring-accent rounded p-1 resize-none leading-snug hover:bg-surface-subtle transition-colors"
+                placeholder="Issue title..."
+              />
+            )}
           </div>
 
           {/* Tab 1: Details & Properties */}
           {activeTab === 'DETAILS' && (
             <div className="space-y-4">
-              <PropertyGrid issue={activeIssue} />
+              <PropertyGrid issue={activeIssue} isReadOnly={isReadOnly} />
 
               <div>
                 <label className="text-xs font-semibold uppercase tracking-wider text-text-muted block mb-1.5">
                   Description
                 </label>
-                <textarea
-                  value={description}
-                  onChange={e => setDescription(e.target.value)}
-                  onBlur={handleDescriptionBlur}
-                  rows={5}
-                  placeholder="Add technical specifications, acceptance criteria, or logs..."
-                  className="w-full text-xs text-text-secondary bg-surface-subtle border border-border focus:border-accent rounded-lg p-3 resize-y focus:outline-none leading-relaxed"
-                />
+                {isReadOnly ? (
+                  <div className="w-full text-xs text-text-secondary bg-surface-subtle border border-border rounded-lg p-3 leading-relaxed min-h-[60px] whitespace-pre-wrap">
+                    {activeIssue.description.trim() ? (
+                      activeIssue.description
+                    ) : (
+                      <span className="italic text-text-muted">No description provided.</span>
+                    )}
+                  </div>
+                ) : (
+                  <textarea
+                    value={description}
+                    onChange={e => setDescription(e.target.value)}
+                    onBlur={handleDescriptionBlur}
+                    rows={5}
+                    placeholder="Add technical specifications, acceptance criteria, or logs..."
+                    className="w-full text-xs text-text-secondary bg-surface-subtle border border-border focus:border-accent rounded-lg p-3 resize-y focus:outline-none leading-relaxed"
+                  />
+                )}
               </div>
 
               {/* Quick summary of blockers inside details */}
@@ -360,16 +383,16 @@ export const IssueDrawer: React.FC = () => {
 
               {/* Quick Discussion Section in Details */}
               <div className="pt-2 border-t border-border/70">
-                <CommentThread issueId={activeIssue.id} />
+                <CommentThread issueId={activeIssue.id} isReadOnly={isReadOnly} />
               </div>
             </div>
           )}
 
           {/* Tab 2: Dependencies Manager */}
-          {activeTab === 'DEPENDENCIES' && <DependencyManager issue={activeIssue} />}
+          {activeTab === 'DEPENDENCIES' && <DependencyManager issue={activeIssue} isReadOnly={isReadOnly} />}
 
           {/* Tab 3: Dedicated Discussions */}
-          {activeTab === 'DISCUSSIONS' && <CommentThread issueId={activeIssue.id} />}
+          {activeTab === 'DISCUSSIONS' && <CommentThread issueId={activeIssue.id} isReadOnly={isReadOnly} />}
 
           {/* Tab 4: Activity Timeline */}
           {activeTab === 'ACTIVITY' && <ActivityTimeline issueId={activeIssue.id} />}
