@@ -11,6 +11,9 @@ import {
   PlusCircle,
   MessageSquare,
   AtSign,
+  Calendar,
+  RefreshCw,
+  Target,
 } from 'lucide-react';
 import { ActivityEvent, ActivityEventType } from '../../types';
 import { useProject } from '../../context/ProjectContext';
@@ -94,6 +97,42 @@ const EVENT_CONFIG: Record<
     icon: AtSign,
     colorClass: 'text-[#5645d4]',
     bgClass: 'bg-purple-100',
+  },
+  CYCLE_ASSIGNED: {
+    label: 'Assigned to delivery cycle',
+    icon: Clock,
+    colorClass: 'text-[#0075de]',
+    bgClass: 'bg-blue-100',
+  },
+  CYCLE_REMOVED: {
+    label: 'Removed from cycle',
+    icon: Clock,
+    colorClass: 'text-[#787671]',
+    bgClass: 'bg-gray-100',
+  },
+  CYCLE_ROLLED_OVER: {
+    label: 'Rolled over into cycle',
+    icon: RefreshCw,
+    colorClass: 'text-[#5645d4]',
+    bgClass: 'bg-purple-100',
+  },
+  MILESTONE_LINKED: {
+    label: 'Linked to milestone',
+    icon: Target,
+    colorClass: 'text-[#5645d4]',
+    bgClass: 'bg-purple-100',
+  },
+  MILESTONE_UNLINKED: {
+    label: 'Unlinked from milestone',
+    icon: Unlink,
+    colorClass: 'text-[#787671]',
+    bgClass: 'bg-gray-100',
+  },
+  SCHEDULE_CHANGED: {
+    label: 'Updated schedule dates',
+    icon: Calendar,
+    colorClass: 'text-[#0075de]',
+    bgClass: 'bg-blue-100',
   },
 };
 

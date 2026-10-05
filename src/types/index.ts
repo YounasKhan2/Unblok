@@ -56,7 +56,13 @@ export type ActivityEventType =
   | 'TITLE_MODIFIED'
   | 'DESCRIPTION_MODIFIED'
   | 'COMMENT_ADDED'
-  | 'USER_MENTIONED';
+  | 'USER_MENTIONED'
+  | 'CYCLE_ASSIGNED'
+  | 'CYCLE_REMOVED'
+  | 'CYCLE_ROLLED_OVER'
+  | 'MILESTONE_LINKED'
+  | 'MILESTONE_UNLINKED'
+  | 'SCHEDULE_CHANGED';
 
 export interface IssueComment {
   id: string;
@@ -87,6 +93,12 @@ export interface ActivityEvent {
     downstreamKey?: string;
     commentId?: string;
     mentionedUserName?: string;
+    cycleId?: string;
+    cycleName?: string;
+    milestoneId?: string;
+    milestoneName?: string;
+    sourceCycleId?: string;
+    targetCycleId?: string;
   };
 }
 
@@ -96,18 +108,18 @@ export interface Cycle {
   startDate: string;
   endDate: string;
   status: 'ACTIVE' | 'UPCOMING' | 'COMPLETED';
-  teamId?: string | 'ALL';
+  teamId: string;
   description?: string;
 }
 
-export type MilestoneHealth = 'ON_TRACK' | 'AT_RISK' | 'BLOCKED' | 'COMPLETED';
+export type MilestoneHealth = 'ON_TRACK' | 'AT_RISK' | 'BLOCKED';
 
 export interface Milestone {
   id: string;
   name: string;
   targetDate: string;
   description: string;
-  teamId?: string | 'ALL';
+  teamId?: string;
 }
 
 export interface Issue {

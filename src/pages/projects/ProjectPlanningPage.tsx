@@ -3,14 +3,21 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useMemo } from 'react';
-import { useOutletContext, Link } from 'react-router-dom';
-import { Calendar, Target, Clock, ArrowRight, CheckCircle2 } from 'lucide-react';
+import React, { useMemo, useCallback } from 'react';
+import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { Project, Team } from '../../types';
 import { useProject } from '../../context/ProjectContext';
-import { useDrawerRoute } from '../../app/router/useDrawerRoute';
-import { StatePill } from '../../components/ui/StatePill';
-import { PriorityIcon } from '../../components/ui/PriorityIcon';
+import {
+  selectProjectCycleAllocation,
+  selectProjectMilestoneMapping,
+} from '../../features/planning/selectors/projectPlanningSelectors';
+import { ProjectCycleAllocationTab } from '../../features/planning/components/project/ProjectCycleAllocationTab';
+import { ProjectMilestoneMappingTab } from '../../features/planning/components/project/ProjectMilestoneMappingTab';
+import {
+  ProjectPlanningFilterState,
+  ProjectPlanningViewMode,
+} from '../../features/planning/types';
+import { Clock, Target, Search, Calendar, Filter } from 'lucide-react';
 
 interface OutletContextType {
   project: Project;
@@ -19,198 +26,181 @@ interface OutletContextType {
 
 export const ProjectPlanningPage: React.FC = () => {
   const { project, team } = useOutletContext<OutletContextType>();
-  const { issues, cycles, milestones } = useProject();
-  const { openDrawer } = useDrawerRoute();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { issues, cycles, milestones, dependencies } = useProject();
 
-  const projectIssues = useMemo(
-    () => issues.filter(i => i.projectId === project.id),
-    [issues, project.id]
+  // URL state: ?view=cycles or ?view=milestones
+  const rawView = searchParams.get('view');
+  const viewMode: ProjectPlanningViewMode = rawView === 'milestones' ? 'milestones' : 'cycles';
+  const searchQuery = searchParams.get('q') || '';
+  const priorityFilter = searchParams.get('priority') || 'ALL';
+  const stateFilter = searchParams.get('state') || 'ALL';
+
+  const filters: ProjectPlanningFilterState = useMemo(
+    () => ({
+      view: viewMode,
+      searchQuery,
+      priorityFilter,
+      stateFilter,
+    }),
+    [viewMode, searchQuery, priorityFilter, stateFilter]
   );
 
-  // Owning team active cycle
-  const activeCycle = useMemo(
-    () => cycles.find(c => c.status === 'ACTIVE' && c.teamId === project.teamId),
-    [cycles, project.teamId]
+  const updateFilters = useCallback(
+    (updates: Partial<ProjectPlanningFilterState>) => {
+      const next = new URLSearchParams(searchParams);
+
+      if (updates.view !== undefined) {
+        if (updates.view === 'cycles') next.delete('view');
+        else next.set('view', updates.view);
+      }
+
+      if (updates.searchQuery !== undefined) {
+        if (!updates.searchQuery.trim()) next.delete('q');
+        else next.set('q', updates.searchQuery.trim());
+      }
+
+      if (updates.priorityFilter !== undefined) {
+        if (updates.priorityFilter === 'ALL') next.delete('priority');
+        else next.set('priority', updates.priorityFilter);
+      }
+
+      if (updates.stateFilter !== undefined) {
+        if (updates.stateFilter === 'ALL') next.delete('state');
+        else next.set('state', updates.stateFilter);
+      }
+
+      setSearchParams(next, { replace: true });
+    },
+    [searchParams, setSearchParams]
   );
 
-  // Issues in active cycle
-  const cycleIssues = useMemo(
-    () => (activeCycle ? projectIssues.filter(i => i.cycleId === activeCycle.id) : []),
-    [projectIssues, activeCycle]
+  // Derivations for Cycle Allocation view
+  const cycleAllocationData = useMemo(
+    () => selectProjectCycleAllocation(project, issues, cycles, dependencies, filters),
+    [project, issues, cycles, dependencies, filters]
   );
 
-  // Target milestones referenced by this project
-  const projectMilestones = useMemo(() => {
-    const milestoneIds = new Set(projectIssues.map(i => i.milestoneId).filter(Boolean));
-    return milestones.filter(m => milestoneIds.has(m.id));
-  }, [projectIssues, milestones]);
-
-  // Unscheduled backlog issues
-  const backlogIssues = useMemo(
-    () => projectIssues.filter(i => !i.cycleId && i.state !== 'DONE' && i.state !== 'CANCELLED'),
-    [projectIssues]
+  // Derivations for Milestone Mapping view
+  const milestoneMappingData = useMemo(
+    () => selectProjectMilestoneMapping(project, issues, milestones, filters),
+    [project, issues, milestones, filters]
   );
 
   return (
-    <div className="flex-1 overflow-y-auto bg-surface-subtle p-4 sm:p-6 space-y-6 select-none">
-      {/* 1. Header Banner */}
-      <div className="bg-white border border-border p-4 rounded-lg flex flex-wrap items-center justify-between gap-4">
+    <div className="flex-1 flex flex-col h-full bg-surface-subtle overflow-hidden select-none">
+      {/* 1. Header Toolbar */}
+      <div className="bg-surface-base border-b border-border px-6 py-3.5 shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-sm font-bold text-text-primary mb-0.5">Project Delivery Plan</h2>
+          <h2 className="text-sm font-bold text-text-primary">Project Delivery Plan</h2>
           <p className="text-xs text-text-muted">
-            Active cycle allocation and milestone mapping for {project.name}.
+            Allocate tasks from <span className="font-semibold text-text-primary">{project.name}</span> into team cycles and workspace milestones.
           </p>
         </div>
 
-        {activeCycle && (
-          <div className="flex items-center gap-2 bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-lg text-xs">
-            <Clock className="w-3.5 h-3.5 text-accent" />
-            <span className="font-semibold text-accent">{activeCycle.name}</span>
-            <span className="text-text-muted">({activeCycle.startDate} → {activeCycle.endDate})</span>
+        {/* View Switcher Tabs (Cycles vs Milestones) */}
+        <div className="flex items-center gap-2">
+          <div
+            role="tablist"
+            aria-label="Project planning view modes"
+            className="inline-flex items-center p-0.5 rounded-[6px] bg-surface-muted border border-border"
+          >
+            <button
+              role="tab"
+              aria-selected={viewMode === 'cycles'}
+              onClick={() => updateFilters({ view: 'cycles' })}
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-[4px] text-xs font-semibold cursor-pointer transition-colors ${
+                viewMode === 'cycles'
+                  ? 'bg-surface-base text-text-primary shadow-2xs border border-border'
+                  : 'text-text-secondary hover:text-text-primary'
+              }`}
+            >
+              <Clock className="w-3.5 h-3.5" />
+              <span>Cycle Allocation</span>
+            </button>
+
+            <button
+              role="tab"
+              aria-selected={viewMode === 'milestones'}
+              onClick={() => updateFilters({ view: 'milestones' })}
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-[4px] text-xs font-semibold cursor-pointer transition-colors ${
+                viewMode === 'milestones'
+                  ? 'bg-surface-base text-text-primary shadow-2xs border border-border'
+                  : 'text-text-secondary hover:text-text-primary'
+              }`}
+            >
+              <Target className="w-3.5 h-3.5" />
+              <span>Milestone Mapping</span>
+            </button>
           </div>
-        )}
+        </div>
       </div>
 
-      {/* 2. Active Cycle Sprint Queue */}
-      <section className="bg-white border border-border rounded-lg overflow-hidden">
-        <div className="px-4 py-2.5 bg-surface-subtle border-b border-border flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-accent" />
-            <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider">
-              Current Cycle Allocation
-            </h3>
-            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-accent">
-              {cycleIssues.length} tasks
-            </span>
-          </div>
-
-          <span className="text-[11px] text-text-muted">
-            {activeCycle ? activeCycle.name : 'No active team cycle'}
-          </span>
+      {/* 2. Filter Bar */}
+      <div className="px-6 py-2 bg-surface-base border-b border-border flex flex-wrap items-center gap-3 shrink-0 text-xs">
+        <div className="relative">
+          <Search className="w-3.5 h-3.5 text-text-muted absolute left-2.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Filter tasks by key or title..."
+            value={searchQuery}
+            onChange={e => updateFilters({ searchQuery: e.target.value })}
+            className="h-7 w-48 pl-8 pr-2.5 rounded-[4px] border border-border bg-surface-base text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
+          />
         </div>
 
-        <div className="divide-y divide-border">
-          {cycleIssues.length === 0 ? (
-            <div className="px-4 py-6 text-center text-xs text-text-muted italic">
-              No tasks currently allocated to this cycle.
-            </div>
-          ) : (
-            cycleIssues.map(issue => (
-              <div
-                key={issue.id}
-                onClick={() => openDrawer(issue.key)}
-                className="flex items-center justify-between h-[36px] px-4 hover:bg-surface-muted cursor-pointer transition-colors text-xs"
-              >
-                <div className="flex items-center gap-2 truncate mr-3 flex-1 min-w-0">
-                  <PriorityIcon priority={issue.priority} size="sm" />
-                  <span className="font-mono font-bold text-accent">{issue.key}</span>
-                  <span className="truncate text-text-primary">{issue.title}</span>
-                </div>
+        <select
+          value={priorityFilter}
+          onChange={e => updateFilters({ priorityFilter: e.target.value })}
+          className="h-7 px-2 rounded-[4px] border border-border bg-surface-base text-text-primary focus:outline-none focus:border-accent"
+        >
+          <option value="ALL">All Priorities</option>
+          <option value="URGENT">Urgent</option>
+          <option value="HIGH">High</option>
+          <option value="MEDIUM">Medium</option>
+          <option value="LOW">Low</option>
+        </select>
 
-                <div className="flex items-center gap-2 shrink-0">
-                  <StatePill state={issue.state} size="sm" />
-                </div>
-              </div>
-            ))
+        <select
+          value={stateFilter}
+          onChange={e => updateFilters({ stateFilter: e.target.value })}
+          className="h-7 px-2 rounded-[4px] border border-border bg-surface-base text-text-primary focus:outline-none focus:border-accent"
+        >
+          <option value="ALL">All States</option>
+          <option value="BACKLOG">Backlog</option>
+          <option value="TODO">To Do</option>
+          <option value="IN_PROGRESS">In Progress</option>
+          <option value="IN_REVIEW">In Review</option>
+          <option value="DONE">Done</option>
+          <option value="CANCELLED">Cancelled</option>
+        </select>
+
+        <div className="ml-auto text-xs text-text-muted">
+          Owning Team: <span className="font-semibold text-text-primary">{team?.name || 'Core Eng'}</span>
+        </div>
+      </div>
+
+      {/* 3. Main Planning Body */}
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="max-w-6xl mx-auto">
+          {viewMode === 'cycles' ? (
+            <ProjectCycleAllocationTab
+              project={project}
+              eligibleCycles={cycleAllocationData.eligibleCycles}
+              activeCycle={cycleAllocationData.activeCycle}
+              backlogIssues={cycleAllocationData.backlogIssues}
+              cycleGroups={cycleAllocationData.cycleGroups}
+            />
+          ) : (
+            <ProjectMilestoneMappingTab
+              project={project}
+              groups={milestoneMappingData.groups}
+              unlinkedGroup={milestoneMappingData.unlinkedGroup}
+              allMilestones={milestoneMappingData.allMilestones}
+            />
           )}
         </div>
-      </section>
-
-      {/* 3. Milestone Rollups */}
-      <section className="bg-white border border-border rounded-lg overflow-hidden">
-        <div className="px-4 py-2.5 bg-surface-subtle border-b border-border flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Target className="w-4 h-4 text-accent" />
-            <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider">
-              Associated Strategic Milestones
-            </h3>
-            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-border text-text-secondary">
-              {projectMilestones.length}
-            </span>
-          </div>
-        </div>
-
-        <div className="p-4 space-y-3">
-          {projectMilestones.length === 0 ? (
-            <div className="text-xs text-text-muted italic">
-              No strategic milestones currently linked to this project.
-            </div>
-          ) : (
-            projectMilestones.map(m => {
-              const milestoneTasks = projectIssues.filter(i => i.milestoneId === m.id);
-              const doneCount = milestoneTasks.filter(i => i.state === 'DONE').length;
-              const percent =
-                milestoneTasks.length > 0 ? Math.round((doneCount / milestoneTasks.length) * 100) : 0;
-
-              return (
-                <div key={m.id} className="p-3 bg-surface-subtle rounded-lg border border-border">
-                  <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <span className="font-semibold text-xs text-text-primary">{m.name}</span>
-                    <span className="text-[11px] font-mono text-text-muted">Target: {m.targetDate}</span>
-                  </div>
-                  <p className="text-[11px] text-text-secondary mb-2">{m.description}</p>
-                  <div className="flex items-center justify-between text-[11px] text-text-muted mb-1">
-                    <span>{doneCount} of {milestoneTasks.length} tasks completed</span>
-                    <span className="font-semibold">{percent}%</span>
-                  </div>
-                  <div className="w-full bg-border rounded-full h-1 overflow-hidden">
-                    <div className="bg-success h-1 rounded-full" style={{ width: `${percent}%` }} />
-                  </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-      </section>
-
-      {/* 4. Unscheduled Backlog Preview */}
-      <section className="bg-white border border-border rounded-lg overflow-hidden">
-        <div className="px-4 py-2.5 bg-surface-subtle border-b border-border flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-text-muted" />
-            <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider">
-              Unscheduled Backlog
-            </h3>
-            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-border text-text-secondary">
-              {backlogIssues.length} tasks
-            </span>
-          </div>
-
-          <Link
-            to={`/projects/${project.key}/issues?cycle=UNSCHEDULED`}
-            className="text-[11px] font-medium text-accent hover:underline flex items-center gap-1"
-          >
-            <span>Triage in issues list</span>
-            <ArrowRight className="w-3 h-3" />
-          </Link>
-        </div>
-
-        <div className="divide-y divide-border max-h-52 overflow-y-auto">
-          {backlogIssues.length === 0 ? (
-            <div className="px-4 py-6 text-center text-xs text-text-muted italic">
-              All active tasks are assigned to a cycle.
-            </div>
-          ) : (
-            backlogIssues.slice(0, 5).map(issue => (
-              <div
-                key={issue.id}
-                onClick={() => openDrawer(issue.key)}
-                className="flex items-center justify-between h-[36px] px-4 hover:bg-surface-muted cursor-pointer transition-colors text-xs"
-              >
-                <div className="flex items-center gap-2 truncate mr-3 flex-1 min-w-0">
-                  <PriorityIcon priority={issue.priority} size="sm" />
-                  <span className="font-mono font-bold text-accent">{issue.key}</span>
-                  <span className="truncate text-text-primary">{issue.title}</span>
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  <StatePill state={issue.state} size="sm" />
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </section>
+      </div>
     </div>
   );
 };

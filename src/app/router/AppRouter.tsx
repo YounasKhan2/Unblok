@@ -16,6 +16,11 @@ import { ProjectPlanningPage } from '../../pages/projects/ProjectPlanningPage';
 import { ProjectSettingsPage } from '../../pages/projects/ProjectSettingsPage';
 import { IssueDetailPage } from '../../pages/issues/IssueDetailPage';
 import { DependenciesPage } from '../../pages/dependencies/DependenciesPage';
+import { CyclesPage } from '../../pages/cycles/CyclesPage';
+import { CycleDetailPage } from '../../pages/cycles/CycleDetailPage';
+import { MilestonesPage } from '../../pages/milestones/MilestonesPage';
+import { MilestoneDetailPage } from '../../pages/milestones/MilestoneDetailPage';
+import { RoadmapPage } from '../../pages/roadmap/RoadmapPage';
 import { PlaceholderPage } from '../../pages/placeholder/PlaceholderPage';
 
 export const AppRouter: React.FC = () => {
@@ -76,57 +81,12 @@ export const AppRouter: React.FC = () => {
             }
           />
 
-          {/* Planning Space */}
-          <Route
-            path="/cycles"
-            element={
-              <PlaceholderPage
-                pageTitle="Delivery Cycles"
-                targetPhase="UX-04"
-                description="Delivery cycles and iteration schedules for engineering teams."
-              />
-            }
-          />
-          <Route
-            path="/cycles/:cycleId"
-            element={
-              <PlaceholderPage
-                pageTitle="Cycle Detail"
-                targetPhase="UX-04"
-                description="Team cycle execution view and issue progress."
-              />
-            }
-          />
-          <Route
-            path="/milestones"
-            element={
-              <PlaceholderPage
-                pageTitle="Strategic Milestones"
-                targetPhase="UX-04"
-                description="Strategic milestones and target release tracking."
-              />
-            }
-          />
-          <Route
-            path="/milestones/:milestoneId"
-            element={
-              <PlaceholderPage
-                pageTitle="Milestone Detail"
-                targetPhase="UX-04"
-                description="Milestone scope, progress rollups, and associated issues."
-              />
-            }
-          />
-          <Route
-            path="/roadmap"
-            element={
-              <PlaceholderPage
-                pageTitle="Schedule & Roadmap"
-                targetPhase="UX-04"
-                description="Timeline visualization across team schedules and milestones."
-              />
-            }
-          />
+          {/* Planning Space (UX-05 Canonical Implementation) */}
+          <Route path="/cycles" element={<CyclesPage />} />
+          <Route path="/cycles/:cycleId" element={<CycleDetailPage />} />
+          <Route path="/milestones" element={<MilestonesPage />} />
+          <Route path="/milestones/:milestoneId" element={<MilestoneDetailPage />} />
+          <Route path="/roadmap" element={<RoadmapPage />} />
 
           {/* Dependency Intelligence Space (UX-04 Canonical Page) */}
           <Route path="/dependencies" element={<DependenciesPage />} />

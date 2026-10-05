@@ -114,7 +114,9 @@ export const CyclePlanningView: React.FC = () => {
       startDate: newCycleStart,
       endDate: newCycleEnd,
     });
-    setSelectedCycleId(created.id);
+    if (created) {
+      setSelectedCycleId(created.id);
+    }
     setIsNewCycleModalOpen(false);
     setNewCycleName('');
   };
