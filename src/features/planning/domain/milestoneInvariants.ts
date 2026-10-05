@@ -151,8 +151,13 @@ export function calculateMilestoneRollup(
       }
     }
 
-    if (issue.projectId) contributingProjectIds.add(issue.projectId);
-    if (issue.teamId) contributingTeamIds.add(issue.teamId);
+    if (issue.projectId) {
+      contributingProjectIds.add(issue.projectId);
+      const project = projects.find(p => p.id === issue.projectId);
+      if (project?.teamId) {
+        contributingTeamIds.add(project.teamId);
+      }
+    }
   }
 
   const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
@@ -192,5 +197,37 @@ export function calculateMilestoneRollup(
     contributingProjects,
     issues: milestoneIssues,
     blockedIssues,
+  };
+}
+
+/**
+ * Validates milestone fields on creation and updates.
+ */
+export function validateMilestoneData(data: {
+  name?: string;
+  targetDate?: string;
+}): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+
+  if (data.name !== undefined) {
+    if (!data.name || !data.name.trim()) {
+      errors.push('Milestone name is required.');
+    }
+  }
+
+  if (data.targetDate !== undefined) {
+    if (!data.targetDate || !data.targetDate.trim()) {
+      errors.push('Target date is required.');
+    } else {
+      const time = new Date(data.targetDate).getTime();
+      if (isNaN(time)) {
+        errors.push('Invalid target date format.');
+      }
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
   };
 }

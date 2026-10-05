@@ -41,8 +41,16 @@ export function canAssignIssueToCycle(
     };
   }
 
+  // A Cycle must belong to a real team
+  if (!cycle.teamId || cycle.teamId === 'ALL') {
+    return {
+      allowed: false,
+      reason: `Cycle "${cycle.name}" must belong to a valid team.`,
+    };
+  }
+
   // Cross-team cycle assignment is strictly forbidden
-  if (cycle.teamId && cycle.teamId !== 'ALL' && project.teamId !== cycle.teamId) {
+  if (project.teamId !== cycle.teamId) {
     return {
       allowed: false,
       reason: `Cross-team cycle assignment rejected: Issue ${issue.key} belongs to team "${project.teamId}", but cycle "${cycle.name}" belongs to team "${cycle.teamId}".`,
@@ -61,8 +69,11 @@ export function validateActiveCycleInvariant(
   cycles: Cycle[],
   excludeCycleId?: string
 ): { allowed: boolean; activeCycle?: Cycle; reason?: string } {
-  if (teamId === 'ALL') {
-    return { allowed: true };
+  if (!teamId || !teamId.trim() || teamId === 'ALL') {
+    return {
+      allowed: false,
+      reason: 'Active cycle invariant requires a valid concrete team.',
+    };
   }
 
   const existingActive = cycles.find(
@@ -117,11 +128,11 @@ export function validateCycleCreation(
     }
   }
 
-  if (!data.teamId || !data.teamId.trim()) {
-    errors.push('Owning team is required.');
+  if (!data.teamId || !data.teamId.trim() || data.teamId === 'ALL') {
+    errors.push('Cycle must belong to exactly one real team.');
   }
 
-  if (data.status === 'ACTIVE') {
+  if (data.status === 'ACTIVE' && data.teamId && data.teamId !== 'ALL') {
     const activeCheck = validateActiveCycleInvariant(data.teamId, existingCycles);
     if (!activeCheck.allowed) {
       errors.push(activeCheck.reason || 'Team already has an active cycle.');
@@ -152,13 +163,21 @@ export function validateRollover(
     };
   }
 
-  if (
-    fromCycle.teamId &&
-    targetCycle.teamId &&
-    fromCycle.teamId !== 'ALL' &&
-    targetCycle.teamId !== 'ALL' &&
-    fromCycle.teamId !== targetCycle.teamId
-  ) {
+  if (!fromCycle.teamId || fromCycle.teamId === 'ALL') {
+    return {
+      allowed: false,
+      reason: `Source cycle "${fromCycle.name}" does not belong to a valid team.`,
+    };
+  }
+
+  if (!targetCycle.teamId || targetCycle.teamId === 'ALL') {
+    return {
+      allowed: false,
+      reason: `Target cycle "${targetCycle.name}" does not belong to a valid team.`,
+    };
+  }
+
+  if (fromCycle.teamId !== targetCycle.teamId) {
     return {
       allowed: false,
       reason: `Cross-team rollover forbidden: Source cycle belongs to team "${fromCycle.teamId}", but target cycle belongs to team "${targetCycle.teamId}".`,
@@ -241,7 +260,7 @@ export function calculateCycleProgress(
 export function classifyCycles(cycles: Cycle[], teamFilter?: string): ClassifiedCycles {
   let filtered = cycles;
   if (teamFilter && teamFilter !== 'ALL') {
-    filtered = cycles.filter(c => c.teamId === teamFilter || c.teamId === 'ALL');
+    filtered = cycles.filter(c => c.teamId === teamFilter);
   }
 
   const active = filtered

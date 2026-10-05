@@ -79,10 +79,9 @@ export const MilestonesView: React.FC = () => {
       const percent = total > 0 ? Math.round((done / total) * 100) : 0;
 
       // Determine Health
+      const isCompleted = total > 0 && done === total;
       let health: MilestoneHealth = 'ON_TRACK';
-      if (total > 0 && done === total) {
-        health = 'COMPLETED';
-      } else if (blockedCount > 0) {
+      if (blockedCount > 0) {
         health = 'BLOCKED';
       } else if (percent < 40) {
         health = 'AT_RISK';
@@ -102,6 +101,7 @@ export const MilestonesView: React.FC = () => {
         blockedCount,
         percent,
         health,
+        isCompleted,
         daysRemaining,
         blockingPrerequisites,
       };
@@ -125,15 +125,17 @@ export const MilestonesView: React.FC = () => {
     setNewMilestoneDesc('');
   };
 
-  const getHealthBadge = (health: MilestoneHealth) => {
+  const getHealthBadge = (health: MilestoneHealth, isCompleted: boolean) => {
+    if (isCompleted) {
+      return (
+        <span className="flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-purple-100 text-[#5645d4]">
+          <CheckCircle2 className="w-3 h-3" />
+          <span>Completed</span>
+        </span>
+      );
+    }
+
     switch (health) {
-      case 'COMPLETED':
-        return (
-          <span className="flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-purple-100 text-[#5645d4]">
-            <CheckCircle2 className="w-3 h-3" />
-            <span>Completed</span>
-          </span>
-        );
       case 'BLOCKED':
         return (
           <span className="flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-red-100 text-[#d83a52]">
@@ -212,7 +214,7 @@ export const MilestonesView: React.FC = () => {
                           <span className="font-bold text-sm text-[#1a1a1a]">
                             {data.milestone.name}
                           </span>
-                          {getHealthBadge(data.health)}
+                          {getHealthBadge(data.health, data.isCompleted)}
                         </div>
                         <p className="text-xs text-[#787671] mt-0.5">
                           {data.milestone.description}

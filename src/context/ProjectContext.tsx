@@ -37,10 +37,19 @@ import { createActivityEvent, checkBlockerBoundaryEvents } from '../domain/audit
 import { canMutatePlanning } from '../features/planning/permissions';
 import {
   canAssignIssueToCycle,
-  validateActiveCycleInvariant,
   validateRollover,
   isIssueCompletedForPlanning,
 } from '../features/planning/domain/cycleInvariants';
+import {
+  executeCompleteCycle,
+  executeCreateCycle,
+  executeUpdateCycle,
+  executeUpdateIssueCycle,
+  executeUpdateIssueMilestone,
+  executeCreateMilestone,
+  executeUpdateMilestone,
+  executeUpdateIssueDates,
+} from '../features/planning/domain/planningMutations';
 import {
   UNBLOK_STORAGE_NAMESPACE,
   migrateStorageNamespace,
@@ -520,39 +529,17 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Update Issue Cycle
   const updateIssueCycle = useCallback(
     (issueId: string, cycleId?: string): boolean => {
-      if (!canMutatePlanning(currentUser.role)) {
-        return false;
-      }
-
-      const targetIssue = issuesMap.get(issueId);
-      if (!targetIssue) return false;
-
-      if (cycleId) {
-        const targetCycle = cycles.find(c => c.id === cycleId);
-        if (!targetCycle) return false;
-
-        const check = canAssignIssueToCycle(targetIssue, targetCycle, projects);
-        if (!check.allowed) {
-          return false;
-        }
-      }
-
-      const now = new Date().toISOString();
-      setIssues(prev =>
-        prev.map(i =>
-          i.id === issueId ? { ...i, cycleId, updatedAt: now, version: i.version + 1 } : i
-        )
+      const res = executeUpdateIssueCycle(
+        { cycles, issues, projects, teams, currentUser, activities },
+        issueId,
+        cycleId
       );
-
-      const targetCycle = cycles.find(c => c.id === cycleId);
-      const ev = createActivityEvent(issueId, 'STATE_CHANGED', currentUser, {
-        reason: targetCycle ? `Assigned to ${targetCycle.name}` : 'Removed from cycle',
-      });
-      setActivities(prev => [ev, ...prev]);
-
+      if (!res.success || !res.nextState) return false;
+      setIssues(res.nextState.issues);
+      setActivities(res.nextState.activities);
       return true;
     },
-    [cycles, issuesMap, projects, currentUser]
+    [cycles, issues, projects, teams, currentUser, activities]
   );
 
   // Bulk Update Cycle
@@ -562,6 +549,8 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (selectedIssueIds.length === 0) return;
 
       const targetCycle = cycleId ? cycles.find(c => c.id === cycleId) : undefined;
+      if (cycleId && !targetCycle) return;
+
       const validIds: string[] = [];
 
       for (const id of selectedIssueIds) {
@@ -584,6 +573,24 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
             : i
         )
       );
+
+      const events = validIds.map(id => {
+        const issue = issuesMap.get(id);
+        const fromCycle = issue?.cycleId ? cycles.find(c => c.id === issue.cycleId) : undefined;
+        return createActivityEvent(
+          id,
+          cycleId ? 'CYCLE_ASSIGNED' : 'CYCLE_REMOVED',
+          currentUser,
+          {
+            from: fromCycle?.name || 'Unscheduled',
+            to: targetCycle?.name || 'Unscheduled',
+            cycleId,
+            cycleName: targetCycle?.name,
+            reason: targetCycle ? `Assigned to cycle ${targetCycle.name}` : 'Removed from cycle',
+          }
+        );
+      });
+      setActivities(prev => [...events, ...prev]);
     },
     [selectedIssueIds, cycles, issuesMap, projects, currentUser]
   );
@@ -622,7 +629,11 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         );
 
         const events = eligibleIds.map(id =>
-          createActivityEvent(id, 'STATE_CHANGED', currentUser, {
+          createActivityEvent(id, 'CYCLE_ROLLED_OVER', currentUser, {
+            from: fromCycle.name,
+            to: toCycle.name,
+            sourceCycleId: fromCycle.id,
+            targetCycleId: toCycle.id,
             reason: `Rolled over into ${toCycle.name}`,
           })
         );
@@ -634,7 +645,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     [issues, cycles, currentUser]
   );
 
-  // Create Cycle
+  // Create Cycle (enforcing all creation invariants at mutation boundary)
   const createCycle = useCallback(
     (data: {
       name: string;
@@ -644,201 +655,97 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       status?: 'ACTIVE' | 'UPCOMING' | 'COMPLETED';
       description?: string;
     }): Cycle | null => {
-      if (!canMutatePlanning(currentUser.role)) {
-        return null;
-      }
-
-      const teamId = data.teamId || 'ALL';
-      const status = data.status || 'UPCOMING';
-
-      if (status === 'ACTIVE') {
-        const activeCheck = validateActiveCycleInvariant(teamId, cycles);
-        if (!activeCheck.allowed) {
-          return null;
-        }
-      }
-
-      const newCycle: Cycle = {
-        id: `cycle_${Date.now()}`,
-        name: data.name.trim(),
-        startDate: data.startDate,
-        endDate: data.endDate,
-        status,
-        teamId,
-        description: data.description?.trim(),
-      };
-      setCycles(prev => [...prev, newCycle]);
-      return newCycle;
+      const res = executeCreateCycle(
+        { cycles, issues, projects, teams, currentUser, activities },
+        data
+      );
+      if (!res.success || !res.nextState || !res.newCycle) return null;
+      setCycles(res.nextState.cycles);
+      return res.newCycle;
     },
-    [cycles, currentUser]
+    [cycles, issues, projects, teams, currentUser, activities]
   );
 
-  // Update Cycle
+  // Update Cycle (validates candidate cycle state before mutating)
   const updateCycle = useCallback(
     (id: string, updates: Partial<Cycle>): boolean => {
-      if (!canMutatePlanning(currentUser.role)) {
-        return false;
-      }
-
-      const cycle = cycles.find(c => c.id === id);
-      if (!cycle) return false;
-
-      if (updates.status === 'ACTIVE') {
-        const teamId = updates.teamId || cycle.teamId || 'ALL';
-        const activeCheck = validateActiveCycleInvariant(teamId, cycles, id);
-        if (!activeCheck.allowed) {
-          return false;
-        }
-      }
-
-      setCycles(prev =>
-        prev.map(c => (c.id === id ? { ...c, ...updates } : c))
+      const res = executeUpdateCycle(
+        { cycles, issues, projects, teams, currentUser, activities },
+        id,
+        updates
       );
+      if (!res.success || !res.nextState) return false;
+      setCycles(res.nextState.cycles);
       return true;
     },
-    [cycles, currentUser]
+    [cycles, issues, projects, teams, currentUser, activities]
   );
 
-  // Complete Cycle & Rollover
+  // Complete Cycle & Rollover (ATOMIC: perform ALL validation before ANY mutation)
   const completeCycle = useCallback(
     (
       cycleId: string,
       rolloverData?: { targetCycleId?: string; issueIdsToRollover?: string[] }
     ): { success: boolean; rolledCount: number; error?: string } => {
-      if (!canMutatePlanning(currentUser.role)) {
-        return { success: false, rolledCount: 0, error: 'Permission denied.' };
-      }
-
-      const cycle = cycles.find(c => c.id === cycleId);
-      if (!cycle) {
-        return { success: false, rolledCount: 0, error: 'Cycle not found.' };
-      }
-
-      // Mark cycle completed
-      setCycles(prev =>
-        prev.map(c => (c.id === cycleId ? { ...c, status: 'COMPLETED' } : c))
+      const res = executeCompleteCycle(
+        { cycles, issues, projects, teams, currentUser, activities },
+        { cycleId, rolloverData }
       );
-
-      const now = new Date().toISOString();
-      const unfinishedInCycle = issues.filter(
-        i => i.cycleId === cycleId && !isIssueCompletedForPlanning(i.state)
-      );
-
-      let rolledCount = 0;
-
-      if (rolloverData?.targetCycleId) {
-        const targetCycle = cycles.find(c => c.id === rolloverData.targetCycleId);
-        if (!targetCycle) {
-          return { success: false, rolledCount: 0, error: 'Target cycle not found.' };
-        }
-
-        const rolloverCheck = validateRollover(cycle, targetCycle);
-        if (!rolloverCheck.allowed) {
-          return { success: false, rolledCount: 0, error: rolloverCheck.reason };
-        }
-
-        const idsToRollover = new Set(
-          rolloverData.issueIdsToRollover || unfinishedInCycle.map(i => i.id)
-        );
-
-        setIssues(prev =>
-          prev.map(i => {
-            if (i.cycleId === cycleId && !isIssueCompletedForPlanning(i.state)) {
-              if (idsToRollover.has(i.id)) {
-                rolledCount++;
-                return { ...i, cycleId: targetCycle.id, updatedAt: now, version: i.version + 1 };
-              } else {
-                // Section 23: Issues not rolled forward become unscheduled
-                return { ...i, cycleId: undefined, updatedAt: now, version: i.version + 1 };
-              }
-            }
-            return i;
-          })
-        );
-
-        const events = Array.from(idsToRollover).map(id =>
-          createActivityEvent(id, 'STATE_CHANGED', currentUser, {
-            reason: `Rolled over into ${targetCycle.name}`,
-          })
-        );
-        setActivities(prev => [...events, ...prev]);
-      } else {
-        // No rollover target: all unfinished issues become unscheduled
-        setIssues(prev =>
-          prev.map(i =>
-            i.cycleId === cycleId && !isIssueCompletedForPlanning(i.state)
-              ? { ...i, cycleId: undefined, updatedAt: now, version: i.version + 1 }
-              : i
-          )
-        );
+      if (!res.success || !res.nextState) {
+        return { success: false, rolledCount: 0, error: res.error };
       }
-
-      return { success: true, rolledCount };
+      setCycles(res.nextState.cycles);
+      setIssues(res.nextState.issues);
+      setActivities(res.nextState.activities);
+      return { success: true, rolledCount: res.rolledCount };
     },
-    [cycles, issues, currentUser]
+    [cycles, issues, projects, teams, currentUser, activities]
   );
 
   // Strategic Milestones Methods
   const updateIssueMilestone = useCallback(
     (issueId: string, milestoneId?: string): boolean => {
-      if (!canMutatePlanning(currentUser.role)) {
-        return false;
-      }
-
-      const now = new Date().toISOString();
-      setIssues(prev =>
-        prev.map(i =>
-          i.id === issueId ? { ...i, milestoneId, updatedAt: now, version: i.version + 1 } : i
-        )
+      const res = executeUpdateIssueMilestone(
+        { cycles, issues, projects, teams, currentUser, activities },
+        milestones,
+        issueId,
+        milestoneId
       );
-
-      const targetMilestone = milestones.find(m => m.id === milestoneId);
-      const targetIssue = issuesMap.get(issueId);
-      if (targetIssue) {
-        const ev = createActivityEvent(issueId, 'STATE_CHANGED', currentUser, {
-          reason: targetMilestone
-            ? `Assigned to milestone ${targetMilestone.name}`
-            : 'Removed from milestone',
-        });
-        setActivities(prev => [ev, ...prev]);
-      }
-
+      if (!res.success || !res.nextState) return false;
+      setIssues(res.nextState.issues);
+      setActivities(res.nextState.activities);
       return true;
     },
-    [milestones, issuesMap, currentUser]
+    [cycles, issues, projects, teams, currentUser, activities, milestones]
   );
 
   const createMilestone = useCallback(
-    (data: { name: string; targetDate: string; description: string; teamId?: string }): Milestone | null => {
-      if (!canMutatePlanning(currentUser.role)) {
-        return null;
-      }
-
-      const newMilestone: Milestone = {
-        id: `milestone_${Date.now()}`,
-        name: data.name.trim(),
-        targetDate: data.targetDate,
-        description: data.description.trim(),
-        teamId: data.teamId || 'ALL',
-      };
-      setMilestones(prev => [...prev, newMilestone]);
-      return newMilestone;
+    (data: { name: string; targetDate: string; description?: string; teamId?: string }): Milestone | null => {
+      const res = executeCreateMilestone(
+        { cycles, issues, projects, teams, currentUser, activities },
+        milestones,
+        data
+      );
+      if (!res.success || !res.nextMilestones || !res.newMilestone) return null;
+      setMilestones(res.nextMilestones);
+      return res.newMilestone;
     },
-    [currentUser]
+    [cycles, issues, projects, teams, currentUser, activities, milestones]
   );
 
   const updateMilestone = useCallback(
     (id: string, updates: Partial<Milestone>): boolean => {
-      if (!canMutatePlanning(currentUser.role)) {
-        return false;
-      }
-
-      setMilestones(prev =>
-        prev.map(m => (m.id === id ? { ...m, ...updates } : m))
+      const res = executeUpdateMilestone(
+        { cycles, issues, projects, teams, currentUser, activities },
+        milestones,
+        id,
+        updates
       );
+      if (!res.success || !res.nextMilestones) return false;
+      setMilestones(res.nextMilestones);
       return true;
     },
-    [currentUser]
+    [cycles, issues, projects, teams, currentUser, activities, milestones]
   );
 
   // Collaboration & Threaded Comments (Phase C)
@@ -1276,23 +1183,18 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const updateIssueDates = useCallback(
     (issueId: string, startDate?: string, dueDate?: string): boolean => {
-      if (!canMutatePlanning(currentUser.role)) {
-        return false;
-      }
-      if (startDate && dueDate && startDate > dueDate) {
-        return false;
-      }
-      const now = new Date().toISOString();
-      setIssues(prev =>
-        prev.map(i =>
-          i.id === issueId
-            ? { ...i, startDate, dueDate, updatedAt: now, version: i.version + 1 }
-            : i
-        )
+      const res = executeUpdateIssueDates(
+        { cycles, issues, projects, teams, currentUser, activities },
+        issueId,
+        startDate,
+        dueDate
       );
+      if (!res.success || !res.nextState) return false;
+      setIssues(res.nextState.issues);
+      setActivities(res.nextState.activities);
       return true;
     },
-    [currentUser]
+    [cycles, issues, projects, teams, currentUser, activities]
   );
 
   // Add Dependency (with Cycle check & Boundary check)
