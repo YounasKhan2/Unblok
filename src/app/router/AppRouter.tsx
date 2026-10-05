@@ -14,6 +14,7 @@ import { ProjectIssuesPage } from '../../pages/projects/ProjectIssuesPage';
 import { ProjectBoardPage } from '../../pages/projects/ProjectBoardPage';
 import { ProjectPlanningPage } from '../../pages/projects/ProjectPlanningPage';
 import { ProjectSettingsPage } from '../../pages/projects/ProjectSettingsPage';
+import { IssueDetailPage } from '../../pages/issues/IssueDetailPage';
 import { PlaceholderPage } from '../../pages/placeholder/PlaceholderPage';
 
 export const AppRouter: React.FC = () => {
@@ -49,17 +50,8 @@ export const AppRouter: React.FC = () => {
             <Route path="settings" element={<ProjectSettingsPage />} />
           </Route>
 
-          {/* Issues Space */}
-          <Route
-            path="/issues/:issueKey"
-            element={
-              <PlaceholderPage
-                pageTitle="Issue Detail"
-                targetPhase="UX-03"
-                description="Full-page issue view with dependency context, discussions, and audit history."
-              />
-            }
-          />
+          {/* Issues Space (UX-03 Real Canonical Page) */}
+          <Route path="/issues/:issueKey" element={<IssueDetailPage />} />
 
           {/* Teams Space */}
           <Route

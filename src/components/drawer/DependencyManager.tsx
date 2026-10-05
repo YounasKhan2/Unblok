@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   ShieldAlert,
   CheckCircle2,
@@ -18,19 +19,37 @@ import { PriorityIcon } from '../ui/PriorityIcon';
 
 interface DependencyManagerProps {
   issue: Issue;
+  isReadOnly?: boolean;
 }
 
-export const DependencyManager: React.FC<DependencyManagerProps> = ({ issue }) => {
+export const DependencyManager: React.FC<DependencyManagerProps> = ({
+  issue,
+  isReadOnly: propReadOnly,
+}) => {
   const {
     issues,
     dependencies,
     addDependency,
     removeDependency,
     setSelectedIssueId,
+    currentUser,
   } = useProject();
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const isReadOnly = propReadOnly ?? (currentUser.role === 'OBSERVER');
 
   const [isAddingBlocker, setIsAddingBlocker] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+
+  const handleIssueClick = (targetIssue: Issue) => {
+    if (location.pathname.startsWith('/issues/')) {
+      navigate(`/issues/${targetIssue.key}`);
+    } else {
+      setSelectedIssueId(targetIssue.id);
+    }
+  };
 
   const issuesMap = useMemo(() => new Map(issues.map(i => [i.id, i])), [issues]);
 
@@ -94,14 +113,14 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({ issue }) =
     <div className="space-y-4 pt-2">
       {/* 1. Actively Blocked Warning Banner */}
       {activeBlockers.length > 0 && (
-        <div className="p-3 bg-[#ffe8d4]/70 border border-[#ffd3ad] rounded-lg">
+        <div className="p-3 bg-blocker/10 border border-blocker/30 rounded-lg">
           <div className="flex items-start gap-2">
-            <ShieldAlert className="w-4 h-4 text-[#dd5b00] shrink-0 mt-0.5" />
+            <ShieldAlert className="w-4 h-4 text-blocker shrink-0 mt-0.5" />
             <div>
-              <div className="text-xs font-semibold text-[#793400]">
+              <div className="text-xs font-semibold text-blocker">
                 Execution Blocked ({activeBlockers.length} Active Prerequisite{activeBlockers.length > 1 ? 's' : ''})
               </div>
-              <p className="text-[11px] text-[#793400]/90 mt-0.5 leading-normal">
+              <p className="text-[11px] text-blocker/90 mt-0.5 leading-normal">
                 This issue cannot transition to <span className="font-semibold">DONE</span> until all active upstream
                 tasks are completed or cancelled.
               </p>
@@ -114,18 +133,18 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({ issue }) =
       <div>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#787671]">
+            <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
               Blocked By (Upstream)
             </span>
-            <span className="text-[11px] font-medium px-1.5 py-0.2 rounded-full bg-[#f0eeec] text-[#5d5b54]">
+            <span className="text-[11px] font-medium px-1.5 py-0.2 rounded-full bg-surface-muted text-text-secondary">
               {upstreamDependencies.length}
             </span>
           </div>
 
-          {!isAddingBlocker && (
+          {!isReadOnly && !isAddingBlocker && (
             <button
               onClick={() => setIsAddingBlocker(true)}
-              className="inline-flex items-center gap-1 text-xs font-medium text-[#5645d4] hover:text-[#4534b3] px-2 py-0.5 rounded hover:bg-purple-50 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:opacity-90 px-2 py-0.5 rounded hover:bg-accent/10 transition-colors cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Blocker</span>
@@ -134,36 +153,36 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({ issue }) =
         </div>
 
         {/* Add Blocker Combobox */}
-        {isAddingBlocker && (
-          <div className="p-2.5 mb-3 bg-[#fafaf9] rounded-lg border border-[#e5e3df] text-xs space-y-2 animate-in fade-in duration-100">
-            <div className="flex items-center justify-between font-medium text-[#1a1a1a]">
+        {!isReadOnly && isAddingBlocker && (
+          <div className="p-2.5 mb-3 bg-surface-subtle rounded-lg border border-border text-xs space-y-2 animate-in fade-in duration-100">
+            <div className="flex items-center justify-between font-medium text-text-primary">
               <span>Select an issue that BLOCKS {issue.key}:</span>
               <button
                 onClick={() => {
                   setIsAddingBlocker(false);
                   setSearchTerm('');
                 }}
-                className="text-[11px] text-[#787671] hover:text-[#1a1a1a]"
+                className="text-[11px] text-text-muted hover:text-text-primary"
               >
                 Cancel
               </button>
             </div>
 
             <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-2 text-[#787671] top-2" />
+              <Search className="w-3.5 h-3.5 absolute left-2 text-text-muted top-2" />
               <input
                 type="text"
                 autoFocus
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
                 placeholder="Search by issue key or title..."
-                className="w-full pl-7 pr-3 py-1.5 text-xs bg-white border border-[#c8c4be] rounded focus:outline-none focus:border-[#5645d4]"
+                className="w-full pl-7 pr-3 py-1.5 text-xs bg-surface-base border border-border-strong rounded focus:outline-none focus:border-accent"
               />
             </div>
 
             <div className="max-h-40 overflow-y-auto space-y-1">
               {eligibleBlockerCandidates.length === 0 ? (
-                <div className="py-2 text-center text-[#787671] text-[11px]">
+                <div className="py-2 text-center text-text-muted text-[11px]">
                   No matching issues found in workspace.
                 </div>
               ) : (
@@ -178,18 +197,18 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({ issue }) =
                       className={`flex items-center justify-between p-1.5 rounded transition-colors ${
                         cycleCheck.hasCycle
                           ? 'opacity-50 bg-red-50/50 cursor-not-allowed'
-                          : 'hover:bg-white hover:border-[#e5e3df] border border-transparent cursor-pointer'
+                          : 'hover:bg-surface-base hover:border-border border border-transparent cursor-pointer'
                       }`}
                     >
                       <div className="flex items-center gap-2 truncate mr-2">
                         <PriorityIcon priority={candidate.priority} size="sm" />
-                        <span className="font-mono font-semibold text-[#5645d4]">{candidate.key}</span>
-                        <span className="truncate text-[#37352f]">{candidate.title}</span>
+                        <span className="font-mono font-semibold text-accent">{candidate.key}</span>
+                        <span className="truncate text-text-secondary">{candidate.title}</span>
                       </div>
 
                       <div className="flex items-center gap-1.5 shrink-0">
                         {cycleCheck.hasCycle ? (
-                          <span className="text-[10px] text-red-600 font-semibold flex items-center gap-1">
+                          <span className="text-[10px] text-danger font-semibold flex items-center gap-1">
                             <AlertTriangle className="w-3 h-3" /> Cycle Risk
                           </span>
                         ) : (
@@ -206,7 +225,7 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({ issue }) =
 
         {/* Existing Upstream Blockers List */}
         {upstreamDependencies.length === 0 ? (
-          <div className="py-2.5 px-3 bg-[#fafaf9] rounded-lg border border-dashed border-[#e5e3df] text-center text-xs text-[#787671]">
+          <div className="py-2.5 px-3 bg-surface-subtle rounded-lg border border-dashed border-border text-center text-xs text-text-muted">
             No blockers. This issue can proceed directly.
           </div>
         ) : (
@@ -219,37 +238,39 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({ issue }) =
                   key={dependencyId}
                   className={`flex items-center justify-between p-2 rounded-lg border text-xs transition-colors ${
                     isActive
-                      ? 'bg-[#ffe8d4]/40 border-[#ffd3ad]'
-                      : 'bg-[#fafaf9] border-[#e5e3df] opacity-80'
+                      ? 'bg-blocker/10 border-blocker/30'
+                      : 'bg-surface-subtle border-border opacity-80'
                   }`}
                 >
                   <div
                     className="flex items-center gap-2 truncate mr-2 cursor-pointer group"
-                    onClick={() => setSelectedIssueId(blocker.id)}
+                    onClick={() => handleIssueClick(blocker)}
                   >
                     {isActive ? (
-                      <ShieldAlert className="w-3.5 h-3.5 text-[#dd5b00] shrink-0" />
+                      <ShieldAlert className="w-3.5 h-3.5 text-blocker shrink-0" />
                     ) : (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-[#1aae39] shrink-0" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
                     )}
-                    <span className="font-mono font-semibold text-[#5645d4] group-hover:underline">
+                    <span className="font-mono font-semibold text-accent group-hover:underline">
                       {blocker.key}
                     </span>
-                    <span className="truncate text-[#37352f]">{blocker.title}</span>
+                    <span className="truncate text-text-secondary">{blocker.title}</span>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
                     <StatePill state={blocker.state} size="sm" />
-                    <button
-                      onClick={e => {
-                        e.stopPropagation();
-                        removeDependency(dependencyId);
-                      }}
-                      className="p-1 text-[#a4a097] hover:text-red-600 rounded hover:bg-white transition-colors cursor-pointer"
-                      title="Remove dependency"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    {!isReadOnly && (
+                      <button
+                        onClick={e => {
+                          e.stopPropagation();
+                          removeDependency(dependencyId);
+                        }}
+                        className="p-1 text-text-muted hover:text-danger rounded hover:bg-surface-base transition-colors cursor-pointer"
+                        title="Remove dependency"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -259,18 +280,18 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({ issue }) =
       </div>
 
       {/* 3. Blocks (Downstream) Section */}
-      <div className="pt-2 border-t border-[#e5e3df]">
+      <div className="pt-2 border-t border-border">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-[#787671]">
+          <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
             Blocks (Downstream Work)
           </span>
-          <span className="text-[11px] font-medium px-1.5 py-0.2 rounded-full bg-[#f0eeec] text-[#5d5b54]">
+          <span className="text-[11px] font-medium px-1.5 py-0.2 rounded-full bg-surface-muted text-text-secondary">
             {downstreamDependencies.length}
           </span>
         </div>
 
         {downstreamDependencies.length === 0 ? (
-          <div className="py-2.5 px-3 bg-[#fafaf9] rounded-lg border border-dashed border-[#e5e3df] text-center text-xs text-[#787671]">
+          <div className="py-2.5 px-3 bg-surface-subtle rounded-lg border border-dashed border-border text-center text-xs text-text-muted">
             Does not block any downstream tasks.
           </div>
         ) : (
@@ -278,15 +299,15 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({ issue }) =
             {downstreamDependencies.map(({ dependencyId, issue: downstream }) => (
               <div
                 key={dependencyId}
-                onClick={() => setSelectedIssueId(downstream.id)}
-                className="flex items-center justify-between p-2 rounded-lg border border-[#e5e3df] bg-white hover:border-[#5645d4] text-xs cursor-pointer group transition-colors"
+                onClick={() => handleIssueClick(downstream)}
+                className="flex items-center justify-between p-2 rounded-lg border border-border bg-surface-base hover:border-accent text-xs cursor-pointer group transition-colors"
               >
                 <div className="flex items-center gap-2 truncate mr-2">
-                  <ArrowRight className="w-3.5 h-3.5 text-[#5645d4] shrink-0" />
-                  <span className="font-mono font-semibold text-[#5645d4] group-hover:underline">
+                  <ArrowRight className="w-3.5 h-3.5 text-accent shrink-0" />
+                  <span className="font-mono font-semibold text-accent group-hover:underline">
                     {downstream.key}
                   </span>
-                  <span className="truncate text-[#37352f]">{downstream.title}</span>
+                  <span className="truncate text-text-secondary">{downstream.title}</span>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
