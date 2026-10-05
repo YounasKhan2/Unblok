@@ -6,7 +6,6 @@
 import React, { useState } from 'react';
 import { Modal } from '../../../components/ui/Modal';
 import { Button } from '../../../components/ui/Button';
-import { Bookmark, Sparkles } from 'lucide-react';
 
 interface SavedViewModalProps {
   isOpen: boolean;
@@ -41,8 +40,8 @@ export const SavedViewModal: React.FC<SavedViewModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-xs">
         <div>
-          <label className="block text-xs font-semibold text-[#1a1a1a] mb-1">
-            View Name <span className="text-red-500">*</span>
+          <label className="block text-xs font-semibold text-text-primary mb-1">
+            View Name <span className="text-danger">*</span>
           </label>
           <input
             type="text"
@@ -51,18 +50,18 @@ export const SavedViewModal: React.FC<SavedViewModalProps> = ({
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="e.g. Blocked Triage, Critical Path, Frontend Queue"
-            className="w-full px-3 py-2 text-xs bg-[#fafaf9] border border-[#e5e3df] focus:border-[#5645d4] rounded-[6px] focus:outline-none focus:bg-white"
+            className="w-full px-3 py-2 text-xs bg-surface-subtle border border-border focus:border-accent rounded-[6px] focus:outline-none focus:bg-white"
           />
         </div>
 
         {currentFilterDescription && (
-          <div className="p-2.5 bg-[#f6f5f4] rounded-[6px] border border-[#e5e3df] text-[11px] text-[#5d5b54]">
-            <span className="font-semibold text-[#1a1a1a]">Saved parameters: </span>
+          <div className="p-2.5 bg-surface-muted rounded-[6px] border border-border text-[11px] text-text-secondary">
+            <span className="font-semibold text-text-primary">Saved parameters: </span>
             <span>{currentFilterDescription}</span>
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#e5e3df]">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
           <Button variant="secondary" size="sm" type="button" onClick={onClose}>
             Cancel
           </Button>

@@ -52,46 +52,46 @@ export const ProjectPlanningPage: React.FC = () => {
   );
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#fafaf9] p-4 sm:p-6 space-y-6 select-none">
+    <div className="flex-1 overflow-y-auto bg-surface-subtle p-4 sm:p-6 space-y-6 select-none">
       {/* 1. Header Banner */}
-      <div className="bg-white border border-[#e5e3df] p-4 rounded-lg flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-white border border-border p-4 rounded-lg flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-sm font-bold text-[#1a1a1a] mb-0.5">Project Delivery Plan</h2>
-          <p className="text-xs text-[#787671]">
+          <h2 className="text-sm font-bold text-text-primary mb-0.5">Project Delivery Plan</h2>
+          <p className="text-xs text-text-muted">
             Active cycle allocation and milestone mapping for {project.name}.
           </p>
         </div>
 
         {activeCycle && (
           <div className="flex items-center gap-2 bg-purple-50 border border-purple-200 px-3 py-1.5 rounded-lg text-xs">
-            <Clock className="w-3.5 h-3.5 text-[#5645d4]" />
-            <span className="font-semibold text-[#5645d4]">{activeCycle.name}</span>
-            <span className="text-[#787671]">({activeCycle.startDate} → {activeCycle.endDate})</span>
+            <Clock className="w-3.5 h-3.5 text-accent" />
+            <span className="font-semibold text-accent">{activeCycle.name}</span>
+            <span className="text-text-muted">({activeCycle.startDate} → {activeCycle.endDate})</span>
           </div>
         )}
       </div>
 
       {/* 2. Active Cycle Sprint Queue */}
-      <section className="bg-white border border-[#e5e3df] rounded-lg overflow-hidden">
-        <div className="px-4 py-2.5 bg-[#fafaf9] border-b border-[#e5e3df] flex items-center justify-between">
+      <section className="bg-white border border-border rounded-lg overflow-hidden">
+        <div className="px-4 py-2.5 bg-surface-subtle border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-[#5645d4]" />
-            <h3 className="text-xs font-bold text-[#1a1a1a] uppercase tracking-wider">
+            <Clock className="w-4 h-4 text-accent" />
+            <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider">
               Current Cycle Allocation
             </h3>
-            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-[#5645d4]">
+            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-accent">
               {cycleIssues.length} tasks
             </span>
           </div>
 
-          <span className="text-[11px] text-[#787671]">
+          <span className="text-[11px] text-text-muted">
             {activeCycle ? activeCycle.name : 'No active team cycle'}
           </span>
         </div>
 
-        <div className="divide-y divide-[#e5e3df]">
+        <div className="divide-y divide-border">
           {cycleIssues.length === 0 ? (
-            <div className="px-4 py-6 text-center text-xs text-[#787671] italic">
+            <div className="px-4 py-6 text-center text-xs text-text-muted italic">
               No tasks currently allocated to this cycle.
             </div>
           ) : (
@@ -99,12 +99,12 @@ export const ProjectPlanningPage: React.FC = () => {
               <div
                 key={issue.id}
                 onClick={() => openDrawer(issue.key)}
-                className="flex items-center justify-between h-[36px] px-4 hover:bg-[#f6f5f4] cursor-pointer transition-colors text-xs"
+                className="flex items-center justify-between h-[36px] px-4 hover:bg-surface-muted cursor-pointer transition-colors text-xs"
               >
                 <div className="flex items-center gap-2 truncate mr-3 flex-1 min-w-0">
                   <PriorityIcon priority={issue.priority} size="sm" />
-                  <span className="font-mono font-bold text-[#5645d4]">{issue.key}</span>
-                  <span className="truncate text-[#1a1a1a]">{issue.title}</span>
+                  <span className="font-mono font-bold text-accent">{issue.key}</span>
+                  <span className="truncate text-text-primary">{issue.title}</span>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
@@ -117,14 +117,14 @@ export const ProjectPlanningPage: React.FC = () => {
       </section>
 
       {/* 3. Milestone Rollups */}
-      <section className="bg-white border border-[#e5e3df] rounded-lg overflow-hidden">
-        <div className="px-4 py-2.5 bg-[#fafaf9] border-b border-[#e5e3df] flex items-center justify-between">
+      <section className="bg-white border border-border rounded-lg overflow-hidden">
+        <div className="px-4 py-2.5 bg-surface-subtle border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Target className="w-4 h-4 text-[#5645d4]" />
-            <h3 className="text-xs font-bold text-[#1a1a1a] uppercase tracking-wider">
+            <Target className="w-4 h-4 text-accent" />
+            <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider">
               Associated Strategic Milestones
             </h3>
-            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-[#e5e3df] text-[#52504b]">
+            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-border text-text-secondary">
               {projectMilestones.length}
             </span>
           </div>
@@ -132,7 +132,7 @@ export const ProjectPlanningPage: React.FC = () => {
 
         <div className="p-4 space-y-3">
           {projectMilestones.length === 0 ? (
-            <div className="text-xs text-[#787671] italic">
+            <div className="text-xs text-text-muted italic">
               No strategic milestones currently linked to this project.
             </div>
           ) : (
@@ -143,18 +143,18 @@ export const ProjectPlanningPage: React.FC = () => {
                 milestoneTasks.length > 0 ? Math.round((doneCount / milestoneTasks.length) * 100) : 0;
 
               return (
-                <div key={m.id} className="p-3 bg-[#fafaf9] rounded-lg border border-[#e5e3df]">
+                <div key={m.id} className="p-3 bg-surface-subtle rounded-lg border border-border">
                   <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <span className="font-semibold text-xs text-[#1a1a1a]">{m.name}</span>
-                    <span className="text-[11px] font-mono text-[#787671]">Target: {m.targetDate}</span>
+                    <span className="font-semibold text-xs text-text-primary">{m.name}</span>
+                    <span className="text-[11px] font-mono text-text-muted">Target: {m.targetDate}</span>
                   </div>
-                  <p className="text-[11px] text-[#5d5b54] mb-2">{m.description}</p>
-                  <div className="flex items-center justify-between text-[11px] text-[#787671] mb-1">
+                  <p className="text-[11px] text-text-secondary mb-2">{m.description}</p>
+                  <div className="flex items-center justify-between text-[11px] text-text-muted mb-1">
                     <span>{doneCount} of {milestoneTasks.length} tasks completed</span>
                     <span className="font-semibold">{percent}%</span>
                   </div>
-                  <div className="w-full bg-[#e5e3df] rounded-full h-1 overflow-hidden">
-                    <div className="bg-[#0f7b6c] h-1 rounded-full" style={{ width: `${percent}%` }} />
+                  <div className="w-full bg-border rounded-full h-1 overflow-hidden">
+                    <div className="bg-success h-1 rounded-full" style={{ width: `${percent}%` }} />
                   </div>
                 </div>
               );
@@ -164,30 +164,30 @@ export const ProjectPlanningPage: React.FC = () => {
       </section>
 
       {/* 4. Unscheduled Backlog Preview */}
-      <section className="bg-white border border-[#e5e3df] rounded-lg overflow-hidden">
-        <div className="px-4 py-2.5 bg-[#fafaf9] border-b border-[#e5e3df] flex items-center justify-between">
+      <section className="bg-white border border-border rounded-lg overflow-hidden">
+        <div className="px-4 py-2.5 bg-surface-subtle border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-[#787671]" />
-            <h3 className="text-xs font-bold text-[#1a1a1a] uppercase tracking-wider">
+            <Calendar className="w-4 h-4 text-text-muted" />
+            <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider">
               Unscheduled Backlog
             </h3>
-            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-[#e5e3df] text-[#52504b]">
+            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-border text-text-secondary">
               {backlogIssues.length} tasks
             </span>
           </div>
 
           <Link
             to={`/projects/${project.key}/issues?cycle=UNSCHEDULED`}
-            className="text-[11px] font-medium text-[#5645d4] hover:underline flex items-center gap-1"
+            className="text-[11px] font-medium text-accent hover:underline flex items-center gap-1"
           >
             <span>Triage in issues list</span>
             <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
 
-        <div className="divide-y divide-[#e5e3df] max-h-52 overflow-y-auto">
+        <div className="divide-y divide-border max-h-52 overflow-y-auto">
           {backlogIssues.length === 0 ? (
-            <div className="px-4 py-6 text-center text-xs text-[#787671] italic">
+            <div className="px-4 py-6 text-center text-xs text-text-muted italic">
               All active tasks are assigned to a cycle.
             </div>
           ) : (
@@ -195,12 +195,12 @@ export const ProjectPlanningPage: React.FC = () => {
               <div
                 key={issue.id}
                 onClick={() => openDrawer(issue.key)}
-                className="flex items-center justify-between h-[36px] px-4 hover:bg-[#f6f5f4] cursor-pointer transition-colors text-xs"
+                className="flex items-center justify-between h-[36px] px-4 hover:bg-surface-muted cursor-pointer transition-colors text-xs"
               >
                 <div className="flex items-center gap-2 truncate mr-3 flex-1 min-w-0">
                   <PriorityIcon priority={issue.priority} size="sm" />
-                  <span className="font-mono font-bold text-[#5645d4]">{issue.key}</span>
-                  <span className="truncate text-[#1a1a1a]">{issue.title}</span>
+                  <span className="font-mono font-bold text-accent">{issue.key}</span>
+                  <span className="truncate text-text-primary">{issue.title}</span>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
