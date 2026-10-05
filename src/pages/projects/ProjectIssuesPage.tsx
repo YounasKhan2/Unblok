@@ -13,12 +13,17 @@ import {
   CheckCircle2,
   Calendar,
 } from 'lucide-react';
-import { Project, Team, Issue } from '../../types';
+import { Project, Team, Issue, SavedView } from '../../types';
 import { useProject } from '../../context/ProjectContext';
 import { useKeyboard } from '../../context/KeyboardContext';
 import { useDrawerRoute } from '../../app/router/useDrawerRoute';
 import { selectProjectIssues, ProjectIssuesFilterParams } from '../../features/projects/selectors';
-import { ProjectFilterToolbar, SavedViewItem } from '../../features/projects/components/ProjectFilterToolbar';
+import { ProjectFilterToolbar } from '../../features/projects/components/ProjectFilterToolbar';
+import {
+  resolveProjectSavedViews,
+  createProjectSavedView,
+  applySavedViewToUrl,
+} from '../../features/projects/savedViews';
 import { PriorityIcon } from '../../components/ui/PriorityIcon';
 import { StatePill } from '../../components/ui/StatePill';
 import { BlockerBadge } from '../../components/ui/BlockerBadge';
@@ -40,6 +45,8 @@ export const ProjectIssuesPage: React.FC = () => {
     users,
     cycles,
     milestones,
+    savedViews,
+    saveSavedView,
     selectedIssueIds,
     toggleSelectIssue,
     selectAllIssues,
@@ -94,8 +101,20 @@ export const ProjectIssuesPage: React.FC = () => {
     (updates: Partial<ProjectIssuesFilterParams>) => {
       const next = new URLSearchParams(searchParams);
       for (const [key, val] of Object.entries(updates)) {
-        const paramKey = key === 'assigneeId' ? 'assignee' : key === 'blockerFilter' ? 'blocker' : key === 'cycleId' ? 'cycle' : key;
-        if (!val || val === 'ALL' || (key === 'sort' && val === 'manual') || (key === 'group' && val === 'none')) {
+        const paramKey =
+          key === 'assigneeId'
+            ? 'assignee'
+            : key === 'blockerFilter'
+            ? 'blocker'
+            : key === 'cycleId'
+            ? 'cycle'
+            : key;
+        if (
+          !val ||
+          val === 'ALL' ||
+          (key === 'sort' && val === 'manual') ||
+          (key === 'group' && val === 'none')
+        ) {
           next.delete(paramKey);
         } else {
           next.set(paramKey, val);
@@ -119,37 +138,33 @@ export const ProjectIssuesPage: React.FC = () => {
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
 
-  // Saved Views State
-  const [customSavedViews, setCustomSavedViews] = useState<SavedViewItem[]>([
-    {
-      id: 'active_work',
-      name: 'Active Work',
-      params: { state: 'IN_PROGRESS' },
-    },
-    {
-      id: 'blocked_triage',
-      name: 'Blocked Triage',
-      params: { blockerFilter: 'BLOCKED_ONLY' },
-    },
-    {
-      id: 'by_priority',
-      name: 'Grouped by Priority',
-      params: { group: 'priority', sort: 'priority' },
-    },
-  ]);
+  // Unified Saved Views (scoping to project identity and persisting across refresh)
+  const projectSavedViews = useMemo(
+    () => resolveProjectSavedViews(savedViews, project.id),
+    [savedViews, project.id]
+  );
 
-  const handleSaveView = (name: string) => {
-    const newView: SavedViewItem = {
-      id: `view_${Date.now()}`,
-      name,
-      params: { ...filterParams },
-    };
-    setCustomSavedViews(prev => [...prev, newView]);
-  };
+  const handleSaveView = useCallback(
+    (name: string) => {
+      const newView = createProjectSavedView({
+        name,
+        projectId: project.id,
+        teamId: project.teamId,
+        currentFilters: filterParams,
+        viewMode: 'LIST',
+      });
+      saveSavedView(newView);
+    },
+    [project.id, project.teamId, filterParams, saveSavedView]
+  );
 
-  const handleApplySavedView = (view: SavedViewItem) => {
-    updateFilters(view.params);
-  };
+  const handleApplySavedView = useCallback(
+    (view: SavedView) => {
+      const nextParams = applySavedViewToUrl(view, searchParams);
+      setSearchParams(nextParams, { replace: true });
+    },
+    [searchParams, setSearchParams]
+  );
 
   // Focused issue index for keyboard J/K navigation
   const [focusedIndex, setFocusedIndex] = useState<number>(0);
@@ -165,15 +180,7 @@ export const ProjectIssuesPage: React.FC = () => {
     }));
   };
 
-  // Synchronize drawer key with ProjectContext
-  useEffect(() => {
-    if (drawerIssueKey) {
-      const match = issues.find(i => i.key === drawerIssueKey || i.id === drawerIssueKey);
-      if (match) setSelectedIssueId(match.id);
-    }
-  }, [drawerIssueKey, issues, setSelectedIssueId]);
-
-  // Register keyboard shortcuts with KeyboardContext
+  // Keyboard navigation
   useEffect(() => {
     registerCanvasHandlers({
       onNext: () => {
@@ -198,6 +205,7 @@ export const ProjectIssuesPage: React.FC = () => {
       },
       onOpen: () => {
         if (currentFocusedIssue) {
+          setSelectedIssueId(currentFocusedIssue.id);
           openDrawer(currentFocusedIssue.key);
         }
       },
@@ -217,12 +225,15 @@ export const ProjectIssuesPage: React.FC = () => {
     drawerIssueKey,
     openDrawer,
     navigateToAdjacentIssue,
+    setSelectedIssueId,
     toggleSelectIssue,
     registerCanvasHandlers,
   ]);
 
+  // Master selection helpers
   const isAllSelected =
-    filteredIssues.length > 0 && filteredIssues.every(i => selectedIssueIds.includes(i.id));
+    filteredIssues.length > 0 &&
+    filteredIssues.every(i => selectedIssueIds.includes(i.id));
   const isSomeSelected =
     filteredIssues.some(i => selectedIssueIds.includes(i.id)) && !isAllSelected;
 
@@ -230,12 +241,7 @@ export const ProjectIssuesPage: React.FC = () => {
     if (isAllSelected) {
       clearSelection();
     } else {
-      // Select all visible filtered issues
-      filteredIssues.forEach(i => {
-        if (!selectedIssueIds.includes(i.id)) {
-          toggleSelectIssue(i.id);
-        }
-      });
+      selectAllIssues();
     }
   };
 
@@ -260,7 +266,7 @@ export const ProjectIssuesPage: React.FC = () => {
         onClearFilters={clearFilters}
         users={users}
         cycles={cycles}
-        savedViews={customSavedViews}
+        savedViews={projectSavedViews}
         onApplySavedView={handleApplySavedView}
         onSaveView={handleSaveView}
       />
@@ -269,11 +275,11 @@ export const ProjectIssuesPage: React.FC = () => {
       <div className="flex-1 overflow-y-auto min-h-0 bg-white" tabIndex={0}>
         {totalProjectIssuesCount === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 text-center">
-            <div className="w-10 h-10 rounded-full bg-[#f6f5f4] flex items-center justify-center mb-3 text-[#787671]">
+            <div className="w-10 h-10 rounded-full bg-surface-muted flex items-center justify-center mb-3 text-text-muted">
               <List className="w-5 h-5" />
             </div>
-            <h3 className="text-sm font-bold text-[#1a1a1a] mb-1">No issues in this project yet</h3>
-            <p className="text-xs text-[#787671] max-w-sm mb-4 leading-relaxed">
+            <h3 className="text-sm font-bold text-text-primary mb-1">No issues in this project yet</h3>
+            <p className="text-xs text-text-muted max-w-sm mb-4 leading-relaxed">
               Begin by creating the first issue for {project.name}.
             </p>
             <Button variant="primary" size="sm" onClick={() => setIsCreateModalOpen(true)}>
@@ -282,7 +288,7 @@ export const ProjectIssuesPage: React.FC = () => {
           </div>
         ) : filteredIssues.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 text-center">
-            <p className="text-xs text-[#787671] mb-3">
+            <p className="text-xs text-text-muted mb-3">
               No issues match your active search or filters.
             </p>
             <Button variant="secondary" size="sm" onClick={clearFilters}>
@@ -292,7 +298,7 @@ export const ProjectIssuesPage: React.FC = () => {
         ) : (
           <div>
             {/* Table Header */}
-            <div className="flex items-center h-[28px] px-3 bg-[#fafaf9] border-b border-[#e5e3df] text-[11px] font-semibold text-[#787671] uppercase tracking-wider sticky top-0 z-20">
+            <div className="flex items-center h-[28px] px-3 bg-surface-subtle border-b border-border text-[11px] font-semibold text-text-muted uppercase tracking-wider sticky top-0 z-20">
               <div className="w-5 shrink-0 flex items-center pr-1">
                 <input
                   type="checkbox"
@@ -301,7 +307,7 @@ export const ProjectIssuesPage: React.FC = () => {
                     if (el) el.indeterminate = isSomeSelected;
                   }}
                   onChange={handleMasterToggle}
-                  className="w-3.5 h-3.5 rounded-[3px] border-[#c8c4be] text-[#5645d4] focus:ring-0 cursor-pointer"
+                  className="w-3.5 h-3.5 rounded-[3px] border-border-strong text-accent focus:ring-0 cursor-pointer"
                   title="Select all filtered issues (Cmd+A)"
                 />
               </div>
@@ -324,11 +330,11 @@ export const ProjectIssuesPage: React.FC = () => {
                   {showGroupHeader && (
                     <div
                       onClick={() => toggleGroupCollapse(groupItem.id)}
-                      className="flex items-center justify-between px-3 py-1.5 bg-[#f6f5f4] border-b border-[#e5e3df] text-xs cursor-pointer select-none group sticky top-[28px] z-10"
+                      className="flex items-center justify-between px-3 py-1.5 bg-surface-muted border-b border-border text-xs cursor-pointer select-none group sticky top-[28px] z-10"
                     >
                       <div className="flex items-center gap-2">
                         <button
-                          className="p-0.5 text-[#787671] group-hover:text-[#1a1a1a] transition-colors"
+                          className="p-0.5 text-text-muted group-hover:text-text-primary transition-colors"
                           aria-label={isCollapsed ? 'Expand group' : 'Collapse group'}
                         >
                           {isCollapsed ? (
@@ -337,12 +343,12 @@ export const ProjectIssuesPage: React.FC = () => {
                             <ChevronDown className="w-3.5 h-3.5" />
                           )}
                         </button>
-                        <span className="font-bold text-[#1a1a1a]">{groupItem.title}</span>
-                        <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#e5e3df] text-[#52504b]">
+                        <span className="font-bold text-text-primary">{groupItem.title}</span>
+                        <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-border text-text-secondary">
                           {groupItem.count}
                         </span>
                         {groupItem.subtitle && (
-                          <span className="text-[11px] text-[#787671]">· {groupItem.subtitle}</span>
+                          <span className="text-[11px] text-text-muted">· {groupItem.subtitle}</span>
                         )}
                       </div>
                     </div>
@@ -366,17 +372,17 @@ export const ProjectIssuesPage: React.FC = () => {
                             setSelectedIssueId(issue.id);
                             openDrawer(issue.key);
                           }}
-                          className={`group relative flex items-center h-[34px] px-3 border-b border-[#e5e3df] text-xs cursor-pointer select-none transition-colors ${
+                          className={`group relative flex items-center h-[34px] px-3 border-b border-border text-xs cursor-pointer select-none transition-colors ${
                             isMultiSelected
-                              ? 'bg-[#5645d4]/12'
+                              ? 'bg-accent/12'
                               : isSelected
-                              ? 'bg-[#5645d4]/8 font-medium'
-                              : 'hover:bg-[#f6f5f4] bg-white'
+                              ? 'bg-accent/8 font-medium'
+                              : 'hover:bg-surface-muted bg-white'
                           }`}
                         >
                           {/* Selection indicator bar */}
                           {isSelected && (
-                            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#5645d4]" />
+                            <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-accent" />
                           )}
 
                           {/* Multi-select Checkbox */}
@@ -391,7 +397,7 @@ export const ProjectIssuesPage: React.FC = () => {
                               type="checkbox"
                               checked={isMultiSelected}
                               onChange={() => {}}
-                              className="w-3.5 h-3.5 rounded-[3px] border-[#c8c4be] text-[#5645d4] focus:ring-0 cursor-pointer"
+                              className="w-3.5 h-3.5 rounded-[3px] border-border-strong text-accent focus:ring-0 cursor-pointer"
                               aria-label={`Select ${issue.key}`}
                             />
                           </div>
@@ -402,7 +408,7 @@ export const ProjectIssuesPage: React.FC = () => {
                           </div>
 
                           {/* Issue Key */}
-                          <div className="w-20 shrink-0 font-mono font-semibold text-[#5645d4] group-hover:underline">
+                          <div className="w-20 shrink-0 font-mono font-semibold text-accent group-hover:underline">
                             {issue.key}
                           </div>
 
@@ -412,7 +418,7 @@ export const ProjectIssuesPage: React.FC = () => {
                               className={`truncate ${
                                 issue.state === 'CANCELLED'
                                   ? 'line-through text-[#a4a097]'
-                                  : 'text-[#1a1a1a]'
+                                  : 'text-text-primary'
                               }`}
                             >
                               {issue.title}
@@ -440,20 +446,20 @@ export const ProjectIssuesPage: React.FC = () => {
                           {/* Assignee */}
                           <div className="w-28 shrink-0 hidden md:flex items-center gap-1.5 truncate">
                             <Avatar user={assignee} size="xs" />
-                            <span className="truncate text-[#787671]">
+                            <span className="truncate text-text-muted">
                               {assignee ? assignee.name.split(' ')[0] : '—'}
                             </span>
                           </div>
 
                           {/* Due Date */}
-                          <div className="w-24 shrink-0 hidden lg:flex items-center justify-end gap-1 text-[11px] text-[#787671] pr-2">
+                          <div className="w-24 shrink-0 hidden lg:flex items-center justify-end gap-1 text-[11px] text-text-muted pr-2">
                             {issue.dueDate ? (
                               <>
                                 <Calendar className="w-3 h-3 text-[#a4a097]" />
                                 <span>{issue.dueDate}</span>
                               </>
                             ) : (
-                              <span className="text-[#c8c4be]">—</span>
+                              <span className="text-border-strong">—</span>
                             )}
                           </div>
                         </div>

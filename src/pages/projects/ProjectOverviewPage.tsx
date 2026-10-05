@@ -49,64 +49,64 @@ export const ProjectOverviewPage: React.FC = () => {
   const usersMap = React.useMemo(() => new Map(users.map(u => [u.id, u])), [users]);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#fafaf9] p-4 sm:p-6 space-y-6 select-none">
+    <div className="flex-1 overflow-y-auto bg-surface-subtle p-4 sm:p-6 space-y-6 select-none">
       {/* 1. Operational Summary Strip (Concise, high-density, no vanity KPI cards) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-        <div className="bg-white border border-[#e5e3df] p-3 rounded-lg">
-          <div className="text-[11px] font-semibold text-[#787671] uppercase tracking-wider mb-1 flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5 text-[#5645d4]" />
+        <div className="bg-white border border-border p-3 rounded-lg">
+          <div className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-1 flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5 text-accent" />
             <span>Active Triage</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-xl font-bold text-[#1a1a1a] font-mono">
+            <span className="text-xl font-bold text-text-primary font-mono">
               {summary.activeIssues}
             </span>
-            <span className="text-[11px] text-[#787671]">of {summary.totalIssues} total</span>
+            <span className="text-[11px] text-text-muted">of {summary.totalIssues} total</span>
           </div>
         </div>
 
-        <div className="bg-white border border-[#e5e3df] p-3 rounded-lg">
-          <div className="text-[11px] font-semibold text-[#787671] uppercase tracking-wider mb-1 flex items-center gap-1.5">
-            <ShieldAlert className="w-3.5 h-3.5 text-[#dd5b00]" />
+        <div className="bg-white border border-border p-3 rounded-lg">
+          <div className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-1 flex items-center gap-1.5">
+            <ShieldAlert className="w-3.5 h-3.5 text-blocker" />
             <span>Prerequisites Blocked</span>
           </div>
           <div className="flex items-baseline gap-2">
             <span
               className={`text-xl font-bold font-mono ${
-                summary.blockedIssues > 0 ? 'text-[#dd5b00]' : 'text-[#1a1a1a]'
+                summary.blockedIssues > 0 ? 'text-blocker' : 'text-text-primary'
               }`}
             >
               {summary.blockedIssues}
             </span>
-            <span className="text-[11px] text-[#787671]">
+            <span className="text-[11px] text-text-muted">
               {summary.blockedIssues > 0 ? 'require upstream unblocking' : 'no active blockers'}
             </span>
           </div>
         </div>
 
-        <div className="bg-white border border-[#e5e3df] p-3 rounded-lg">
-          <div className="text-[11px] font-semibold text-[#787671] uppercase tracking-wider mb-1 flex items-center gap-1.5">
-            <GitFork className="w-3.5 h-3.5 text-[#5645d4]" />
+        <div className="bg-white border border-border p-3 rounded-lg">
+          <div className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-1 flex items-center gap-1.5">
+            <GitFork className="w-3.5 h-3.5 text-accent" />
             <span>Blocking Downstream</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-xl font-bold text-[#5645d4] font-mono">
+            <span className="text-xl font-bold text-accent font-mono">
               {summary.blockingDownstream}
             </span>
-            <span className="text-[11px] text-[#787671]">tasks waiting on this project</span>
+            <span className="text-[11px] text-text-muted">tasks waiting on this project</span>
           </div>
         </div>
 
-        <div className="bg-white border border-[#e5e3df] p-3 rounded-lg">
-          <div className="text-[11px] font-semibold text-[#787671] uppercase tracking-wider mb-1 flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5 text-[#0f7b6c]" />
+        <div className="bg-white border border-border p-3 rounded-lg">
+          <div className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-1 flex items-center gap-1.5">
+            <CheckCircle2 className="w-3.5 h-3.5 text-success" />
             <span>Completed</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-xl font-bold text-[#0f7b6c] font-mono">
+            <span className="text-xl font-bold text-success font-mono">
               {summary.completedIssues}
             </span>
-            <span className="text-[11px] text-[#787671]">
+            <span className="text-[11px] text-text-muted">
               {summary.totalIssues > 0
                 ? `${Math.round((summary.completedIssues / summary.totalIssues) * 100)}% resolved`
                 : 'none'}
@@ -116,33 +116,33 @@ export const ProjectOverviewPage: React.FC = () => {
       </div>
 
       {/* 2. Needs Attention Section */}
-      <section className="bg-white border border-[#e5e3df] rounded-lg overflow-hidden">
-        <div className="px-4 py-2.5 bg-[#fafaf9] border-b border-[#e5e3df] flex items-center justify-between">
+      <section className="bg-white border border-border rounded-lg overflow-hidden">
+        <div className="px-4 py-2.5 bg-surface-subtle border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 text-[#dd5b00]" />
-            <h2 className="text-xs font-bold text-[#1a1a1a] uppercase tracking-wider">
+            <ShieldAlert className="w-4 h-4 text-blocker" />
+            <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider">
               Needs Attention
             </h2>
-            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-[#fff5ee] text-[#dd5b00] border border-[#ffd8be]">
+            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-[#fff5ee] text-blocker border border-[#ffd8be]">
               {needsAttention.length}
             </span>
-            <span className="text-[11px] text-[#787671] hidden sm:inline ml-1">
+            <span className="text-[11px] text-text-muted hidden sm:inline ml-1">
               Blocked issues, urgent priorities, and items due soon
             </span>
           </div>
 
           <Link
             to={`/projects/${project.key}/issues?blocker=BLOCKED_ONLY`}
-            className="text-[11px] font-medium text-[#5645d4] hover:underline flex items-center gap-1"
+            className="text-[11px] font-medium text-accent hover:underline flex items-center gap-1"
           >
             <span>View in issues list</span>
             <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
 
-        <div className="divide-y divide-[#e5e3df]">
+        <div className="divide-y divide-border">
           {needsAttention.length === 0 ? (
-            <div className="px-4 py-6 text-center text-xs text-[#787671] italic">
+            <div className="px-4 py-6 text-center text-xs text-text-muted italic">
               No blocked or urgent issues currently requiring immediate attention.
             </div>
           ) : (
@@ -154,14 +154,14 @@ export const ProjectOverviewPage: React.FC = () => {
                 <div
                   key={issue.id}
                   onClick={() => openDrawer(issue.key)}
-                  className="flex items-center justify-between h-[38px] px-4 hover:bg-[#f6f5f4] cursor-pointer transition-colors text-xs"
+                  className="flex items-center justify-between h-[38px] px-4 hover:bg-surface-muted cursor-pointer transition-colors text-xs"
                 >
                   <div className="flex items-center gap-2.5 truncate mr-3 flex-1 min-w-0">
                     <PriorityIcon priority={issue.priority} size="sm" />
-                    <span className="font-mono font-bold text-[#5645d4] hover:underline">
+                    <span className="font-mono font-bold text-accent hover:underline">
                       {issue.key}
                     </span>
-                    <span className="truncate text-[#1a1a1a] font-medium">{issue.title}</span>
+                    <span className="truncate text-text-primary font-medium">{issue.title}</span>
                   </div>
 
                   <div className="flex items-center gap-3 shrink-0">
@@ -179,30 +179,30 @@ export const ProjectOverviewPage: React.FC = () => {
       {/* 3. Active Execution & Downstream Impact Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Active Execution */}
-        <section className="bg-white border border-[#e5e3df] rounded-lg overflow-hidden">
-          <div className="px-4 py-2.5 bg-[#fafaf9] border-b border-[#e5e3df] flex items-center justify-between">
+        <section className="bg-white border border-border rounded-lg overflow-hidden">
+          <div className="px-4 py-2.5 bg-surface-subtle border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-[#5645d4]" />
-              <h2 className="text-xs font-bold text-[#1a1a1a] uppercase tracking-wider">
+              <Clock className="w-4 h-4 text-accent" />
+              <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider">
                 Active Execution
               </h2>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-[#5645d4]">
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-accent">
                 {activeExecution.length}
               </span>
             </div>
 
             <Link
               to={`/projects/${project.key}/board`}
-              className="text-[11px] font-medium text-[#5645d4] hover:underline flex items-center gap-1"
+              className="text-[11px] font-medium text-accent hover:underline flex items-center gap-1"
             >
               <span>View board</span>
               <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
 
-          <div className="divide-y divide-[#e5e3df] max-h-72 overflow-y-auto">
+          <div className="divide-y divide-border max-h-72 overflow-y-auto">
             {activeExecution.length === 0 ? (
-              <div className="px-4 py-6 text-center text-xs text-[#787671] italic">
+              <div className="px-4 py-6 text-center text-xs text-text-muted italic">
                 No tasks currently in progress or review.
               </div>
             ) : (
@@ -210,12 +210,12 @@ export const ProjectOverviewPage: React.FC = () => {
                 <div
                   key={issue.id}
                   onClick={() => openDrawer(issue.key)}
-                  className="flex items-center justify-between h-[36px] px-4 hover:bg-[#f6f5f4] cursor-pointer transition-colors text-xs"
+                  className="flex items-center justify-between h-[36px] px-4 hover:bg-surface-muted cursor-pointer transition-colors text-xs"
                 >
                   <div className="flex items-center gap-2 truncate mr-3 flex-1 min-w-0">
                     <PriorityIcon priority={issue.priority} size="sm" />
-                    <span className="font-mono font-bold text-[#5645d4]">{issue.key}</span>
-                    <span className="truncate text-[#1a1a1a]">{issue.title}</span>
+                    <span className="font-mono font-bold text-accent">{issue.key}</span>
+                    <span className="truncate text-text-primary">{issue.title}</span>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
@@ -228,24 +228,24 @@ export const ProjectOverviewPage: React.FC = () => {
         </section>
 
         {/* Blocking Others: Downstream Impact */}
-        <section className="bg-white border border-[#e5e3df] rounded-lg overflow-hidden">
-          <div className="px-4 py-2.5 bg-[#fafaf9] border-b border-[#e5e3df] flex items-center justify-between">
+        <section className="bg-white border border-border rounded-lg overflow-hidden">
+          <div className="px-4 py-2.5 bg-surface-subtle border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <GitFork className="w-4 h-4 text-[#5645d4]" />
-              <h2 className="text-xs font-bold text-[#1a1a1a] uppercase tracking-wider">
+              <GitFork className="w-4 h-4 text-accent" />
+              <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider">
                 Blocking Downstream
               </h2>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-[#5645d4]">
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-accent">
                 {blockingOthers.length}
               </span>
             </div>
 
-            <span className="text-[11px] text-[#787671]">Prerequisites for peers</span>
+            <span className="text-[11px] text-text-muted">Prerequisites for peers</span>
           </div>
 
-          <div className="divide-y divide-[#e5e3df] max-h-72 overflow-y-auto">
+          <div className="divide-y divide-border max-h-72 overflow-y-auto">
             {blockingOthers.length === 0 ? (
-              <div className="px-4 py-6 text-center text-xs text-[#787671] italic">
+              <div className="px-4 py-6 text-center text-xs text-text-muted italic">
                 No issues in this project are actively blocking teammate work.
               </div>
             ) : (
@@ -253,24 +253,24 @@ export const ProjectOverviewPage: React.FC = () => {
                 <div
                   key={item.issue.id}
                   onClick={() => openDrawer(item.issue.key)}
-                  className="p-3 hover:bg-[#f6f5f4] cursor-pointer transition-colors text-xs"
+                  className="p-3 hover:bg-surface-muted cursor-pointer transition-colors text-xs"
                 >
                   <div className="flex items-center justify-between gap-2 mb-1">
-                    <div className="flex items-center gap-1.5 font-mono font-bold text-[#5645d4]">
+                    <div className="flex items-center gap-1.5 font-mono font-bold text-accent">
                       <span>{item.issue.key}</span>
-                      <span className="text-[#1a1a1a] font-normal truncate">{item.issue.title}</span>
+                      <span className="text-text-primary font-normal truncate">{item.issue.title}</span>
                     </div>
-                    <span className="text-[11px] font-semibold text-[#5645d4] bg-purple-50 px-1.5 py-0.2 rounded border border-purple-200 shrink-0">
+                    <span className="text-[11px] font-semibold text-accent bg-purple-50 px-1.5 py-0.2 rounded border border-purple-200 shrink-0">
                       Blocks {item.activeDownstreamIssues.length}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5 text-[11px] text-[#787671] truncate pl-2">
+                  <div className="flex items-center gap-1.5 text-[11px] text-text-muted truncate pl-2">
                     <span className="text-[#a4a097]">Downstream:</span>
                     {item.activeDownstreamIssues.slice(0, 3).map(down => (
                       <span
                         key={down.id}
-                        className="font-mono bg-[#f6f5f4] px-1 py-0.2 rounded border border-[#e5e3df] text-[#37352f]"
+                        className="font-mono bg-surface-muted px-1 py-0.2 rounded border border-border text-text-secondary"
                       >
                         {down.key}
                       </span>
@@ -289,15 +289,15 @@ export const ProjectOverviewPage: React.FC = () => {
       {/* 4. Current Cycle & Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Current Cycle Execution */}
-        <section className="bg-white border border-[#e5e3df] rounded-lg overflow-hidden lg:col-span-2">
-          <div className="px-4 py-2.5 bg-[#fafaf9] border-b border-[#e5e3df] flex items-center justify-between">
+        <section className="bg-white border border-border rounded-lg overflow-hidden lg:col-span-2">
+          <div className="px-4 py-2.5 bg-surface-subtle border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-[#5645d4]" />
-              <h2 className="text-xs font-bold text-[#1a1a1a] uppercase tracking-wider">
+              <Calendar className="w-4 h-4 text-accent" />
+              <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider">
                 Current Cycle Execution
               </h2>
               {activeCycle && (
-                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-[#5645d4]">
+                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-accent">
                   {activeCycle.name}
                 </span>
               )}
@@ -305,16 +305,16 @@ export const ProjectOverviewPage: React.FC = () => {
 
             <Link
               to={`/projects/${project.key}/planning`}
-              className="text-[11px] font-medium text-[#5645d4] hover:underline flex items-center gap-1"
+              className="text-[11px] font-medium text-accent hover:underline flex items-center gap-1"
             >
               <span>Planning view</span>
               <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
 
-          <div className="divide-y divide-[#e5e3df] max-h-60 overflow-y-auto">
+          <div className="divide-y divide-border max-h-60 overflow-y-auto">
             {currentCycleIssues.length === 0 ? (
-              <div className="px-4 py-6 text-center text-xs text-[#787671] italic">
+              <div className="px-4 py-6 text-center text-xs text-text-muted italic">
                 No issues allocated to the team&rsquo;s current active cycle.
               </div>
             ) : (
@@ -322,11 +322,11 @@ export const ProjectOverviewPage: React.FC = () => {
                 <div
                   key={issue.id}
                   onClick={() => openDrawer(issue.key)}
-                  className="flex items-center justify-between h-[36px] px-4 hover:bg-[#f6f5f4] cursor-pointer transition-colors text-xs"
+                  className="flex items-center justify-between h-[36px] px-4 hover:bg-surface-muted cursor-pointer transition-colors text-xs"
                 >
                   <div className="flex items-center gap-2 truncate mr-3 flex-1 min-w-0">
-                    <span className="font-mono font-bold text-[#5645d4]">{issue.key}</span>
-                    <span className="truncate text-[#1a1a1a]">{issue.title}</span>
+                    <span className="font-mono font-bold text-accent">{issue.key}</span>
+                    <span className="truncate text-text-primary">{issue.title}</span>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
@@ -339,17 +339,17 @@ export const ProjectOverviewPage: React.FC = () => {
         </section>
 
         {/* Recent Activity */}
-        <section className="bg-white border border-[#e5e3df] rounded-lg overflow-hidden">
-          <div className="px-4 py-2.5 bg-[#fafaf9] border-b border-[#e5e3df] flex items-center gap-2">
-            <Activity className="w-4 h-4 text-[#5645d4]" />
-            <h2 className="text-xs font-bold text-[#1a1a1a] uppercase tracking-wider">
+        <section className="bg-white border border-border rounded-lg overflow-hidden">
+          <div className="px-4 py-2.5 bg-surface-subtle border-b border-border flex items-center gap-2">
+            <Activity className="w-4 h-4 text-accent" />
+            <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider">
               Recent Activity
             </h2>
           </div>
 
-          <div className="divide-y divide-[#e5e3df] max-h-60 overflow-y-auto p-2 space-y-1.5 text-xs">
+          <div className="divide-y divide-border max-h-60 overflow-y-auto p-2 space-y-1.5 text-xs">
             {recentActivity.length === 0 ? (
-              <div className="px-4 py-6 text-center text-xs text-[#787671] italic">
+              <div className="px-4 py-6 text-center text-xs text-text-muted italic">
                 No recent activity logged for this project.
               </div>
             ) : (
@@ -358,17 +358,17 @@ export const ProjectOverviewPage: React.FC = () => {
                   ? event.details.reason
                   : event.eventType.replace(/_/g, ' ').toLowerCase();
                 return (
-                  <div key={event.id} className="p-2 bg-[#fafaf9] rounded border border-[#e5e3df]/60">
-                    <div className="flex items-center justify-between text-[10px] text-[#787671] mb-1">
-                      <span className="font-semibold text-[#1a1a1a]">{event.userName}</span>
+                  <div key={event.id} className="p-2 bg-surface-subtle rounded border border-border/60">
+                    <div className="flex items-center justify-between text-[10px] text-text-muted mb-1">
+                      <span className="font-semibold text-text-primary">{event.userName}</span>
                       <span>
                         {new Date(event.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
-                    <div className="text-[11px] text-[#37352f] leading-snug">
+                    <div className="text-[11px] text-text-secondary leading-snug">
                       {actionLabel}
                       {event.details.from !== undefined && event.details.to !== undefined && (
-                        <span className="ml-1 text-[#787671]">
+                        <span className="ml-1 text-text-muted">
                           ({String(event.details.from)} → {String(event.details.to)})
                         </span>
                       )}

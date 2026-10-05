@@ -155,6 +155,11 @@ export interface FilterState {
   blockerFilter: BlockerFilter;
 }
 
+export interface ProjectExecutionConfig {
+  sort?: string;
+  group?: string;
+}
+
 export interface SavedView {
   id: string;
   name: string;
@@ -162,5 +167,8 @@ export interface SavedView {
   filters: FilterState;
   viewMode?: ViewMode;
   isSystem?: boolean;
+  projectId?: string;
+  executionConfig?: ProjectExecutionConfig;
 }
+
 

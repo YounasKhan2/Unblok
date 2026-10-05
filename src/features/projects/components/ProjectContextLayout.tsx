@@ -57,11 +57,11 @@ export const ProjectContextLayout: React.FC = () => {
   if (!project) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-white">
-        <div className="w-12 h-12 rounded-full bg-[#f6f5f4] flex items-center justify-center mb-4 text-[#787671]">
+        <div className="w-12 h-12 rounded-full bg-surface-muted flex items-center justify-center mb-4 text-text-muted">
           <FolderKanban className="w-6 h-6" />
         </div>
-        <h2 className="text-base font-bold text-[#1a1a1a] mb-1">Project Not Found</h2>
-        <p className="text-xs text-[#787671] max-w-sm mb-6 leading-relaxed">
+        <h2 className="text-base font-bold text-text-primary mb-1">Project Not Found</h2>
+        <p className="text-xs text-text-muted max-w-sm mb-6 leading-relaxed">
           The project identifier &ldquo;{projectKey}&rdquo; does not match any project registered in this workspace.
         </p>
         <Button variant="primary" size="sm" onClick={() => navigate('/projects')}>
@@ -85,29 +85,29 @@ export const ProjectContextLayout: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white">
       {/* 1. Project Context Header (Ultra-compact, non-hero, high density) */}
-      <div className="border-b border-[#e5e3df] bg-white px-4 pt-2 pb-0 shrink-0 select-none">
+      <div className="border-b border-border bg-white px-4 pt-2 pb-0 shrink-0 select-none">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
           {/* Identity & Team ownership */}
           <div className="flex items-center gap-2.5 min-w-0">
             <Link
               to="/projects"
-              className="text-[#787671] hover:text-[#1a1a1a] transition-colors p-1 rounded hover:bg-[#f6f5f4]"
+              className="text-text-muted hover:text-text-primary transition-colors p-1 rounded hover:bg-surface-muted"
               title="Back to all projects"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
             </Link>
 
             <div className="flex items-center gap-2 truncate">
-              <h1 className="text-sm font-bold text-[#1a1a1a] tracking-tight truncate">
+              <h1 className="text-sm font-bold text-text-primary tracking-tight truncate">
                 {project.name}
               </h1>
-              <span className="font-mono text-[10px] font-bold px-1.5 py-0.2 rounded bg-[#f6f5f4] text-[#5645d4] border border-[#e5e3df] shrink-0">
+              <span className="font-mono text-[10px] font-bold px-1.5 py-0.2 rounded bg-surface-muted text-accent border border-border shrink-0">
                 {project.key}
               </span>
             </div>
 
             {team && (
-              <div className="hidden sm:flex items-center gap-1.5 pl-2 border-l border-[#e5e3df] text-xs text-[#787671] shrink-0">
+              <div className="hidden sm:flex items-center gap-1.5 pl-2 border-l border-border text-xs text-text-muted shrink-0">
                 <span
                   className="w-2 h-2 rounded-full shrink-0"
                   style={{ backgroundColor: team.color || '#5645d4' }}
@@ -120,22 +120,22 @@ export const ProjectContextLayout: React.FC = () => {
           {/* Quick Execution Signals & Actions */}
           <div className="flex items-center gap-2.5 text-xs">
             {/* Active issues signal */}
-            <span className="text-xs text-[#787671] hidden md:inline-flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5 text-[#5645d4]" />
+            <span className="text-xs text-text-muted hidden md:inline-flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5 text-accent" />
               <strong>{summary.activeIssues}</strong> active
             </span>
 
             {/* Blocked alert signal */}
             {summary.blockedIssues > 0 && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-[#fff5ee] border border-[#ffd8be] text-[#dd5b00] font-semibold text-xs">
-                <ShieldAlert className="w-3.5 h-3.5 text-[#dd5b00]" />
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-[#fff5ee] border border-[#ffd8be] text-blocker font-semibold text-xs">
+                <ShieldAlert className="w-3.5 h-3.5 text-blocker" />
                 <span>{summary.blockedIssues} blocked</span>
               </span>
             )}
 
             {/* Done signal */}
-            <span className="text-xs text-[#787671] hidden lg:inline-flex items-center gap-1">
-              <CheckCircle2 className="w-3.5 h-3.5 text-[#0f7b6c]" />
+            <span className="text-xs text-text-muted hidden lg:inline-flex items-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5 text-success" />
               <span>{summary.completedIssues} done</span>
             </span>
 
@@ -168,8 +168,8 @@ export const ProjectContextLayout: React.FC = () => {
               className={({ isActive }) =>
                 `px-3 py-1.5 font-medium transition-colors border-b-2 flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
                   isActive
-                    ? 'border-[#5645d4] text-[#1a1a1a] font-semibold'
-                    : 'border-transparent text-[#787671] hover:text-[#1a1a1a] hover:border-[#c8c4be]'
+                    ? 'border-accent text-text-primary font-semibold'
+                    : 'border-transparent text-text-muted hover:text-text-primary hover:border-border-strong'
                 }`
               }
             >

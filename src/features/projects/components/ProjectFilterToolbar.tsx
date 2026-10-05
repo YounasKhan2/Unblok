@@ -15,15 +15,11 @@ import {
   ShieldAlert,
   GitFork,
 } from 'lucide-react';
-import { User, Cycle } from '../../../types';
+import { User, Cycle, SavedView } from '../../../types';
 import { ProjectIssuesFilterParams } from '../selectors';
 import { SavedViewModal } from './SavedViewModal';
 
-export interface SavedViewItem {
-  id: string;
-  name: string;
-  params: ProjectIssuesFilterParams;
-}
+export type SavedViewItem = SavedView;
 
 interface ProjectFilterToolbarProps {
   filters: ProjectIssuesFilterParams;
@@ -31,8 +27,8 @@ interface ProjectFilterToolbarProps {
   onClearFilters: () => void;
   users: User[];
   cycles: Cycle[];
-  savedViews: SavedViewItem[];
-  onApplySavedView: (view: SavedViewItem) => void;
+  savedViews: SavedView[];
+  onApplySavedView: (view: SavedView) => void;
   onSaveView: (name: string) => void;
 }
 
@@ -70,23 +66,23 @@ export const ProjectFilterToolbar: React.FC<ProjectFilterToolbarProps> = ({
     .join(' ');
 
   return (
-    <div className="bg-white border-b border-[#e5e3df] px-4 py-2 flex flex-wrap items-center justify-between gap-2.5 text-xs select-none">
+    <div className="bg-white border-b border-border px-4 py-2 flex flex-wrap items-center justify-between gap-2.5 text-xs select-none">
       {/* 1. Left: Search Bar & Core Filters */}
       <div className="flex items-center gap-2 flex-wrap flex-1 min-w-[280px]">
         {/* Search Input */}
         <div className="relative flex items-center">
-          <Search className="w-3.5 h-3.5 text-[#787671] absolute left-2.5 pointer-events-none" />
+          <Search className="w-3.5 h-3.5 text-text-muted absolute left-2.5 pointer-events-none" />
           <input
             type="text"
             value={filters.searchQuery || ''}
             onChange={e => onFilterChange({ searchQuery: e.target.value })}
             placeholder="Search or is:blocked, priority:... (/)"
-            className="h-7 w-44 sm:w-56 pl-8 pr-7 bg-[#f6f5f4] border border-[#e5e3df] rounded-[5px] text-xs text-[#1a1a1a] placeholder-[#a4a097] focus:bg-white focus:border-[#5645d4] focus:outline-none transition-all"
+            className="h-7 w-44 sm:w-56 pl-8 pr-7 bg-surface-muted border border-border rounded-[5px] text-xs text-text-primary placeholder-[#a4a097] focus:bg-white focus:border-accent focus:outline-none transition-all"
           />
           {filters.searchQuery && (
             <button
               onClick={() => onFilterChange({ searchQuery: '' })}
-              className="absolute right-2 text-[#787671] hover:text-[#1a1a1a] cursor-pointer"
+              className="absolute right-2 text-text-muted hover:text-text-primary cursor-pointer"
               title="Clear search"
             >
               <X className="w-3 h-3" />
@@ -98,7 +94,7 @@ export const ProjectFilterToolbar: React.FC<ProjectFilterToolbarProps> = ({
         <select
           value={filters.state || 'ALL'}
           onChange={e => onFilterChange({ state: e.target.value })}
-          className="h-7 px-2 bg-[#f6f5f4] border border-[#e5e3df] rounded-[5px] text-xs text-[#37352f] hover:border-[#c8c4be] focus:outline-none cursor-pointer"
+          className="h-7 px-2 bg-surface-muted border border-border rounded-[5px] text-xs text-text-secondary hover:border-border-strong focus:outline-none cursor-pointer"
           aria-label="Filter by lifecycle state"
         >
           <option value="ALL">All States</option>
@@ -114,7 +110,7 @@ export const ProjectFilterToolbar: React.FC<ProjectFilterToolbarProps> = ({
         <select
           value={filters.priority || 'ALL'}
           onChange={e => onFilterChange({ priority: e.target.value })}
-          className="h-7 px-2 bg-[#f6f5f4] border border-[#e5e3df] rounded-[5px] text-xs text-[#37352f] hover:border-[#c8c4be] focus:outline-none cursor-pointer hidden sm:inline-block"
+          className="h-7 px-2 bg-surface-muted border border-border rounded-[5px] text-xs text-text-secondary hover:border-border-strong focus:outline-none cursor-pointer hidden sm:inline-block"
           aria-label="Filter by priority"
         >
           <option value="ALL">All Priorities</option>
@@ -128,7 +124,7 @@ export const ProjectFilterToolbar: React.FC<ProjectFilterToolbarProps> = ({
         <select
           value={filters.blockerFilter || 'ALL'}
           onChange={e => onFilterChange({ blockerFilter: e.target.value })}
-          className="h-7 px-2 bg-[#f6f5f4] border border-[#e5e3df] rounded-[5px] text-xs text-[#37352f] hover:border-[#c8c4be] focus:outline-none cursor-pointer"
+          className="h-7 px-2 bg-surface-muted border border-border rounded-[5px] text-xs text-text-secondary hover:border-border-strong focus:outline-none cursor-pointer"
           aria-label="Filter by dependency / blocker status"
         >
           <option value="ALL">All Dependencies</option>
@@ -141,7 +137,7 @@ export const ProjectFilterToolbar: React.FC<ProjectFilterToolbarProps> = ({
         <select
           value={filters.assigneeId || 'ALL'}
           onChange={e => onFilterChange({ assigneeId: e.target.value })}
-          className="h-7 px-2 bg-[#f6f5f4] border border-[#e5e3df] rounded-[5px] text-xs text-[#37352f] hover:border-[#c8c4be] focus:outline-none cursor-pointer hidden md:inline-block"
+          className="h-7 px-2 bg-surface-muted border border-border rounded-[5px] text-xs text-text-secondary hover:border-border-strong focus:outline-none cursor-pointer hidden md:inline-block"
           aria-label="Filter by assignee"
         >
           <option value="ALL">All Assignees</option>
@@ -158,11 +154,11 @@ export const ProjectFilterToolbar: React.FC<ProjectFilterToolbarProps> = ({
       <div className="flex items-center gap-2 flex-wrap">
         {/* Sort Menu */}
         <div className="flex items-center gap-1">
-          <ArrowUpDown className="w-3.5 h-3.5 text-[#787671]" />
+          <ArrowUpDown className="w-3.5 h-3.5 text-text-muted" />
           <select
             value={filters.sort || 'manual'}
             onChange={e => onFilterChange({ sort: e.target.value })}
-            className="h-7 px-2 bg-[#f6f5f4] border border-[#e5e3df] rounded-[5px] text-xs text-[#37352f] hover:border-[#c8c4be] focus:outline-none cursor-pointer"
+            className="h-7 px-2 bg-surface-muted border border-border rounded-[5px] text-xs text-text-secondary hover:border-border-strong focus:outline-none cursor-pointer"
             aria-label="Sort issues"
           >
             <option value="manual">Manual Sort</option>
@@ -175,11 +171,11 @@ export const ProjectFilterToolbar: React.FC<ProjectFilterToolbarProps> = ({
 
         {/* Group Menu */}
         <div className="flex items-center gap-1">
-          <Layers className="w-3.5 h-3.5 text-[#787671]" />
+          <Layers className="w-3.5 h-3.5 text-text-muted" />
           <select
             value={filters.group || 'none'}
             onChange={e => onFilterChange({ group: e.target.value })}
-            className="h-7 px-2 bg-[#f6f5f4] border border-[#e5e3df] rounded-[5px] text-xs text-[#37352f] hover:border-[#c8c4be] focus:outline-none cursor-pointer"
+            className="h-7 px-2 bg-surface-muted border border-border rounded-[5px] text-xs text-text-secondary hover:border-border-strong focus:outline-none cursor-pointer"
             aria-label="Group issues"
           >
             <option value="none">No Grouping</option>
@@ -198,7 +194,7 @@ export const ProjectFilterToolbar: React.FC<ProjectFilterToolbarProps> = ({
               if (view) onApplySavedView(view);
             }}
             defaultValue=""
-            className="h-7 px-2 bg-[#f6f5f4] border border-[#e5e3df] rounded-[5px] text-xs text-[#5645d4] font-medium hover:border-[#c8c4be] focus:outline-none cursor-pointer"
+            className="h-7 px-2 bg-surface-muted border border-border rounded-[5px] text-xs text-accent font-medium hover:border-border-strong focus:outline-none cursor-pointer"
             aria-label="Saved Views"
           >
             <option value="" disabled>
@@ -215,7 +211,7 @@ export const ProjectFilterToolbar: React.FC<ProjectFilterToolbarProps> = ({
         {/* Save Current View Button */}
         <button
           onClick={() => setIsSavedViewModalOpen(true)}
-          className="h-7 px-2 border border-[#e5e3df] hover:border-[#5645d4] hover:text-[#5645d4] rounded-[5px] flex items-center gap-1 text-xs text-[#787671] bg-white transition-colors cursor-pointer"
+          className="h-7 px-2 border border-border hover:border-accent hover:text-accent rounded-[5px] flex items-center gap-1 text-xs text-text-muted bg-white transition-colors cursor-pointer"
           title="Save active filter configuration as a view"
         >
           <Bookmark className="w-3 h-3" />
@@ -226,7 +222,7 @@ export const ProjectFilterToolbar: React.FC<ProjectFilterToolbarProps> = ({
         {hasActiveFilters && (
           <button
             onClick={onClearFilters}
-            className="h-7 px-2 text-[#787671] hover:text-[#1a1a1a] flex items-center gap-1 text-xs hover:bg-[#f6f5f4] rounded-[5px] transition-colors cursor-pointer"
+            className="h-7 px-2 text-text-muted hover:text-text-primary flex items-center gap-1 text-xs hover:bg-surface-muted rounded-[5px] transition-colors cursor-pointer"
             title="Reset all search, filter, sort, and group options"
           >
             <X className="w-3.5 h-3.5" />

@@ -34,6 +34,11 @@ import {
   wouldCreateCycle,
 } from '../domain/dependency';
 import { createActivityEvent, checkBlockerBoundaryEvents } from '../domain/audit';
+import {
+  UNBLOK_STORAGE_NAMESPACE,
+  migrateStorageNamespace,
+  clearAllStoredEntities,
+} from './storageMigration';
 
 interface CompletionGuardError {
   issue: Issue;
@@ -137,6 +142,8 @@ interface ProjectContextType {
   activeSavedViewId: string | null;
   applySavedView: (view: SavedView) => void;
   saveCurrentView: (name: string) => void;
+  saveSavedView: (view: SavedView) => void;
+  deleteSavedView: (viewId: string) => void;
 
   // Cycles & Sprints (Phase B — Planning)
   cycles: Cycle[];
@@ -189,7 +196,10 @@ interface ProjectContextType {
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'kite_execution_state_v1';
+// Perform one-time migration of any legacy Kite prototype data to Unblok
+migrateStorageNamespace();
+
+const STORAGE_KEY = UNBLOK_STORAGE_NAMESPACE;
 
 export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Load state from localStorage or initialize with seed data
@@ -841,6 +851,24 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setActiveSavedViewId(view.id);
   }, []);
 
+  const saveSavedView = useCallback((view: SavedView) => {
+    setSavedViews(prev => {
+      const idx = prev.findIndex(v => v.id === view.id);
+      if (idx >= 0) {
+        const copy = [...prev];
+        copy[idx] = view;
+        return copy;
+      }
+      return [...prev, view];
+    });
+    setActiveSavedViewId(view.id);
+  }, []);
+
+  const deleteSavedView = useCallback((viewId: string) => {
+    setSavedViews(prev => prev.filter(v => v.id !== viewId));
+    setActiveSavedViewId(prev => (prev === viewId ? null : prev));
+  }, []);
+
   const saveCurrentView = useCallback(
     (name: string) => {
       const newView: SavedView = {
@@ -850,10 +878,9 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         viewMode,
         isSystem: false,
       };
-      setSavedViews(prev => [...prev, newView]);
-      setActiveSavedViewId(newView.id);
+      saveSavedView(newView);
     },
-    [filters, viewMode]
+    [filters, viewMode, saveSavedView]
   );
 
   // Navigate through issues (J / K)
@@ -1238,15 +1265,16 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Reset demo data
   const resetToDemoData = useCallback(() => {
-    localStorage.removeItem(`${STORAGE_KEY}_issues`);
-    localStorage.removeItem(`${STORAGE_KEY}_dependencies`);
-    localStorage.removeItem(`${STORAGE_KEY}_projects`);
-    localStorage.removeItem(`${STORAGE_KEY}_activities`);
+    clearAllStoredEntities();
 
     setIssues(INITIAL_ISSUES);
     setDependencies(INITIAL_DEPENDENCIES);
     setProjects(INITIAL_PROJECTS);
     setActivities(INITIAL_ACTIVITIES);
+    setSavedViews(DEFAULT_SAVED_VIEWS);
+    setCycles(INITIAL_CYCLES);
+    setMilestones(INITIAL_MILESTONES);
+    setComments(INITIAL_COMMENTS);
     setSelectedIssueId(INITIAL_ISSUES[1].id);
     setFilters(initialFilters);
   }, []);
@@ -1288,6 +1316,8 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         activeSavedViewId,
         applySavedView,
         saveCurrentView,
+        saveSavedView,
+        deleteSavedView,
         cycles,
         activeCycle,
         updateIssueCycle,
