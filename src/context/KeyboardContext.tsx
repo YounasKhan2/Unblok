@@ -7,7 +7,14 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { useProject } from './ProjectContext';
 import { UserRole } from '../types';
 
-export type KeyboardScope = 'CANVAS' | 'DRAWER_NAV' | 'DRAWER_EDIT' | 'POPOVER' | 'MODAL';
+export type KeyboardScope =
+  | 'CANVAS'
+  | 'DRAWER_NAV'
+  | 'DRAWER_EDIT'
+  | 'POPOVER'
+  | 'MODAL'
+  | 'DEPENDENCY_PAGE'
+  | 'DEPENDENCY_GRAPH';
 
 export type ActivePickerType = 'STATUS' | 'PRIORITY' | 'ASSIGNEE' | 'BLOCKER' | null;
 
@@ -27,6 +34,15 @@ export interface DrawerKeyHandlers {
 
 export interface DetailKeyHandlers {
   onFocusComment?: () => void;
+}
+
+export interface DependencyKeyHandlers {
+  onSelectGraphView?: () => void;
+  onSelectMatrixView?: () => void;
+  onSelectBlockersView?: () => void;
+  onZoomIn?: () => void;
+  onZoomOut?: () => void;
+  onResetZoom?: () => void;
 }
 
 export type KeyAction =
@@ -51,6 +67,12 @@ export type KeyAction =
   | 'OPEN_PRIORITY_PICKER'
   | 'OPEN_ASSIGNEE_PICKER'
   | 'FOCUS_COMMENT_COMPOSER'
+  | 'DEPENDENCY_VIEW_GRAPH'
+  | 'DEPENDENCY_VIEW_MATRIX'
+  | 'DEPENDENCY_VIEW_BLOCKERS'
+  | 'GRAPH_ZOOM_IN'
+  | 'GRAPH_ZOOM_OUT'
+  | 'GRAPH_RESET_ZOOM'
   | 'NONE';
 
 /**
@@ -175,7 +197,44 @@ export function evaluateKeyAction(params: {
     return 'NONE';
   }
 
-  // 10. Canvas Scope
+  // 10. Dependency Graph Scope (+/- for zoom, 1/2/3 for views)
+  if (scope === 'DEPENDENCY_GRAPH') {
+    if (key === '+' || key === '=') {
+      return 'GRAPH_ZOOM_IN';
+    }
+    if (key === '-' || key === '_') {
+      return 'GRAPH_ZOOM_OUT';
+    }
+    if (key === '0') {
+      return 'GRAPH_RESET_ZOOM';
+    }
+    if (key === '1') {
+      return 'DEPENDENCY_VIEW_GRAPH';
+    }
+    if (key === '2') {
+      return 'DEPENDENCY_VIEW_MATRIX';
+    }
+    if (key === '3') {
+      return 'DEPENDENCY_VIEW_BLOCKERS';
+    }
+    return 'NONE';
+  }
+
+  // 11. Dependency Page Scope (1/2/3 for views)
+  if (scope === 'DEPENDENCY_PAGE') {
+    if (key === '1') {
+      return 'DEPENDENCY_VIEW_GRAPH';
+    }
+    if (key === '2') {
+      return 'DEPENDENCY_VIEW_MATRIX';
+    }
+    if (key === '3') {
+      return 'DEPENDENCY_VIEW_BLOCKERS';
+    }
+    return 'NONE';
+  }
+
+  // 12. Canvas Scope
   if (scope === 'CANVAS') {
     if (key === 'j' || key === 'ArrowDown') {
       return 'CANVAS_NEXT';
@@ -210,6 +269,7 @@ interface KeyboardContextType {
   registerCanvasHandlers: (handlers: CanvasKeyHandlers | null) => void;
   registerDrawerHandlers: (handlers: DrawerKeyHandlers | null) => void;
   registerDetailHandlers: (handlers: DetailKeyHandlers | null) => void;
+  registerDependencyHandlers: (handlers: DependencyKeyHandlers | null) => void;
 }
 
 const KeyboardContext = createContext<KeyboardContextType | undefined>(undefined);
@@ -234,6 +294,7 @@ export const KeyboardProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const canvasHandlersRef = useRef<CanvasKeyHandlers | null>(null);
   const drawerHandlersRef = useRef<DrawerKeyHandlers | null>(null);
   const detailHandlersRef = useRef<DetailKeyHandlers | null>(null);
+  const dependencyHandlersRef = useRef<DependencyKeyHandlers | null>(null);
 
   const registerCanvasHandlers = useCallback((handlers: CanvasKeyHandlers | null) => {
     canvasHandlersRef.current = handlers;
@@ -245,6 +306,13 @@ export const KeyboardProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const registerDetailHandlers = useCallback((handlers: DetailKeyHandlers | null) => {
     detailHandlersRef.current = handlers;
+  }, []);
+
+  const [dependencyRegVersion, setDependencyRegVersion] = useState<number>(0);
+
+  const registerDependencyHandlers = useCallback((handlers: DependencyKeyHandlers | null) => {
+    dependencyHandlersRef.current = handlers;
+    setDependencyRegVersion((v) => v + 1);
   }, []);
 
   // Compute scope dynamically based on active layers and focus
@@ -262,10 +330,13 @@ export const KeyboardProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         activeEl instanceof HTMLTextAreaElement ||
         activeEl?.getAttribute('contenteditable') === 'true';
       setScope(isInput ? 'DRAWER_EDIT' : 'DRAWER_NAV');
+    } else if (dependencyHandlersRef.current !== null) {
+      // If dependency handlers are registered, check if zoom is available (graph scope) or general view navigation
+      setScope(dependencyHandlersRef.current.onZoomIn ? 'DEPENDENCY_GRAPH' : 'DEPENDENCY_PAGE');
     } else {
       setScope('CANVAS');
     }
-  }, [isCreateModalOpen, isHelpModalOpen, activePicker, isDrawerOpen]);
+  }, [isCreateModalOpen, isHelpModalOpen, activePicker, isDrawerOpen, dependencyRegVersion]);
 
   const handleGlobalKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -283,6 +354,8 @@ export const KeyboardProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         currentScope = 'POPOVER';
       } else if (isDrawerOpen || drawerHandlersRef.current !== null) {
         currentScope = isInputFocused ? 'DRAWER_EDIT' : 'DRAWER_NAV';
+      } else if (dependencyHandlersRef.current !== null) {
+        currentScope = dependencyHandlersRef.current.onZoomIn ? 'DEPENDENCY_GRAPH' : 'DEPENDENCY_PAGE';
       }
 
       const action = evaluateKeyAction({
@@ -422,6 +495,36 @@ export const KeyboardProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           setIsCreateModalOpen(true);
           break;
 
+        case 'DEPENDENCY_VIEW_GRAPH':
+          e.preventDefault();
+          dependencyHandlersRef.current?.onSelectGraphView?.();
+          break;
+
+        case 'DEPENDENCY_VIEW_MATRIX':
+          e.preventDefault();
+          dependencyHandlersRef.current?.onSelectMatrixView?.();
+          break;
+
+        case 'DEPENDENCY_VIEW_BLOCKERS':
+          e.preventDefault();
+          dependencyHandlersRef.current?.onSelectBlockersView?.();
+          break;
+
+        case 'GRAPH_ZOOM_IN':
+          e.preventDefault();
+          dependencyHandlersRef.current?.onZoomIn?.();
+          break;
+
+        case 'GRAPH_ZOOM_OUT':
+          e.preventDefault();
+          dependencyHandlersRef.current?.onZoomOut?.();
+          break;
+
+        case 'GRAPH_RESET_ZOOM':
+          e.preventDefault();
+          dependencyHandlersRef.current?.onResetZoom?.();
+          break;
+
         case 'NONE':
         default:
           break;
@@ -464,6 +567,7 @@ export const KeyboardProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         registerCanvasHandlers,
         registerDrawerHandlers,
         registerDetailHandlers,
+        registerDependencyHandlers,
       }}
     >
       {children}

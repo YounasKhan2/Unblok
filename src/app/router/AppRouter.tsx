@@ -15,6 +15,7 @@ import { ProjectBoardPage } from '../../pages/projects/ProjectBoardPage';
 import { ProjectPlanningPage } from '../../pages/projects/ProjectPlanningPage';
 import { ProjectSettingsPage } from '../../pages/projects/ProjectSettingsPage';
 import { IssueDetailPage } from '../../pages/issues/IssueDetailPage';
+import { DependenciesPage } from '../../pages/dependencies/DependenciesPage';
 import { PlaceholderPage } from '../../pages/placeholder/PlaceholderPage';
 
 export const AppRouter: React.FC = () => {
@@ -127,17 +128,8 @@ export const AppRouter: React.FC = () => {
             }
           />
 
-          {/* Dependency Intelligence Space */}
-          <Route
-            path="/dependencies"
-            element={
-              <PlaceholderPage
-                pageTitle="Dependency Intelligence"
-                targetPhase="UX-04"
-                description="Topological dependency visualization, active blockers, and delivery critical path."
-              />
-            }
-          />
+          {/* Dependency Intelligence Space (UX-04 Canonical Page) */}
+          <Route path="/dependencies" element={<DependenciesPage />} />
 
           {/* Insights Space */}
           <Route
