@@ -34,6 +34,13 @@ import {
   wouldCreateCycle,
 } from '../domain/dependency';
 import { createActivityEvent, checkBlockerBoundaryEvents } from '../domain/audit';
+import { canMutatePlanning } from '../features/planning/permissions';
+import {
+  canAssignIssueToCycle,
+  validateActiveCycleInvariant,
+  validateRollover,
+  isIssueCompletedForPlanning,
+} from '../features/planning/domain/cycleInvariants';
 import {
   UNBLOK_STORAGE_NAMESPACE,
   migrateStorageNamespace,
@@ -148,16 +155,28 @@ interface ProjectContextType {
   // Cycles & Sprints (Phase B — Planning)
   cycles: Cycle[];
   activeCycle: Cycle | null;
-  updateIssueCycle: (issueId: string, cycleId?: string) => void;
+  updateIssueCycle: (issueId: string, cycleId?: string) => boolean;
   bulkUpdateCycle: (cycleId?: string) => void;
   rolloverIncompleteIssues: (fromCycleId: string, toCycleId: string) => { rolledCount: number };
-  createCycle: (data: { name: string; startDate: string; endDate: string; description?: string }) => Cycle;
+  createCycle: (data: {
+    name: string;
+    startDate: string;
+    endDate: string;
+    teamId?: string;
+    status?: 'ACTIVE' | 'UPCOMING' | 'COMPLETED';
+    description?: string;
+  }) => Cycle | null;
+  updateCycle: (id: string, updates: Partial<Cycle>) => boolean;
+  completeCycle: (
+    cycleId: string,
+    rolloverData?: { targetCycleId?: string; issueIdsToRollover?: string[] }
+  ) => { success: boolean; rolledCount: number; error?: string };
 
   // Strategic Milestones (Phase B.2 — Objectives)
   milestones: Milestone[];
-  updateIssueMilestone: (issueId: string, milestoneId?: string) => void;
-  createMilestone: (data: { name: string; targetDate: string; description: string; teamId?: string }) => Milestone;
-  updateMilestone: (id: string, updates: Partial<Milestone>) => void;
+  updateIssueMilestone: (issueId: string, milestoneId?: string) => boolean;
+  createMilestone: (data: { name: string; targetDate: string; description: string; teamId?: string }) => Milestone | null;
+  updateMilestone: (id: string, updates: Partial<Milestone>) => boolean;
 
   // Collaboration & Threaded Comments (Phase C)
   comments: IssueComment[];
@@ -169,7 +188,7 @@ interface ProjectContextType {
   updateIssuePriority: (issueId: string, newPriority: IssuePriority) => void;
   updateIssueAssignee: (issueId: string, assigneeId?: string) => void;
   updateIssueDetails: (issueId: string, title: string, description: string) => void;
-  updateIssueDates: (issueId: string, startDate?: string, dueDate?: string) => void;
+  updateIssueDates: (issueId: string, startDate?: string, dueDate?: string) => boolean;
   createIssue: (data: {
     title: string;
     description: string;
@@ -500,7 +519,24 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Update Issue Cycle
   const updateIssueCycle = useCallback(
-    (issueId: string, cycleId?: string) => {
+    (issueId: string, cycleId?: string): boolean => {
+      if (!canMutatePlanning(currentUser.role)) {
+        return false;
+      }
+
+      const targetIssue = issuesMap.get(issueId);
+      if (!targetIssue) return false;
+
+      if (cycleId) {
+        const targetCycle = cycles.find(c => c.id === cycleId);
+        if (!targetCycle) return false;
+
+        const check = canAssignIssueToCycle(targetIssue, targetCycle, projects);
+        if (!check.allowed) {
+          return false;
+        }
+      }
+
       const now = new Date().toISOString();
       setIssues(prev =>
         prev.map(i =>
@@ -509,44 +545,68 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       );
 
       const targetCycle = cycles.find(c => c.id === cycleId);
-      const targetIssue = issuesMap.get(issueId);
-      if (targetIssue) {
-        const ev = createActivityEvent(issueId, 'STATE_CHANGED', currentUser, {
-          reason: targetCycle ? `Assigned to ${targetCycle.name}` : 'Removed from cycle',
-        });
-        setActivities(prev => [ev, ...prev]);
-      }
+      const ev = createActivityEvent(issueId, 'STATE_CHANGED', currentUser, {
+        reason: targetCycle ? `Assigned to ${targetCycle.name}` : 'Removed from cycle',
+      });
+      setActivities(prev => [ev, ...prev]);
+
+      return true;
     },
-    [cycles, issuesMap, currentUser]
+    [cycles, issuesMap, projects, currentUser]
   );
 
   // Bulk Update Cycle
   const bulkUpdateCycle = useCallback(
     (cycleId?: string) => {
+      if (!canMutatePlanning(currentUser.role)) return;
       if (selectedIssueIds.length === 0) return;
+
+      const targetCycle = cycleId ? cycles.find(c => c.id === cycleId) : undefined;
+      const validIds: string[] = [];
+
+      for (const id of selectedIssueIds) {
+        const issue = issuesMap.get(id);
+        if (issue) {
+          const check = canAssignIssueToCycle(issue, targetCycle, projects);
+          if (check.allowed) {
+            validIds.push(id);
+          }
+        }
+      }
+
+      if (validIds.length === 0) return;
+
       const now = new Date().toISOString();
       setIssues(prev =>
         prev.map(i =>
-          selectedIssueIds.includes(i.id)
+          validIds.includes(i.id)
             ? { ...i, cycleId, updatedAt: now, version: i.version + 1 }
             : i
         )
       );
     },
-    [selectedIssueIds]
+    [selectedIssueIds, cycles, issuesMap, projects, currentUser]
   );
 
   // Rollover Incomplete Issues
   const rolloverIncompleteIssues = useCallback(
     (fromCycleId: string, toCycleId: string): { rolledCount: number } => {
+      if (!canMutatePlanning(currentUser.role)) return { rolledCount: 0 };
+
+      const fromCycle = cycles.find(c => c.id === fromCycleId);
+      const toCycle = cycles.find(c => c.id === toCycleId);
+      if (!fromCycle || !toCycle) return { rolledCount: 0 };
+
+      const check = validateRollover(fromCycle, toCycle);
+      if (!check.allowed) return { rolledCount: 0 };
+
       const now = new Date().toISOString();
       const eligibleIds: string[] = [];
 
       for (const issue of issues) {
         if (
           issue.cycleId === fromCycleId &&
-          issue.state !== 'DONE' &&
-          issue.state !== 'CANCELLED'
+          !isIssueCompletedForPlanning(issue.state)
         ) {
           eligibleIds.push(issue.id);
         }
@@ -561,10 +621,9 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
           )
         );
 
-        const toCycle = cycles.find(c => c.id === toCycleId);
         const events = eligibleIds.map(id =>
           createActivityEvent(id, 'STATE_CHANGED', currentUser, {
-            reason: `Rolled over into ${toCycle?.name || toCycleId}`,
+            reason: `Rolled over into ${toCycle.name}`,
           })
         );
         setActivities(prev => [...events, ...prev]);
@@ -577,25 +636,155 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Create Cycle
   const createCycle = useCallback(
-    (data: { name: string; startDate: string; endDate: string; description?: string }): Cycle => {
+    (data: {
+      name: string;
+      startDate: string;
+      endDate: string;
+      teamId?: string;
+      status?: 'ACTIVE' | 'UPCOMING' | 'COMPLETED';
+      description?: string;
+    }): Cycle | null => {
+      if (!canMutatePlanning(currentUser.role)) {
+        return null;
+      }
+
+      const teamId = data.teamId || 'ALL';
+      const status = data.status || 'UPCOMING';
+
+      if (status === 'ACTIVE') {
+        const activeCheck = validateActiveCycleInvariant(teamId, cycles);
+        if (!activeCheck.allowed) {
+          return null;
+        }
+      }
+
       const newCycle: Cycle = {
         id: `cycle_${Date.now()}`,
         name: data.name.trim(),
         startDate: data.startDate,
         endDate: data.endDate,
-        status: 'UPCOMING',
-        teamId: 'ALL',
+        status,
+        teamId,
         description: data.description?.trim(),
       };
       setCycles(prev => [...prev, newCycle]);
       return newCycle;
     },
-    []
+    [cycles, currentUser]
+  );
+
+  // Update Cycle
+  const updateCycle = useCallback(
+    (id: string, updates: Partial<Cycle>): boolean => {
+      if (!canMutatePlanning(currentUser.role)) {
+        return false;
+      }
+
+      const cycle = cycles.find(c => c.id === id);
+      if (!cycle) return false;
+
+      if (updates.status === 'ACTIVE') {
+        const teamId = updates.teamId || cycle.teamId || 'ALL';
+        const activeCheck = validateActiveCycleInvariant(teamId, cycles, id);
+        if (!activeCheck.allowed) {
+          return false;
+        }
+      }
+
+      setCycles(prev =>
+        prev.map(c => (c.id === id ? { ...c, ...updates } : c))
+      );
+      return true;
+    },
+    [cycles, currentUser]
+  );
+
+  // Complete Cycle & Rollover
+  const completeCycle = useCallback(
+    (
+      cycleId: string,
+      rolloverData?: { targetCycleId?: string; issueIdsToRollover?: string[] }
+    ): { success: boolean; rolledCount: number; error?: string } => {
+      if (!canMutatePlanning(currentUser.role)) {
+        return { success: false, rolledCount: 0, error: 'Permission denied.' };
+      }
+
+      const cycle = cycles.find(c => c.id === cycleId);
+      if (!cycle) {
+        return { success: false, rolledCount: 0, error: 'Cycle not found.' };
+      }
+
+      // Mark cycle completed
+      setCycles(prev =>
+        prev.map(c => (c.id === cycleId ? { ...c, status: 'COMPLETED' } : c))
+      );
+
+      const now = new Date().toISOString();
+      const unfinishedInCycle = issues.filter(
+        i => i.cycleId === cycleId && !isIssueCompletedForPlanning(i.state)
+      );
+
+      let rolledCount = 0;
+
+      if (rolloverData?.targetCycleId) {
+        const targetCycle = cycles.find(c => c.id === rolloverData.targetCycleId);
+        if (!targetCycle) {
+          return { success: false, rolledCount: 0, error: 'Target cycle not found.' };
+        }
+
+        const rolloverCheck = validateRollover(cycle, targetCycle);
+        if (!rolloverCheck.allowed) {
+          return { success: false, rolledCount: 0, error: rolloverCheck.reason };
+        }
+
+        const idsToRollover = new Set(
+          rolloverData.issueIdsToRollover || unfinishedInCycle.map(i => i.id)
+        );
+
+        setIssues(prev =>
+          prev.map(i => {
+            if (i.cycleId === cycleId && !isIssueCompletedForPlanning(i.state)) {
+              if (idsToRollover.has(i.id)) {
+                rolledCount++;
+                return { ...i, cycleId: targetCycle.id, updatedAt: now, version: i.version + 1 };
+              } else {
+                // Section 23: Issues not rolled forward become unscheduled
+                return { ...i, cycleId: undefined, updatedAt: now, version: i.version + 1 };
+              }
+            }
+            return i;
+          })
+        );
+
+        const events = Array.from(idsToRollover).map(id =>
+          createActivityEvent(id, 'STATE_CHANGED', currentUser, {
+            reason: `Rolled over into ${targetCycle.name}`,
+          })
+        );
+        setActivities(prev => [...events, ...prev]);
+      } else {
+        // No rollover target: all unfinished issues become unscheduled
+        setIssues(prev =>
+          prev.map(i =>
+            i.cycleId === cycleId && !isIssueCompletedForPlanning(i.state)
+              ? { ...i, cycleId: undefined, updatedAt: now, version: i.version + 1 }
+              : i
+          )
+        );
+      }
+
+      return { success: true, rolledCount };
+    },
+    [cycles, issues, currentUser]
   );
 
   // Strategic Milestones Methods
   const updateIssueMilestone = useCallback(
-    (issueId: string, milestoneId?: string) => {
+    (issueId: string, milestoneId?: string): boolean => {
+      if (!canMutatePlanning(currentUser.role)) {
+        return false;
+      }
+
       const now = new Date().toISOString();
       setIssues(prev =>
         prev.map(i =>
@@ -613,12 +802,18 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         });
         setActivities(prev => [ev, ...prev]);
       }
+
+      return true;
     },
     [milestones, issuesMap, currentUser]
   );
 
   const createMilestone = useCallback(
-    (data: { name: string; targetDate: string; description: string; teamId?: string }): Milestone => {
+    (data: { name: string; targetDate: string; description: string; teamId?: string }): Milestone | null => {
+      if (!canMutatePlanning(currentUser.role)) {
+        return null;
+      }
+
       const newMilestone: Milestone = {
         id: `milestone_${Date.now()}`,
         name: data.name.trim(),
@@ -629,16 +824,21 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setMilestones(prev => [...prev, newMilestone]);
       return newMilestone;
     },
-    []
+    [currentUser]
   );
 
   const updateMilestone = useCallback(
-    (id: string, updates: Partial<Milestone>) => {
+    (id: string, updates: Partial<Milestone>): boolean => {
+      if (!canMutatePlanning(currentUser.role)) {
+        return false;
+      }
+
       setMilestones(prev =>
         prev.map(m => (m.id === id ? { ...m, ...updates } : m))
       );
+      return true;
     },
-    []
+    [currentUser]
   );
 
   // Collaboration & Threaded Comments (Phase C)
@@ -1075,7 +1275,13 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
   );
 
   const updateIssueDates = useCallback(
-    (issueId: string, startDate?: string, dueDate?: string) => {
+    (issueId: string, startDate?: string, dueDate?: string): boolean => {
+      if (!canMutatePlanning(currentUser.role)) {
+        return false;
+      }
+      if (startDate && dueDate && startDate > dueDate) {
+        return false;
+      }
       const now = new Date().toISOString();
       setIssues(prev =>
         prev.map(i =>
@@ -1084,8 +1290,9 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
             : i
         )
       );
+      return true;
     },
-    []
+    [currentUser]
   );
 
   // Add Dependency (with Cycle check & Boundary check)
@@ -1324,6 +1531,8 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         bulkUpdateCycle,
         rolloverIncompleteIssues,
         createCycle,
+        updateCycle,
+        completeCycle,
         milestones,
         updateIssueMilestone,
         createMilestone,
