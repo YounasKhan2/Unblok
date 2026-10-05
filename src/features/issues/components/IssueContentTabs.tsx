@@ -58,7 +58,7 @@ export const IssueContentTabs: React.FC<IssueContentTabsProps> = ({
       <div
         role="tablist"
         aria-label="Issue subsections"
-        className="flex items-center gap-1 border-b border-[#e5e3df] text-xs"
+        className="flex items-center gap-1 border-b border-border text-xs"
       >
         {/* Tab 1: Discussion */}
         <button
@@ -69,19 +69,19 @@ export const IssueContentTabs: React.FC<IssueContentTabsProps> = ({
           onClick={() => setActiveTab('DISCUSSION')}
           className={`flex items-center gap-1.5 py-2.5 px-3 border-b-2 font-medium transition-colors cursor-pointer ${
             activeTab === 'DISCUSSION'
-              ? 'border-[#5645d4] text-[#5645d4]'
-              : 'border-transparent text-[#787671] hover:text-[#1a1a1a]'
+              ? 'border-accent text-accent'
+              : 'border-transparent text-text-muted hover:text-text-primary'
           }`}
         >
           <MessageSquare className="w-3.5 h-3.5" />
           <span>Discussion</span>
           {commentCount > 0 && (
-            <span className="w-4 h-4 rounded-full bg-purple-100 text-[#5645d4] text-[10px] font-bold flex items-center justify-center">
+            <span className="w-4 h-4 rounded-full bg-accent/15 text-accent text-[10px] font-bold flex items-center justify-center">
               {commentCount}
             </span>
           )}
           {!isReadOnly && (
-            <kbd className="hidden sm:inline font-mono text-[9px] text-[#a4a097] border border-[#e5e3df] px-1 rounded bg-[#fafaf9]">
+            <kbd className="hidden sm:inline font-mono text-[9px] text-text-muted border border-border px-1 rounded bg-surface-subtle">
               M
             </kbd>
           )}
@@ -96,18 +96,18 @@ export const IssueContentTabs: React.FC<IssueContentTabsProps> = ({
           onClick={() => setActiveTab('DEPENDENCIES')}
           className={`flex items-center gap-1.5 py-2.5 px-3 border-b-2 font-medium transition-colors cursor-pointer ${
             activeTab === 'DEPENDENCIES'
-              ? 'border-[#5645d4] text-[#5645d4]'
-              : 'border-transparent text-[#787671] hover:text-[#1a1a1a]'
+              ? 'border-accent text-accent'
+              : 'border-transparent text-text-muted hover:text-text-primary'
           }`}
         >
           <Link2 className="w-3.5 h-3.5" />
           <span>Dependencies</span>
           {activeBlockerCount > 0 ? (
-            <span className="w-4 h-4 rounded-full bg-[#ffe8d4] text-[#dd5b00] text-[10px] font-bold flex items-center justify-center">
+            <span className="w-4 h-4 rounded-full bg-blocker/15 text-blocker text-[10px] font-bold flex items-center justify-center">
               {activeBlockerCount}
             </span>
           ) : upstreamDependencies.length > 0 ? (
-            <span className="w-4 h-4 rounded-full bg-neutral-100 text-[#787671] text-[10px] font-bold flex items-center justify-center">
+            <span className="w-4 h-4 rounded-full bg-surface-muted text-text-muted text-[10px] font-bold flex items-center justify-center">
               {upstreamDependencies.length}
             </span>
           ) : null}
@@ -122,14 +122,14 @@ export const IssueContentTabs: React.FC<IssueContentTabsProps> = ({
           onClick={() => setActiveTab('ACTIVITY')}
           className={`flex items-center gap-1.5 py-2.5 px-3 border-b-2 font-medium transition-colors cursor-pointer ${
             activeTab === 'ACTIVITY'
-              ? 'border-[#5645d4] text-[#5645d4]'
-              : 'border-transparent text-[#787671] hover:text-[#1a1a1a]'
+              ? 'border-accent text-accent'
+              : 'border-transparent text-text-muted hover:text-text-primary'
           }`}
         >
           <History className="w-3.5 h-3.5" />
           <span>Activity & Audit</span>
           {activityCount > 0 && (
-            <span className="w-4 h-4 rounded-full bg-neutral-100 text-[#787671] text-[10px] font-bold flex items-center justify-center">
+            <span className="w-4 h-4 rounded-full bg-surface-muted text-text-muted text-[10px] font-bold flex items-center justify-center">
               {activityCount}
             </span>
           )}

@@ -295,22 +295,15 @@ describe('Keyboard Architecture & Scope Hierarchy', () => {
   });
 
   describe('Issue Detail & Property Shortcuts (S, P, A, M)', () => {
-    it('dispatches picker and comment shortcuts when not editing', () => {
+    it('dispatches picker and comment shortcuts for MEMBER when not editing', () => {
       expect(
         evaluateKeyAction({
           key: 's',
           isInputFocused: false,
           scope: 'CANVAS',
           hasSelection: false,
-        })
-      ).toBe('OPEN_STATUS_PICKER');
-
-      expect(
-        evaluateKeyAction({
-          key: 'S',
-          isInputFocused: false,
-          scope: 'CANVAS',
-          hasSelection: false,
+          userRole: 'MEMBER',
+          canEdit: true,
         })
       ).toBe('OPEN_STATUS_PICKER');
 
@@ -320,6 +313,8 @@ describe('Keyboard Architecture & Scope Hierarchy', () => {
           isInputFocused: false,
           scope: 'CANVAS',
           hasSelection: false,
+          userRole: 'MEMBER',
+          canEdit: true,
         })
       ).toBe('OPEN_PRIORITY_PICKER');
 
@@ -329,6 +324,8 @@ describe('Keyboard Architecture & Scope Hierarchy', () => {
           isInputFocused: false,
           scope: 'CANVAS',
           hasSelection: false,
+          userRole: 'MEMBER',
+          canEdit: true,
         })
       ).toBe('OPEN_ASSIGNEE_PICKER');
 
@@ -338,8 +335,131 @@ describe('Keyboard Architecture & Scope Hierarchy', () => {
           isInputFocused: false,
           scope: 'CANVAS',
           hasSelection: false,
+          userRole: 'MEMBER',
+          canEdit: true,
         })
       ).toBe('FOCUS_COMMENT_COMPOSER');
+    });
+
+    it('dispatches picker and comment shortcuts for ADMIN when not editing', () => {
+      expect(
+        evaluateKeyAction({
+          key: 's',
+          isInputFocused: false,
+          scope: 'CANVAS',
+          hasSelection: false,
+          userRole: 'ADMIN',
+          canEdit: true,
+        })
+      ).toBe('OPEN_STATUS_PICKER');
+
+      expect(
+        evaluateKeyAction({
+          key: 'p',
+          isInputFocused: false,
+          scope: 'CANVAS',
+          hasSelection: false,
+          userRole: 'ADMIN',
+          canEdit: true,
+        })
+      ).toBe('OPEN_PRIORITY_PICKER');
+
+      expect(
+        evaluateKeyAction({
+          key: 'a',
+          isInputFocused: false,
+          scope: 'CANVAS',
+          hasSelection: false,
+          userRole: 'ADMIN',
+          canEdit: true,
+        })
+      ).toBe('OPEN_ASSIGNEE_PICKER');
+
+      expect(
+        evaluateKeyAction({
+          key: 'm',
+          isInputFocused: false,
+          scope: 'CANVAS',
+          hasSelection: false,
+          userRole: 'ADMIN',
+          canEdit: true,
+        })
+      ).toBe('FOCUS_COMMENT_COMPOSER');
+    });
+
+    it('suppresses S, P, A, M for OBSERVER (returns NONE and does not enter pickers/popovers)', () => {
+      const observerKeys = ['s', 'S', 'p', 'P', 'a', 'A', 'm', 'M', 'c', 'C'];
+      for (const key of observerKeys) {
+        expect(
+          evaluateKeyAction({
+            key,
+            isInputFocused: false,
+            scope: 'CANVAS',
+            hasSelection: false,
+            userRole: 'OBSERVER',
+            canEdit: false,
+          })
+        ).toBe('NONE');
+      }
+    });
+
+    it('preserves read-only navigation shortcuts for OBSERVER', () => {
+      // Observer can still navigate list, open drawers, focus search, toggle rails, open palette
+      expect(
+        evaluateKeyAction({
+          key: 'j',
+          isInputFocused: false,
+          scope: 'CANVAS',
+          hasSelection: false,
+          userRole: 'OBSERVER',
+          canEdit: false,
+        })
+      ).toBe('CANVAS_NEXT');
+
+      expect(
+        evaluateKeyAction({
+          key: 'k',
+          isInputFocused: false,
+          scope: 'CANVAS',
+          hasSelection: false,
+          userRole: 'OBSERVER',
+          canEdit: false,
+        })
+      ).toBe('CANVAS_PREV');
+
+      expect(
+        evaluateKeyAction({
+          key: '/',
+          isInputFocused: false,
+          scope: 'CANVAS',
+          hasSelection: false,
+          userRole: 'OBSERVER',
+          canEdit: false,
+        })
+      ).toBe('FOCUS_SEARCH');
+
+      expect(
+        evaluateKeyAction({
+          key: '?',
+          isInputFocused: false,
+          scope: 'CANVAS',
+          hasSelection: false,
+          userRole: 'OBSERVER',
+          canEdit: false,
+        })
+      ).toBe('OPEN_HELP');
+
+      expect(
+        evaluateKeyAction({
+          key: 'o',
+          metaKey: true,
+          isInputFocused: false,
+          scope: 'DRAWER_NAV',
+          hasSelection: false,
+          userRole: 'OBSERVER',
+          canEdit: false,
+        })
+      ).toBe('DRAWER_OPEN_FULL');
     });
 
     it('suppresses S, P, A, M shortcuts when typing in inputs', () => {
@@ -351,6 +471,8 @@ describe('Keyboard Architecture & Scope Hierarchy', () => {
             isInputFocused: true,
             scope: 'CANVAS',
             hasSelection: false,
+            userRole: 'MEMBER',
+            canEdit: true,
           })
         ).toBe('NONE');
       }
@@ -363,6 +485,8 @@ describe('Keyboard Architecture & Scope Hierarchy', () => {
           isInputFocused: false,
           scope: 'MODAL',
           hasSelection: false,
+          userRole: 'MEMBER',
+          canEdit: true,
         })
       ).toBe('NONE');
 
@@ -372,6 +496,8 @@ describe('Keyboard Architecture & Scope Hierarchy', () => {
           isInputFocused: false,
           scope: 'POPOVER',
           hasSelection: false,
+          userRole: 'MEMBER',
+          canEdit: true,
         })
       ).toBe('NONE');
     });

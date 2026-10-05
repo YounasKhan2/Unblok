@@ -63,12 +63,12 @@ export const PropertyGrid: React.FC<PropertyGridProps> = ({ issue, isReadOnly: p
   const currentMilestone = milestones.find(m => m.id === issue.milestoneId);
 
   return (
-    <div className="grid grid-cols-2 gap-2 p-3 bg-[#fafaf9] rounded-lg border border-[#e5e3df] text-xs">
+    <div className="grid grid-cols-2 gap-2 p-3 bg-surface-subtle rounded-lg border border-border text-xs">
       {/* 1. Status Property */}
       <div className="relative">
-        <label className="text-[10px] font-semibold text-[#787671] uppercase tracking-wider flex items-center justify-between mb-1">
+        <label className="text-[10px] font-semibold text-text-muted uppercase tracking-wider flex items-center justify-between mb-1">
           <span>Status</span>
-          {!isReadOnly && <kbd className="font-mono text-[9px] text-[#a4a097] border border-[#e5e3df] px-1 rounded bg-white">S</kbd>}
+          {!isReadOnly && <kbd className="font-mono text-[9px] text-text-muted border border-border px-1 rounded bg-surface-base">S</kbd>}
         </label>
         <button
           disabled={isReadOnly}
@@ -77,12 +77,12 @@ export const PropertyGrid: React.FC<PropertyGridProps> = ({ issue, isReadOnly: p
             closePickers();
             setStatusOpen(!isStatusActive);
           }}
-          className={`w-full flex items-center justify-between px-2 py-1.5 bg-white border border-[#e5e3df] rounded-[6px] text-xs shadow-2xs ${
-            isReadOnly ? 'cursor-default' : 'cursor-pointer hover:border-[#c8c4be]'
+          className={`w-full flex items-center justify-between px-2 py-1.5 bg-surface-base border border-border rounded-[6px] text-xs shadow-2xs ${
+            isReadOnly ? 'cursor-default' : 'cursor-pointer hover:border-border-strong'
           }`}
         >
           <StatePill state={issue.state} size="sm" />
-          {!isReadOnly && <ChevronDown className="w-3 h-3 text-[#787671]" />}
+          {!isReadOnly && <ChevronDown className="w-3 h-3 text-text-muted" />}
         </button>
 
         {!isReadOnly && (
@@ -98,9 +98,9 @@ export const PropertyGrid: React.FC<PropertyGridProps> = ({ issue, isReadOnly: p
 
       {/* 2. Priority Property */}
       <div className="relative">
-        <label className="text-[10px] font-semibold text-[#787671] uppercase tracking-wider flex items-center justify-between mb-1">
+        <label className="text-[10px] font-semibold text-text-muted uppercase tracking-wider flex items-center justify-between mb-1">
           <span>Priority</span>
-          {!isReadOnly && <kbd className="font-mono text-[9px] text-[#a4a097] border border-[#e5e3df] px-1 rounded bg-white">P</kbd>}
+          {!isReadOnly && <kbd className="font-mono text-[9px] text-text-muted border border-border px-1 rounded bg-surface-base">P</kbd>}
         </label>
         <button
           disabled={isReadOnly}
@@ -109,15 +109,15 @@ export const PropertyGrid: React.FC<PropertyGridProps> = ({ issue, isReadOnly: p
             closePickers();
             setPriorityOpen(!isPriorityActive);
           }}
-          className={`w-full flex items-center justify-between px-2 py-1.5 bg-white border border-[#e5e3df] rounded-[6px] text-xs shadow-2xs ${
-            isReadOnly ? 'cursor-default' : 'cursor-pointer hover:border-[#c8c4be]'
+          className={`w-full flex items-center justify-between px-2 py-1.5 bg-surface-base border border-border rounded-[6px] text-xs shadow-2xs ${
+            isReadOnly ? 'cursor-default' : 'cursor-pointer hover:border-border-strong'
           }`}
         >
           <div className="flex items-center gap-1.5">
             <PriorityIcon priority={issue.priority} size="sm" />
-            <span className="font-medium text-[#1a1a1a] capitalize">{issue.priority.toLowerCase()}</span>
+            <span className="font-medium text-text-primary capitalize">{issue.priority.toLowerCase()}</span>
           </div>
-          {!isReadOnly && <ChevronDown className="w-3 h-3 text-[#787671]" />}
+          {!isReadOnly && <ChevronDown className="w-3 h-3 text-text-muted" />}
         </button>
 
         {!isReadOnly && (
@@ -133,9 +133,9 @@ export const PropertyGrid: React.FC<PropertyGridProps> = ({ issue, isReadOnly: p
 
       {/* 3. Assignee Property */}
       <div className="relative">
-        <label className="text-[10px] font-semibold text-[#787671] uppercase tracking-wider flex items-center justify-between mb-1">
+        <label className="text-[10px] font-semibold text-text-muted uppercase tracking-wider flex items-center justify-between mb-1">
           <span>Assignee</span>
-          {!isReadOnly && <kbd className="font-mono text-[9px] text-[#a4a097] border border-[#e5e3df] px-1 rounded bg-white">A</kbd>}
+          {!isReadOnly && <kbd className="font-mono text-[9px] text-text-muted border border-border px-1 rounded bg-surface-base">A</kbd>}
         </label>
         <button
           disabled={isReadOnly}
@@ -144,15 +144,15 @@ export const PropertyGrid: React.FC<PropertyGridProps> = ({ issue, isReadOnly: p
             closePickers();
             setAssigneeOpen(!isAssigneeActive);
           }}
-          className={`w-full flex items-center justify-between px-2 py-1.5 bg-white border border-[#e5e3df] rounded-[6px] text-xs shadow-2xs truncate ${
-            isReadOnly ? 'cursor-default' : 'cursor-pointer hover:border-[#c8c4be]'
+          className={`w-full flex items-center justify-between px-2 py-1.5 bg-surface-base border border-border rounded-[6px] text-xs shadow-2xs truncate ${
+            isReadOnly ? 'cursor-default' : 'cursor-pointer hover:border-border-strong'
           }`}
         >
           <div className="flex items-center gap-1.5 truncate">
             <Avatar user={assignee} size="xs" />
-            <span className="truncate text-[#1a1a1a]">{assignee ? assignee.name : 'Unassigned'}</span>
+            <span className="truncate text-text-primary">{assignee ? assignee.name : 'Unassigned'}</span>
           </div>
-          {!isReadOnly && <ChevronDown className="w-3 h-3 text-[#787671] shrink-0" />}
+          {!isReadOnly && <ChevronDown className="w-3 h-3 text-text-muted shrink-0" />}
         </button>
 
         {!isReadOnly && (
@@ -169,9 +169,9 @@ export const PropertyGrid: React.FC<PropertyGridProps> = ({ issue, isReadOnly: p
 
       {/* 4. Cycle / Sprint Property */}
       <div className="relative">
-        <label className="text-[10px] font-semibold text-[#787671] uppercase tracking-wider flex items-center justify-between mb-1">
+        <label className="text-[10px] font-semibold text-text-muted uppercase tracking-wider flex items-center justify-between mb-1">
           <span>Cycle</span>
-          <Calendar className="w-2.5 h-2.5 text-[#a4a097]" />
+          <Calendar className="w-2.5 h-2.5 text-text-muted" />
         </label>
         <button
           disabled={isReadOnly}
@@ -180,23 +180,23 @@ export const PropertyGrid: React.FC<PropertyGridProps> = ({ issue, isReadOnly: p
             closePickers();
             setCycleOpen(!isCycleActive);
           }}
-          className={`w-full flex items-center justify-between px-2 py-1.5 bg-white border border-[#e5e3df] rounded-[6px] text-xs shadow-2xs truncate ${
-            isReadOnly ? 'cursor-default' : 'cursor-pointer hover:border-[#c8c4be]'
+          className={`w-full flex items-center justify-between px-2 py-1.5 bg-surface-base border border-border rounded-[6px] text-xs shadow-2xs truncate ${
+            isReadOnly ? 'cursor-default' : 'cursor-pointer hover:border-border-strong'
           }`}
         >
           <div className="flex items-center gap-1.5 truncate">
-            <Calendar className="w-3 h-3 text-[#5645d4] shrink-0" />
-            <span className="truncate text-[#1a1a1a]">
+            <Calendar className="w-3 h-3 text-accent shrink-0" />
+            <span className="truncate text-text-primary">
               {currentCycle ? currentCycle.name : 'No Cycle'}
             </span>
           </div>
-          {!isReadOnly && <ChevronDown className="w-3 h-3 text-[#787671] shrink-0" />}
+          {!isReadOnly && <ChevronDown className="w-3 h-3 text-text-muted shrink-0" />}
         </button>
 
         {!isReadOnly && (
           <Popover isOpen={isCycleActive} onClose={closePickers} width="w-52">
             <div className="p-1 space-y-0.5">
-              <div className="text-[10px] font-semibold text-[#787671] uppercase tracking-wider px-2 py-1">
+              <div className="text-[10px] font-semibold text-text-muted uppercase tracking-wider px-2 py-1">
                 Select Cycle
               </div>
               <button
@@ -204,10 +204,10 @@ export const PropertyGrid: React.FC<PropertyGridProps> = ({ issue, isReadOnly: p
                   updateIssueCycle(issue.id, undefined);
                   closePickers();
                 }}
-                className="w-full flex items-center justify-between px-2 py-1.5 text-xs rounded hover:bg-[#f6f5f4] text-left cursor-pointer"
+                className="w-full flex items-center justify-between px-2 py-1.5 text-xs rounded hover:bg-surface-muted text-left cursor-pointer"
               >
-                <span className="text-[#787671]">No Cycle (Backlog)</span>
-                {!issue.cycleId && <Check className="w-3 h-3 text-[#5645d4]" />}
+                <span className="text-text-muted">No Cycle (Backlog)</span>
+                {!issue.cycleId && <Check className="w-3 h-3 text-accent" />}
               </button>
               {cycles.map(c => {
                 const isSelected = issue.cycleId === c.id;
@@ -218,12 +218,12 @@ export const PropertyGrid: React.FC<PropertyGridProps> = ({ issue, isReadOnly: p
                       updateIssueCycle(issue.id, c.id);
                       closePickers();
                     }}
-                    className="w-full flex items-center justify-between px-2 py-1.5 text-xs rounded hover:bg-[#f6f5f4] text-left cursor-pointer"
+                    className="w-full flex items-center justify-between px-2 py-1.5 text-xs rounded hover:bg-surface-muted text-left cursor-pointer"
                   >
-                    <span className={isSelected ? 'font-semibold text-[#5645d4]' : 'text-[#37352f]'}>
+                    <span className={isSelected ? 'font-semibold text-accent' : 'text-text-secondary'}>
                       {c.name}
                     </span>
-                    {isSelected && <Check className="w-3 h-3 text-[#5645d4]" />}
+                    {isSelected && <Check className="w-3 h-3 text-accent" />}
                   </button>
                 );
               })}
@@ -234,9 +234,9 @@ export const PropertyGrid: React.FC<PropertyGridProps> = ({ issue, isReadOnly: p
 
       {/* 5. Strategic Milestone Property */}
       <div className="relative">
-        <label className="text-[10px] font-semibold text-[#787671] uppercase tracking-wider flex items-center justify-between mb-1">
+        <label className="text-[10px] font-semibold text-text-muted uppercase tracking-wider flex items-center justify-between mb-1">
           <span>Milestone</span>
-          <Target className="w-2.5 h-2.5 text-[#a4a097]" />
+          <Target className="w-2.5 h-2.5 text-text-muted" />
         </label>
         <button
           disabled={isReadOnly}
@@ -245,23 +245,23 @@ export const PropertyGrid: React.FC<PropertyGridProps> = ({ issue, isReadOnly: p
             closePickers();
             setMilestoneOpen(!isMilestoneActive);
           }}
-          className={`w-full flex items-center justify-between px-2 py-1.5 bg-white border border-[#e5e3df] rounded-[6px] text-xs shadow-2xs truncate ${
-            isReadOnly ? 'cursor-default' : 'cursor-pointer hover:border-[#c8c4be]'
+          className={`w-full flex items-center justify-between px-2 py-1.5 bg-surface-base border border-border rounded-[6px] text-xs shadow-2xs truncate ${
+            isReadOnly ? 'cursor-default' : 'cursor-pointer hover:border-border-strong'
           }`}
         >
           <div className="flex items-center gap-1.5 truncate">
-            <Target className="w-3 h-3 text-[#5645d4] shrink-0" />
-            <span className="truncate text-[#1a1a1a]">
+            <Target className="w-3 h-3 text-accent shrink-0" />
+            <span className="truncate text-text-primary">
               {currentMilestone ? currentMilestone.name : 'No Milestone'}
             </span>
           </div>
-          {!isReadOnly && <ChevronDown className="w-3 h-3 text-[#787671] shrink-0" />}
+          {!isReadOnly && <ChevronDown className="w-3 h-3 text-text-muted shrink-0" />}
         </button>
 
         {!isReadOnly && (
           <Popover isOpen={isMilestoneActive} onClose={closePickers} width="w-60">
             <div className="p-1 space-y-0.5">
-              <div className="text-[10px] font-semibold text-[#787671] uppercase tracking-wider px-2 py-1">
+              <div className="text-[10px] font-semibold text-text-muted uppercase tracking-wider px-2 py-1">
                 Select Milestone
               </div>
               <button
@@ -269,10 +269,10 @@ export const PropertyGrid: React.FC<PropertyGridProps> = ({ issue, isReadOnly: p
                   updateIssueMilestone(issue.id, undefined);
                   closePickers();
                 }}
-                className="w-full flex items-center justify-between px-2 py-1.5 text-xs rounded hover:bg-[#f6f5f4] text-left cursor-pointer"
+                className="w-full flex items-center justify-between px-2 py-1.5 text-xs rounded hover:bg-surface-muted text-left cursor-pointer"
               >
-                <span className="text-[#787671]">No Milestone</span>
-                {!issue.milestoneId && <Check className="w-3 h-3 text-[#5645d4]" />}
+                <span className="text-text-muted">No Milestone</span>
+                {!issue.milestoneId && <Check className="w-3 h-3 text-accent" />}
               </button>
               {milestones.map(m => {
                 const isSelected = issue.milestoneId === m.id;
@@ -283,14 +283,14 @@ export const PropertyGrid: React.FC<PropertyGridProps> = ({ issue, isReadOnly: p
                       updateIssueMilestone(issue.id, m.id);
                       closePickers();
                     }}
-                    className="w-full flex items-center justify-between px-2 py-1.5 text-xs rounded hover:bg-[#f6f5f4] text-left cursor-pointer"
+                    className="w-full flex items-center justify-between px-2 py-1.5 text-xs rounded hover:bg-surface-muted text-left cursor-pointer"
                   >
                     <div className="truncate pr-1">
-                      <span className={isSelected ? 'font-semibold text-[#5645d4]' : 'text-[#37352f]'}>
+                      <span className={isSelected ? 'font-semibold text-accent' : 'text-text-secondary'}>
                         {m.name}
                       </span>
                     </div>
-                    {isSelected && <Check className="w-3 h-3 text-[#5645d4]" />}
+                    {isSelected && <Check className="w-3 h-3 text-accent" />}
                   </button>
                 );
               })}
@@ -301,15 +301,15 @@ export const PropertyGrid: React.FC<PropertyGridProps> = ({ issue, isReadOnly: p
 
       {/* 6. Team / Project Context */}
       <div>
-        <label className="text-[10px] font-semibold text-[#787671] uppercase tracking-wider block mb-1">
+        <label className="text-[10px] font-semibold text-text-muted uppercase tracking-wider block mb-1">
           Project & Team
         </label>
-        <div className="px-2 py-1.5 bg-white border border-[#e5e3df] rounded-[6px] text-xs truncate flex items-center gap-1.5 shadow-2xs">
+        <div className="px-2 py-1.5 bg-surface-base border border-border rounded-[6px] text-xs truncate flex items-center gap-1.5 shadow-2xs">
           <span
             className="w-2 h-2 rounded-full shrink-0"
-            style={{ backgroundColor: team?.color || '#5645d4' }}
+            style={{ backgroundColor: team?.color || 'var(--color-accent)' }}
           />
-          <span className="truncate text-[#37352f]" title={project?.name}>
+          <span className="truncate text-text-secondary" title={project?.name}>
             {project?.name || 'Project'}
           </span>
         </div>
@@ -317,7 +317,7 @@ export const PropertyGrid: React.FC<PropertyGridProps> = ({ issue, isReadOnly: p
 
       {/* 7. Start Date */}
       <div>
-        <label className="text-[10px] font-semibold text-[#787671] uppercase tracking-wider block mb-1">
+        <label className="text-[10px] font-semibold text-text-muted uppercase tracking-wider block mb-1">
           Start Date
         </label>
         <input
@@ -326,15 +326,15 @@ export const PropertyGrid: React.FC<PropertyGridProps> = ({ issue, isReadOnly: p
           readOnly={isReadOnly}
           value={issue.startDate || ''}
           onChange={e => updateIssueDates(issue.id, e.target.value || undefined, issue.dueDate)}
-          className={`w-full px-2 py-1 bg-white border border-[#e5e3df] rounded-[6px] text-xs shadow-2xs ${
-            isReadOnly ? 'cursor-default bg-neutral-50/50' : 'hover:border-[#c8c4be] focus:outline-none focus:border-[#5645d4]'
+          className={`w-full px-2 py-1 bg-surface-base border border-border rounded-[6px] text-xs shadow-2xs ${
+            isReadOnly ? 'cursor-default bg-surface-subtle/50' : 'hover:border-border-strong focus:outline-none focus:border-accent'
           }`}
         />
       </div>
 
       {/* 8. Due Date */}
       <div>
-        <label className="text-[10px] font-semibold text-[#787671] uppercase tracking-wider block mb-1">
+        <label className="text-[10px] font-semibold text-text-muted uppercase tracking-wider block mb-1">
           Due Date
         </label>
         <input
@@ -343,8 +343,8 @@ export const PropertyGrid: React.FC<PropertyGridProps> = ({ issue, isReadOnly: p
           readOnly={isReadOnly}
           value={issue.dueDate || ''}
           onChange={e => updateIssueDates(issue.id, issue.startDate, e.target.value || undefined)}
-          className={`w-full px-2 py-1 bg-white border border-[#e5e3df] rounded-[6px] text-xs shadow-2xs ${
-            isReadOnly ? 'cursor-default bg-neutral-50/50' : 'hover:border-[#c8c4be] focus:outline-none focus:border-[#5645d4]'
+          className={`w-full px-2 py-1 bg-surface-base border border-border rounded-[6px] text-xs shadow-2xs ${
+            isReadOnly ? 'cursor-default bg-surface-subtle/50' : 'hover:border-border-strong focus:outline-none focus:border-accent'
           }`}
         />
       </div>

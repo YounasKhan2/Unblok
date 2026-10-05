@@ -171,56 +171,56 @@ export const IssueDrawer: React.FC = () => {
       />
 
       <aside
-        className="fixed sm:static inset-y-0 right-0 w-full sm:w-[440px] shrink-0 border-l border-[#e5e3df] bg-white h-full flex flex-col shadow-[-4px_0_24px_rgba(15,15,15,0.06)] z-50 sm:z-30 animate-in slide-in-from-right duration-150"
+        className="fixed sm:static inset-y-0 right-0 w-full sm:w-[440px] shrink-0 border-l border-border bg-surface-base h-full flex flex-col shadow-[-4px_0_24px_rgba(15,15,15,0.06)] z-50 sm:z-30 animate-in slide-in-from-right duration-150"
         aria-label="Issue Detail Drawer"
       >
         {/* 1. Header Toolbar */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#e5e3df] bg-[#fafaf9] shrink-0">
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-surface-subtle shrink-0">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="font-mono text-xs font-bold text-[#5645d4] px-1.5 py-0.5 rounded bg-purple-50 border border-purple-200 shrink-0">
+            <span className="font-mono text-xs font-bold text-accent px-1.5 py-0.5 rounded bg-accent/10 border border-accent/30 shrink-0">
               {activeIssue.key}
             </span>
-            <span className="text-xs text-[#787671] truncate max-w-[120px]">
+            <span className="text-xs text-text-muted truncate max-w-[120px]">
               {team?.name || 'Core Platform'}
             </span>
             <BlockerBadge status={blockerStatus} compact />
           </div>
 
-          <div className="flex items-center gap-1 text-[#787671] shrink-0">
+          <div className="flex items-center gap-1 text-text-muted shrink-0">
             {/* Open Full Issue Canonical Link */}
             <Link
               to={`/issues/${activeIssue.key}`}
               state={{ from: returnUrl }}
-              className="p-1 hover:text-[#1a1a1a] hover:bg-[#ede9e4] rounded transition-colors"
+              className="p-1 hover:text-text-primary hover:bg-surface-muted rounded transition-colors"
               title="Open full issue page (Cmd+O)"
             >
               <ExternalLink className="w-3.5 h-3.5" />
             </Link>
 
-            <div className="w-[1px] h-3.5 bg-[#e5e3df] mx-0.5" />
+            <div className="w-[1px] h-3.5 bg-border mx-0.5" />
 
             {/* J / K fast navigation buttons */}
             <button
               onClick={() => handleAdjacentNavigate(-1)}
-              className="p-1 hover:text-[#1a1a1a] hover:bg-[#ede9e4] rounded transition-colors cursor-pointer"
+              className="p-1 hover:text-text-primary hover:bg-surface-muted rounded transition-colors cursor-pointer"
               title="Previous issue (K)"
             >
               <ChevronUp className="w-4 h-4" />
             </button>
             <button
               onClick={() => handleAdjacentNavigate(1)}
-              className="p-1 hover:text-[#1a1a1a] hover:bg-[#ede9e4] rounded transition-colors cursor-pointer"
+              className="p-1 hover:text-text-primary hover:bg-surface-muted rounded transition-colors cursor-pointer"
               title="Next issue (J)"
             >
               <ChevronDown className="w-4 h-4" />
             </button>
 
-            <div className="w-[1px] h-3.5 bg-[#e5e3df] mx-0.5" />
+            <div className="w-[1px] h-3.5 bg-border mx-0.5" />
 
             {/* Close Drawer Button */}
             <button
               onClick={closeDrawer}
-              className="p-1 hover:text-[#1a1a1a] hover:bg-[#ede9e4] rounded transition-colors cursor-pointer"
+              className="p-1 hover:text-text-primary hover:bg-surface-muted rounded transition-colors cursor-pointer"
               title="Close drawer (Esc)"
               aria-label="Close drawer"
             >
@@ -230,13 +230,13 @@ export const IssueDrawer: React.FC = () => {
         </div>
 
         {/* 2. Sub-Tabs */}
-        <div className="flex items-center px-4 border-b border-[#e5e3df] bg-white text-xs shrink-0">
+        <div className="flex items-center px-4 border-b border-border bg-surface-base text-xs shrink-0">
           <button
             onClick={() => setDrawerTab('properties')}
             className={`flex items-center gap-1.5 py-2 px-3 border-b-2 font-medium transition-colors cursor-pointer ${
               activeTab === 'DETAILS'
-                ? 'border-[#5645d4] text-[#5645d4]'
-                : 'border-transparent text-[#787671] hover:text-[#1a1a1a]'
+                ? 'border-accent text-accent'
+                : 'border-transparent text-text-muted hover:text-text-primary'
             }`}
           >
             <Layers className="w-3.5 h-3.5" />
@@ -247,14 +247,14 @@ export const IssueDrawer: React.FC = () => {
             onClick={() => setDrawerTab('dependencies')}
             className={`flex items-center gap-1.5 py-2 px-3 border-b-2 font-medium transition-colors cursor-pointer ${
               activeTab === 'DEPENDENCIES'
-                ? 'border-[#5645d4] text-[#5645d4]'
-                : 'border-transparent text-[#787671] hover:text-[#1a1a1a]'
+                ? 'border-accent text-accent'
+                : 'border-transparent text-text-muted hover:text-text-primary'
             }`}
           >
             <Link2 className="w-3.5 h-3.5" />
             <span>Blockers</span>
             {blockerStatus.activeCount > 0 && (
-              <span className="w-4 h-4 rounded-full bg-[#ffe8d4] text-[#dd5b00] text-[10px] font-bold flex items-center justify-center">
+              <span className="w-4 h-4 rounded-full bg-blocker/15 text-blocker text-[10px] font-bold flex items-center justify-center">
                 {blockerStatus.activeCount}
               </span>
             )}
@@ -264,14 +264,14 @@ export const IssueDrawer: React.FC = () => {
             onClick={() => setDrawerTab('discussions')}
             className={`flex items-center gap-1.5 py-2 px-3 border-b-2 font-medium transition-colors cursor-pointer ${
               activeTab === 'DISCUSSIONS'
-                ? 'border-[#5645d4] text-[#5645d4]'
-                : 'border-transparent text-[#787671] hover:text-[#1a1a1a]'
+                ? 'border-accent text-accent'
+                : 'border-transparent text-text-muted hover:text-text-primary'
             }`}
           >
             <MessageSquare className="w-3.5 h-3.5" />
             <span>Discussion</span>
             {issueCommentCount > 0 && (
-              <span className="w-4 h-4 rounded-full bg-purple-100 text-[#5645d4] text-[10px] font-bold flex items-center justify-center">
+              <span className="w-4 h-4 rounded-full bg-accent/15 text-accent text-[10px] font-bold flex items-center justify-center">
                 {issueCommentCount}
               </span>
             )}
@@ -281,8 +281,8 @@ export const IssueDrawer: React.FC = () => {
             onClick={() => setDrawerTab('activity')}
             className={`flex items-center gap-1.5 py-2 px-3 border-b-2 font-medium transition-colors cursor-pointer ${
               activeTab === 'ACTIVITY'
-                ? 'border-[#5645d4] text-[#5645d4]'
-                : 'border-transparent text-[#787671] hover:text-[#1a1a1a]'
+                ? 'border-accent text-accent'
+                : 'border-transparent text-text-muted hover:text-text-primary'
             }`}
           >
             <History className="w-3.5 h-3.5" />
@@ -299,7 +299,7 @@ export const IssueDrawer: React.FC = () => {
               onChange={e => setTitle(e.target.value)}
               onBlur={handleTitleBlur}
               rows={2}
-              className="w-full text-base font-semibold text-[#1a1a1a] bg-transparent border-0 focus:ring-1 focus:ring-[#5645d4] rounded p-1 resize-none leading-snug hover:bg-[#fafaf9] transition-colors"
+              className="w-full text-base font-semibold text-text-primary bg-transparent border-0 focus:ring-1 focus:ring-accent rounded p-1 resize-none leading-snug hover:bg-surface-subtle transition-colors"
               placeholder="Issue title..."
             />
           </div>
@@ -310,7 +310,7 @@ export const IssueDrawer: React.FC = () => {
               <PropertyGrid issue={activeIssue} />
 
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider text-[#787671] block mb-1.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-text-muted block mb-1.5">
                   Description
                 </label>
                 <textarea
@@ -319,31 +319,31 @@ export const IssueDrawer: React.FC = () => {
                   onBlur={handleDescriptionBlur}
                   rows={5}
                   placeholder="Add technical specifications, acceptance criteria, or logs..."
-                  className="w-full text-xs text-[#37352f] bg-[#fafaf9] border border-[#e5e3df] focus:border-[#5645d4] rounded-lg p-3 resize-y focus:outline-none leading-relaxed"
+                  className="w-full text-xs text-text-secondary bg-surface-subtle border border-border focus:border-accent rounded-lg p-3 resize-y focus:outline-none leading-relaxed"
                 />
               </div>
 
               {/* Quick summary of blockers inside details */}
-              <div className="pt-2 border-t border-[#e5e3df]">
+              <div className="pt-2 border-t border-border">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-[#787671] uppercase tracking-wider">
+                  <span className="text-xs font-semibold text-text-muted uppercase tracking-wider">
                     Blocker Summary
                   </span>
                   <button
                     onClick={() => setDrawerTab('dependencies')}
-                    className="text-xs text-[#5645d4] hover:underline cursor-pointer"
+                    className="text-xs text-accent hover:underline cursor-pointer"
                   >
                     Manage Blockers →
                   </button>
                 </div>
 
                 {blockerStatus.activeCount > 0 ? (
-                  <div className="p-2.5 rounded-lg bg-[#ffe8d4]/50 border border-[#ffd3ad] text-xs space-y-1">
-                    <div className="flex items-center gap-1.5 font-semibold text-[#dd5b00]">
+                  <div className="p-2.5 rounded-lg bg-blocker/10 border border-blocker/30 text-xs space-y-1">
+                    <div className="flex items-center gap-1.5 font-semibold text-blocker">
                       <ShieldAlert className="w-3.5 h-3.5" />
                       <span>Cannot complete: {blockerStatus.activeCount} active blocker(s)</span>
                     </div>
-                    <ul className="list-disc list-inside text-[#793400] text-[11px] space-y-0.5">
+                    <ul className="list-disc list-inside text-blocker text-[11px] space-y-0.5">
                       {blockerStatus.activeBlockers.map(b => (
                         <li key={b.id}>
                           <span className="font-mono font-semibold">{b.key}</span> — {b.title}
@@ -352,14 +352,14 @@ export const IssueDrawer: React.FC = () => {
                     </ul>
                   </div>
                 ) : (
-                  <div className="text-xs text-[#787671] py-1">
+                  <div className="text-xs text-text-muted py-1">
                     No active blockers. Work can proceed normally.
                   </div>
                 )}
               </div>
 
               {/* Quick Discussion Section in Details */}
-              <div className="pt-2 border-t border-[#e5e3df]/70">
+              <div className="pt-2 border-t border-border/70">
                 <CommentThread issueId={activeIssue.id} />
               </div>
             </div>
@@ -376,10 +376,10 @@ export const IssueDrawer: React.FC = () => {
         </div>
 
         {/* 4. Footer navigation info */}
-        <div className="px-4 py-2 border-t border-[#e5e3df] bg-[#fafaf9] flex items-center justify-between text-[11px] text-[#787671] shrink-0">
+        <div className="px-4 py-2 border-t border-border bg-surface-subtle flex items-center justify-between text-[11px] text-text-muted shrink-0">
           <span>
-            Use <kbd className="font-mono px-1 py-0.5 border rounded bg-white">J</kbd> /{' '}
-            <kbd className="font-mono px-1 py-0.5 border rounded bg-white">K</kbd> to triage
+            Use <kbd className="font-mono px-1 py-0.5 border border-border rounded bg-surface-base">J</kbd> /{' '}
+            <kbd className="font-mono px-1 py-0.5 border border-border rounded bg-surface-base">K</kbd> to triage
           </span>
           <span>v{activeIssue.version}</span>
         </div>

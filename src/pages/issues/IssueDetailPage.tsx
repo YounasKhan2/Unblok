@@ -83,20 +83,20 @@ export const IssueDetailPage: React.FC = () => {
   // 1. Invalid / Not Found State
   if (!issueData) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-white text-center">
-        <div className="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 mb-4 shadow-sm">
+      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-surface-base text-center">
+        <div className="w-14 h-14 rounded-2xl bg-warning/10 border border-warning/30 flex items-center justify-center text-warning mb-4 shadow-sm">
           <AlertCircle className="w-7 h-7" />
         </div>
 
-        <h1 className="text-xl font-bold text-[#1a1a1a] mb-2">Issue not found</h1>
-        <p className="text-sm text-[#787671] max-w-md mb-6 leading-relaxed">
-          The requested issue <span className="font-mono font-semibold text-[#1a1a1a]">{issueKey || ''}</span> does
+        <h1 className="text-xl font-bold text-text-primary mb-2">Issue not found</h1>
+        <p className="text-sm text-text-muted max-w-md mb-6 leading-relaxed">
+          The requested issue <span className="font-mono font-semibold text-text-primary">{issueKey || ''}</span> does
           not exist or you do not have permission to view it in this workspace.
         </p>
 
         <Link
           to="/my-work"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-[#5645d4] hover:bg-[#4838bd] text-white text-xs font-semibold rounded-lg shadow-sm transition-colors cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-accent hover:opacity-90 text-surface-base text-xs font-semibold rounded-lg shadow-sm transition-opacity cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Return to My Work</span>
@@ -125,7 +125,7 @@ export const IssueDetailPage: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white">
+    <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-surface-base">
       {/* 1. Breadcrumb Header */}
       <IssueBreadcrumbHeader
         issue={issue}
@@ -139,14 +139,14 @@ export const IssueDetailPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Active Blocker Alert Banner */}
           {blockerStatus.activeCount > 0 && (
-            <div className="mb-6 p-3.5 bg-[#ffe8d4]/70 border border-[#ffd3ad] rounded-lg animate-in fade-in duration-150">
+            <div className="mb-6 p-3.5 bg-blocker/10 border border-blocker/30 rounded-lg animate-in fade-in duration-150">
               <div className="flex items-start gap-2.5">
-                <ShieldAlert className="w-4 h-4 text-[#dd5b00] shrink-0 mt-0.5" />
+                <ShieldAlert className="w-4 h-4 text-blocker shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs font-bold text-[#793400]">
+                  <div className="text-xs font-bold text-blocker">
                     Execution Blocked ({blockerStatus.activeCount} Active Prerequisite{blockerStatus.activeCount > 1 ? 's' : ''})
                   </div>
-                  <p className="text-[11px] text-[#793400]/90 mt-0.5 leading-relaxed">
+                  <p className="text-[11px] text-blocker/90 mt-0.5 leading-relaxed">
                     This issue cannot transition to <span className="font-semibold">DONE</span> until all active upstream
                     tasks are completed or cancelled.
                   </p>
@@ -155,9 +155,9 @@ export const IssueDetailPage: React.FC = () => {
                       <Link
                         key={b.id}
                         to={`/issues/${b.key}`}
-                        className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-white/80 border border-[#ffd3ad] text-[11px] font-medium text-[#793400] hover:bg-white transition-colors"
+                        className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-surface-base/80 border border-blocker/30 text-[11px] font-medium text-blocker hover:bg-surface-base transition-colors"
                       >
-                        <span className="font-mono font-bold text-[#5645d4]">{b.key}</span>
+                        <span className="font-mono font-bold text-accent">{b.key}</span>
                         <span className="truncate max-w-[200px]">{b.title}</span>
                       </Link>
                     ))}
@@ -179,27 +179,27 @@ export const IssueDetailPage: React.FC = () => {
               />
 
               {/* Mobile Properties Dropdown (Visible only below lg screen) */}
-              <div className="lg:hidden border border-[#e5e3df] rounded-lg bg-[#fafaf9] overflow-hidden">
+              <div className="lg:hidden border border-border rounded-lg bg-surface-subtle overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setMobilePropsExpanded(!mobilePropsExpanded)}
-                  className="w-full flex items-center justify-between p-3 text-xs font-semibold text-[#1a1a1a] cursor-pointer"
+                  className="w-full flex items-center justify-between p-3 text-xs font-semibold text-text-primary cursor-pointer"
                 >
-                  <span className="uppercase tracking-wider text-[#787671]">Properties</span>
+                  <span className="uppercase tracking-wider text-text-muted">Properties</span>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-[#5645d4] font-medium">
+                    <span className="text-xs text-accent font-medium">
                       {issue.state} · {issue.priority}
                     </span>
                     {mobilePropsExpanded ? (
-                      <ChevronUp className="w-4 h-4 text-[#787671]" />
+                      <ChevronUp className="w-4 h-4 text-text-muted" />
                     ) : (
-                      <ChevronDown className="w-4 h-4 text-[#787671]" />
+                      <ChevronDown className="w-4 h-4 text-text-muted" />
                     )}
                   </div>
                 </button>
 
                 {mobilePropsExpanded && (
-                  <div className="p-3 pt-0 border-t border-[#e5e3df]">
+                  <div className="p-3 pt-0 border-t border-border">
                     <IssueMetadataSidebar
                       issue={issue}
                       project={project}
@@ -218,7 +218,7 @@ export const IssueDetailPage: React.FC = () => {
               />
 
               {/* Deep Work Content Subsections (Discussion | Dependencies | Activity) */}
-              <div className="pt-4 border-t border-[#e5e3df]">
+              <div className="pt-4 border-t border-border">
                 <IssueContentTabs
                   issue={issue}
                   upstreamDependencies={upstreamDependencies}

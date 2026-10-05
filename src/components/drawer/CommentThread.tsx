@@ -185,7 +185,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
                 return (
                   <span
                     key={wIdx}
-                    className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded bg-purple-100 text-[#5645d4] font-semibold text-[11px] border border-purple-200"
+                    className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded bg-accent/15 text-accent font-semibold text-[11px] border border-accent/30"
                   >
                     <AtSign className="w-2.5 h-2.5" />
                     <span>{matchedName.name}</span>
@@ -213,10 +213,10 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
     <div className="space-y-4">
       {/* Top Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5 text-xs font-semibold text-[#1a1a1a]">
-          <MessageSquare className="w-3.5 h-3.5 text-[#5645d4]" />
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-text-primary">
+          <MessageSquare className="w-3.5 h-3.5 text-accent" />
           <span>Discussion & Comments</span>
-          <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-purple-50 text-[#5645d4]">
+          <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-accent/10 text-accent">
             {issueComments.length}
           </span>
         </div>
@@ -225,8 +225,8 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
       {/* Comments List */}
       <div className="space-y-3">
         {rootComments.length === 0 ? (
-          <div className="py-6 text-center text-xs text-[#787671] bg-[#fafaf9] rounded-lg border border-dashed border-[#e5e3df]">
-            No discussions yet. Type <span className="font-mono text-[#5645d4]">@</span> to mention a teammate or leave technical notes.
+          <div className="py-6 text-center text-xs text-text-muted bg-surface-subtle rounded-lg border border-dashed border-border">
+            No discussions yet. Type <span className="font-mono text-accent">@</span> to mention a teammate or leave technical notes.
           </div>
         ) : (
           rootComments.map(comment => {
@@ -244,17 +244,17 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
             return (
               <div key={comment.id} className="space-y-2">
                 {/* Root Comment Box */}
-                <div className="p-3 rounded-lg bg-[#fafaf9] border border-[#e5e3df] text-xs hover:border-[#c8c4be] transition-colors">
+                <div className="p-3 rounded-lg bg-surface-subtle border border-border text-xs hover:border-border-strong transition-colors">
                   <div className="flex items-start justify-between gap-2 mb-1.5">
                     <div className="flex items-center gap-2">
                       <Avatar
                         user={authorUser}
                         size="xs"
                       />
-                      <span className="font-bold text-[#1a1a1a] text-xs">
+                      <span className="font-bold text-text-primary text-xs">
                         {comment.authorName}
                       </span>
-                      <span className="text-[10px] text-[#787671]">
+                      <span className="text-[10px] text-text-muted">
                         {formatTimestamp(comment.createdAt)}
                       </span>
                     </div>
@@ -266,7 +266,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
                             setReplyingTo(comment);
                             textareaRef.current?.focus();
                           }}
-                          className="p-1 text-[#787671] hover:text-[#5645d4] hover:bg-[#ede9e4] rounded transition-colors cursor-pointer"
+                          className="p-1 text-text-muted hover:text-accent hover:bg-surface-muted rounded transition-colors cursor-pointer"
                           title="Reply to thread"
                         >
                           <CornerDownRight className="w-3 h-3" />
@@ -275,7 +275,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
                       {!isReadOnly && isAuthor && (
                         <button
                           onClick={() => deleteComment(comment.id)}
-                          className="p-1 text-[#787671] hover:text-[#d83a52] hover:bg-red-50 rounded transition-colors cursor-pointer"
+                          className="p-1 text-text-muted hover:text-danger hover:bg-danger/10 rounded transition-colors cursor-pointer"
                           title="Delete comment"
                         >
                           <Trash2 className="w-3 h-3" />
@@ -284,14 +284,14 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
                     </div>
                   </div>
 
-                  <div className="text-[#37352f] leading-relaxed whitespace-pre-wrap pl-6">
+                  <div className="text-text-secondary leading-relaxed whitespace-pre-wrap pl-6">
                     {renderFormattedContent(comment.content)}
                   </div>
                 </div>
 
                 {/* Nested Threaded Replies */}
                 {replies.length > 0 && (
-                  <div className="pl-6 space-y-2 relative before:absolute before:left-3 before:top-0 before:bottom-3 before:w-[2px] before:bg-purple-100">
+                  <div className="pl-6 space-y-2 relative before:absolute before:left-3 before:top-0 before:bottom-3 before:w-[2px] before:bg-accent/20">
                     {replies.map(reply => {
                       const isReplyAuthor = reply.authorId === currentUser.id;
                       const replyUser = users.find(u => u.id === reply.authorId) || {
@@ -305,7 +305,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
                       return (
                         <div
                           key={reply.id}
-                          className="p-2.5 rounded-lg bg-white border border-[#e5e3df] text-xs shadow-2xs"
+                          className="p-2.5 rounded-lg bg-surface-base border border-border text-xs shadow-2xs"
                         >
                           <div className="flex items-start justify-between gap-2 mb-1">
                             <div className="flex items-center gap-2">
@@ -313,10 +313,10 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
                                 user={replyUser}
                                 size="xs"
                               />
-                              <span className="font-bold text-[#1a1a1a] text-xs">
+                              <span className="font-bold text-text-primary text-xs">
                                 {reply.authorName}
                               </span>
-                              <span className="text-[10px] text-[#787671]">
+                              <span className="text-[10px] text-text-muted">
                                 {formatTimestamp(reply.createdAt)}
                               </span>
                             </div>
@@ -324,7 +324,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
                             {!isReadOnly && isReplyAuthor && (
                               <button
                                 onClick={() => deleteComment(reply.id)}
-                                className="p-1 text-[#787671] hover:text-[#d83a52] hover:bg-red-50 rounded transition-colors cursor-pointer"
+                                className="p-1 text-text-muted hover:text-danger hover:bg-danger/10 rounded transition-colors cursor-pointer"
                                 title="Delete reply"
                               >
                                 <Trash2 className="w-3 h-3" />
@@ -332,7 +332,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
                             )}
                           </div>
 
-                          <div className="text-[#37352f] leading-relaxed whitespace-pre-wrap pl-6">
+                          <div className="text-text-secondary leading-relaxed whitespace-pre-wrap pl-6">
                             {renderFormattedContent(reply.content)}
                           </div>
                         </div>
@@ -348,8 +348,8 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
 
       {/* Reply Banner if Replying to a thread */}
       {!isReadOnly && replyingTo && (
-        <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-purple-50 border border-purple-200 text-xs">
-          <div className="flex items-center gap-1.5 text-[#5645d4]">
+        <div className="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-accent/10 border border-accent/20 text-xs">
+          <div className="flex items-center gap-1.5 text-accent">
             <CornerDownRight className="w-3.5 h-3.5" />
             <span>
               Replying to <span className="font-bold">{replyingTo.authorName}</span>
@@ -357,7 +357,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
           </div>
           <button
             onClick={() => setReplyingTo(null)}
-            className="p-0.5 text-[#787671] hover:text-[#1a1a1a] rounded hover:bg-purple-100"
+            className="p-0.5 text-text-muted hover:text-text-primary rounded hover:bg-accent/20"
           >
             <X className="w-3 h-3" />
           </button>
@@ -366,11 +366,11 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
 
       {/* Composer Input Box or ReadOnly Notice */}
       {isReadOnly ? (
-        <div className="p-3 text-center text-xs text-[#787671] bg-[#fafaf9] rounded-lg border border-[#e5e3df]">
+        <div className="p-3 text-center text-xs text-text-muted bg-surface-subtle rounded-lg border border-border">
           Viewing in read-only mode (Observer). Commenting is disabled.
         </div>
       ) : (
-        <div className="relative border border-[#e5e3df] rounded-lg bg-white overflow-hidden shadow-2xs focus-within:border-[#5645d4] transition-colors">
+        <div className="relative border border-border rounded-lg bg-surface-base overflow-hidden shadow-2xs focus-within:border-accent transition-colors">
           <textarea
             ref={textareaRef}
             rows={3}
@@ -378,12 +378,12 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
             onChange={handleTextChange}
             onKeyDown={handleKeyDown}
             placeholder={replyingTo ? 'Write a reply...' : 'Add a technical comment or mention someone with @...'}
-            className="w-full p-2.5 text-xs text-[#1a1a1a] bg-transparent focus:outline-none resize-none leading-relaxed"
+            className="w-full p-2.5 text-xs text-text-primary bg-transparent focus:outline-none resize-none leading-relaxed"
           />
 
           {/* Action Toolbar */}
-          <div className="flex items-center justify-between px-2.5 py-1.5 border-t border-[#e5e3df] bg-[#fafaf9]">
-            <div className="flex items-center gap-1 text-[#787671]">
+          <div className="flex items-center justify-between px-2.5 py-1.5 border-t border-border bg-surface-subtle">
+            <div className="flex items-center gap-1 text-text-muted">
               <button
                 type="button"
                 onClick={() => {
@@ -392,7 +392,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
                   setMentionFilter('');
                   textareaRef.current?.focus();
                 }}
-                className="p-1 hover:text-[#5645d4] hover:bg-[#ede9e4] rounded transition-colors cursor-pointer"
+                className="p-1 hover:text-accent hover:bg-surface-muted rounded transition-colors cursor-pointer"
                 title="Mention teammate (@)"
               >
                 <AtSign className="w-3.5 h-3.5" />
@@ -400,7 +400,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
               <button
                 type="button"
                 onClick={insertCodeBlock}
-                className="p-1 hover:text-[#5645d4] hover:bg-[#ede9e4] rounded transition-colors cursor-pointer"
+                className="p-1 hover:text-accent hover:bg-surface-muted rounded transition-colors cursor-pointer"
                 title="Insert code block"
               >
                 <Code className="w-3.5 h-3.5" />
@@ -408,14 +408,14 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-[#a4a097] hidden sm:inline">
+              <span className="text-[10px] text-text-muted hidden sm:inline">
                 ⌘ + Enter
               </span>
               <button
                 type="button"
                 onClick={handleSubmit}
                 disabled={!commentText.trim()}
-                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded bg-[#5645d4] hover:bg-[#4838bd] text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded bg-accent hover:opacity-90 text-surface-base disabled:opacity-40 disabled:cursor-not-allowed transition-opacity cursor-pointer"
               >
                 <Send className="w-3 h-3" />
                 <span>Send</span>
@@ -425,25 +425,25 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
 
           {/* Live Teammate Mention Autocomplete Popover */}
           {showMentionPicker && (
-            <div className="absolute left-2 bottom-12 z-50 w-56 bg-white border border-[#e5e3df] rounded-lg shadow-xl p-1 max-h-48 overflow-y-auto">
-              <div className="text-[10px] font-semibold text-[#787671] uppercase tracking-wider px-2 py-1">
+            <div className="absolute left-2 bottom-12 z-50 w-56 bg-surface-base border border-border rounded-lg shadow-xl p-1 max-h-48 overflow-y-auto">
+              <div className="text-[10px] font-semibold text-text-muted uppercase tracking-wider px-2 py-1">
                 Mention Teammate
               </div>
               {filteredUsers.length === 0 ? (
-                <div className="px-2 py-1.5 text-xs text-[#787671]">No matching member</div>
+                <div className="px-2 py-1.5 text-xs text-text-muted">No matching member</div>
               ) : (
                 filteredUsers.map((user, idx) => (
                   <button
                     key={user.id}
                     onClick={() => handleSelectMention(user)}
                     className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs text-left cursor-pointer transition-colors ${
-                      idx === mentionIndex ? 'bg-[#5645d4]/10 text-[#5645d4] font-medium' : 'hover:bg-[#f6f5f4]'
+                      idx === mentionIndex ? 'bg-accent/10 text-accent font-medium' : 'hover:bg-surface-muted'
                     }`}
                   >
                     <Avatar user={user} size="xs" />
                     <div className="flex-1 min-w-0">
-                      <div className="truncate font-semibold text-[#1a1a1a]">{user.name}</div>
-                      <div className="text-[10px] text-[#787671] truncate">{user.email}</div>
+                      <div className="truncate font-semibold text-text-primary">{user.name}</div>
+                      <div className="text-[10px] text-text-muted truncate">{user.email}</div>
                     </div>
                   </button>
                 ))

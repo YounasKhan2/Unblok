@@ -48,18 +48,18 @@ export const IssueDependencyMiniGraph: React.FC<IssueDependencyMiniGraphProps> =
   }
 
   return (
-    <div className="p-3.5 bg-[#fafaf9] rounded-lg border border-[#e5e3df] space-y-3">
+    <div className="p-3.5 bg-surface-subtle rounded-lg border border-border space-y-3">
       {/* Screen Reader summary */}
       <div className="sr-only" aria-live="polite">
         {screenReaderSummary}
       </div>
 
-      <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-[#787671]">
+      <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-text-muted">
         <span className="flex items-center gap-1.5">
-          <Layers className="w-3.5 h-3.5 text-[#5645d4]" />
+          <Layers className="w-3.5 h-3.5 text-accent" />
           <span>Dependency Graph Flow</span>
         </span>
-        <span className="text-[10px] text-[#787671] normal-case">
+        <span className="text-[10px] text-text-muted normal-case">
           Interactive mini-DAG
         </span>
       </div>
@@ -68,7 +68,7 @@ export const IssueDependencyMiniGraph: React.FC<IssueDependencyMiniGraphProps> =
         {/* 1. Top Tier: Upstream Blockers */}
         {upstreamDependencies.length > 0 && (
           <div className="w-full flex flex-col items-center space-y-1.5">
-            <div className="text-[10px] font-semibold text-[#787671] uppercase tracking-wider">
+            <div className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">
               Upstream Prerequisites ({upstreamDependencies.length})
             </div>
 
@@ -81,18 +81,18 @@ export const IssueDependencyMiniGraph: React.FC<IssueDependencyMiniGraphProps> =
                     to={`/issues/${dep.issue.key}`}
                     className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs shadow-2xs transition-all hover:scale-[1.02] ${
                       isActive
-                        ? 'bg-[#ffe8d4]/70 border-[#ffd3ad] hover:border-[#dd5b00]'
-                        : 'bg-white border-[#e5e3df] hover:border-[#5645d4] opacity-80'
+                        ? 'bg-blocker/10 border-blocker/30 hover:border-blocker'
+                        : 'bg-surface-base border-border hover:border-accent opacity-80'
                     }`}
                     title={`${dep.issue.key}: ${dep.issue.title} (${isActive ? 'Active Blocker' : 'Resolved'})`}
                   >
                     {isActive ? (
-                      <ShieldAlert className="w-3.5 h-3.5 text-[#dd5b00] shrink-0" />
+                      <ShieldAlert className="w-3.5 h-3.5 text-blocker shrink-0" />
                     ) : (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-[#1aae39] shrink-0" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-success shrink-0" />
                     )}
 
-                    <span className="font-mono font-bold text-[#5645d4]">
+                    <span className="font-mono font-bold text-accent">
                       {dep.issue.key}
                     </span>
 
@@ -111,18 +111,18 @@ export const IssueDependencyMiniGraph: React.FC<IssueDependencyMiniGraphProps> =
               })}
             </div>
 
-            <ArrowDown className="w-4 h-4 text-[#5645d4] my-0.5 animate-bounce" />
+            <ArrowDown className="w-4 h-4 text-accent my-0.5 animate-bounce" />
           </div>
         )}
 
         {/* 2. Middle Tier: Current Issue */}
-        <div className="w-full max-w-md p-2.5 rounded-lg bg-white border-2 border-[#5645d4] shadow-xs flex items-center justify-between gap-2">
+        <div className="w-full max-w-md p-2.5 rounded-lg bg-surface-base border-2 border-accent shadow-xs flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <PriorityIcon priority={currentIssue.priority} size="sm" />
-            <span className="font-mono font-bold text-sm text-[#5645d4]">
+            <span className="font-mono font-bold text-sm text-accent">
               {currentIssue.key}
             </span>
-            <span className="truncate text-xs font-medium text-[#1a1a1a]">
+            <span className="truncate text-xs font-medium text-text-primary">
               {currentIssue.title}
             </span>
           </div>
@@ -135,9 +135,9 @@ export const IssueDependencyMiniGraph: React.FC<IssueDependencyMiniGraphProps> =
         {/* 3. Bottom Tier: Downstream Issues */}
         {downstreamDependencies.length > 0 && (
           <div className="w-full flex flex-col items-center space-y-1.5 pt-0.5">
-            <ArrowDown className="w-4 h-4 text-[#5645d4] my-0.5" />
+            <ArrowDown className="w-4 h-4 text-accent my-0.5" />
 
-            <div className="text-[10px] font-semibold text-[#787671] uppercase tracking-wider">
+            <div className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">
               Downstream Dependent Work ({downstreamDependencies.length})
             </div>
 
@@ -146,11 +146,11 @@ export const IssueDependencyMiniGraph: React.FC<IssueDependencyMiniGraphProps> =
                 <Link
                   key={dep.dependencyId}
                   to={`/issues/${dep.issue.key}`}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-[#e5e3df] bg-white hover:border-[#5645d4] text-xs shadow-2xs transition-all hover:scale-[1.02]"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-surface-base hover:border-accent text-xs shadow-2xs transition-all hover:scale-[1.02]"
                   title={`${dep.issue.key}: ${dep.issue.title}`}
                 >
-                  <ArrowRight className="w-3.5 h-3.5 text-[#5645d4] shrink-0" />
-                  <span className="font-mono font-bold text-[#5645d4]">
+                  <ArrowRight className="w-3.5 h-3.5 text-accent shrink-0" />
+                  <span className="font-mono font-bold text-accent">
                     {dep.issue.key}
                   </span>
                   {dep.team && (

@@ -88,13 +88,13 @@ export const IssueBreadcrumbHeader: React.FC<IssueBreadcrumbHeaderProps> = ({
   };
 
   return (
-    <header className="border-b border-[#e5e3df] bg-[#fafaf9] px-4 sm:px-6 py-2.5 shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <header className="border-b border-border bg-surface-subtle px-4 sm:px-6 py-2.5 shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       {/* Left: Breadcrumbs & Origin Return */}
       <div className="flex items-center gap-2 min-w-0 flex-wrap">
         {returnUrl && returnLabel && (
           <button
             onClick={() => navigate(returnUrl)}
-            className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-[#5645d4] hover:bg-purple-50 rounded border border-purple-200 transition-colors mr-1 cursor-pointer shrink-0"
+            className="inline-flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-accent hover:bg-accent/10 rounded border border-accent/30 transition-colors mr-1 cursor-pointer shrink-0"
             title={`Return to ${returnUrl}`}
           >
             <ArrowLeft className="w-3.5 h-3.5" />
@@ -102,14 +102,14 @@ export const IssueBreadcrumbHeader: React.FC<IssueBreadcrumbHeaderProps> = ({
           </button>
         )}
 
-        <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-xs text-[#787671] min-w-0">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-xs text-text-muted min-w-0">
           <Link
             to="/my-work"
-            className="hover:text-[#1a1a1a] transition-colors truncate"
+            className="hover:text-text-primary transition-colors truncate"
           >
             Workspace
           </Link>
-          <ChevronRight className="w-3 h-3 text-[#c8c4be] shrink-0" />
+          <ChevronRight className="w-3 h-3 text-border-strong shrink-0" />
 
           {team ? (
             <span className="flex items-center gap-1 truncate max-w-[140px]" title={team.name}>
@@ -122,12 +122,12 @@ export const IssueBreadcrumbHeader: React.FC<IssueBreadcrumbHeaderProps> = ({
           ) : (
             <span className="truncate">Engineering</span>
           )}
-          <ChevronRight className="w-3 h-3 text-[#c8c4be] shrink-0" />
+          <ChevronRight className="w-3 h-3 text-border-strong shrink-0" />
 
           {project ? (
             <Link
               to={`/projects/${project.key}/issues`}
-              className="hover:text-[#1a1a1a] transition-colors font-medium truncate max-w-[140px]"
+              className="hover:text-text-primary transition-colors font-medium truncate max-w-[140px]"
               title={project.name}
             >
               {project.key}
@@ -135,9 +135,9 @@ export const IssueBreadcrumbHeader: React.FC<IssueBreadcrumbHeaderProps> = ({
           ) : (
             <span>Project</span>
           )}
-          <ChevronRight className="w-3 h-3 text-[#c8c4be] shrink-0" />
+          <ChevronRight className="w-3 h-3 text-border-strong shrink-0" />
 
-          <span className="font-mono font-semibold text-[#1a1a1a] bg-white px-1.5 py-0.5 rounded border border-[#e5e3df] shrink-0">
+          <span className="font-mono font-semibold text-text-primary bg-surface-base px-1.5 py-0.5 rounded border border-border shrink-0">
             {issue.key}
           </span>
         </nav>
@@ -148,21 +148,21 @@ export const IssueBreadcrumbHeader: React.FC<IssueBreadcrumbHeaderProps> = ({
         <StatePill state={issue.state} size="sm" />
         <BlockerBadge status={blockerStatus} compact />
 
-        <div className="w-[1px] h-4 bg-[#e5e3df] mx-1" />
+        <div className="w-[1px] h-4 bg-border mx-1" />
 
         <button
           onClick={handleCopyLink}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-[#37352f] hover:text-[#1a1a1a] hover:bg-white bg-white/50 border border-[#e5e3df] rounded-[6px] shadow-2xs transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-base bg-surface-base/50 border border-border rounded-[6px] shadow-2xs transition-colors cursor-pointer"
           title="Copy direct canonical issue URL"
         >
           {copied ? (
             <>
-              <Check className="w-3.5 h-3.5 text-[#1aae39]" />
-              <span className="text-[#1aae39] font-semibold">Link Copied!</span>
+              <Check className="w-3.5 h-3.5 text-success" />
+              <span className="text-success font-semibold">Link Copied!</span>
             </>
           ) : (
             <>
-              <Copy className="w-3.5 h-3.5 text-[#787671]" />
+              <Copy className="w-3.5 h-3.5 text-text-muted" />
               <span>Copy Link</span>
             </>
           )}
@@ -170,10 +170,10 @@ export const IssueBreadcrumbHeader: React.FC<IssueBreadcrumbHeaderProps> = ({
 
         <button
           onClick={handleShare}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-[#37352f] hover:text-[#1a1a1a] hover:bg-white bg-white/50 border border-[#e5e3df] rounded-[6px] shadow-2xs transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-base bg-surface-base/50 border border-border rounded-[6px] shadow-2xs transition-colors cursor-pointer"
           title="Share canonical issue URL"
         >
-          <Share2 className="w-3.5 h-3.5 text-[#787671]" />
+          <Share2 className="w-3.5 h-3.5 text-text-muted" />
           <span>{shareFeedback ? 'Shared!' : 'Share'}</span>
         </button>
       </div>

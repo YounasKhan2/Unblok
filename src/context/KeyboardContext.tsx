@@ -5,6 +5,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useProject } from './ProjectContext';
+import { UserRole } from '../types';
 
 export type KeyboardScope = 'CANVAS' | 'DRAWER_NAV' | 'DRAWER_EDIT' | 'POPOVER' | 'MODAL';
 
@@ -72,8 +73,23 @@ export function evaluateKeyAction(params: {
   isInputFocused: boolean;
   scope: KeyboardScope;
   hasSelection: boolean;
+  canEdit?: boolean;
+  userRole?: UserRole;
 }): KeyAction {
-  const { key, metaKey, ctrlKey, shiftKey, isInputFocused, scope, hasSelection } = params;
+  const {
+    key,
+    metaKey,
+    ctrlKey,
+    shiftKey,
+    isInputFocused,
+    scope,
+    hasSelection,
+    canEdit = true,
+    userRole,
+  } = params;
+
+  // Determine if editing and mutation shortcuts (S, P, A, M, C) are permitted
+  const isEditingPermitted = canEdit && userRole !== 'OBSERVER';
 
   // 1. Meta shortcuts (Command palette, drawer open full)
   if ((metaKey || ctrlKey) && key.toLowerCase() === 'k') {
@@ -131,8 +147,8 @@ export function evaluateKeyAction(params: {
     return 'FOCUS_SEARCH';
   }
 
-  // 8. Issue Property and Detail shortcuts (S, P, A, M)
-  if (!metaKey && !ctrlKey) {
+  // 8. Issue Property and Detail shortcuts (S, P, A, M) - only for editable roles (ADMIN, MEMBER)
+  if (!metaKey && !ctrlKey && isEditingPermitted) {
     const lowerKey = key.toLowerCase();
     if (lowerKey === 's') {
       return 'OPEN_STATUS_PICKER';
@@ -173,7 +189,7 @@ export function evaluateKeyAction(params: {
     if (key.toLowerCase() === 'x' && !metaKey && !ctrlKey) {
       return 'CANVAS_TOGGLE_SELECT';
     }
-    if (key.toLowerCase() === 'c' && !metaKey && !ctrlKey) {
+    if (key.toLowerCase() === 'c' && !metaKey && !ctrlKey && isEditingPermitted) {
       return 'CREATE_ISSUE';
     }
   }
@@ -207,6 +223,7 @@ export const KeyboardProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     isNavCollapsed,
     setIsNavCollapsed,
     navigateIssue,
+    currentUser,
   } = useProject();
 
   const [activePicker, setActivePicker] = useState<ActivePickerType>(null);
@@ -276,6 +293,8 @@ export const KeyboardProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         isInputFocused,
         scope: currentScope,
         hasSelection: selectedIssueIds.length > 0,
+        canEdit: currentUser.role !== 'OBSERVER',
+        userRole: currentUser.role,
       });
 
       switch (action) {
@@ -419,6 +438,7 @@ export const KeyboardProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setIsDrawerOpen,
       clearSelection,
       navigateIssue,
+      currentUser.role,
     ]
   );
 
