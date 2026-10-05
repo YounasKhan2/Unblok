@@ -182,7 +182,23 @@ export function selectMyWorkData(
 
     // Tier 4: Up Next (TODO or BACKLOG scheduled)
     if (issue.state === 'TODO' || issue.state === 'BACKLOG') {
-      upNext.push(issue);
+      if (activeCycles.length > 0) {
+        // When relevant active team cycles exist, an issue qualifies for
+        // Up Next · Current cycle ONLY when its cycleId matches the active cycle
+        // for that issue's team.
+        const teamActiveCycle = activeCyclesByTeam.get(issue.teamId);
+        const matchesTeamActiveCycle = Boolean(
+          issue.cycleId && teamActiveCycle && teamActiveCycle.id === issue.cycleId
+        );
+        if (matchesTeamActiveCycle) {
+          upNext.push(issue);
+        }
+        // Unscheduled or mismatched-cycle work does not qualify for current-cycle work.
+      } else {
+        // Fallback behavior when no relevant active cycles exist:
+        // Present planned tasks and backlog in Up Next.
+        upNext.push(issue);
+      }
       continue;
     }
 

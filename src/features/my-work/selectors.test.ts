@@ -311,43 +311,38 @@ describe('selectMyWorkData', () => {
       expect(upNextGroup?.subtitle).toContain('Cycle 24 (ENG)');
     });
 
-    it('correctly handles multiple team active cycles without creating duplicate issues', () => {
+    it('qualifies a TODO/BACKLOG issue for Up Next when its cycleId matches the active cycle for its team', () => {
+      const matchingIssue: Issue = {
+        id: 'iss_match',
+        key: 'ENG-301',
+        projectId: 'proj_1',
+        teamId: 'team_eng',
+        cycleId: 'cycle_eng_24',
+        title: 'Active Cycle Planned Task',
+        description: '',
+        state: 'TODO',
+        priority: 'MEDIUM',
+        assigneeId: currentUserId,
+        creatorId: currentUserId,
+        createdAt: '2026-10-01',
+        updatedAt: '2026-10-01',
+        version: 1,
+      };
+
       const result = selectMyWorkData(
-        mockIssues,
-        mockDependencies,
+        [matchingIssue],
+        [],
         currentUserId,
         {},
         undefined,
         mockCycles,
-        ['team_eng', 'team_web']
+        'team_eng'
       );
 
-      expect(result.activeCycles.length).toBe(2);
-      const totalIssues = result.groups.reduce((acc, g) => acc + g.issues.length, 0);
-      const uniqueKeys = new Set(result.groups.flatMap(g => g.issues.map(i => i.key)));
-      // Deduplication invariant: no duplicate issues across all groups
-      expect(totalIssues).toBe(uniqueKeys.size);
+      expect(result.upNext.map(i => i.key)).toContain('ENG-301');
     });
 
-    it('gracefully falls back when a team has no active cycle', () => {
-      // team_inf has only a COMPLETED cycle, no ACTIVE cycle
-      const result = selectMyWorkData(
-        mockIssues,
-        mockDependencies,
-        currentUserId,
-        {},
-        undefined,
-        mockCycles,
-        'team_inf'
-      );
-
-      expect(result.activeCycles.length).toBe(0);
-      const upNextGroup = result.groups.find(g => g.id === 'upNext');
-      expect(upNextGroup?.title).toBe('Up Next');
-      expect(upNextGroup?.subtitle).toContain('Planned tasks and backlog');
-    });
-
-    it('does not treat an unrelated team cycle as the issue team active cycle', () => {
+    it('does not qualify a mismatched-cycle issue for Up Next when relevant active cycle exists', () => {
       // Create issue belonging to team_eng with cycleId from team_web
       const crossTeamIssue: Issue = {
         id: 'iss_cross',
@@ -376,11 +371,167 @@ describe('selectMyWorkData', () => {
         'team_eng'
       );
 
-      // Issue is still in upNext
-      expect(result.upNext.map(i => i.key)).toContain('ENG-999');
-      // But activeCycles strictly belongs to team_eng, not team_web!
+      // Mismatched-cycle issue must NOT qualify for current cycle Up Next!
+      expect(result.upNext.map(i => i.key)).not.toContain('ENG-999');
+      // And activeCycles strictly belongs to team_eng, not team_web
       expect(result.activeCycles.map(c => c.id)).toContain('cycle_eng_24');
       expect(result.activeCycles.map(c => c.id)).not.toContain('cycle_web_18');
+    });
+
+    it('does not qualify an unscheduled issue for Up Next when relevant active cycle exists', () => {
+      const unscheduledIssue: Issue = {
+        id: 'iss_unscheduled',
+        key: 'ENG-302',
+        projectId: 'proj_1',
+        teamId: 'team_eng',
+        title: 'Unscheduled Backlog Task',
+        description: '',
+        state: 'TODO',
+        priority: 'LOW',
+        assigneeId: currentUserId,
+        creatorId: currentUserId,
+        createdAt: '2026-10-01',
+        updatedAt: '2026-10-01',
+        version: 1,
+      };
+
+      const result = selectMyWorkData(
+        [unscheduledIssue],
+        [],
+        currentUserId,
+        {},
+        undefined,
+        mockCycles,
+        'team_eng'
+      );
+
+      // Unscheduled task must not be presented as current-cycle work!
+      expect(result.upNext.map(i => i.key)).not.toContain('ENG-302');
+    });
+
+    it('qualifies issues matching active cycles across multiple relevant teams while rejecting mismatched/unscheduled work', () => {
+      const issues: Issue[] = [
+        // Qualifies for team_eng active cycle
+        {
+          id: 'iss_eng',
+          key: 'ENG-401',
+          projectId: 'proj_1',
+          teamId: 'team_eng',
+          cycleId: 'cycle_eng_24',
+          title: 'ENG Cycle Task',
+          description: '',
+          state: 'TODO',
+          priority: 'MEDIUM',
+          assigneeId: currentUserId,
+          creatorId: currentUserId,
+          createdAt: '2026-10-01',
+          updatedAt: '2026-10-01',
+          version: 1,
+        },
+        // Qualifies for team_web active cycle
+        {
+          id: 'iss_web',
+          key: 'WEB-402',
+          projectId: 'proj_2',
+          teamId: 'team_web',
+          cycleId: 'cycle_web_18',
+          title: 'WEB Cycle Task',
+          description: '',
+          state: 'TODO',
+          priority: 'MEDIUM',
+          assigneeId: currentUserId,
+          creatorId: currentUserId,
+          createdAt: '2026-10-01',
+          updatedAt: '2026-10-01',
+          version: 1,
+        },
+        // Mismatched cycle: team_eng issue with team_web cycle -> Rejected!
+        {
+          id: 'iss_mismatch',
+          key: 'ENG-403',
+          projectId: 'proj_1',
+          teamId: 'team_eng',
+          cycleId: 'cycle_web_18',
+          title: 'Mismatched ENG Task',
+          description: '',
+          state: 'TODO',
+          priority: 'LOW',
+          assigneeId: currentUserId,
+          creatorId: currentUserId,
+          createdAt: '2026-10-01',
+          updatedAt: '2026-10-01',
+          version: 1,
+        },
+        // Unscheduled issue: team_web issue with no cycle -> Rejected!
+        {
+          id: 'iss_web_unscheduled',
+          key: 'WEB-404',
+          projectId: 'proj_2',
+          teamId: 'team_web',
+          title: 'Unscheduled WEB Task',
+          description: '',
+          state: 'TODO',
+          priority: 'LOW',
+          assigneeId: currentUserId,
+          creatorId: currentUserId,
+          createdAt: '2026-10-01',
+          updatedAt: '2026-10-01',
+          version: 1,
+        },
+      ];
+
+      const result = selectMyWorkData(
+        issues,
+        [],
+        currentUserId,
+        {},
+        undefined,
+        mockCycles,
+        ['team_eng', 'team_web']
+      );
+
+      const upNextKeys = result.upNext.map(i => i.key);
+      expect(upNextKeys).toContain('ENG-401');
+      expect(upNextKeys).toContain('WEB-402');
+      expect(upNextKeys).not.toContain('ENG-403');
+      expect(upNextKeys).not.toContain('WEB-404');
+    });
+
+    it('preserves fallback behavior where all TODO/BACKLOG work enters Up Next when no active cycle exists', () => {
+      const issues: Issue[] = [
+        {
+          id: 'iss_inf_todo',
+          key: 'INF-501',
+          projectId: 'proj_3',
+          teamId: 'team_inf',
+          title: 'Unscheduled Infra Task',
+          description: '',
+          state: 'TODO',
+          priority: 'LOW',
+          assigneeId: currentUserId,
+          creatorId: currentUserId,
+          createdAt: '2026-10-01',
+          updatedAt: '2026-10-01',
+          version: 1,
+        },
+      ];
+
+      // team_inf has no active cycle
+      const result = selectMyWorkData(
+        issues,
+        [],
+        currentUserId,
+        {},
+        undefined,
+        mockCycles,
+        'team_inf'
+      );
+
+      expect(result.activeCycles.length).toBe(0);
+      expect(result.upNext.map(i => i.key)).toContain('INF-501');
+      const upNextGroup = result.groups.find(g => g.id === 'upNext');
+      expect(upNextGroup?.title).toBe('Up Next');
+      expect(upNextGroup?.subtitle).toContain('Planned tasks and backlog');
     });
   });
 });
