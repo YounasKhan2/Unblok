@@ -7,6 +7,7 @@ import React from 'react';
 import { ShieldAlert, CheckCircle2, ArrowRight, Trash2, ExternalLink, Users, GitFork, Clock } from 'lucide-react';
 import { ResolvedEdge } from '../types';
 import { formatBlockerAge } from '../selectors';
+import { DEPENDENCY_STATE_CLASSES, GRAPH_SEMANTIC_PALETTE } from '../tokens';
 
 interface ActiveBlockerRegistryProps {
   edges: ResolvedEdge[];
@@ -14,15 +15,6 @@ interface ActiveBlockerRegistryProps {
   onRemoveDependency?: (dependencyId: string) => void;
   isObserver: boolean;
 }
-
-const STATE_CLASSES: Record<string, string> = {
-  BACKLOG: 'bg-[#f6f5f4] text-[#787671] border-[#e5e3df]',
-  TODO: 'bg-[#f6f5f4] text-[#5d5b54] border-[#e5e3df]',
-  IN_PROGRESS: 'bg-[#e0f2fe] text-[#0369a1] border-[#bae6fd]',
-  IN_REVIEW: 'bg-[#fef3c7] text-[#b45309] border-[#fde68a]',
-  DONE: 'bg-[#dcfce7] text-[#15803d] border-[#bbf7d0]',
-  CANCELLED: 'bg-[#f6f5f4] text-[#a4a097] border-[#e5e3df]',
-};
 
 export const ActiveBlockerRegistry: React.FC<ActiveBlockerRegistryProps> = ({
   edges,
@@ -32,10 +24,10 @@ export const ActiveBlockerRegistry: React.FC<ActiveBlockerRegistryProps> = ({
 }) => {
   if (edges.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-[#787671] bg-[#fafaf9]">
-        <ShieldAlert className="w-10 h-10 text-[#a4a097] mb-2" />
-        <h3 className="text-sm font-semibold text-[#1a1a1a] mb-1">No Dependencies Found</h3>
-        <p className="text-xs text-[#5d5b54] max-w-sm">
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-text-muted bg-surface-subtle">
+        <ShieldAlert className="w-10 h-10 text-border-strong mb-2" />
+        <h3 className="text-sm font-semibold text-text-primary mb-1">No Dependencies Found</h3>
+        <p className="text-xs text-text-secondary max-w-sm">
           No dependency relationships match the current filters. Clear filters or add new dependencies.
         </p>
       </div>
@@ -43,65 +35,65 @@ export const ActiveBlockerRegistry: React.FC<ActiveBlockerRegistryProps> = ({
   }
 
   return (
-    <div className="flex-1 overflow-auto bg-white">
+    <div className="flex-1 overflow-auto bg-surface-base">
       <table
         className="w-full text-left text-xs border-collapse"
         aria-label="Active Blocker and Dependency Registry"
       >
-        <thead className="bg-[#fafaf9] border-b border-[#e5e3df] sticky top-0 z-10">
+        <thead className="bg-surface-subtle border-b border-border sticky top-0 z-10">
           <tr>
-            <th scope="col" className="py-2 px-3 font-semibold text-[#787671] text-[11px] min-w-[200px]">
+            <th scope="col" className="py-2 px-3 font-semibold text-text-muted text-[11px] min-w-[200px]">
               Blocker (Upstream)
             </th>
-            <th scope="col" className="py-2 px-2 font-semibold text-[#787671] text-[11px] text-center w-28">
+            <th scope="col" className="py-2 px-2 font-semibold text-text-muted text-[11px] text-center w-28">
               Scope
             </th>
-            <th scope="col" className="py-2 px-3 font-semibold text-[#787671] text-[11px] min-w-[200px]">
+            <th scope="col" className="py-2 px-3 font-semibold text-text-muted text-[11px] min-w-[200px]">
               Blocked (Downstream)
             </th>
-            <th scope="col" className="py-2 px-2 font-semibold text-[#787671] text-[11px] w-24">
+            <th scope="col" className="py-2 px-2 font-semibold text-text-muted text-[11px] w-24">
               Status
             </th>
-            <th scope="col" className="py-2 px-2 font-semibold text-[#787671] text-[11px] w-24">
+            <th scope="col" className="py-2 px-2 font-semibold text-text-muted text-[11px] w-24">
               Age
             </th>
-            <th scope="col" className="py-2 px-2 font-semibold text-[#787671] text-[11px] text-right w-20">
+            <th scope="col" className="py-2 px-2 font-semibold text-text-muted text-[11px] text-right w-20">
               Actions
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#e5e3df]">
+        <tbody className="divide-y divide-border">
           {edges.map((edge) => {
             const ageString = formatBlockerAge(edge.createdAt);
 
             return (
               <tr
                 key={edge.dependencyId}
-                className="hover:bg-[#fafaf9]/80 transition-colors h-[38px] group"
+                className="hover:bg-surface-subtle/80 transition-colors h-[38px] group"
               >
                 {/* Upstream / Blocker */}
                 <td className="py-1.5 px-3">
                   <div className="flex items-center gap-2">
                     <span
                       className="w-2 h-2 rounded-full shrink-0"
-                      style={{ backgroundColor: edge.upstreamTeam?.color || '#5645d4' }}
+                      style={{ backgroundColor: edge.upstreamTeam?.color || GRAPH_SEMANTIC_PALETTE.fallbackTeam }}
                       title={`Team: ${edge.upstreamTeam?.name || 'Unassigned'}`}
                     />
                     <button
                       onClick={() => onOpenDrawer(edge.upstreamIssue.key)}
-                      className="font-mono font-bold text-xs text-[#1a1a1a] hover:text-[#5645d4] hover:underline cursor-pointer shrink-0"
+                      className="font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
                     >
                       {edge.upstreamIssue.key}
                     </button>
                     <span
                       className={`text-[9px] px-1 py-0.2 rounded border uppercase font-medium shrink-0 ${
-                        STATE_CLASSES[edge.upstreamIssue.state] || 'bg-gray-100 text-gray-700'
+                        DEPENDENCY_STATE_CLASSES[edge.upstreamIssue.state] || 'bg-surface-muted text-text-muted border-border'
                       }`}
                     >
                       {edge.upstreamIssue.state.replace('_', ' ')}
                     </span>
                     <span
-                      className="text-[#37352f] truncate max-w-[220px] font-medium"
+                      className="text-text-primary truncate max-w-[220px] font-medium"
                       title={edge.upstreamIssue.title}
                     >
                       {edge.upstreamIssue.title}
@@ -113,7 +105,7 @@ export const ActiveBlockerRegistry: React.FC<ActiveBlockerRegistryProps> = ({
                 <td className="py-1.5 px-2 text-center">
                   {edge.isCrossTeam ? (
                     <span
-                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[3px] bg-[#ede9fe] text-[#5645d4] text-[10px] font-semibold border border-[#c4b5fd]"
+                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[3px] bg-accent/10 text-accent text-[10px] font-semibold border border-accent/30"
                       title="Cross-Team dependency"
                     >
                       <Users className="w-2.5 h-2.5" />
@@ -121,14 +113,14 @@ export const ActiveBlockerRegistry: React.FC<ActiveBlockerRegistryProps> = ({
                     </span>
                   ) : edge.isCrossProject ? (
                     <span
-                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[3px] bg-[#f1f5f9] text-[#475569] text-[10px] font-medium border border-[#cbd5e1]"
+                      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[3px] bg-surface-muted text-text-secondary text-[10px] font-medium border border-border"
                       title="Cross-Project dependency (same team)"
                     >
                       <GitFork className="w-2.5 h-2.5" />
                       <span>Cross-Project</span>
                     </span>
                   ) : (
-                    <span className="text-[10px] text-[#787671]">Same Project</span>
+                    <span className="text-[10px] text-text-muted">Same Project</span>
                   )}
                 </td>
 
@@ -137,24 +129,24 @@ export const ActiveBlockerRegistry: React.FC<ActiveBlockerRegistryProps> = ({
                   <div className="flex items-center gap-2">
                     <span
                       className="w-2 h-2 rounded-full shrink-0"
-                      style={{ backgroundColor: edge.downstreamTeam?.color || '#5645d4' }}
+                      style={{ backgroundColor: edge.downstreamTeam?.color || GRAPH_SEMANTIC_PALETTE.fallbackTeam }}
                       title={`Team: ${edge.downstreamTeam?.name || 'Unassigned'}`}
                     />
                     <button
                       onClick={() => onOpenDrawer(edge.downstreamIssue.key)}
-                      className="font-mono font-bold text-xs text-[#1a1a1a] hover:text-[#5645d4] hover:underline cursor-pointer shrink-0"
+                      className="font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
                     >
                       {edge.downstreamIssue.key}
                     </button>
                     <span
                       className={`text-[9px] px-1 py-0.2 rounded border uppercase font-medium shrink-0 ${
-                        STATE_CLASSES[edge.downstreamIssue.state] || 'bg-gray-100 text-gray-700'
+                        DEPENDENCY_STATE_CLASSES[edge.downstreamIssue.state] || 'bg-surface-muted text-text-muted border-border'
                       }`}
                     >
                       {edge.downstreamIssue.state.replace('_', ' ')}
                     </span>
                     <span
-                      className="text-[#37352f] truncate max-w-[220px]"
+                      className="text-text-primary truncate max-w-[220px]"
                       title={edge.downstreamIssue.title}
                     >
                       {edge.downstreamIssue.title}
@@ -166,27 +158,27 @@ export const ActiveBlockerRegistry: React.FC<ActiveBlockerRegistryProps> = ({
                 <td className="py-1.5 px-2">
                   {edge.isActive ? (
                     <span
-                      className="inline-flex items-center gap-1 text-[#dd5b00] font-semibold text-[11px]"
+                      className="inline-flex items-center gap-1 text-blocker font-semibold text-[11px]"
                       title="Active blocker: upstream issue is not yet DONE or CANCELLED"
                     >
-                      <ShieldAlert className="w-3 h-3 text-[#dd5b00]" />
+                      <ShieldAlert className="w-3 h-3 text-blocker" />
                       <span>Active</span>
                     </span>
                   ) : (
                     <span
-                      className="inline-flex items-center gap-1 text-[#0f7b6c] text-[11px]"
+                      className="inline-flex items-center gap-1 text-success text-[11px]"
                       title="Resolved: upstream is completed, relationship historically persisted"
                     >
-                      <CheckCircle2 className="w-3 h-3 text-[#0f7b6c]" />
+                      <CheckCircle2 className="w-3 h-3 text-success" />
                       <span>Resolved</span>
                     </span>
                   )}
                 </td>
 
                 {/* Honest Age */}
-                <td className="py-1.5 px-2 text-[#787671] text-[11px]">
+                <td className="py-1.5 px-2 text-text-muted text-[11px]">
                   <span className="inline-flex items-center gap-1" title={`Created at: ${edge.createdAt}`}>
-                    <Clock className="w-3 h-3 text-[#a4a097]" />
+                    <Clock className="w-3 h-3 text-border-strong" />
                     <span>{ageString}</span>
                   </span>
                 </td>
@@ -196,14 +188,14 @@ export const ActiveBlockerRegistry: React.FC<ActiveBlockerRegistryProps> = ({
                   {!isObserver && onRemoveDependency ? (
                     <button
                       onClick={() => onRemoveDependency(edge.dependencyId)}
-                      className="p-1 hover:bg-[#fee2e2] text-[#787671] hover:text-[#b91c1c] rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+                      className="p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
                       title="Remove dependency relationship"
                       aria-label={`Remove dependency between ${edge.upstreamIssue.key} and ${edge.downstreamIssue.key}`}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   ) : (
-                    <span className="text-[10px] text-[#c8c4be]">—</span>
+                    <span className="text-[10px] text-border-strong">—</span>
                   )}
                 </td>
               </tr>

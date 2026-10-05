@@ -7,6 +7,8 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { ShieldAlert, Flame, CheckCircle2, Trash2, ExternalLink } from 'lucide-react';
 import { GraphLayoutData, CriticalChainResult } from '../types';
 import { DependencyGraphControls } from './DependencyGraphControls';
+import { useKeyboard } from '../../../context/KeyboardContext';
+import { GRAPH_SEMANTIC_PALETTE, DEPENDENCY_STATE_CLASSES } from '../tokens';
 
 interface DependencyGraphCanvasProps {
   layout: GraphLayoutData;
@@ -17,15 +19,6 @@ interface DependencyGraphCanvasProps {
   onRemoveDependency?: (dependencyId: string) => void;
   isObserver: boolean;
 }
-
-const STATE_CLASSES: Record<string, string> = {
-  BACKLOG: 'bg-[#f6f5f4] text-[#787671] border-[#e5e3df]',
-  TODO: 'bg-[#f6f5f4] text-[#5d5b54] border-[#e5e3df]',
-  IN_PROGRESS: 'bg-[#e0f2fe] text-[#0369a1] border-[#bae6fd]',
-  IN_REVIEW: 'bg-[#fef3c7] text-[#b45309] border-[#fde68a]',
-  DONE: 'bg-[#dcfce7] text-[#15803d] border-[#bbf7d0]',
-  CANCELLED: 'bg-[#f6f5f4] text-[#a4a097] border-[#e5e3df]',
-};
 
 export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
   layout,
@@ -56,6 +49,8 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
   const nodesById = useMemo(() => {
     return new Map(layout.nodes.map((n) => [n.id, n]));
   }, [layout.nodes]);
+
+  const { registerDependencyHandlers } = useKeyboard();
 
   // Zoom handlers
   const handleZoomIn = useCallback(() => {
@@ -111,31 +106,24 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
     setZoom((z) => Math.min(2.0, Math.max(0.3, Number((z + zoomFactor).toFixed(2)))));
   };
 
-  // Keyboard navigation (+/-)
+  // Centralized keyboard navigation registered via KeyboardContext
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)) return;
-      if (e.key === '+' || e.key === '=') {
-        e.preventDefault();
-        handleZoomIn();
-      } else if (e.key === '-' || e.key === '_') {
-        e.preventDefault();
-        handleZoomOut();
-      } else if (e.key === '0') {
-        e.preventDefault();
-        handleResetView();
-      }
+    registerDependencyHandlers({
+      onZoomIn: handleZoomIn,
+      onZoomOut: handleZoomOut,
+      onResetZoom: handleResetView,
+    });
+    return () => {
+      registerDependencyHandlers(null);
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleZoomIn, handleZoomOut, handleResetView]);
+  }, [handleZoomIn, handleZoomOut, handleResetView, registerDependencyHandlers]);
 
   if (layout.nodes.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-[#787671] bg-[#fafaf9]">
-        <ShieldAlert className="w-10 h-10 text-[#a4a097] mb-2" />
-        <h3 className="text-sm font-semibold text-[#1a1a1a] mb-1">No Dependencies to Display</h3>
-        <p className="text-xs max-w-md text-[#5d5b54]">
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-text-muted bg-surface-subtle">
+        <ShieldAlert className="w-10 h-10 text-border-strong mb-2" />
+        <h3 className="text-sm font-semibold text-text-primary mb-1">No Dependencies to Display</h3>
+        <p className="text-xs max-w-md text-text-secondary">
           There are no dependencies matching the current filters, or no dependency relationships have been created yet.
         </p>
       </div>
@@ -153,7 +141,7 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onWheel={handleWheel}
-      className={`relative flex-1 w-full h-full overflow-hidden bg-[#fbfbfa] select-none ${
+      className={`relative flex-1 w-full h-full overflow-hidden bg-surface-subtle select-none ${
         isPanning ? 'cursor-grabbing' : 'cursor-grab'
       }`}
     >
@@ -161,7 +149,7 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
       <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-40" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <pattern id="graph-grid" width="24" height="24" patternUnits="userSpaceOnUse">
-            <circle cx="2" cy="2" r="1" fill="#c8c4be" />
+            <circle cx="2" cy="2" r="1" fill={GRAPH_SEMANTIC_PALETTE.gridDot} />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#graph-grid)" />
@@ -183,15 +171,15 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
       {selectedEdge && (
         <div
           data-interactive="true"
-          className="absolute top-16 left-4 z-20 bg-white border border-[#e5e3df] rounded-[8px] shadow-md p-3 text-xs flex items-center gap-3 animate-in fade-in"
+          className="absolute top-16 left-4 z-20 bg-surface-base border border-border rounded-[8px] shadow-md p-3 text-xs flex items-center gap-3 animate-in fade-in"
         >
           <div>
-            <div className="text-[11px] font-semibold text-[#787671] mb-0.5">
+            <div className="text-[11px] font-semibold text-text-muted mb-0.5">
               {selectedEdge.isActive ? 'Active Blocker Relationship' : 'Resolved Relationship'}
             </div>
-            <div className="font-mono text-xs flex items-center gap-1.5 font-bold text-[#1a1a1a]">
+            <div className="font-mono text-xs flex items-center gap-1.5 font-bold text-text-primary">
               <span>{selectedUpstreamNode?.issue.key || selectedEdge.upstreamId}</span>
-              <span className="text-[#dd5b00]">BLOCKS</span>
+              <span className="text-blocker">BLOCKS</span>
               <span>{selectedDownstreamNode?.issue.key || selectedEdge.downstreamId}</span>
             </div>
           </div>
@@ -201,7 +189,7 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
                 onRemoveDependency(selectedEdge.dependencyId);
                 setSelectedEdgeId(null);
               }}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] bg-[#fee2e2] hover:bg-[#fecaca] text-[#b91c1c] text-xs font-semibold cursor-pointer transition-colors"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] bg-danger/10 hover:bg-danger/20 text-danger text-xs font-semibold cursor-pointer transition-colors"
               title="Remove this dependency edge"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -210,7 +198,7 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
           )}
           <button
             onClick={() => setSelectedEdgeId(null)}
-            className="text-[#787671] hover:text-[#1a1a1a] text-xs px-1 cursor-pointer"
+            className="text-text-muted hover:text-text-primary text-xs px-1 cursor-pointer"
           >
             ✕
           </button>
@@ -245,7 +233,7 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
               markerHeight="6"
               orient="auto-start-reverse"
             >
-              <path d="M 0 1 L 9 5 L 0 9 z" fill="#dd5b00" />
+              <path d="M 0 1 L 9 5 L 0 9 z" fill={GRAPH_SEMANTIC_PALETTE.activeDependency} />
             </marker>
             <marker
               id="arrow-critical"
@@ -256,7 +244,7 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
               markerHeight="7"
               orient="auto-start-reverse"
             >
-              <path d="M 0 1 L 9 5 L 0 9 z" fill="#e03e3e" />
+              <path d="M 0 1 L 9 5 L 0 9 z" fill={GRAPH_SEMANTIC_PALETTE.criticalChain} />
             </marker>
             <marker
               id="arrow-resolved"
@@ -267,7 +255,7 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
               markerHeight="5"
               orient="auto-start-reverse"
             >
-              <path d="M 0 1 L 9 5 L 0 9 z" fill="#a4a097" />
+              <path d="M 0 1 L 9 5 L 0 9 z" fill={GRAPH_SEMANTIC_PALETTE.resolvedDependency} />
             </marker>
             <marker
               id="arrow-selected"
@@ -278,7 +266,7 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
               markerHeight="7"
               orient="auto-start-reverse"
             >
-              <path d="M 0 1 L 9 5 L 0 9 z" fill="#5645d4" />
+              <path d="M 0 1 L 9 5 L 0 9 z" fill={GRAPH_SEMANTIC_PALETTE.selected} />
             </marker>
           </defs>
 
@@ -286,24 +274,24 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
             const isSelected = selectedEdgeId === edge.dependencyId;
             const isCritical = showCriticalChain && criticalEdgeIds.has(edge.dependencyId);
 
-            let strokeColor = '#dd5b00';
+            let strokeColor: string = GRAPH_SEMANTIC_PALETTE.activeDependency;
             let strokeDash = 'none';
             let strokeWidth = isSelected ? 3.5 : isCritical ? 3 : 2;
             let marker = 'url(#arrow-active)';
 
             if (!edge.isActive) {
-              strokeColor = '#a4a097';
+              strokeColor = GRAPH_SEMANTIC_PALETTE.resolvedDependency;
               strokeDash = '5,4';
               marker = 'url(#arrow-resolved)';
             }
 
             if (isCritical) {
-              strokeColor = '#e03e3e';
+              strokeColor = GRAPH_SEMANTIC_PALETTE.criticalChain;
               marker = 'url(#arrow-critical)';
             }
 
             if (isSelected) {
-              strokeColor = '#5645d4';
+              strokeColor = GRAPH_SEMANTIC_PALETTE.selected;
               marker = 'url(#arrow-selected)';
             }
 
@@ -332,7 +320,7 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
                     e.stopPropagation();
                     setSelectedEdgeId(edge.dependencyId);
                   }}
-                  className="transition-all hover:stroke-[#5645d4]"
+                  className="transition-all hover:stroke-accent"
                 />
               </g>
             );
@@ -344,7 +332,7 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
           const isSelected = selectedIssueId === node.id;
           const isCritical = showCriticalChain && criticalNodeIds.has(node.id);
           const isBottleneck = node.transitiveBlastRadius >= 2;
-          const teamColor = node.team?.color || '#5645d4';
+          const teamColor = node.team?.color || GRAPH_SEMANTIC_PALETTE.fallbackTeam;
           const teamName = node.team?.name || 'Unassigned';
           const teamKey = node.team?.key || 'TEAM';
 
@@ -367,14 +355,14 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
                 width: 210,
                 height: 76,
               }}
-              className={`rounded-[8px] bg-white border text-xs shadow-xs transition-all cursor-pointer flex flex-col justify-between p-2.5 group ${
+              className={`rounded-[8px] bg-surface-base border text-xs shadow-xs transition-all cursor-pointer flex flex-col justify-between p-2.5 group ${
                 isSelected
-                  ? 'ring-2 ring-[#5645d4] border-[#5645d4] shadow-md z-30'
+                  ? 'ring-2 ring-accent border-accent shadow-md z-30'
                   : isCritical
-                  ? 'border-[#f5b38a] ring-2 ring-[#f5b38a] bg-[#fffaf5] z-20'
+                  ? 'border-blocker/50 ring-2 ring-blocker/40 bg-surface-subtle z-20'
                   : node.isBlocked
-                  ? 'border-[#ffd8be] hover:border-[#dd5b00]'
-                  : 'border-[#e5e3df] hover:border-[#c8c4be]'
+                  ? 'border-blocker/30 hover:border-blocker'
+                  : 'border-border hover:border-border-strong'
               }`}
             >
               {/* Header: Key, State, and Drawer Action */}
@@ -386,7 +374,7 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
                     style={{ backgroundColor: teamColor }}
                     title={`Team: ${teamName} (${teamKey})`}
                   />
-                  <span className="font-mono font-bold text-[#1a1a1a] truncate text-xs">
+                  <span className="font-mono font-bold text-text-primary truncate text-xs">
                     {node.issue.key}
                   </span>
                 </div>
@@ -394,7 +382,7 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
                 <div className="flex items-center gap-1 shrink-0">
                   <span
                     className={`text-[9px] px-1.5 py-0.2 rounded border uppercase font-medium ${
-                      STATE_CLASSES[node.issue.state] || 'bg-gray-100 text-gray-700'
+                      DEPENDENCY_STATE_CLASSES[node.issue.state] || 'bg-surface-muted text-text-muted border-border'
                     }`}
                   >
                     {node.issue.state.replace('_', ' ')}
@@ -404,7 +392,7 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
                       e.stopPropagation();
                       onOpenDrawer(node.issue.key);
                     }}
-                    className="p-1 hover:bg-[#ede9e4] text-[#787671] hover:text-[#1a1a1a] rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+                    className="p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
                     title={`Open ${node.issue.key} drawer`}
                     aria-label={`Open ${node.issue.key} drawer`}
                   >
@@ -414,24 +402,24 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
               </div>
 
               {/* Title */}
-              <div className="text-[11px] text-[#37352f] line-clamp-1 font-medium" title={node.issue.title}>
+              <div className="text-[11px] text-text-primary line-clamp-1 font-medium" title={node.issue.title}>
                 {node.issue.title}
               </div>
 
               {/* Footer Signals: Blocked status / Bottleneck / Blast radius */}
-              <div className="flex items-center justify-between text-[10px] text-[#787671] pt-1 border-t border-[#f6f5f4]">
+              <div className="flex items-center justify-between text-[10px] text-text-muted pt-1 border-t border-border-subtle">
                 <div className="flex items-center gap-1">
                   {node.isBlocked ? (
                     <span
-                      className="inline-flex items-center gap-0.5 text-[#dd5b00] font-semibold"
+                      className="inline-flex items-center gap-0.5 text-blocker font-semibold"
                       title={`Blocked by ${node.activeBlockersCount} active upstream issue(s)`}
                     >
-                      <ShieldAlert className="w-3 h-3 text-[#dd5b00]" />
+                      <ShieldAlert className="w-3 h-3 text-blocker" />
                       <span>Blocked ({node.activeBlockersCount})</span>
                     </span>
                   ) : (
-                    <span className="text-[#0f7b6c] inline-flex items-center gap-0.5">
-                      <CheckCircle2 className="w-3 h-3 text-[#0f7b6c]" />
+                    <span className="text-success inline-flex items-center gap-0.5">
+                      <CheckCircle2 className="w-3 h-3 text-success" />
                       <span>Unblocked</span>
                     </span>
                   )}
@@ -440,14 +428,14 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
                 <div className="flex items-center gap-1.5">
                   {isBottleneck && (
                     <span
-                      className="inline-flex items-center gap-0.5 text-[#e03e3e] font-semibold"
+                      className="inline-flex items-center gap-0.5 text-danger font-semibold"
                       title={`Bottleneck: blocks ${node.transitiveBlastRadius} downstream issues`}
                     >
-                      <Flame className="w-3 h-3 text-[#e03e3e]" />
+                      <Flame className="w-3 h-3 text-danger" />
                       <span>{node.transitiveBlastRadius}</span>
                     </span>
                   )}
-                  <span className="text-[#a4a097] text-[9px] font-mono">
+                  <span className="text-text-muted text-[9px] font-mono">
                     {teamKey}
                   </span>
                 </div>
@@ -461,27 +449,27 @@ export const DependencyGraphCanvas: React.FC<DependencyGraphCanvasProps> = ({
       <div
         role="region"
         aria-label="Dependency Graph Legend"
-        className="absolute bottom-4 right-4 z-10 bg-white/95 backdrop-blur-xs border border-[#e5e3df] rounded-[8px] shadow-xs px-3 py-2 text-xs flex flex-col gap-1.5 max-w-xs"
+        className="absolute bottom-4 right-4 z-10 bg-surface-base/95 backdrop-blur-xs border border-border rounded-[8px] shadow-xs px-3 py-2 text-xs flex flex-col gap-1.5 max-w-xs"
       >
-        <div className="text-[11px] font-bold text-[#1a1a1a] flex items-center justify-between">
+        <div className="text-[11px] font-bold text-text-primary flex items-center justify-between">
           <span>DAG Legend</span>
-          <span className="font-mono text-[10px] text-[#787671]">A BLOCKS B</span>
+          <span className="font-mono text-[10px] text-text-muted">A BLOCKS B</span>
         </div>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-[#5d5b54]">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-text-secondary">
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-0.5 bg-[#dd5b00]" />
+            <span className="w-3 h-0.5 bg-blocker" />
             <span>Active Blocker</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-0.5 border-b border-dashed border-[#a4a097]" />
+            <span className="w-3 h-0.5 border-b border-dashed border-border-strong" />
             <span>Resolved History</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <ShieldAlert className="w-3 h-3 text-[#dd5b00]" />
+            <ShieldAlert className="w-3 h-3 text-blocker" />
             <span>Blocked Issue</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Flame className="w-3 h-3 text-[#e03e3e]" />
+            <Flame className="w-3 h-3 text-danger" />
             <span>Bottleneck</span>
           </div>
         </div>

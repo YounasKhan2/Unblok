@@ -30,13 +30,13 @@ export const DependencyViewTabs: React.FC<DependencyViewTabsProps> = ({
   isObserver,
 }) => {
   return (
-    <div className="border-b border-[#e5e3df] bg-white px-4 py-2 flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
+    <div className="border-b border-border bg-surface-base px-4 py-2 flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
       {/* View Switcher Tabs */}
       <div className="flex items-center gap-1">
         <div
           role="tablist"
           aria-label="Dependency Intelligence View Modes"
-          className="inline-flex items-center p-0.5 rounded-[6px] bg-[#f6f5f4] border border-[#e5e3df]"
+          className="inline-flex items-center p-0.5 rounded-[6px] bg-surface-muted border border-border"
         >
           <button
             role="tab"
@@ -44,13 +44,13 @@ export const DependencyViewTabs: React.FC<DependencyViewTabsProps> = ({
             onClick={() => onViewChange('graph')}
             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-[4px] text-xs font-medium cursor-pointer transition-colors ${
               currentView === 'graph'
-                ? 'bg-white text-[#1a1a1a] shadow-xs border border-[#e5e3df]'
-                : 'text-[#5d5b54] hover:text-[#1a1a1a]'
+                ? 'bg-surface-base text-text-primary shadow-xs border border-border'
+                : 'text-text-secondary hover:text-text-primary'
             }`}
           >
             <Network className="w-3.5 h-3.5" />
             <span>Graph Canvas</span>
-            <kbd className="hidden sm:inline text-[10px] text-[#787671] bg-[#fafaf9] px-1 rounded border border-[#e5e3df]">1</kbd>
+            <kbd className="hidden sm:inline text-[10px] text-text-muted bg-surface-subtle px-1 rounded border border-border">1</kbd>
           </button>
 
           <button
@@ -59,13 +59,13 @@ export const DependencyViewTabs: React.FC<DependencyViewTabsProps> = ({
             onClick={() => onViewChange('matrix')}
             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-[4px] text-xs font-medium cursor-pointer transition-colors ${
               currentView === 'matrix'
-                ? 'bg-white text-[#1a1a1a] shadow-xs border border-[#e5e3df]'
-                : 'text-[#5d5b54] hover:text-[#1a1a1a]'
+                ? 'bg-surface-base text-text-primary shadow-xs border border-border'
+                : 'text-text-secondary hover:text-text-primary'
             }`}
           >
             <Grid3X3 className="w-3.5 h-3.5" />
             <span>Cross-Team Matrix</span>
-            <kbd className="hidden sm:inline text-[10px] text-[#787671] bg-[#fafaf9] px-1 rounded border border-[#e5e3df]">2</kbd>
+            <kbd className="hidden sm:inline text-[10px] text-text-muted bg-surface-subtle px-1 rounded border border-border">2</kbd>
           </button>
 
           <button
@@ -74,13 +74,13 @@ export const DependencyViewTabs: React.FC<DependencyViewTabsProps> = ({
             onClick={() => onViewChange('blockers')}
             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-[4px] text-xs font-medium cursor-pointer transition-colors ${
               currentView === 'blockers'
-                ? 'bg-white text-[#1a1a1a] shadow-xs border border-[#e5e3df]'
-                : 'text-[#5d5b54] hover:text-[#1a1a1a]'
+                ? 'bg-surface-base text-text-primary shadow-xs border border-border'
+                : 'text-text-secondary hover:text-text-primary'
             }`}
           >
-            <ShieldAlert className="w-3.5 h-3.5 text-[#dd5b00]" />
+            <ShieldAlert className="w-3.5 h-3.5 text-blocker" />
             <span>Active Blockers</span>
-            <kbd className="hidden sm:inline text-[10px] text-[#787671] bg-[#fafaf9] px-1 rounded border border-[#e5e3df]">3</kbd>
+            <kbd className="hidden sm:inline text-[10px] text-text-muted bg-surface-subtle px-1 rounded border border-border">3</kbd>
           </button>
         </div>
       </div>
@@ -89,13 +89,13 @@ export const DependencyViewTabs: React.FC<DependencyViewTabsProps> = ({
       <div className="flex items-center gap-2 flex-wrap text-xs">
         {/* Search */}
         <div className="relative inline-flex items-center">
-          <Search className="w-3.5 h-3.5 text-[#787671] absolute left-2.5 pointer-events-none" />
+          <Search className="w-3.5 h-3.5 text-text-muted absolute left-2.5 pointer-events-none" />
           <input
             type="text"
             value={filters.q}
             onChange={(e) => onFilterChange({ q: e.target.value })}
             placeholder="Search key or title..."
-            className="pl-8 pr-2.5 py-1 text-xs rounded-[4px] border border-[#e5e3df] bg-[#fafaf9] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#5645d4] w-36 sm:w-44 text-[#1a1a1a]"
+            className="pl-8 pr-2.5 py-1 text-xs rounded-[4px] border border-border bg-surface-subtle focus:bg-surface-base focus:outline-none focus:ring-1 focus:ring-accent w-36 sm:w-44 text-text-primary"
             aria-label="Filter dependencies by issue key or title"
           />
         </div>
@@ -105,7 +105,7 @@ export const DependencyViewTabs: React.FC<DependencyViewTabsProps> = ({
           value={filters.team || 'ALL'}
           onChange={(e) => onFilterChange({ team: e.target.value })}
           aria-label="Filter by Team"
-          className="px-2 py-1 text-xs rounded-[4px] border border-[#e5e3df] bg-[#fafaf9] text-[#37352f] hover:bg-white focus:outline-none focus:ring-1 focus:ring-[#5645d4] cursor-pointer"
+          className="px-2 py-1 text-xs rounded-[4px] border border-border bg-surface-subtle text-text-primary hover:bg-surface-base focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer"
         >
           <option value="ALL">All Teams</option>
           {teams.map((t) => (
@@ -120,7 +120,7 @@ export const DependencyViewTabs: React.FC<DependencyViewTabsProps> = ({
           value={filters.project || 'ALL'}
           onChange={(e) => onFilterChange({ project: e.target.value })}
           aria-label="Filter by Project"
-          className="px-2 py-1 text-xs rounded-[4px] border border-[#e5e3df] bg-[#fafaf9] text-[#37352f] hover:bg-white focus:outline-none focus:ring-1 focus:ring-[#5645d4] cursor-pointer"
+          className="px-2 py-1 text-xs rounded-[4px] border border-border bg-surface-subtle text-text-primary hover:bg-surface-base focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer"
         >
           <option value="ALL">All Projects</option>
           {projects.map((p) => (
@@ -135,7 +135,7 @@ export const DependencyViewTabs: React.FC<DependencyViewTabsProps> = ({
           value={filters.status}
           onChange={(e) => onFilterChange({ status: e.target.value as DependencyFilterState['status'] })}
           aria-label="Filter by dependency status"
-          className="px-2 py-1 text-xs rounded-[4px] border border-[#e5e3df] bg-[#fafaf9] text-[#37352f] hover:bg-white focus:outline-none focus:ring-1 focus:ring-[#5645d4] cursor-pointer"
+          className="px-2 py-1 text-xs rounded-[4px] border border-border bg-surface-subtle text-text-primary hover:bg-surface-base focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer"
         >
           <option value="active">Active Only</option>
           <option value="resolved">Resolved Only</option>
@@ -147,8 +147,8 @@ export const DependencyViewTabs: React.FC<DependencyViewTabsProps> = ({
           onClick={() => onFilterChange({ crossTeamOnly: !filters.crossTeamOnly })}
           className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] border text-xs font-medium cursor-pointer transition-colors ${
             filters.crossTeamOnly
-              ? 'bg-[#ede9fe] border-[#c4b5fd] text-[#5645d4] font-semibold'
-              : 'bg-white border-[#e5e3df] text-[#5d5b54] hover:bg-[#fafaf9]'
+              ? 'bg-accent/10 border-accent/30 text-accent font-semibold'
+              : 'bg-surface-base border-border text-text-secondary hover:bg-surface-subtle'
           }`}
           title="Filter only relationships where upstream and downstream belong to different teams"
         >
@@ -160,7 +160,7 @@ export const DependencyViewTabs: React.FC<DependencyViewTabsProps> = ({
         {!isObserver ? (
           <button
             onClick={onAddDependencyClick}
-            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-[4px] bg-[#5645d4] hover:bg-[#4534b3] text-white text-xs font-semibold cursor-pointer shadow-xs transition-colors shrink-0"
+            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-[4px] bg-accent hover:bg-primary-pressed text-white text-xs font-semibold cursor-pointer shadow-xs transition-colors shrink-0"
             title="Add a new dependency edge (upstream BLOCKS downstream)"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -168,7 +168,7 @@ export const DependencyViewTabs: React.FC<DependencyViewTabsProps> = ({
           </button>
         ) : (
           <span
-            className="text-[11px] text-[#787671] px-2 py-1 bg-[#f6f5f4] rounded-[4px] border border-[#e5e3df]"
+            className="text-[11px] text-text-muted px-2 py-1 bg-surface-muted rounded-[4px] border border-border"
             title="Observers have read-only access to dependencies"
           >
             Read-only (Observer)

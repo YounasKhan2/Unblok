@@ -30,6 +30,7 @@ import { DependencyMatrix } from '../../features/dependencies/components/Depende
 import { ActiveBlockerRegistry } from '../../features/dependencies/components/ActiveBlockerRegistry';
 import { AddDependencyDialog } from '../../features/dependencies/components/AddDependencyDialog';
 import { Network, Plus, ShieldAlert } from 'lucide-react';
+import { useKeyboard } from '../../context/KeyboardContext';
 
 export const DependenciesPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -44,6 +45,7 @@ export const DependenciesPage: React.FC = () => {
   } = useProject();
 
   const { openDrawer } = useDrawerRoute();
+  const { registerDependencyHandlers } = useKeyboard();
 
   const isObserver = currentUser.role === 'OBSERVER';
 
@@ -174,21 +176,17 @@ export const DependenciesPage: React.FC = () => {
     return count;
   }, [filters]);
 
-  // Keyboard navigation for view tabs (1 -> graph, 2 -> matrix, 3 -> blockers)
+  // Centralized keyboard navigation via KeyboardContext (view mode switching: 1, 2, 3)
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)) return;
-      if (e.key === '1') {
-        handleViewChange('graph');
-      } else if (e.key === '2') {
-        handleViewChange('matrix');
-      } else if (e.key === '3') {
-        handleViewChange('blockers');
-      }
+    registerDependencyHandlers({
+      onSelectGraphView: () => handleViewChange('graph'),
+      onSelectMatrixView: () => handleViewChange('matrix'),
+      onSelectBlockersView: () => handleViewChange('blockers'),
+    });
+    return () => {
+      registerDependencyHandlers(null);
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleViewChange]);
+  }, [handleViewChange, registerDependencyHandlers]);
 
   // Pure graph intelligence selectors
   const resolvedAllEdges = useMemo(
@@ -235,26 +233,26 @@ export const DependenciesPage: React.FC = () => {
   );
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-white">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-surface-base">
       {/* 1. Page Header (Compact high-density engineering control surface) */}
-      <header className="border-b border-[#e5e3df] bg-white px-4 py-2.5 flex items-center justify-between shrink-0 select-none">
+      <header className="border-b border-border bg-surface-base px-4 py-2.5 flex items-center justify-between shrink-0 select-none">
         <div>
           <div className="flex items-center gap-2">
-            <Network className="w-4 h-4 text-[#5645d4]" />
-            <h1 className="text-sm font-bold text-[#1a1a1a]">Dependency Intelligence</h1>
+            <Network className="w-4 h-4 text-accent" />
+            <h1 className="text-sm font-bold text-text-primary">Dependency Intelligence</h1>
           </div>
-          <p className="text-[11px] text-[#787671] mt-0.5 flex items-center gap-2 flex-wrap">
+          <p className="text-[11px] text-text-muted mt-0.5 flex items-center gap-2 flex-wrap">
             <span>Workspace execution graph and blocker analysis</span>
-            <span className="text-[#c8c4be]">·</span>
-            <span className="text-[#dd5b00] font-medium">
+            <span className="text-border-strong">·</span>
+            <span className="text-blocker font-medium">
               {summaryMetrics.activeEdgesCount} Active {summaryMetrics.activeEdgesCount === 1 ? 'Blocker' : 'Blockers'}
             </span>
-            <span className="text-[#c8c4be]">·</span>
-            <span className="text-[#5645d4] font-medium">
+            <span className="text-border-strong">·</span>
+            <span className="text-accent font-medium">
               {summaryMetrics.crossTeamActiveEdgesCount} Cross-Team
             </span>
-            <span className="text-[#c8c4be]">·</span>
-            <span className="text-[#e03e3e] font-medium">
+            <span className="text-border-strong">·</span>
+            <span className="text-danger font-medium">
               {summaryMetrics.bottlenecksCount} {summaryMetrics.bottlenecksCount === 1 ? 'Bottleneck' : 'Bottlenecks'}
             </span>
           </p>
@@ -264,7 +262,7 @@ export const DependenciesPage: React.FC = () => {
         {!isObserver && (
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] bg-[#5645d4] hover:bg-[#4534b3] text-white text-xs font-semibold cursor-pointer shadow-xs transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] bg-accent hover:bg-primary-pressed text-white text-xs font-semibold cursor-pointer shadow-xs transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Dependency</span>
@@ -297,7 +295,7 @@ export const DependenciesPage: React.FC = () => {
         {viewMode === 'graph' && (
           <div className="flex-1 relative flex flex-col md:flex-row h-full overflow-hidden">
             {/* Mobile note for small screens */}
-            <div className="md:hidden p-3 bg-[#fff5ee] border-b border-[#ffd8be] text-xs text-[#dd5b00] flex items-center gap-2">
+            <div className="md:hidden p-3 bg-blocker/10 border-b border-blocker/30 text-xs text-blocker flex items-center gap-2">
               <ShieldAlert className="w-4 h-4 shrink-0" />
               <span>
                 Graph canvas is optimized for desktop viewports. Below is the operational blocker registry.

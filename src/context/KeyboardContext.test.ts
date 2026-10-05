@@ -502,4 +502,339 @@ describe('Keyboard Architecture & Scope Hierarchy', () => {
       ).toBe('NONE');
     });
   });
+
+  describe('UX-04 Dependency Intelligence Keyboard Architecture', () => {
+    describe('View Switching (1, 2, 3)', () => {
+      it('dispatches view actions in DEPENDENCY_PAGE scope', () => {
+        expect(
+          evaluateKeyAction({
+            key: '1',
+            isInputFocused: false,
+            scope: 'DEPENDENCY_PAGE',
+            hasSelection: false,
+          })
+        ).toBe('DEPENDENCY_VIEW_GRAPH');
+
+        expect(
+          evaluateKeyAction({
+            key: '2',
+            isInputFocused: false,
+            scope: 'DEPENDENCY_PAGE',
+            hasSelection: false,
+          })
+        ).toBe('DEPENDENCY_VIEW_MATRIX');
+
+        expect(
+          evaluateKeyAction({
+            key: '3',
+            isInputFocused: false,
+            scope: 'DEPENDENCY_PAGE',
+            hasSelection: false,
+          })
+        ).toBe('DEPENDENCY_VIEW_BLOCKERS');
+      });
+
+      it('dispatches view actions in DEPENDENCY_GRAPH scope', () => {
+        expect(
+          evaluateKeyAction({
+            key: '1',
+            isInputFocused: false,
+            scope: 'DEPENDENCY_GRAPH',
+            hasSelection: false,
+          })
+        ).toBe('DEPENDENCY_VIEW_GRAPH');
+
+        expect(
+          evaluateKeyAction({
+            key: '2',
+            isInputFocused: false,
+            scope: 'DEPENDENCY_GRAPH',
+            hasSelection: false,
+          })
+        ).toBe('DEPENDENCY_VIEW_MATRIX');
+
+        expect(
+          evaluateKeyAction({
+            key: '3',
+            isInputFocused: false,
+            scope: 'DEPENDENCY_GRAPH',
+            hasSelection: false,
+          })
+        ).toBe('DEPENDENCY_VIEW_BLOCKERS');
+      });
+
+      it('does NOT dispatch dependency view actions in CANVAS or other scopes', () => {
+        expect(
+          evaluateKeyAction({
+            key: '1',
+            isInputFocused: false,
+            scope: 'CANVAS',
+            hasSelection: false,
+          })
+        ).toBe('NONE');
+
+        expect(
+          evaluateKeyAction({
+            key: '2',
+            isInputFocused: false,
+            scope: 'CANVAS',
+            hasSelection: false,
+          })
+        ).toBe('NONE');
+
+        expect(
+          evaluateKeyAction({
+            key: '3',
+            isInputFocused: false,
+            scope: 'CANVAS',
+            hasSelection: false,
+          })
+        ).toBe('NONE');
+      });
+    });
+
+    describe('Graph Zoom Controls (+, -, 0)', () => {
+      it('dispatches zoom actions ONLY when DEPENDENCY_GRAPH scope is active', () => {
+        expect(
+          evaluateKeyAction({
+            key: '+',
+            isInputFocused: false,
+            scope: 'DEPENDENCY_GRAPH',
+            hasSelection: false,
+          })
+        ).toBe('GRAPH_ZOOM_IN');
+
+        expect(
+          evaluateKeyAction({
+            key: '=',
+            isInputFocused: false,
+            scope: 'DEPENDENCY_GRAPH',
+            hasSelection: false,
+          })
+        ).toBe('GRAPH_ZOOM_IN');
+
+        expect(
+          evaluateKeyAction({
+            key: '-',
+            isInputFocused: false,
+            scope: 'DEPENDENCY_GRAPH',
+            hasSelection: false,
+          })
+        ).toBe('GRAPH_ZOOM_OUT');
+
+        expect(
+          evaluateKeyAction({
+            key: '_',
+            isInputFocused: false,
+            scope: 'DEPENDENCY_GRAPH',
+            hasSelection: false,
+          })
+        ).toBe('GRAPH_ZOOM_OUT');
+
+        expect(
+          evaluateKeyAction({
+            key: '0',
+            isInputFocused: false,
+            scope: 'DEPENDENCY_GRAPH',
+            hasSelection: false,
+          })
+        ).toBe('GRAPH_RESET_ZOOM');
+      });
+
+      it('does NOT dispatch zoom actions in DEPENDENCY_PAGE scope when graph is not active', () => {
+        expect(
+          evaluateKeyAction({
+            key: '+',
+            isInputFocused: false,
+            scope: 'DEPENDENCY_PAGE',
+            hasSelection: false,
+          })
+        ).toBe('NONE');
+
+        expect(
+          evaluateKeyAction({
+            key: '-',
+            isInputFocused: false,
+            scope: 'DEPENDENCY_PAGE',
+            hasSelection: false,
+          })
+        ).toBe('NONE');
+
+        expect(
+          evaluateKeyAction({
+            key: '0',
+            isInputFocused: false,
+            scope: 'DEPENDENCY_PAGE',
+            hasSelection: false,
+          })
+        ).toBe('NONE');
+      });
+
+      it('does NOT dispatch zoom actions in CANVAS scope', () => {
+        expect(
+          evaluateKeyAction({
+            key: '+',
+            isInputFocused: false,
+            scope: 'CANVAS',
+            hasSelection: false,
+          })
+        ).toBe('NONE');
+
+        expect(
+          evaluateKeyAction({
+            key: '-',
+            isInputFocused: false,
+            scope: 'CANVAS',
+            hasSelection: false,
+          })
+        ).toBe('NONE');
+      });
+    });
+
+    describe('Input & Scope Suppression', () => {
+      it('suppresses 1, 2, 3 and zoom shortcuts when typing in inputs/textareas', () => {
+        const depKeys = ['1', '2', '3', '+', '=', '-', '_', '0'];
+        for (const key of depKeys) {
+          expect(
+            evaluateKeyAction({
+              key,
+              isInputFocused: true,
+              scope: 'DEPENDENCY_GRAPH',
+              hasSelection: false,
+            })
+          ).toBe('NONE');
+        }
+      });
+
+      it('suppresses dependency shortcuts in MODAL and POPOVER scopes', () => {
+        const depKeys = ['1', '2', '3', '+', '-', '0'];
+        for (const key of depKeys) {
+          expect(
+            evaluateKeyAction({
+              key,
+              isInputFocused: false,
+              scope: 'MODAL',
+              hasSelection: false,
+            })
+          ).toBe('NONE');
+
+          expect(
+            evaluateKeyAction({
+              key,
+              isInputFocused: false,
+              scope: 'POPOVER',
+              hasSelection: false,
+            })
+          ).toBe('NONE');
+        }
+      });
+
+      it('suppresses dependency shortcuts in DRAWER_EDIT and DRAWER_NAV scopes', () => {
+        expect(
+          evaluateKeyAction({
+            key: '1',
+            isInputFocused: false,
+            scope: 'DRAWER_NAV',
+            hasSelection: false,
+          })
+        ).toBe('NONE');
+
+        expect(
+          evaluateKeyAction({
+            key: '+',
+            isInputFocused: false,
+            scope: 'DRAWER_NAV',
+            hasSelection: false,
+          })
+        ).toBe('NONE');
+      });
+    });
+
+    describe('Observer Role Navigation', () => {
+      it('allows OBSERVER role to switch views and zoom in graph', () => {
+        expect(
+          evaluateKeyAction({
+            key: '1',
+            isInputFocused: false,
+            scope: 'DEPENDENCY_PAGE',
+            hasSelection: false,
+            userRole: 'OBSERVER',
+            canEdit: false,
+          })
+        ).toBe('DEPENDENCY_VIEW_GRAPH');
+
+        expect(
+          evaluateKeyAction({
+            key: '2',
+            isInputFocused: false,
+            scope: 'DEPENDENCY_PAGE',
+            hasSelection: false,
+            userRole: 'OBSERVER',
+            canEdit: false,
+          })
+        ).toBe('DEPENDENCY_VIEW_MATRIX');
+
+        expect(
+          evaluateKeyAction({
+            key: '3',
+            isInputFocused: false,
+            scope: 'DEPENDENCY_PAGE',
+            hasSelection: false,
+            userRole: 'OBSERVER',
+            canEdit: false,
+          })
+        ).toBe('DEPENDENCY_VIEW_BLOCKERS');
+
+        expect(
+          evaluateKeyAction({
+            key: '+',
+            isInputFocused: false,
+            scope: 'DEPENDENCY_GRAPH',
+            hasSelection: false,
+            userRole: 'OBSERVER',
+            canEdit: false,
+          })
+        ).toBe('GRAPH_ZOOM_IN');
+
+        expect(
+          evaluateKeyAction({
+            key: '-',
+            isInputFocused: false,
+            scope: 'DEPENDENCY_GRAPH',
+            hasSelection: false,
+            userRole: 'OBSERVER',
+            canEdit: false,
+          })
+        ).toBe('GRAPH_ZOOM_OUT');
+      });
+    });
+
+    describe('Architecture Guard: No Global Window Listeners in Dependency Production Files', () => {
+      it('ensures no dependency page or component registers its own window keydown listener', () => {
+        // Read file contents of UX-04 files to ensure no window.addEventListener('keydown' exists
+        const fs = require('fs');
+        const path = require('path');
+
+        const filesToCheck = [
+          path.resolve(__dirname, '../pages/dependencies/DependenciesPage.tsx'),
+          path.resolve(__dirname, '../features/dependencies/components/DependencyGraphCanvas.tsx'),
+          path.resolve(__dirname, '../features/dependencies/components/DependencyMatrix.tsx'),
+          path.resolve(__dirname, '../features/dependencies/components/ActiveBlockerRegistry.tsx'),
+          path.resolve(__dirname, '../features/dependencies/components/AddDependencyDialog.tsx'),
+          path.resolve(__dirname, '../features/dependencies/components/BottleneckPanel.tsx'),
+          path.resolve(__dirname, '../features/dependencies/components/DependencyGraphControls.tsx'),
+          path.resolve(__dirname, '../features/dependencies/components/DependencySummaryBar.tsx'),
+          path.resolve(__dirname, '../features/dependencies/components/DependencyViewTabs.tsx'),
+        ];
+
+        for (const file of filesToCheck) {
+          if (fs.existsSync(file)) {
+            const content = fs.readFileSync(file, 'utf-8');
+            expect(content.includes("window.addEventListener('keydown'")).toBe(false);
+            expect(content.includes('window.addEventListener("keydown"')).toBe(false);
+          }
+        }
+      });
+    });
+  });
 });
