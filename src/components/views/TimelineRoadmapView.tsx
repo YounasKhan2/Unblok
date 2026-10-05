@@ -216,7 +216,7 @@ export const TimelineRoadmapView: React.FC = () => {
           {/* Scope Dropdown */}
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#e5e3df] bg-[#fafaf9] text-xs font-semibold text-[#1a1a1a]">
             <span className="w-2 h-2 rounded-full bg-[#5645d4]" />
-            <span>Workspace: Kite Core</span>
+            <span>Workspace: Unblok Core</span>
             <ChevronDown className="w-3.5 h-3.5 text-[#787671]" />
           </div>
 

@@ -46,7 +46,7 @@ export const ShortcutsHelpModal: React.FC = () => {
       isOpen={isHelpModalOpen}
       onClose={() => setIsHelpModalOpen(false)}
       title="Keyboard-First Execution Cheatsheet"
-      description="Operate Kite at high velocity without needing pointer interaction."
+      description="Operate Unblok at high velocity without needing pointer interaction."
       maxWidth="lg"
     >
       <div className="space-y-4 text-xs">

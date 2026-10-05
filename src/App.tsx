@@ -4,16 +4,13 @@
  */
 
 import React from 'react';
-import { ProjectProvider } from './context/ProjectContext';
-import { KeyboardProvider } from './context/KeyboardContext';
-import { AppShell } from './components/layout/AppShell';
+import { AppProviders } from './app/providers/AppProviders';
+import { AppRouter } from './app/router/AppRouter';
 
 export default function App() {
   return (
-    <ProjectProvider>
-      <KeyboardProvider>
-        <AppShell />
-      </KeyboardProvider>
-    </ProjectProvider>
+    <AppProviders>
+      <AppRouter />
+    </AppProviders>
   );
 }
