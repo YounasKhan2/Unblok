@@ -71,6 +71,13 @@ interface CycleError {
   message: string;
 }
 
+function mergeSeedRecordsById<T extends { id: string }>(stored: T[] | null, seeds: T[]): T[] {
+  if (!stored) return seeds;
+  const storedIds = new Set(stored.map(item => item.id));
+  const missingSeeds = seeds.filter(item => !storedIds.has(item.id));
+  return missingSeeds.length > 0 ? [...stored, ...missingSeeds] : stored;
+}
+
 export const DEFAULT_SAVED_VIEWS: SavedView[] = [
   {
     id: 'view_critical_blockers',
@@ -270,7 +277,10 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [activities, setActivities] = useState<ActivityEvent[]>(() => {
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_activities`);
-      return stored ? JSON.parse(stored) : INITIAL_ACTIVITIES;
+      return mergeSeedRecordsById(
+        stored ? (JSON.parse(stored) as ActivityEvent[]) : null,
+        INITIAL_ACTIVITIES
+      );
     } catch {
       return INITIAL_ACTIVITIES;
     }
@@ -376,7 +386,10 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [comments, setComments] = useState<IssueComment[]>(() => {
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_comments`);
-      return stored ? JSON.parse(stored) : INITIAL_COMMENTS;
+      return mergeSeedRecordsById(
+        stored ? (JSON.parse(stored) as IssueComment[]) : null,
+        INITIAL_COMMENTS
+      );
     } catch {
       return INITIAL_COMMENTS;
     }
