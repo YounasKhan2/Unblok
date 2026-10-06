@@ -135,6 +135,8 @@ interface ProjectContextType {
   activities: ActivityEvent[];
   currentUser: User;
   setCurrentUser: (user: User) => void;
+  updateCanonicalTeams: (teams: Team[]) => void;
+  updateCanonicalUsers: (users: User[]) => void;
 
   // Selection & Navigation
   selectedIssueId: string | null;
@@ -286,9 +288,69 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   });
 
-  const [teams] = useState<Team[]>(INITIAL_TEAMS);
-  const [users] = useState<User[]>(INITIAL_USERS);
-  const [currentUser, setCurrentUser] = useState<User>(INITIAL_USERS[0]);
+  const [teams, setTeams] = useState<Team[]>(() => {
+    try {
+      const stored = localStorage.getItem(`${STORAGE_KEY}_teams`);
+      return stored ? JSON.parse(stored) : INITIAL_TEAMS;
+    } catch {
+      return INITIAL_TEAMS;
+    }
+  });
+
+  const [users, setUsers] = useState<User[]>(() => {
+    try {
+      const stored = localStorage.getItem(`${STORAGE_KEY}_users`);
+      return stored ? JSON.parse(stored) : INITIAL_USERS;
+    } catch {
+      return INITIAL_USERS;
+    }
+  });
+
+  const [currentUser, setCurrentUser] = useState<User>(() => {
+    try {
+      const stored = localStorage.getItem(`${STORAGE_KEY}_current_user`);
+      return stored ? JSON.parse(stored) : INITIAL_USERS[0];
+    } catch {
+      return INITIAL_USERS[0];
+    }
+  });
+
+  const updateCanonicalTeams = useCallback((newTeams: Team[]) => {
+    setTeams(newTeams);
+    try {
+      localStorage.setItem(`${STORAGE_KEY}_teams`, JSON.stringify(newTeams));
+    } catch (e) {
+      console.warn('Failed to persist teams:', e);
+    }
+  }, []);
+
+  const updateCanonicalUsers = useCallback((newUsers: User[]) => {
+    setUsers(newUsers);
+    try {
+      localStorage.setItem(`${STORAGE_KEY}_users`, JSON.stringify(newUsers));
+    } catch (e) {
+      console.warn('Failed to persist users:', e);
+    }
+    // Also keep currentUser updated if their role or info changed
+    setCurrentUser(prev => {
+      const updated = newUsers.find(u => u.id === prev.id) || prev;
+      try {
+        localStorage.setItem(`${STORAGE_KEY}_current_user`, JSON.stringify(updated));
+      } catch (e) {
+        console.warn('Failed to persist current user:', e);
+      }
+      return updated;
+    });
+  }, []);
+
+  const handleSetCurrentUser = useCallback((user: User) => {
+    setCurrentUser(user);
+    try {
+      localStorage.setItem(`${STORAGE_KEY}_current_user`, JSON.stringify(user));
+    } catch (e) {
+      console.warn('Failed to persist current user:', e);
+    }
+  }, []);
 
   // UI state
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(INITIAL_ISSUES[1].id);
@@ -1408,6 +1470,9 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setCycles(INITIAL_CYCLES);
     setMilestones(INITIAL_MILESTONES);
     setComments(INITIAL_COMMENTS);
+    setTeams(INITIAL_TEAMS);
+    setUsers(INITIAL_USERS);
+    setCurrentUser(INITIAL_USERS[0]);
     setSelectedIssueId(INITIAL_ISSUES[1].id);
     setFilters(initialFilters);
 
@@ -1429,7 +1494,9 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         users,
         activities,
         currentUser,
-        setCurrentUser,
+        setCurrentUser: handleSetCurrentUser,
+        updateCanonicalTeams,
+        updateCanonicalUsers,
         selectedIssueId,
         selectedIssue,
         setSelectedIssueId,

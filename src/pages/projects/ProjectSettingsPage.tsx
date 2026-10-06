@@ -17,7 +17,8 @@ interface OutletContextType {
 
 export const ProjectSettingsPage: React.FC = () => {
   const { project, team } = useOutletContext<OutletContextType>();
-  const { teams } = useProject();
+  const { teams, currentUser } = useProject();
+  const isAdmin = currentUser.role === 'ADMIN';
 
   const [name, setName] = useState(project.name);
   const [description, setDescription] = useState(project.description || '');
@@ -26,6 +27,10 @@ export const ProjectSettingsPage: React.FC = () => {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isAdmin) {
+      setToastMessage('Only workspace Administrators may update project configuration.');
+      return;
+    }
     project.name = name.trim();
     project.description = description.trim();
     project.teamId = teamId;
@@ -50,6 +55,12 @@ export const ProjectSettingsPage: React.FC = () => {
         </div>
 
         <form onSubmit={handleSave} className="space-y-4 text-xs">
+          {!isAdmin && (
+            <div className="p-2.5 rounded bg-amber-50 border border-amber-200 text-[11px] text-amber-800 font-medium">
+              You have {currentUser.role} role. Only workspace Administrators may update project configuration.
+            </div>
+          )}
+
           {/* Project Name */}
           <div>
             <label className="block text-xs font-semibold text-text-primary mb-1">
@@ -58,9 +69,10 @@ export const ProjectSettingsPage: React.FC = () => {
             <input
               type="text"
               required
+              disabled={!isAdmin}
               value={name}
               onChange={e => setName(e.target.value)}
-              className="w-full px-3 py-2 text-xs bg-surface-subtle border border-border focus:border-accent rounded-[6px] focus:outline-none focus:bg-white"
+              className="w-full px-3 py-2 text-xs bg-surface-subtle border border-border focus:border-accent rounded-[6px] focus:outline-none focus:bg-white disabled:opacity-60 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -105,8 +117,9 @@ export const ProjectSettingsPage: React.FC = () => {
             </label>
             <select
               value={teamId}
+              disabled={!isAdmin}
               onChange={e => setTeamId(e.target.value)}
-              className="w-full px-2.5 py-2 text-xs bg-surface-subtle border border-border rounded-[6px] focus:outline-none focus:border-accent"
+              className="w-full px-2.5 py-2 text-xs bg-surface-subtle border border-border rounded-[6px] focus:outline-none focus:border-accent disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {teams.map(t => (
                 <option key={t.id} value={t.id}>
@@ -126,15 +139,22 @@ export const ProjectSettingsPage: React.FC = () => {
             </label>
             <textarea
               rows={3}
+              disabled={!isAdmin}
               value={description}
               onChange={e => setDescription(e.target.value)}
               placeholder="Describe the architectural objectives and mission of this project..."
-              className="w-full px-3 py-2 text-xs bg-surface-subtle border border-border focus:border-accent rounded-[6px] focus:outline-none focus:bg-white resize-none"
+              className="w-full px-3 py-2 text-xs bg-surface-subtle border border-border focus:border-accent rounded-[6px] focus:outline-none focus:bg-white resize-none disabled:opacity-60 disabled:cursor-not-allowed"
             />
           </div>
 
           <div className="pt-3 border-t border-border flex justify-end">
-            <Button variant="primary" size="sm" type="submit" icon={<Save className="w-3.5 h-3.5" />}>
+            <Button
+              variant="primary"
+              size="sm"
+              type="submit"
+              disabled={!isAdmin}
+              icon={<Save className="w-3.5 h-3.5" />}
+            >
               Save Changes
             </Button>
           </div>
