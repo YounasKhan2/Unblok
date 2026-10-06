@@ -4,6 +4,10 @@ import { useProject } from '../../context/ProjectContext';
 import { IssueComment, User } from '../../types';
 import { Avatar } from '../ui/Avatar';
 import {
+  reconcileSelectedMentions,
+  escapeRegex,
+} from '../../features/collaboration/domain/collaborationMutations';
+import {
   MessageSquare,
   Send,
   CornerDownRight,
@@ -33,6 +37,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
   const targetCommentId = searchParams.get('comment');
 
   const [commentText, setCommentText] = useState('');
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [replyingTo, setReplyingTo] = useState<IssueComment | null>(null);
   const [showMentionPicker, setShowMentionPicker] = useState(false);
   const [mentionFilter, setMentionFilter] = useState('');
@@ -102,6 +107,11 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
   };
 
   const handleSelectMention = (user: User) => {
+    setSelectedUsers(prev => {
+      if (prev.some(u => u.id === user.id)) return prev;
+      return [...prev, user];
+    });
+
     if (!textareaRef.current) return;
     const cursorPos = textareaRef.current.selectionStart;
     const textBeforeCursor = commentText.slice(0, cursorPos);
@@ -154,10 +164,15 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
   };
 
   const handleSubmit = () => {
-    if (!commentText.trim()) return;
+    const trimmed = commentText.trim();
+    if (!trimmed) return;
 
-    addComment(issueId, commentText.trim(), replyingTo?.id);
+    // Deterministically reconcile selected mentions against the text being submitted
+    const mentionIds = reconcileSelectedMentions(trimmed, selectedUsers, users);
+
+    addComment(issueId, trimmed, replyingTo?.id, mentionIds);
     setCommentText('');
+    setSelectedUsers([]);
     setReplyingTo(null);
     setShowMentionPicker(false);
   };
@@ -185,28 +200,45 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
         );
       }
 
-      // Format words and @mentions
-      const words = part.split(/(\s+)/);
+      // Format words and @mentions (handling full names with spaces)
+      const validUsers = users
+        .filter(u => u.name && u.name.trim().length > 0)
+        .slice()
+        .sort((a, b) => b.name.length - a.name.length);
+
+      if (validUsers.length === 0) {
+        return <span key={pIdx}>{part}</span>;
+      }
+
+      const namesPattern = validUsers.map(u => escapeRegex(u.name)).join('|');
+      const mentionTokenRegex = new RegExp(
+        `((?:^|(?<=[\\s(\\[{\"'<]))@(?:${namesPattern})(?=$|[\\s.,!?:;)\\]}\"'>]))`,
+        'gi'
+      );
+
+      const segments = part.split(mentionTokenRegex);
+
       return (
         <span key={pIdx}>
-          {words.map((word, wIdx) => {
-            if (word.startsWith('@')) {
-              const matchedName = users.find(
-                u => word.toLowerCase() === `@${u.name.toLowerCase()}` || word.toLowerCase().startsWith(`@${u.name.toLowerCase()}`)
+          {segments.map((seg, sIdx) => {
+            if (seg.startsWith('@')) {
+              const rawName = seg.slice(1);
+              const matched = validUsers.find(
+                u => u.name.toLowerCase() === rawName.toLowerCase()
               );
-              if (matchedName) {
+              if (matched) {
                 return (
                   <span
-                    key={wIdx}
+                    key={sIdx}
                     className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded bg-accent/15 text-accent font-semibold text-[11px] border border-accent/30"
                   >
                     <AtSign className="w-2.5 h-2.5" />
-                    <span>{matchedName.name}</span>
+                    <span>{matched.name}</span>
                   </span>
                 );
               }
             }
-            return word;
+            return <React.Fragment key={sIdx}>{seg}</React.Fragment>;
           })}
         </span>
       );

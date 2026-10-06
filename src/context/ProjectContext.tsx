@@ -193,7 +193,12 @@ interface ProjectContextType {
 
   // Collaboration & Threaded Comments (Phase C)
   comments: IssueComment[];
-  addComment: (issueId: string, content: string, parentId?: string) => IssueComment | null;
+  addComment: (
+    issueId: string,
+    content: string,
+    parentId?: string,
+    mentionIds?: string[]
+  ) => IssueComment | null;
   deleteComment: (commentId: string) => boolean;
 
   // Issue Operations
@@ -754,7 +759,12 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Collaboration & Threaded Comments (Phase C & UX-06)
   const addComment = useCallback(
-    (issueId: string, content: string, parentId?: string): IssueComment | null => {
+    (
+      issueId: string,
+      content: string,
+      parentId?: string,
+      mentionIds?: string[]
+    ): IssueComment | null => {
       const res = executeAddComment({
         issueId,
         content,
@@ -763,6 +773,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         allUsers: users,
         issues,
         existingComments: comments,
+        explicitMentionIds: mentionIds,
       });
 
       if (!res.success || !res.comment) {

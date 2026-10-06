@@ -38,8 +38,70 @@ export interface ExecuteDeleteCommentResult {
 }
 
 /**
+ * Escapes characters for use in RegExp.
+ */
+export function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Extracts mention names from text using token and boundary-aware matching,
+ * ordering users from longest name to shortest name to avoid prefix/substring collisions.
+ */
+export function extractMentionNames(content: string, allUsers: User[]): string[] {
+  if (!content || allUsers.length === 0) return [];
+  const validUsers = allUsers
+    .filter(u => u.name && u.name.trim().length > 0)
+    .slice()
+    .sort((a, b) => b.name.length - a.name.length);
+
+  if (validUsers.length === 0) return [];
+
+  const namesPattern = validUsers.map(u => escapeRegex(u.name)).join('|');
+  const mentionRegex = new RegExp(
+    `(?<=^|[\\s(\\[{\"'<])@(${namesPattern})(?=$|[\\s.,!?:;)\\]}\"'>])`,
+    'gi'
+  );
+
+  const matchedNames: string[] = [];
+  let match: RegExpExecArray | null;
+  while ((match = mentionRegex.exec(content)) !== null) {
+    if (match[1]) {
+      matchedNames.push(match[1]);
+    }
+  }
+  return matchedNames;
+}
+
+/**
+ * Deterministically reconciles selected user IDs against the comment text content.
+ * Retains only those selected user IDs whose mention tokens (@Name) are still present
+ * in the text (boundary and name-collision aware).
+ */
+export function reconcileSelectedMentions(
+  content: string,
+  selectedUsers: User[],
+  allUsers: User[]
+): string[] {
+  if (!content.trim() || selectedUsers.length === 0) return [];
+  const namesInText = new Set(
+    extractMentionNames(content, allUsers).map(n => n.toLowerCase())
+  );
+  const reconciledIds = new Set<string>();
+  for (const user of selectedUsers) {
+    if (namesInText.has(user.name.toLowerCase())) {
+      reconciledIds.add(user.id);
+    }
+  }
+  return Array.from(reconciledIds);
+}
+
+/**
  * Parses user mentions from content by matching `@UserName` against known users in the workspace.
+ * Uses boundary-aware matching, prioritizing longer user names to prevent prefix collisions
+ * (e.g., 'Sarah Chen' over 'Sarah', 'Anna' over 'Ann').
  * Deduplicates multiple mentions of the same user.
+ * Accepts authoritative explicit mention IDs (e.g. from autocomplete picker) validated against allUsers.
  */
 export function extractMentionedUserIds(
   content: string,
@@ -48,7 +110,7 @@ export function extractMentionedUserIds(
 ): string[] {
   const matchedUserIds = new Set<string>();
 
-  // If explicit IDs were passed (e.g. from an autocomplete picker)
+  // 1. Authoritative explicit mention IDs (validated against allUsers)
   if (explicitMentionIds && explicitMentionIds.length > 0) {
     for (const id of explicitMentionIds) {
       if (allUsers.some(u => u.id === id)) {
@@ -57,12 +119,32 @@ export function extractMentionedUserIds(
     }
   }
 
-  // Parse @Name mentions from content text
-  const lowerContent = content.toLowerCase();
-  for (const user of allUsers) {
-    const mentionPattern = `@${user.name.toLowerCase()}`;
-    if (lowerContent.includes(mentionPattern)) {
-      matchedUserIds.add(user.id);
+  // 2. Token / boundary-aware fallback parsing for free-typed mentions
+  if (content && allUsers.length > 0) {
+    const validUsers = allUsers
+      .filter(u => u.name && u.name.trim().length > 0)
+      .slice()
+      .sort((a, b) => b.name.length - a.name.length);
+
+    if (validUsers.length > 0) {
+      const namesPattern = validUsers.map(u => escapeRegex(u.name)).join('|');
+      const mentionRegex = new RegExp(
+        `(?<=^|[\\s(\\[{\"'<])@(${namesPattern})(?=$|[\\s.,!?:;)\\]}\"'>])`,
+        'gi'
+      );
+
+      let match: RegExpExecArray | null;
+      while ((match = mentionRegex.exec(content)) !== null) {
+        const matchedName = match[1];
+        if (matchedName) {
+          const matchedUser = validUsers.find(
+            u => u.name.toLowerCase() === matchedName.toLowerCase()
+          );
+          if (matchedUser) {
+            matchedUserIds.add(matchedUser.id);
+          }
+        }
+      }
     }
   }
 

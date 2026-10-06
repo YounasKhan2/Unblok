@@ -717,4 +717,66 @@ describe('UX-06 Inbox Projection & Deterministic Relevance', () => {
     expect(items).toHaveLength(1);
     expect(items[0].kind).toBe('MENTION');
   });
+
+  // 21. Stable targetUserId is authoritative over display name differences
+  it('21. stable targetUserId is authoritative even if display name differs or was updated', () => {
+    const activities: ActivityEvent[] = [
+      {
+        id: 'act_stable_auth',
+        issueId: 'iss_eng_1',
+        eventType: 'USER_MENTIONED',
+        userId: 'usr_david',
+        userName: 'David Kim',
+        timestamp: '2026-10-06T10:00:00.000Z',
+        details: {
+          commentId: 'comm_1',
+          targetUserId: 'usr_sarah',
+          targetUserName: 'Sarah C. (Old Name)',
+        },
+      },
+    ];
+
+    const items = deriveInboxItems({
+      activities,
+      issues: allIssues,
+      comments: baseComments,
+      users: allUsers,
+      currentUser: sarahUser,
+      receipts: {},
+    });
+
+    expect(items).toHaveLength(1);
+    expect(items[0].kind).toBe('MENTION');
+    expect(items[0].issueKey).toBe('ENG-1');
+  });
+
+  // 22. Stable targetUserId mismatch strictly excludes item even if display name is identical
+  it('22. stable targetUserId mismatch strictly excludes notification even if name is identical', () => {
+    const activities: ActivityEvent[] = [
+      {
+        id: 'act_mismatch',
+        issueId: 'iss_eng_1',
+        eventType: 'USER_MENTIONED',
+        userId: 'usr_david',
+        userName: 'David Kim',
+        timestamp: '2026-10-06T10:00:00.000Z',
+        details: {
+          commentId: 'comm_1',
+          targetUserId: 'usr_other_sarah', // Different Sarah
+          targetUserName: 'Sarah Chen',
+        },
+      },
+    ];
+
+    const items = deriveInboxItems({
+      activities,
+      issues: allIssues,
+      comments: baseComments,
+      users: allUsers,
+      currentUser: sarahUser, // usr_sarah
+      receipts: {},
+    });
+
+    expect(items).toHaveLength(0);
+  });
 });
