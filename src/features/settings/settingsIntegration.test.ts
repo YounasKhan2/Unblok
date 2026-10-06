@@ -12,7 +12,7 @@ import {
   canChangeUserRole,
 } from './domain/permissions';
 import { validateMemberInvitation } from './domain/memberAdministration';
-import { validateTeamParameters, canArchiveTeam } from './domain/teamAdministration';
+import { validateTeamParameters, canArchiveTeam, planCreateTeam } from './domain/teamAdministration';
 import { createDefaultUserPreferences } from './domain/preferences';
 import {
   INITIAL_WORKSPACE_SETTINGS,
@@ -250,6 +250,109 @@ describe('UX-08 Settings & Administration Integration Suite', () => {
         teams
       );
       expect(dupName.valid).toBe(false);
+    });
+
+    it('createTeam atomicity: invalid user in memberIds throws error, leaves teams and users unchanged, and does not touch storage', () => {
+      const initialUsers: User[] = [
+        { id: 'usr_valid', name: 'Valid User', email: 'v@a.c', avatar: '', role: 'ADMIN', teamId: 'team_eng', teamIds: ['team_eng'] },
+      ];
+      mockStorage.setItem(`${UNBLOK_STORAGE_NAMESPACE}_teams`, JSON.stringify(teams));
+      mockStorage.setItem(`${UNBLOK_STORAGE_NAMESPACE}_users`, JSON.stringify(initialUsers));
+
+      let errorThrown = false;
+      try {
+        const plan = planCreateTeam(
+          { name: 'Security Squad', key: 'SEC', memberIds: ['usr_valid', 'missing-user'] },
+          teams,
+          initialUsers,
+          'ADMIN'
+        );
+        // Only executed if plan succeeds
+        mockStorage.setItem(`${UNBLOK_STORAGE_NAMESPACE}_teams`, JSON.stringify(plan.updatedTeams));
+        mockStorage.setItem(`${UNBLOK_STORAGE_NAMESPACE}_users`, JSON.stringify(plan.updatedUsers));
+      } catch (err: any) {
+        errorThrown = true;
+        expect(err.message).toMatch(/User with ID missing-user not found/i);
+      }
+
+      expect(errorThrown).toBe(true);
+      // Verify teams and users in storage remained untouched
+      const storedTeams = JSON.parse(mockStorage.getItem(`${UNBLOK_STORAGE_NAMESPACE}_teams`)!);
+      const storedUsers = JSON.parse(mockStorage.getItem(`${UNBLOK_STORAGE_NAMESPACE}_users`)!);
+      expect(storedTeams).toHaveLength(1);
+      expect(storedTeams[0].id).toBe('team_eng');
+      expect(storedUsers).toHaveLength(1);
+      expect(storedUsers[0].teamIds).toEqual(['team_eng']);
+    });
+
+    it('createTeam atomicity: duplicate memberIds throws error, leaves teams and users unchanged, and does not touch storage', () => {
+      const initialUsers: User[] = [
+        { id: 'usr_sarah', name: 'Sarah', email: 's@a.c', avatar: '', role: 'ADMIN', teamId: 'team_eng', teamIds: ['team_eng'] },
+      ];
+      mockStorage.setItem(`${UNBLOK_STORAGE_NAMESPACE}_teams`, JSON.stringify(teams));
+      mockStorage.setItem(`${UNBLOK_STORAGE_NAMESPACE}_users`, JSON.stringify(initialUsers));
+
+      let errorThrown = false;
+      try {
+        const plan = planCreateTeam(
+          { name: 'Security Squad', key: 'SEC', memberIds: ['usr_sarah', 'usr_sarah'] },
+          teams,
+          initialUsers,
+          'ADMIN'
+        );
+        mockStorage.setItem(`${UNBLOK_STORAGE_NAMESPACE}_teams`, JSON.stringify(plan.updatedTeams));
+        mockStorage.setItem(`${UNBLOK_STORAGE_NAMESPACE}_users`, JSON.stringify(plan.updatedUsers));
+      } catch (err: any) {
+        errorThrown = true;
+        expect(err.message).toMatch(/Duplicate member IDs provided/i);
+      }
+
+      expect(errorThrown).toBe(true);
+      const storedTeams = JSON.parse(mockStorage.getItem(`${UNBLOK_STORAGE_NAMESPACE}_teams`)!);
+      const storedUsers = JSON.parse(mockStorage.getItem(`${UNBLOK_STORAGE_NAMESPACE}_users`)!);
+      expect(storedTeams).toHaveLength(1);
+      expect(storedUsers[0].teamIds).toEqual(['team_eng']);
+    });
+
+    it('createTeam atomicity: valid creation commits team and user memberships atomically to storage', () => {
+      const initialUsers: User[] = [
+        { id: 'usr_sarah', name: 'Sarah', email: 's@a.c', avatar: '', role: 'ADMIN', teamId: 'team_eng', teamIds: ['team_eng', 'team_web'] },
+      ];
+      mockStorage.setItem(`${UNBLOK_STORAGE_NAMESPACE}_teams`, JSON.stringify(teams));
+      mockStorage.setItem(`${UNBLOK_STORAGE_NAMESPACE}_users`, JSON.stringify(initialUsers));
+
+      const plan = planCreateTeam(
+        { name: 'Security Squad', key: 'SEC', memberIds: ['usr_sarah'] },
+        teams,
+        initialUsers,
+        'ADMIN'
+      );
+      mockStorage.setItem(`${UNBLOK_STORAGE_NAMESPACE}_teams`, JSON.stringify(plan.updatedTeams));
+      mockStorage.setItem(`${UNBLOK_STORAGE_NAMESPACE}_users`, JSON.stringify(plan.updatedUsers));
+
+      const storedTeams = JSON.parse(mockStorage.getItem(`${UNBLOK_STORAGE_NAMESPACE}_teams`)!);
+      const storedUsers = JSON.parse(mockStorage.getItem(`${UNBLOK_STORAGE_NAMESPACE}_users`)!);
+      expect(storedTeams).toHaveLength(2);
+      expect(storedTeams[1].key).toBe('SEC');
+      // Sarah gets the new team membership while existing unrelated memberships (team_eng, team_web) are strictly preserved
+      expect(storedUsers[0].teamIds).toContain('team_eng');
+      expect(storedUsers[0].teamIds).toContain('team_web');
+      expect(storedUsers[0].teamIds).toContain(plan.newTeam.id);
+      expect(storedUsers[0].teamIds).toHaveLength(3);
+    });
+
+    it('createTeam atomicity: creation without memberIds works normally and leaves users untouched', () => {
+      const initialUsers: User[] = [
+        { id: 'usr_sarah', name: 'Sarah', email: 's@a.c', avatar: '', role: 'ADMIN', teamId: 'team_eng', teamIds: ['team_eng'] },
+      ];
+      const plan = planCreateTeam(
+        { name: 'Security Squad', key: 'SEC' },
+        teams,
+        initialUsers,
+        'ADMIN'
+      );
+      expect(plan.updatedTeams).toHaveLength(2);
+      expect(plan.updatedUsers).toEqual(initialUsers);
     });
 
     it('guards against archiving a team with active project ownership', () => {

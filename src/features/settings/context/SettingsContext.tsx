@@ -26,6 +26,7 @@ import {
 import {
   ArchiveTeamGuardResult,
   canArchiveTeam as canArchiveTeamDomain,
+  planCreateTeam,
   validateTeamParameters,
 } from '../domain/teamAdministration';
 import { validateMemberInvitation } from '../domain/memberAdministration';
@@ -303,56 +304,17 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const createTeam = useCallback(
     (input: CreateTeamInput): { success: boolean; error?: string; id: string } => {
-      assertAdminMutation(currentUser.role);
+      // Atomic pre-validation & planning: all role, team, and member validations run
+      // BEFORE any state or storage mutations occur.
+      const plan = planCreateTeam(input, teams, users, currentUser.role);
 
-      const validation = validateTeamParameters(input, teams);
-      if (!validation.valid) {
-        throw new Error(validation.error || validation.errors.name || validation.errors.key || 'Invalid team parameters');
-      }
-
-      const newTeam: Team = {
-        id: `team_${input.key.trim().toLowerCase()}_${Date.now()}`,
-        name: input.name.trim(),
-        key: input.key.trim().toUpperCase(),
-        color: input.color || '#5645d4',
-        description: input.description?.trim() || '',
-      };
-      if (input.leadId) {
-        (newTeam as any).leadId = input.leadId;
-      }
-
-      const next = [...teams, newTeam];
-      updateCanonicalTeams(next);
-
-      // If initial memberIds are provided, add this team to selected users while preserving other memberships
+      // Commit canonical states only after all invariants pass
+      updateCanonicalTeams(plan.updatedTeams);
       if (input.memberIds && input.memberIds.length > 0) {
-        const uniqueMemberIds = new Set(input.memberIds);
-        if (uniqueMemberIds.size !== input.memberIds.length) {
-          throw new Error('Duplicate member IDs provided');
-        }
-        for (const uid of input.memberIds) {
-          if (!users.some(u => u.id === uid)) {
-            throw new Error(`User with ID ${uid} not found`);
-          }
-        }
-        const selectedSet = new Set(input.memberIds);
-        const updatedUsers = users.map(u => {
-          if (selectedSet.has(u.id)) {
-            const currentMemberships = new Set(u.teamIds || (u.teamId ? [u.teamId] : []));
-            currentMemberships.add(newTeam.id);
-            const nextTeamIds = Array.from(currentMemberships);
-            return {
-              ...u,
-              teamIds: nextTeamIds,
-              teamId: nextTeamIds[0] || '',
-            };
-          }
-          return u;
-        });
-        updateCanonicalUsers(updatedUsers);
+        updateCanonicalUsers(plan.updatedUsers);
       }
 
-      return { success: true, ...newTeam };
+      return { success: true, ...plan.newTeam };
     },
     [currentUser.role, teams, users, updateCanonicalTeams, updateCanonicalUsers]
   );

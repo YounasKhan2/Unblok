@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { validateTeamParameters, canArchiveTeam } from './teamAdministration';
-import { Team, Project, Cycle } from '../../../types';
+import { validateTeamParameters, canArchiveTeam, planCreateTeam } from './teamAdministration';
+import { Team, Project, Cycle, User } from '../../../types';
 
 describe('UX-08 Team Administration Domain', () => {
   const existingTeams: Team[] = [
@@ -149,6 +149,141 @@ describe('UX-08 Team Administration Domain', () => {
       const check = canArchiveTeam('t-ops', emptyTeamProjects, completedOnlyCycles);
       expect(check.allowed).toBe(true);
       expect(check.reason).toBeUndefined();
+    });
+  });
+
+  describe('Atomic planCreateTeam Mutation Boundary', () => {
+    const existingUsers: User[] = [
+      {
+        id: 'usr_sarah',
+        name: 'Sarah Chen',
+        email: 'sarah@acme.corp',
+        avatar: '',
+        role: 'ADMIN',
+        teamId: 't-eng',
+        teamIds: ['t-eng'],
+      },
+      {
+        id: 'usr_marcus',
+        name: 'Marcus Vance',
+        email: 'marcus@acme.corp',
+        avatar: '',
+        role: 'MEMBER',
+        teamId: 't-ops',
+        teamIds: ['t-ops', 't-eng'],
+      },
+    ];
+
+    it('Invalid user: Attempt to create a Team with memberIds: [valid, missing] throws and preserves original teams and users', () => {
+      const clonedTeams = [...existingTeams];
+      const clonedUsers = [...existingUsers];
+
+      expect(() =>
+        planCreateTeam(
+          {
+            name: 'Security Squad',
+            key: 'SEC',
+            memberIds: ['usr_sarah', 'usr_missing'],
+          },
+          clonedTeams,
+          clonedUsers,
+          'ADMIN'
+        )
+      ).toThrow(/User with ID usr_missing not found/i);
+
+      // Verify original state remains untouched
+      expect(clonedTeams).toHaveLength(2);
+      expect(clonedUsers).toHaveLength(2);
+      expect(clonedUsers[0].teamIds).toEqual(['t-eng']);
+    });
+
+    it('Duplicate member IDs: Attempt with memberIds: [usr_sarah, usr_sarah] throws and leaves state unchanged', () => {
+      const clonedTeams = [...existingTeams];
+      const clonedUsers = [...existingUsers];
+
+      expect(() =>
+        planCreateTeam(
+          {
+            name: 'Security Squad',
+            key: 'SEC',
+            memberIds: ['usr_sarah', 'usr_sarah'],
+          },
+          clonedTeams,
+          clonedUsers,
+          'ADMIN'
+        )
+      ).toThrow(/Duplicate member IDs provided/i);
+
+      expect(clonedTeams).toHaveLength(2);
+      expect(clonedUsers).toHaveLength(2);
+    });
+
+    it('Valid creation: Team created exactly once, new membership added, existing unrelated memberships preserved', () => {
+      const plan = planCreateTeam(
+        {
+          name: 'Security Squad',
+          key: 'SEC',
+          color: '#dd5b00',
+          memberIds: ['usr_sarah', 'usr_marcus'],
+        },
+        existingTeams,
+        existingUsers,
+        'ADMIN'
+      );
+
+      // Team created exactly once
+      expect(plan.updatedTeams).toHaveLength(3);
+      expect(plan.newTeam.key).toBe('SEC');
+      expect(plan.newTeam.name).toBe('Security Squad');
+
+      // Sarah had t-eng, now has t-eng and new team
+      const updatedSarah = plan.updatedUsers.find(u => u.id === 'usr_sarah')!;
+      expect(updatedSarah.teamIds).toContain('t-eng');
+      expect(updatedSarah.teamIds).toContain(plan.newTeam.id);
+      expect(updatedSarah.teamIds).toHaveLength(2);
+
+      // Marcus had t-ops and t-eng, now has t-ops, t-eng, and new team
+      const updatedMarcus = plan.updatedUsers.find(u => u.id === 'usr_marcus')!;
+      expect(updatedMarcus.teamIds).toContain('t-ops');
+      expect(updatedMarcus.teamIds).toContain('t-eng');
+      expect(updatedMarcus.teamIds).toContain(plan.newTeam.id);
+      expect(updatedMarcus.teamIds).toHaveLength(3);
+    });
+
+    it('No-members creation: Creating a Team without memberIds still works normally', () => {
+      const plan = planCreateTeam(
+        {
+          name: 'Security Squad',
+          key: 'SEC',
+        },
+        existingTeams,
+        existingUsers,
+        'ADMIN'
+      );
+
+      expect(plan.updatedTeams).toHaveLength(3);
+      expect(plan.newTeam.key).toBe('SEC');
+      expect(plan.updatedUsers).toEqual(existingUsers);
+    });
+
+    it('RBAC boundary: Non-ADMIN actor cannot plan team creation', () => {
+      expect(() =>
+        planCreateTeam(
+          { name: 'Security Squad', key: 'SEC' },
+          existingTeams,
+          existingUsers,
+          'MEMBER'
+        )
+      ).toThrow(/Administrative mutations require ADMIN role/i);
+
+      expect(() =>
+        planCreateTeam(
+          { name: 'Security Squad', key: 'SEC' },
+          existingTeams,
+          existingUsers,
+          'OBSERVER'
+        )
+      ).toThrow(/Administrative mutations require ADMIN role/i);
     });
   });
 });

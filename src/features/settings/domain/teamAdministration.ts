@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Cycle, Project, Team } from '../../../types';
+import { Cycle, Project, Team, User, UserRole } from '../../../types';
 import { CreateTeamInput, EditTeamInput } from '../types';
 
 export interface TeamValidationResult {
@@ -138,5 +138,85 @@ export function canArchiveTeam(
       projectKeys: [],
       cycleNames: [],
     },
+  };
+}
+
+export interface PlanCreateTeamResult {
+  newTeam: Team;
+  updatedTeams: Team[];
+  updatedUsers: User[];
+}
+
+/**
+ * Pure planning and pre-validation helper for atomic team creation.
+ * Validates role, team parameters, member uniqueness, and existence of all referenced users
+ * BEFORE computing proposed team and user membership states.
+ * Throws an error if any invariant fails, ensuring zero side-effects.
+ */
+export function planCreateTeam(
+  input: CreateTeamInput,
+  existingTeams: Team[],
+  existingUsers: User[],
+  actorRole: UserRole = 'ADMIN'
+): PlanCreateTeamResult {
+  // 1. ADMIN authorization
+  if (actorRole !== 'ADMIN') {
+    throw new Error('Administrative mutations require ADMIN role.');
+  }
+
+  // 2. Validate team parameters (name, key format, duplicate name/key)
+  const validation = validateTeamParameters(input, existingTeams);
+  if (!validation.valid) {
+    throw new Error(validation.error || validation.errors.name || validation.errors.key || 'Invalid team parameters');
+  }
+
+  // 3. Validate memberIds: uniqueness & user existence
+  const memberIds = input.memberIds || [];
+  if (memberIds.length > 0) {
+    const uniqueMemberIds = new Set(memberIds);
+    if (uniqueMemberIds.size !== memberIds.length) {
+      throw new Error('Duplicate member IDs provided');
+    }
+    for (const uid of memberIds) {
+      if (!existingUsers.some(u => u.id === uid)) {
+        throw new Error(`User with ID ${uid} not found`);
+      }
+    }
+  }
+
+  // 4. Construct proposed Team
+  const newTeam: Team = {
+    id: `team_${input.key.trim().toLowerCase()}_${Date.now()}`,
+    name: input.name.trim(),
+    key: input.key.trim().toUpperCase(),
+    color: input.color || '#5645d4',
+    description: input.description?.trim() || '',
+  };
+  if (input.leadId) {
+    (newTeam as any).leadId = input.leadId;
+  }
+
+  // 5. Compute proposed user memberships (preserving unrelated memberships)
+  const selectedSet = new Set(memberIds);
+  const updatedUsers = memberIds.length === 0
+    ? existingUsers
+    : existingUsers.map(u => {
+        if (selectedSet.has(u.id)) {
+          const currentMemberships = new Set(u.teamIds || (u.teamId ? [u.teamId] : []));
+          currentMemberships.add(newTeam.id);
+          const nextTeamIds = Array.from(currentMemberships);
+          return {
+            ...u,
+            teamIds: nextTeamIds,
+            teamId: nextTeamIds[0] || '',
+          };
+        }
+        return u;
+      });
+
+  return {
+    newTeam,
+    updatedTeams: [...existingTeams, newTeam],
+    updatedUsers,
   };
 }
