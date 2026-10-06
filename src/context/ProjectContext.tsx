@@ -1410,6 +1410,13 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setComments(INITIAL_COMMENTS);
     setSelectedIssueId(INITIAL_ISSUES[1].id);
     setFilters(initialFilters);
+
+    // CollaborationProvider owns user-scoped receipt state outside this
+    // context. Notify it after storage is cleared so reset restores the
+    // canonical demo Inbox instead of retaining stale in-memory receipts.
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('unblok:demo-reset'));
+    }
   }, []);
 
   return (
