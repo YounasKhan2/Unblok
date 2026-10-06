@@ -81,9 +81,9 @@ export const MyWorkPage: React.FC = () => {
         filterParams,
         undefined,
         cycles,
-        currentUser.teamId
+        currentUser.teamIds || (currentUser.teamId ? [currentUser.teamId] : [])
       ),
-    [issues, dependencies, currentUser.id, currentUser.teamId, filterParams, cycles]
+    [issues, dependencies, currentUser.id, currentUser.teamIds, currentUser.teamId, filterParams, cycles]
   );
 
   // Filter update helper that updates URL query state cleanly

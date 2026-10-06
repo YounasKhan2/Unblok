@@ -17,7 +17,8 @@ interface OutletContextType {
 
 export const ProjectSettingsPage: React.FC = () => {
   const { project, team } = useOutletContext<OutletContextType>();
-  const { teams } = useProject();
+  const { teams, currentUser } = useProject();
+  const isAdmin = currentUser.role === 'ADMIN';
 
   const [name, setName] = useState(project.name);
   const [description, setDescription] = useState(project.description || '');
@@ -26,6 +27,10 @@ export const ProjectSettingsPage: React.FC = () => {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isAdmin) {
+      setToastMessage('Only workspace Administrators may update project configuration.');
+      return;
+    }
     project.name = name.trim();
     project.description = description.trim();
     project.teamId = teamId;
@@ -37,19 +42,25 @@ export const ProjectSettingsPage: React.FC = () => {
   return (
     <div className="flex-1 overflow-y-auto bg-surface-subtle p-4 sm:p-6 select-none max-w-2xl">
       {toastMessage && (
-        <div className="mb-4 px-3.5 py-2 bg-[#0a1530] text-white text-xs rounded-lg shadow-lg flex items-center gap-2 animate-in fade-in duration-150">
+        <div className="mb-4 px-3.5 py-2 bg-brand-navy text-white text-xs rounded-lg shadow-lg flex items-center gap-2 animate-in fade-in duration-150">
           <CheckCircle2 className="w-4 h-4 text-success" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      <div className="bg-white border border-border rounded-lg p-5">
+      <div className="bg-surface-base border border-border rounded-lg p-5">
         <div className="flex items-center gap-2 pb-3 mb-4 border-b border-border">
           <Settings className="w-4 h-4 text-accent" />
           <h2 className="text-sm font-bold text-text-primary">Project Configuration</h2>
         </div>
 
         <form onSubmit={handleSave} className="space-y-4 text-xs">
+          {!isAdmin && (
+            <div className="p-2.5 rounded bg-warning/10 border border-warning/30 text-[11px] text-warning font-medium">
+              You have {currentUser.role} role. Only workspace Administrators may update project configuration.
+            </div>
+          )}
+
           {/* Project Name */}
           <div>
             <label className="block text-xs font-semibold text-text-primary mb-1">
@@ -58,9 +69,10 @@ export const ProjectSettingsPage: React.FC = () => {
             <input
               type="text"
               required
+              disabled={!isAdmin}
               value={name}
               onChange={e => setName(e.target.value)}
-              className="w-full px-3 py-2 text-xs bg-surface-subtle border border-border focus:border-accent rounded-[6px] focus:outline-none focus:bg-white"
+              className="w-full px-3 py-2 text-xs bg-surface-subtle border border-border focus:border-accent rounded-[6px] focus:outline-none focus:bg-surface-base disabled:opacity-60 disabled:cursor-not-allowed text-text-primary"
             />
           </div>
 
@@ -77,7 +89,7 @@ export const ProjectSettingsPage: React.FC = () => {
                 className="w-full px-3 py-2 text-xs bg-surface-muted border border-border rounded-[6px] text-text-muted font-mono cursor-not-allowed"
                 title="Project key prefixes issue identifiers and cannot be renamed"
               />
-              <span className="text-[10px] text-[#a4a097] mt-0.5 block">
+              <span className="text-[10px] text-text-muted mt-0.5 block">
                 Prefix for all atomic issue IDs (e.g. {project.key}-101)
               </span>
             </div>
@@ -92,7 +104,7 @@ export const ProjectSettingsPage: React.FC = () => {
                 value={project.currentSequence}
                 className="w-full px-3 py-2 text-xs bg-surface-muted border border-border rounded-[6px] text-text-muted font-mono cursor-not-allowed"
               />
-              <span className="text-[10px] text-[#a4a097] mt-0.5 block">
+              <span className="text-[10px] text-text-muted mt-0.5 block">
                 Next created issue will allocate #{project.currentSequence + 1}
               </span>
             </div>
@@ -105,8 +117,9 @@ export const ProjectSettingsPage: React.FC = () => {
             </label>
             <select
               value={teamId}
+              disabled={!isAdmin}
               onChange={e => setTeamId(e.target.value)}
-              className="w-full px-2.5 py-2 text-xs bg-surface-subtle border border-border rounded-[6px] focus:outline-none focus:border-accent"
+              className="w-full px-2.5 py-2 text-xs bg-surface-subtle border border-border rounded-[6px] focus:outline-none focus:border-accent disabled:opacity-60 disabled:cursor-not-allowed text-text-primary"
             >
               {teams.map(t => (
                 <option key={t.id} value={t.id}>
@@ -126,15 +139,22 @@ export const ProjectSettingsPage: React.FC = () => {
             </label>
             <textarea
               rows={3}
+              disabled={!isAdmin}
               value={description}
               onChange={e => setDescription(e.target.value)}
               placeholder="Describe the architectural objectives and mission of this project..."
-              className="w-full px-3 py-2 text-xs bg-surface-subtle border border-border focus:border-accent rounded-[6px] focus:outline-none focus:bg-white resize-none"
+              className="w-full px-3 py-2 text-xs bg-surface-subtle border border-border focus:border-accent rounded-[6px] focus:outline-none focus:bg-surface-base resize-none disabled:opacity-60 disabled:cursor-not-allowed text-text-primary"
             />
           </div>
 
           <div className="pt-3 border-t border-border flex justify-end">
-            <Button variant="primary" size="sm" type="submit" icon={<Save className="w-3.5 h-3.5" />}>
+            <Button
+              variant="primary"
+              size="sm"
+              type="submit"
+              disabled={!isAdmin}
+              icon={<Save className="w-3.5 h-3.5" />}
+            >
               Save Changes
             </Button>
           </div>

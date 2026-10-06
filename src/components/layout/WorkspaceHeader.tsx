@@ -136,11 +136,11 @@ export const WorkspaceHeader: React.FC = () => {
                 </div>
                 <div className="border-t border-[#e5e3df] mt-1 pt-1">
                   <Link
-                    to="/settings/workspace"
+                    to="/settings"
                     onClick={() => setIsWorkspaceMenuOpen(false)}
                     className="block px-3 py-1.5 text-[#52504b] hover:bg-[#f6f5f4] hover:text-[#1a1a1a]"
                   >
-                    Workspace Settings
+                    Settings & Administration
                   </Link>
                 </div>
               </div>

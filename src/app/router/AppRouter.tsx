@@ -24,6 +24,16 @@ import { RoadmapPage } from '../../pages/roadmap/RoadmapPage';
 import { InboxPage } from '../../pages/inbox/InboxPage';
 import { InsightsPage } from '../../pages/insights/InsightsPage';
 import { PlaceholderPage } from '../../pages/placeholder/PlaceholderPage';
+import { SettingsProvider } from '../../features/settings/context/SettingsContext';
+import { SettingsLayout } from '../../features/settings/components/SettingsLayout';
+import { AdminRoute } from '../../features/settings/components/ProtectedRoute';
+import { SettingsRedirectPage } from '../../pages/settings/SettingsRedirectPage';
+import { WorkspaceSettingsPage } from '../../pages/settings/WorkspaceSettingsPage';
+import { MembersSettingsPage } from '../../pages/settings/MembersSettingsPage';
+import { TeamsSettingsPage } from '../../pages/settings/TeamsSettingsPage';
+import { IntegrationsSettingsPage } from '../../pages/settings/IntegrationsSettingsPage';
+import { PreferencesSettingsPage } from '../../pages/settings/PreferencesSettingsPage';
+import { Outlet } from 'react-router-dom';
 
 export const AppRouter: React.FC = () => {
   return (
@@ -87,58 +97,55 @@ export const AppRouter: React.FC = () => {
           {/* Insights Space (UX-07 Canonical Destination) */}
           <Route path="/insights" element={<InsightsPage />} />
 
-          {/* Settings Space */}
-          <Route path="/settings" element={<Navigate to="/settings/workspace" replace />} />
+          {/* Settings Space (UX-08 Canonical Implementation) */}
           <Route
-            path="/settings/workspace"
+            path="/settings"
             element={
-              <PlaceholderPage
-                pageTitle="Workspace Settings"
-                targetPhase="UX-04"
-                description="Workspace preferences and organization defaults."
-              />
+              <SettingsProvider>
+                <Outlet />
+              </SettingsProvider>
             }
-          />
-          <Route
-            path="/settings/members"
-            element={
-              <PlaceholderPage
-                pageTitle="Members & Permissions"
-                targetPhase="UX-04"
-                description="Workspace member directory and permission management."
+          >
+            {/* Direct /settings redirects based on role: ADMIN -> workspace, MEMBER/OBSERVER -> preferences */}
+            <Route index element={<SettingsRedirectPage />} />
+
+            {/* Reusable Settings Shell Layout */}
+            <Route element={<SettingsLayout />}>
+              <Route
+                path="workspace"
+                element={
+                  <AdminRoute>
+                    <WorkspaceSettingsPage />
+                  </AdminRoute>
+                }
               />
-            }
-          />
-          <Route
-            path="/settings/teams"
-            element={
-              <PlaceholderPage
-                pageTitle="Team Management"
-                targetPhase="UX-04"
-                description="Engineering squad administration and team configurations."
+              <Route
+                path="members"
+                element={
+                  <AdminRoute>
+                    <MembersSettingsPage />
+                  </AdminRoute>
+                }
               />
-            }
-          />
-          <Route
-            path="/settings/integrations"
-            element={
-              <PlaceholderPage
-                pageTitle="Engineering Integrations"
-                targetPhase="UX-04"
-                description="Configure the engineering tools and external services connected to this workspace."
+              <Route
+                path="teams"
+                element={
+                  <AdminRoute>
+                    <TeamsSettingsPage />
+                  </AdminRoute>
+                }
               />
-            }
-          />
-          <Route
-            path="/settings/preferences"
-            element={
-              <PlaceholderPage
-                pageTitle="My Preferences"
-                targetPhase="UX-04"
-                description="Personal display, notification, and workflow preferences."
+              <Route
+                path="integrations"
+                element={
+                  <AdminRoute>
+                    <IntegrationsSettingsPage />
+                  </AdminRoute>
+                }
               />
-            }
-          />
+              <Route path="preferences" element={<PreferencesSettingsPage />} />
+            </Route>
+          </Route>
 
           {/* Catch-all */}
           <Route path="*" element={<Navigate to="/my-work" replace />} />

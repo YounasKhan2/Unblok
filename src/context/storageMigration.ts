@@ -130,16 +130,23 @@ export function clearAllStoredEntities(storageOverride?: Storage): void {
       storage.removeItem(`${LEGACY_KITE_STORAGE_NAMESPACE}_${entity}`);
     }
 
-    // Inbox receipts are user-scoped and therefore are not part of the fixed
-    // entity list above. A demo reset must clear them as well so stale
-    // read/archive state cannot hide freshly restored collaboration seeds.
-    const inboxReceiptPrefix = `${UNBLOK_STORAGE_NAMESPACE}_inbox_receipts_`;
-    const receiptKeys: string[] = [];
+    // Inbox receipts and settings are dynamic/user-scoped keys.
+    // A demo reset must clear them as well so stale state cannot hide freshly restored seeds.
+    const dynamicPrefixes = [
+      `${UNBLOK_STORAGE_NAMESPACE}_inbox_receipts_`,
+      `${UNBLOK_STORAGE_NAMESPACE}_settings_`,
+      `${UNBLOK_STORAGE_NAMESPACE}_teams`,
+      `${UNBLOK_STORAGE_NAMESPACE}_users`,
+    ];
+
+    const keysToRemove: string[] = [];
     for (let index = 0; index < storage.length; index += 1) {
       const key = storage.key(index);
-      if (key?.startsWith(inboxReceiptPrefix)) receiptKeys.push(key);
+      if (key && dynamicPrefixes.some(prefix => key.startsWith(prefix))) {
+        keysToRemove.push(key);
+      }
     }
-    receiptKeys.forEach(key => storage.removeItem(key));
+    keysToRemove.forEach(key => storage.removeItem(key));
   } catch (error) {
     console.warn('Failed to clear stored entities:', error);
   }

@@ -50,7 +50,7 @@
     --color-surface-soft: #fafaf9;
     --color-canvas: #ffffff;
 
-    /* Canonical Semantic Tokens (Future Theme-Ready) */
+    /* Canonical Semantic Tokens */
     --color-accent: #5645d4;
     --color-blocker: #dd5b00;
     --color-danger: #e03e3e;
@@ -67,10 +67,38 @@
     --color-surface-muted: #f6f5f4;
   }
 
+  :root.dark, .dark {
+    --color-canvas: #0f0f11;
+    --color-surface-base: #18181b;
+    --color-surface-subtle: #202024;
+    --color-surface-muted: #27272a;
+    --color-surface: #202024;
+    --color-surface-soft: #18181b;
+    --color-hairline: #2e2e32;
+    --color-hairline-soft: #27272a;
+    --color-hairline-strong: #3f3f46;
+    --color-charcoal: #e4e4e7;
+    --color-slate: #a1a1aa;
+    --color-steel: #71717a;
+    --color-stone: #52525b;
+
+    --color-accent: #7c6cf0;
+    --color-blocker: #f97316;
+    --color-danger: #f87171;
+    --color-warning: #fb923c;
+    --color-success: #34d399;
+    --color-border: #2e2e32;
+    --color-border-subtle: #27272a;
+    --color-border-strong: #3f3f46;
+    --color-text-primary: #f4f4f5;
+    --color-text-secondary: #a1a1aa;
+    --color-text-muted: #71717a;
+  }
+
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    color: #1a1a1a;
-    background-color: #ffffff;
+    color: var(--color-text-primary);
+    background-color: var(--color-canvas);
   }
 }
 
