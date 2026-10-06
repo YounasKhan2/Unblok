@@ -55,6 +55,10 @@ import {
   migrateStorageNamespace,
   clearAllStoredEntities,
 } from './storageMigration';
+import {
+  executeAddComment,
+  executeDeleteComment,
+} from '../features/collaboration/domain/collaborationMutations';
 
 interface CompletionGuardError {
   issue: Issue;
@@ -189,8 +193,13 @@ interface ProjectContextType {
 
   // Collaboration & Threaded Comments (Phase C)
   comments: IssueComment[];
-  addComment: (issueId: string, content: string, parentId?: string) => IssueComment;
-  deleteComment: (commentId: string) => void;
+  addComment: (
+    issueId: string,
+    content: string,
+    parentId?: string,
+    mentionIds?: string[]
+  ) => IssueComment | null;
+  deleteComment: (commentId: string) => boolean;
 
   // Issue Operations
   updateIssueState: (issueId: string, newState: IssueState) => boolean;
@@ -748,55 +757,53 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     [cycles, issues, projects, teams, currentUser, activities, milestones]
   );
 
-  // Collaboration & Threaded Comments (Phase C)
+  // Collaboration & Threaded Comments (Phase C & UX-06)
   const addComment = useCallback(
-    (issueId: string, content: string, parentId?: string): IssueComment => {
-      const now = new Date().toISOString();
-      const detectedMentions: string[] = [];
-      for (const u of users) {
-        if (content.toLowerCase().includes(`@${u.name.toLowerCase()}`)) {
-          detectedMentions.push(u.id);
-        }
+    (
+      issueId: string,
+      content: string,
+      parentId?: string,
+      mentionIds?: string[]
+    ): IssueComment | null => {
+      const res = executeAddComment({
+        issueId,
+        content,
+        parentId,
+        actor: currentUser,
+        allUsers: users,
+        issues,
+        existingComments: comments,
+        explicitMentionIds: mentionIds,
+      });
+
+      if (!res.success || !res.comment) {
+        return null;
       }
 
-      const newComment: IssueComment = {
-        id: `comm_${Date.now()}`,
-        issueId,
-        authorId: currentUser.id,
-        authorName: currentUser.name,
-        authorAvatar: currentUser.avatar,
-        content: content.trim(),
-        createdAt: now,
-        parentId,
-        mentions: detectedMentions,
-      };
-
-      setComments(prev => [...prev, newComment]);
-
-      // Record Activity Event
-      const commentEvent = createActivityEvent(issueId, 'COMMENT_ADDED', currentUser, {
-        commentId: newComment.id,
-        reason: content.length > 60 ? `${content.substring(0, 60)}...` : content,
-      });
-
-      const mentionEvents = detectedMentions.map(userId => {
-        const u = users.find(x => x.id === userId);
-        return createActivityEvent(issueId, 'USER_MENTIONED', currentUser, {
-          commentId: newComment.id,
-          mentionedUserName: u?.name || 'teammate',
-        });
-      });
-
-      setActivities(prev => [commentEvent, ...mentionEvents, ...prev]);
-
-      return newComment;
+      setComments(prev => [...prev, res.comment!]);
+      setActivities(prev => [...res.events, ...prev]);
+      return res.comment;
     },
-    [currentUser, users]
+    [currentUser, users, issues, comments]
   );
 
-  const deleteComment = useCallback((commentId: string) => {
-    setComments(prev => prev.filter(c => c.id !== commentId && c.parentId !== commentId));
-  }, []);
+  const deleteComment = useCallback(
+    (commentId: string): boolean => {
+      const res = executeDeleteComment({
+        commentId,
+        actor: currentUser,
+        existingComments: comments,
+      });
+
+      if (!res.success) {
+        return false;
+      }
+
+      setComments(prev => prev.filter(c => !res.deletedCommentIds.includes(c.id)));
+      return true;
+    },
+    [currentUser, comments]
+  );
 
   // Multi-Selection Methods
   const toggleSelectIssue = useCallback(
@@ -941,6 +948,8 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return createActivityEvent(id, 'ASSIGNEE_CHANGED', currentUser, {
           from: prevUser?.name || 'Unassigned',
           to: targetUser?.name || 'Unassigned',
+          fromAssigneeId: prev?.assigneeId,
+          toAssigneeId: assigneeId,
           reason: 'Bulk triage assignment',
         });
       });
@@ -1134,6 +1143,8 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const event = createActivityEvent(issueId, 'ASSIGNEE_CHANGED', currentUser, {
         from: prevUser?.name || 'Unassigned',
         to: nextUser?.name || 'Unassigned',
+        fromAssigneeId: prevAssigneeId,
+        toAssigneeId: assigneeId,
       });
       setActivities(prev => [event, ...prev]);
     },

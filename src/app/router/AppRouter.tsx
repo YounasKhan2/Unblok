@@ -21,6 +21,7 @@ import { CycleDetailPage } from '../../pages/cycles/CycleDetailPage';
 import { MilestonesPage } from '../../pages/milestones/MilestonesPage';
 import { MilestoneDetailPage } from '../../pages/milestones/MilestoneDetailPage';
 import { RoadmapPage } from '../../pages/roadmap/RoadmapPage';
+import { InboxPage } from '../../pages/inbox/InboxPage';
 import { PlaceholderPage } from '../../pages/placeholder/PlaceholderPage';
 
 export const AppRouter: React.FC = () => {
@@ -34,17 +35,8 @@ export const AppRouter: React.FC = () => {
           {/* 2. Primary UX-01 Page */}
           <Route path="/my-work" element={<MyWorkPage />} />
 
-          {/* 3. Future Canonical Pages (Restrained Phase Placeholders) */}
-          <Route
-            path="/inbox"
-            element={
-              <PlaceholderPage
-                pageTitle="Inbox"
-                targetPhase="UX-04"
-                description="Workspace inbox for team notifications, blocker updates, and assignments."
-              />
-            }
-          />
+          {/* 3. Canonical Inbox Page (UX-06) */}
+          <Route path="/inbox" element={<InboxPage />} />
 
           {/* Projects Space (UX-02 Fully Implemented) */}
           <Route path="/projects" element={<ProjectsDirectoryPage />} />

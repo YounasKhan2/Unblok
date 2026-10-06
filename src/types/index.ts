@@ -86,6 +86,10 @@ export interface ActivityEvent {
   details: {
     from?: any;
     to?: any;
+    fromAssigneeId?: string;
+    toAssigneeId?: string;
+    targetUserId?: string;
+    targetUserName?: string;
     targetIssueKey?: string;
     targetIssueTitle?: string;
     reason?: string;

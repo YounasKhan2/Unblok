@@ -55,6 +55,7 @@ export function useDrawerRoute(): DrawerRouteState {
     nextParams.delete('drawer');
     nextParams.delete('issue');
     nextParams.delete('tab');
+    nextParams.delete('comment');
     const searchString = nextParams.toString();
     navigate(
       {

@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useProject } from '../../context/ProjectContext';
+import { useCollaboration } from '../../features/collaboration/context/CollaborationContext';
 import { useKeyboard } from '../../context/KeyboardContext';
 import { Button } from '../ui/Button';
 import { Avatar } from '../ui/Avatar';
@@ -34,6 +35,7 @@ import {
 
 export const WorkspaceHeader: React.FC = () => {
   const { issues, currentUser, getIssueBlockerStatus } = useProject();
+  const { unreadCount } = useCollaboration();
   const { setIsCreateModalOpen, setIsHelpModalOpen } = useKeyboard();
   const navigate = useNavigate();
 
@@ -199,10 +201,16 @@ export const WorkspaceHeader: React.FC = () => {
         <Link
           to="/inbox"
           className="p-1.5 text-[#787671] hover:text-[#1a1a1a] hover:bg-[#f6f5f4] rounded-[5px] transition-colors relative"
-          title="Inbox & notifications (G then I)"
+          title={`Inbox & notifications (G then I)${unreadCount > 0 ? ` — ${unreadCount} unread` : ''}`}
+          aria-label={unreadCount > 0 ? `Inbox (${unreadCount} unread)` : 'Inbox'}
         >
           <Bell className="w-4 h-4" />
-          <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#5645d4]" />
+          {unreadCount > 0 && (
+            <span
+              className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#5645d4]"
+              aria-hidden="true"
+            />
+          )}
         </Link>
 
         {/* Keyboard Shortcuts Trigger */}

@@ -1,7 +1,12 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useProject } from '../../context/ProjectContext';
 import { IssueComment, User } from '../../types';
 import { Avatar } from '../ui/Avatar';
+import {
+  reconcileSelectedMentions,
+  escapeRegex,
+} from '../../features/collaboration/domain/collaborationMutations';
 import {
   MessageSquare,
   Send,
@@ -28,7 +33,11 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
 
   const isReadOnly = propReadOnly ?? (currentUser.role === 'OBSERVER');
 
+  const [searchParams] = useSearchParams();
+  const targetCommentId = searchParams.get('comment');
+
   const [commentText, setCommentText] = useState('');
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [replyingTo, setReplyingTo] = useState<IssueComment | null>(null);
   const [showMentionPicker, setShowMentionPicker] = useState(false);
   const [mentionFilter, setMentionFilter] = useState('');
@@ -41,6 +50,15 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
   const issueComments = useMemo(() => {
     return comments.filter(c => c.issueId === issueId);
   }, [comments, issueId]);
+
+  useEffect(() => {
+    if (targetCommentId) {
+      const el = document.getElementById(`comment-${targetCommentId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [targetCommentId, issueComments]);
 
   // Group comments into root comments and their replies
   const rootComments = useMemo(() => {
@@ -89,6 +107,11 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
   };
 
   const handleSelectMention = (user: User) => {
+    setSelectedUsers(prev => {
+      if (prev.some(u => u.id === user.id)) return prev;
+      return [...prev, user];
+    });
+
     if (!textareaRef.current) return;
     const cursorPos = textareaRef.current.selectionStart;
     const textBeforeCursor = commentText.slice(0, cursorPos);
@@ -141,10 +164,15 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
   };
 
   const handleSubmit = () => {
-    if (!commentText.trim()) return;
+    const trimmed = commentText.trim();
+    if (!trimmed) return;
 
-    addComment(issueId, commentText.trim(), replyingTo?.id);
+    // Deterministically reconcile selected mentions against the text being submitted
+    const mentionIds = reconcileSelectedMentions(trimmed, selectedUsers, users);
+
+    addComment(issueId, trimmed, replyingTo?.id, mentionIds);
     setCommentText('');
+    setSelectedUsers([]);
     setReplyingTo(null);
     setShowMentionPicker(false);
   };
@@ -165,35 +193,52 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
         return (
           <pre
             key={pIdx}
-            className="my-1.5 p-2 rounded bg-[#1e1e1e] text-[#f8f8f2] font-mono text-[11px] overflow-x-auto leading-relaxed border border-[#333]"
+            className="my-1.5 p-2 rounded bg-surface-base text-text-primary font-mono text-[11px] overflow-x-auto leading-relaxed border border-border"
           >
             <code>{codeText}</code>
           </pre>
         );
       }
 
-      // Format words and @mentions
-      const words = part.split(/(\s+)/);
+      // Format words and @mentions (handling full names with spaces)
+      const validUsers = users
+        .filter(u => u.name && u.name.trim().length > 0)
+        .slice()
+        .sort((a, b) => b.name.length - a.name.length);
+
+      if (validUsers.length === 0) {
+        return <span key={pIdx}>{part}</span>;
+      }
+
+      const namesPattern = validUsers.map(u => escapeRegex(u.name)).join('|');
+      const mentionTokenRegex = new RegExp(
+        `((?:^|(?<=[\\s(\\[{\"'<]))@(?:${namesPattern})(?=$|[\\s.,!?:;)\\]}\"'>]))`,
+        'gi'
+      );
+
+      const segments = part.split(mentionTokenRegex);
+
       return (
         <span key={pIdx}>
-          {words.map((word, wIdx) => {
-            if (word.startsWith('@')) {
-              const matchedName = users.find(
-                u => word.toLowerCase() === `@${u.name.toLowerCase()}` || word.toLowerCase().startsWith(`@${u.name.toLowerCase()}`)
+          {segments.map((seg, sIdx) => {
+            if (seg.startsWith('@')) {
+              const rawName = seg.slice(1);
+              const matched = validUsers.find(
+                u => u.name.toLowerCase() === rawName.toLowerCase()
               );
-              if (matchedName) {
+              if (matched) {
                 return (
                   <span
-                    key={wIdx}
+                    key={sIdx}
                     className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded bg-accent/15 text-accent font-semibold text-[11px] border border-accent/30"
                   >
                     <AtSign className="w-2.5 h-2.5" />
-                    <span>{matchedName.name}</span>
+                    <span>{matched.name}</span>
                   </span>
                 );
               }
             }
-            return word;
+            return <React.Fragment key={sIdx}>{seg}</React.Fragment>;
           })}
         </span>
       );
@@ -241,10 +286,19 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
               teamId: 'team_eng',
             };
 
+            const isTargetComment = comment.id === targetCommentId;
+
             return (
               <div key={comment.id} className="space-y-2">
                 {/* Root Comment Box */}
-                <div className="p-3 rounded-lg bg-surface-subtle border border-border text-xs hover:border-border-strong transition-colors">
+                <div
+                  id={`comment-${comment.id}`}
+                  className={`p-3 rounded-lg border text-xs transition-colors ${
+                    isTargetComment
+                      ? 'bg-accent/10 border-accent ring-2 ring-accent/30 shadow-xs'
+                      : 'bg-surface-subtle border-border hover:border-border-strong'
+                  }`}
+                >
                   <div className="flex items-start justify-between gap-2 mb-1.5">
                     <div className="flex items-center gap-2">
                       <Avatar
@@ -302,10 +356,16 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
                         role: 'MEMBER' as const,
                         teamId: 'team_eng',
                       };
+                      const isTargetReply = reply.id === targetCommentId;
                       return (
                         <div
+                          id={`comment-${reply.id}`}
                           key={reply.id}
-                          className="p-2.5 rounded-lg bg-surface-base border border-border text-xs shadow-2xs"
+                          className={`p-2.5 rounded-lg border text-xs shadow-2xs transition-colors ${
+                            isTargetReply
+                              ? 'bg-accent/10 border-accent ring-2 ring-accent/30 shadow-xs'
+                              : 'bg-surface-base border-border'
+                          }`}
                         >
                           <div className="flex items-start justify-between gap-2 mb-1">
                             <div className="flex items-center gap-2">

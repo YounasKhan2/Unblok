@@ -14,7 +14,8 @@ export type KeyboardScope =
   | 'POPOVER'
   | 'MODAL'
   | 'DEPENDENCY_PAGE'
-  | 'DEPENDENCY_GRAPH';
+  | 'DEPENDENCY_GRAPH'
+  | 'INBOX';
 
 export type ActivePickerType = 'STATUS' | 'PRIORITY' | 'ASSIGNEE' | 'BLOCKER' | null;
 
@@ -45,6 +46,14 @@ export interface DependencyKeyHandlers {
   onResetZoom?: () => void;
 }
 
+export interface InboxKeyHandlers {
+  onNext?: () => void;
+  onPrev?: () => void;
+  onOpen?: () => void;
+  onArchive?: () => void;
+  onReply?: () => void;
+}
+
 export type KeyAction =
   | 'BLUR_INPUT'
   | 'CLOSE_POPOVER'
@@ -73,6 +82,11 @@ export type KeyAction =
   | 'GRAPH_ZOOM_IN'
   | 'GRAPH_ZOOM_OUT'
   | 'GRAPH_RESET_ZOOM'
+  | 'INBOX_NEXT'
+  | 'INBOX_PREV'
+  | 'INBOX_OPEN'
+  | 'INBOX_ARCHIVE'
+  | 'INBOX_REPLY'
   | 'NONE';
 
 /**
@@ -253,6 +267,26 @@ export function evaluateKeyAction(params: {
     }
   }
 
+  // 13. Inbox Scope
+  if (scope === 'INBOX') {
+    if (key === 'j' || key === 'ArrowDown') {
+      return 'INBOX_NEXT';
+    }
+    if (key === 'k' || key === 'ArrowUp') {
+      return 'INBOX_PREV';
+    }
+    if (key === 'Enter') {
+      return 'INBOX_OPEN';
+    }
+    if (key.toLowerCase() === 'e' && !metaKey && !ctrlKey) {
+      return 'INBOX_ARCHIVE';
+    }
+    if (key.toLowerCase() === 'r' && !metaKey && !ctrlKey && isEditingPermitted) {
+      return 'INBOX_REPLY';
+    }
+    return 'NONE';
+  }
+
   return 'NONE';
 }
 
@@ -270,6 +304,8 @@ interface KeyboardContextType {
   registerDrawerHandlers: (handlers: DrawerKeyHandlers | null) => void;
   registerDetailHandlers: (handlers: DetailKeyHandlers | null) => void;
   registerDependencyHandlers: (handlers: DependencyKeyHandlers | null) => void;
+  registerInboxHandlers: (handlers: InboxKeyHandlers | null) => void;
+  registerRouteNavigator: (navigator: ((path: string) => void) | null) => void;
 }
 
 const KeyboardContext = createContext<KeyboardContextType | undefined>(undefined);
@@ -295,6 +331,9 @@ export const KeyboardProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const drawerHandlersRef = useRef<DrawerKeyHandlers | null>(null);
   const detailHandlersRef = useRef<DetailKeyHandlers | null>(null);
   const dependencyHandlersRef = useRef<DependencyKeyHandlers | null>(null);
+  const inboxHandlersRef = useRef<InboxKeyHandlers | null>(null);
+  const routeNavigatorRef = useRef<((path: string) => void) | null>(null);
+  const sequenceRef = useRef<{ prefix: string; expiresAt: number } | null>(null);
 
   const registerCanvasHandlers = useCallback((handlers: CanvasKeyHandlers | null) => {
     canvasHandlersRef.current = handlers;
@@ -315,6 +354,17 @@ export const KeyboardProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setDependencyRegVersion((v) => v + 1);
   }, []);
 
+  const [inboxRegVersion, setInboxRegVersion] = useState<number>(0);
+
+  const registerInboxHandlers = useCallback((handlers: InboxKeyHandlers | null) => {
+    inboxHandlersRef.current = handlers;
+    setInboxRegVersion((v) => v + 1);
+  }, []);
+
+  const registerRouteNavigator = useCallback((navigator: ((path: string) => void) | null) => {
+    routeNavigatorRef.current = navigator;
+  }, []);
+
   // Compute scope dynamically based on active layers and focus
   const [scope, setScope] = useState<KeyboardScope>('CANVAS');
 
@@ -330,13 +380,22 @@ export const KeyboardProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         activeEl instanceof HTMLTextAreaElement ||
         activeEl?.getAttribute('contenteditable') === 'true';
       setScope(isInput ? 'DRAWER_EDIT' : 'DRAWER_NAV');
+    } else if (inboxHandlersRef.current !== null) {
+      setScope('INBOX');
     } else if (dependencyHandlersRef.current !== null) {
       // If dependency handlers are registered, check if zoom is available (graph scope) or general view navigation
       setScope(dependencyHandlersRef.current.onZoomIn ? 'DEPENDENCY_GRAPH' : 'DEPENDENCY_PAGE');
     } else {
       setScope('CANVAS');
     }
-  }, [isCreateModalOpen, isHelpModalOpen, activePicker, isDrawerOpen, dependencyRegVersion]);
+  }, [
+    isCreateModalOpen,
+    isHelpModalOpen,
+    activePicker,
+    isDrawerOpen,
+    dependencyRegVersion,
+    inboxRegVersion,
+  ]);
 
   const handleGlobalKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -354,8 +413,38 @@ export const KeyboardProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         currentScope = 'POPOVER';
       } else if (isDrawerOpen || drawerHandlersRef.current !== null) {
         currentScope = isInputFocused ? 'DRAWER_EDIT' : 'DRAWER_NAV';
+      } else if (inboxHandlersRef.current !== null) {
+        currentScope = 'INBOX';
       } else if (dependencyHandlersRef.current !== null) {
         currentScope = dependencyHandlersRef.current.onZoomIn ? 'DEPENDENCY_GRAPH' : 'DEPENDENCY_PAGE';
+      }
+
+      // Global sequence machine (G then I, G then M, etc.)
+      if (!isInputFocused && !e.metaKey && !e.ctrlKey && currentScope !== 'MODAL' && currentScope !== 'POPOVER') {
+        if (sequenceRef.current && Date.now() < sequenceRef.current.expiresAt) {
+          const prefix = sequenceRef.current.prefix;
+          sequenceRef.current = null;
+          if (prefix === 'g') {
+            const keyLower = e.key.toLowerCase();
+            const routeMap: Record<string, string> = {
+              i: '/inbox',
+              m: '/my-work',
+              p: '/projects',
+              c: '/cycles',
+              s: '/milestones',
+              r: '/roadmap',
+              d: '/dependencies',
+            };
+            if (routeMap[keyLower]) {
+              e.preventDefault();
+              routeNavigatorRef.current?.(routeMap[keyLower]);
+              return;
+            }
+          }
+        } else if (e.key.toLowerCase() === 'g') {
+          sequenceRef.current = { prefix: 'g', expiresAt: Date.now() + 1500 };
+          return;
+        }
       }
 
       const action = evaluateKeyAction({
@@ -525,6 +614,31 @@ export const KeyboardProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           dependencyHandlersRef.current?.onResetZoom?.();
           break;
 
+        case 'INBOX_NEXT':
+          e.preventDefault();
+          inboxHandlersRef.current?.onNext?.();
+          break;
+
+        case 'INBOX_PREV':
+          e.preventDefault();
+          inboxHandlersRef.current?.onPrev?.();
+          break;
+
+        case 'INBOX_OPEN':
+          e.preventDefault();
+          inboxHandlersRef.current?.onOpen?.();
+          break;
+
+        case 'INBOX_ARCHIVE':
+          e.preventDefault();
+          inboxHandlersRef.current?.onArchive?.();
+          break;
+
+        case 'INBOX_REPLY':
+          e.preventDefault();
+          inboxHandlersRef.current?.onReply?.();
+          break;
+
         case 'NONE':
         default:
           break;
@@ -568,6 +682,8 @@ export const KeyboardProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         registerDrawerHandlers,
         registerDetailHandlers,
         registerDependencyHandlers,
+        registerInboxHandlers,
+        registerRouteNavigator,
       }}
     >
       {children}
