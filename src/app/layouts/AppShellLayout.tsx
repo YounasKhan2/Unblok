@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
-import { Outlet } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { NavigationRail } from '../../components/layout/NavigationRail';
 import { WorkspaceHeader } from '../../components/layout/WorkspaceHeader';
 import { IssueDrawer } from '../../components/drawer/IssueDrawer';
@@ -14,8 +14,17 @@ import { CompletionGuardDialog } from '../../components/modals/CompletionGuardDi
 import { CycleErrorDialog } from '../../components/modals/CycleErrorDialog';
 import { ShortcutsHelpModal } from '../../components/modals/ShortcutsHelpModal';
 import { BulkActionBar } from '../../components/layout/BulkActionBar';
+import { useKeyboard } from '../../context/KeyboardContext';
 
 export const AppShellLayout: React.FC = () => {
+  const navigate = useNavigate();
+  const { registerRouteNavigator } = useKeyboard();
+
+  useEffect(() => {
+    registerRouteNavigator(navigate);
+    return () => registerRouteNavigator(null);
+  }, [navigate, registerRouteNavigator]);
+
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-white text-[#1a1a1a]">
       {/* Zone 1: Navigation Rail (52px collapsed / 220px expanded) */}

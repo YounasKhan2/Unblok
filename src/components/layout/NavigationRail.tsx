@@ -23,6 +23,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { useProject } from '../../context/ProjectContext';
+import { useCollaboration } from '../../features/collaboration/context/CollaborationContext';
 import { useKeyboard } from '../../context/KeyboardContext';
 import { Avatar } from '../ui/Avatar';
 
@@ -37,6 +38,7 @@ export const NavigationRail: React.FC = () => {
     resetToDemoData,
   } = useProject();
 
+  const { unreadCount } = useCollaboration();
   const { setIsHelpModalOpen } = useKeyboard();
 
   const totalBlockedCount = issues.filter(i => getIssueBlockerStatus(i.id).isBlocked).length;
@@ -54,7 +56,7 @@ export const NavigationRail: React.FC = () => {
       label: 'Inbox',
       icon: Inbox,
       shortcut: 'G I',
-      badge: null,
+      badge: unreadCount > 0 ? (unreadCount > 99 ? '99+' : String(unreadCount)) : null,
     },
     {
       isSeparator: true,
