@@ -173,15 +173,15 @@ describe('UX-06 Receipt State & Isolation', () => {
   it('8. receipt persistence round-trips correctly through localStorage', () => {
     const initialReceipts: Record<string, InboxReceipt> = {
       act_roundtrip: {
-        userId: 'usr_sarah',
+        userId: 'usr_test_roundtrip',
         sourceId: 'act_roundtrip',
         readAt: '2026-10-06T11:00:00.000Z',
         archivedAt: '2026-10-06T11:30:00.000Z',
       },
     };
 
-    saveUserReceipts('usr_sarah', initialReceipts, mockStorage);
-    const loaded = loadUserReceipts('usr_sarah', mockStorage);
+    saveUserReceipts('usr_test_roundtrip', initialReceipts, mockStorage);
+    const loaded = loadUserReceipts('usr_test_roundtrip', mockStorage);
 
     expect(loaded).toEqual(initialReceipts);
   });

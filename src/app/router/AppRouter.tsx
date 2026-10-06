@@ -22,6 +22,7 @@ import { MilestonesPage } from '../../pages/milestones/MilestonesPage';
 import { MilestoneDetailPage } from '../../pages/milestones/MilestoneDetailPage';
 import { RoadmapPage } from '../../pages/roadmap/RoadmapPage';
 import { InboxPage } from '../../pages/inbox/InboxPage';
+import { InsightsPage } from '../../pages/insights/InsightsPage';
 import { PlaceholderPage } from '../../pages/placeholder/PlaceholderPage';
 
 export const AppRouter: React.FC = () => {
@@ -83,17 +84,8 @@ export const AppRouter: React.FC = () => {
           {/* Dependency Intelligence Space (UX-04 Canonical Page) */}
           <Route path="/dependencies" element={<DependenciesPage />} />
 
-          {/* Insights Space */}
-          <Route
-            path="/insights"
-            element={
-              <PlaceholderPage
-                pageTitle="Delivery Insights"
-                targetPhase="UX-04"
-                description="Delivery velocity metrics, blocker frequency, and cycle lead-time trends."
-              />
-            }
-          />
+          {/* Insights Space (UX-07 Canonical Destination) */}
+          <Route path="/insights" element={<InsightsPage />} />
 
           {/* Settings Space */}
           <Route path="/settings" element={<Navigate to="/settings/workspace" replace />} />
