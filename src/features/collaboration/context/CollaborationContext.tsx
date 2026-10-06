@@ -44,6 +44,15 @@ export const CollaborationProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [currentUser]);
 
+  // Reset user-scoped receipt state when the prototype demo is reset.
+  useEffect(() => {
+    const handleDemoReset = () => {
+      if (currentUser) setReceipts(loadUserReceipts(currentUser.id));
+    };
+    window.addEventListener('unblok:demo-reset', handleDemoReset);
+    return () => window.removeEventListener('unblok:demo-reset', handleDemoReset);
+  }, [currentUser]);
+
   // Persist receipts on changes
   useEffect(() => {
     if (currentUser) {

@@ -6,6 +6,32 @@
 import { UNBLOK_STORAGE_NAMESPACE } from '../../../context/storageMigration';
 import { InboxReceipt } from '../types';
 
+const DEMO_RECEIPTS_BY_USER: Record<string, Record<string, InboxReceipt>> = {
+  usr_sarah: {
+    act_collab_1: {
+      userId: 'usr_sarah',
+      sourceId: 'act_collab_1',
+      readAt: '2026-10-03T09:00:00.000Z',
+      archivedAt: '2026-10-03T09:05:00.000Z',
+    },
+    act_collab_5: {
+      userId: 'usr_sarah',
+      sourceId: 'act_collab_5',
+      readAt: '2026-10-06T12:00:00.000Z',
+    },
+    act_collab_8: {
+      userId: 'usr_sarah',
+      sourceId: 'act_collab_8',
+      readAt: '2026-10-06T10:00:00.000Z',
+      archivedAt: '2026-10-06T10:05:00.000Z',
+    },
+  },
+};
+
+function getDemoReceipts(userId: string): Record<string, InboxReceipt> {
+  return DEMO_RECEIPTS_BY_USER[userId] ?? {};
+}
+
 export function getReceiptStorageKey(userId: string): string {
   return `${UNBLOK_STORAGE_NAMESPACE}_inbox_receipts_${userId}`;
 }
@@ -22,7 +48,10 @@ export function loadUserReceipts(
 
   try {
     const raw = storage.getItem(getReceiptStorageKey(userId));
-    return raw ? JSON.parse(raw) : {};
+    const stored = raw ? (JSON.parse(raw) as Record<string, InboxReceipt>) : {};
+    // Demo receipts establish a useful initial read/archive mix. Persisted user
+    // choices always win for the same source ID.
+    return { ...getDemoReceipts(userId), ...stored };
   } catch {
     return {};
   }
