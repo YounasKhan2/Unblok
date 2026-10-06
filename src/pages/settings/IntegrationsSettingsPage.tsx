@@ -11,7 +11,6 @@ import {
   Plus,
   Trash2,
   Check,
-  Clock,
   MessageSquare,
   AlertOctagon,
 } from 'lucide-react';
@@ -36,10 +35,10 @@ export const IntegrationsSettingsPage: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="pb-2">
-        <h2 className="text-base font-bold text-[#1a1a1a] tracking-tight">
+        <h2 className="text-base font-bold text-text-primary tracking-tight">
           Integrations & Connections
         </h2>
-        <p className="text-xs text-[#787671] mt-0.5">
+        <p className="text-xs text-text-muted mt-0.5">
           Configure code repository sync, webhook delivery endpoints, and workflow connections (Prototype simulation).
         </p>
       </div>
@@ -56,9 +55,9 @@ export const IntegrationsSettingsPage: React.FC = () => {
               config={config}
               icon={
                 config.provider === 'GITHUB' ? (
-                  <GitPullRequest className="w-4 h-4 text-[#24292f]" />
+                  <GitPullRequest className="w-4 h-4 text-text-primary" />
                 ) : (
-                  <GitBranch className="w-4 h-4 text-[#e24329]" />
+                  <GitBranch className="w-4 h-4 text-warning" />
                 )
               }
             />
@@ -86,31 +85,31 @@ export const IntegrationsSettingsPage: React.FC = () => {
             webhooks.map(wh => (
               <div
                 key={wh.id}
-                className="p-3.5 rounded-lg border border-[#e5e3df] bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-[#c8c4be] transition-colors"
+                className="p-3.5 rounded-lg border border-border bg-surface-base flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-border-strong transition-colors"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <Webhook className="w-3.5 h-3.5 text-[#5645d4] shrink-0" />
-                    <h3 className="text-xs font-semibold text-[#1a1a1a] truncate">{wh.name}</h3>
+                    <Webhook className="w-3.5 h-3.5 text-accent shrink-0" />
+                    <h3 className="text-xs font-semibold text-text-primary truncate">{wh.name}</h3>
                     <span
-                      className={`text-[10px] font-mono px-1.5 py-0.2 rounded font-medium ${
+                      className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-medium border ${
                         wh.enabled
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          : 'bg-[#f6f5f4] text-[#787671] border border-[#e5e3df]'
+                          ? 'bg-success/10 text-success border-success/30'
+                          : 'bg-surface-muted text-text-muted border-border'
                       }`}
                     >
                       {wh.enabled ? 'ACTIVE' : 'PAUSED'}
                     </span>
                   </div>
 
-                  <div className="text-[11px] font-mono text-[#52504b] mt-1 truncate">
+                  <div className="text-[11px] font-mono text-text-secondary mt-1 truncate">
                     {wh.url}
                   </div>
 
-                  <div className="flex items-center gap-2 mt-1.5 text-[10px] text-[#787671] flex-wrap">
+                  <div className="flex items-center gap-2 mt-1.5 text-[10px] text-text-muted flex-wrap">
                     <span>Events: {wh.events.join(', ')}</span>
                     <span>•</span>
-                    <span>Signing Secret: <code className="bg-[#fafaf9] px-1 py-0.2 rounded border border-[#e5e3df] text-[#a4a097]">{wh.secret}</code> (Demo)</span>
+                    <span>Signing Secret: <code className="bg-surface-subtle px-1 py-0.5 rounded border border-border text-text-muted font-mono">{wh.secret}</code> (Demo)</span>
                   </div>
                 </div>
 
@@ -120,7 +119,7 @@ export const IntegrationsSettingsPage: React.FC = () => {
                     size="sm"
                     icon={
                       testPingId === wh.id ? (
-                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        <Check className="w-3.5 h-3.5 text-success" />
                       ) : undefined
                     }
                     onClick={() => handleTestPing(wh.id)}
@@ -138,9 +137,9 @@ export const IntegrationsSettingsPage: React.FC = () => {
                   <Button
                     variant="secondary"
                     size="sm"
-                    icon={<Trash2 className="w-3.5 h-3.5 text-red-600" />}
+                    icon={<Trash2 className="w-3.5 h-3.5 text-danger" />}
                     onClick={() => deleteWebhook(wh.id)}
-                    className="text-red-700 hover:bg-red-50 hover:border-red-200"
+                    className="text-danger hover:bg-danger/10 hover:border-danger/30"
                     title="Remove webhook"
                   >
                     Delete
@@ -149,7 +148,7 @@ export const IntegrationsSettingsPage: React.FC = () => {
               </div>
             ))
           ) : (
-            <div className="text-center py-6 text-xs text-[#787671] bg-[#fafaf9] rounded-lg border border-[#e5e3df]">
+            <div className="text-center py-6 text-xs text-text-muted bg-surface-subtle rounded-lg border border-border">
               No webhooks configured.
             </div>
           )}
@@ -162,47 +161,47 @@ export const IntegrationsSettingsPage: React.FC = () => {
         description="Planned engineering tooling connectors under roadmapped development."
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div className="p-3.5 rounded-lg border border-[#e5e3df] bg-[#fafaf9] space-y-2 opacity-80">
+          <div className="p-3.5 rounded-lg border border-border bg-surface-subtle space-y-2 opacity-80">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-semibold text-[#1a1a1a]">
-                <MessageSquare className="w-4 h-4 text-[#787671]" />
+              <div className="flex items-center gap-2 text-xs font-semibold text-text-primary">
+                <MessageSquare className="w-4 h-4 text-text-muted" />
                 <span>Slack</span>
               </div>
-              <span className="text-[10px] font-mono text-[#787671] bg-white px-1.5 py-0.5 rounded border border-[#e5e3df]">
+              <span className="text-[10px] font-mono text-text-muted bg-surface-base px-1.5 py-0.5 rounded border border-border">
                 COMING LATER
               </span>
             </div>
-            <p className="text-[11px] text-[#787671]">
+            <p className="text-[11px] text-text-muted">
               Unblock alerts and cycle summaries broadcast directly into squad channels.
             </p>
           </div>
 
-          <div className="p-3.5 rounded-lg border border-[#e5e3df] bg-[#fafaf9] space-y-2 opacity-80">
+          <div className="p-3.5 rounded-lg border border-border bg-surface-subtle space-y-2 opacity-80">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-semibold text-[#1a1a1a]">
-                <MessageSquare className="w-4 h-4 text-[#787671]" />
+              <div className="flex items-center gap-2 text-xs font-semibold text-text-primary">
+                <MessageSquare className="w-4 h-4 text-text-muted" />
                 <span>Microsoft Teams</span>
               </div>
-              <span className="text-[10px] font-mono text-[#787671] bg-white px-1.5 py-0.5 rounded border border-[#e5e3df]">
+              <span className="text-[10px] font-mono text-text-muted bg-surface-base px-1.5 py-0.5 rounded border border-border">
                 COMING LATER
               </span>
             </div>
-            <p className="text-[11px] text-[#787671]">
+            <p className="text-[11px] text-text-muted">
               Enterprise notifications and collaborative issue triaging for MS 365 orgs.
             </p>
           </div>
 
-          <div className="p-3.5 rounded-lg border border-[#e5e3df] bg-[#fafaf9] space-y-2 opacity-80">
+          <div className="p-3.5 rounded-lg border border-border bg-surface-subtle space-y-2 opacity-80">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-semibold text-[#1a1a1a]">
-                <AlertOctagon className="w-4 h-4 text-[#787671]" />
+              <div className="flex items-center gap-2 text-xs font-semibold text-text-primary">
+                <AlertOctagon className="w-4 h-4 text-text-muted" />
                 <span>Incident Tooling</span>
               </div>
-              <span className="text-[10px] font-mono text-[#787671] bg-white px-1.5 py-0.5 rounded border border-[#e5e3df]">
+              <span className="text-[10px] font-mono text-text-muted bg-surface-base px-1.5 py-0.5 rounded border border-border">
                 COMING LATER
               </span>
             </div>
-            <p className="text-[11px] text-[#787671]">
+            <p className="text-[11px] text-text-muted">
               Automatic blocker escalation and post-mortem linking for PagerDuty and incident channels.
             </p>
           </div>

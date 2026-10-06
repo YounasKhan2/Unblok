@@ -4,7 +4,7 @@ import { SettingsSection } from '../../features/settings/components/SettingsSect
 import { SettingsField } from '../../features/settings/components/SettingsField';
 import { SettingsSaveBar } from '../../features/settings/components/SettingsSaveBar';
 import { ThemePreference, DensityPreference } from '../../features/settings/types';
-import { Sun, Moon, Laptop, Bell, Eye, Layers } from 'lucide-react';
+import { Sun, Moon, Laptop, Eye, Layers } from 'lucide-react';
 
 export const PreferencesSettingsPage: React.FC = () => {
   const { preferences, updatePreferences, currentUser } = useSettings();
@@ -78,11 +78,11 @@ export const PreferencesSettingsPage: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="pb-2">
-        <h2 className="text-base font-bold text-[#1a1a1a] tracking-tight">
+        <h2 className="text-base font-bold text-text-primary tracking-tight">
           Personal Preferences
         </h2>
-        <p className="text-xs text-[#787671] mt-0.5">
-          Customize your display appearance, layout density, and notification channels for <strong className="font-semibold text-[#1a1a1a]">{currentUser.name}</strong>.
+        <p className="text-xs text-text-muted mt-0.5">
+          Customize your display appearance, layout density, and notification channels for <strong className="font-semibold text-text-primary">{currentUser.name}</strong>.
         </p>
       </div>
 
@@ -102,8 +102,8 @@ export const PreferencesSettingsPage: React.FC = () => {
               onClick={() => setTheme('SYSTEM')}
               className={`flex flex-col items-center gap-2 p-3 rounded-lg border text-xs cursor-pointer transition-colors ${
                 theme === 'SYSTEM'
-                  ? 'border-[#5645d4] bg-purple-50/50 text-[#5645d4] font-semibold'
-                  : 'border-[#e5e3df] bg-white text-[#52504b] hover:bg-[#fafaf9]'
+                  ? 'border-accent bg-accent/10 text-accent font-semibold'
+                  : 'border-border bg-surface-base text-text-secondary hover:bg-surface-subtle'
               }`}
             >
               <Laptop className="w-5 h-5" />
@@ -115,8 +115,8 @@ export const PreferencesSettingsPage: React.FC = () => {
               onClick={() => setTheme('LIGHT')}
               className={`flex flex-col items-center gap-2 p-3 rounded-lg border text-xs cursor-pointer transition-colors ${
                 theme === 'LIGHT'
-                  ? 'border-[#5645d4] bg-purple-50/50 text-[#5645d4] font-semibold'
-                  : 'border-[#e5e3df] bg-white text-[#52504b] hover:bg-[#fafaf9]'
+                  ? 'border-accent bg-accent/10 text-accent font-semibold'
+                  : 'border-border bg-surface-base text-text-secondary hover:bg-surface-subtle'
               }`}
             >
               <Sun className="w-5 h-5" />
@@ -128,8 +128,8 @@ export const PreferencesSettingsPage: React.FC = () => {
               onClick={() => setTheme('DARK')}
               className={`flex flex-col items-center gap-2 p-3 rounded-lg border text-xs cursor-pointer transition-colors ${
                 theme === 'DARK'
-                  ? 'border-[#5645d4] bg-purple-50/50 text-[#5645d4] font-semibold'
-                  : 'border-[#e5e3df] bg-white text-[#52504b] hover:bg-[#fafaf9]'
+                  ? 'border-accent bg-accent/10 text-accent font-semibold'
+                  : 'border-border bg-surface-base text-text-secondary hover:bg-surface-subtle'
               }`}
             >
               <Moon className="w-5 h-5" />
@@ -141,7 +141,7 @@ export const PreferencesSettingsPage: React.FC = () => {
         {/* Density Picker */}
         <SettingsField
           label="Display Density"
-          description="Unblok defaults to compact 32px execution density. Comfortable mode offers expanded spacing."
+          description="Persist your layout density preference. Unblok preserves the frozen 32px execution density contract across active project boards and lists; broader global propagation will follow in future milestones."
         >
           <div className="grid grid-cols-2 gap-3 max-w-md pt-1">
             <button
@@ -149,14 +149,14 @@ export const PreferencesSettingsPage: React.FC = () => {
               onClick={() => setDensity('COMPACT')}
               className={`flex items-center gap-2 p-2.5 rounded-lg border text-xs cursor-pointer transition-colors ${
                 density === 'COMPACT'
-                  ? 'border-[#5645d4] bg-purple-50/50 text-[#5645d4] font-semibold'
-                  : 'border-[#e5e3df] bg-white text-[#52504b] hover:bg-[#fafaf9]'
+                  ? 'border-accent bg-accent/10 text-accent font-semibold'
+                  : 'border-border bg-surface-base text-text-secondary hover:bg-surface-subtle'
               }`}
             >
               <Layers className="w-4 h-4 shrink-0" />
               <div className="text-left">
                 <div className="font-semibold">Compact (Default)</div>
-                <div className="text-[10px] text-[#787671]">High density (32px rows)</div>
+                <div className="text-[10px] text-text-muted">High density (frozen 32px contract)</div>
               </div>
             </button>
 
@@ -165,14 +165,14 @@ export const PreferencesSettingsPage: React.FC = () => {
               onClick={() => setDensity('COMFORTABLE')}
               className={`flex items-center gap-2 p-2.5 rounded-lg border text-xs cursor-pointer transition-colors ${
                 density === 'COMFORTABLE'
-                  ? 'border-[#5645d4] bg-purple-50/50 text-[#5645d4] font-semibold'
-                  : 'border-[#e5e3df] bg-white text-[#52504b] hover:bg-[#fafaf9]'
+                  ? 'border-accent bg-accent/10 text-accent font-semibold'
+                  : 'border-border bg-surface-base text-text-secondary hover:bg-surface-subtle'
               }`}
             >
               <Eye className="w-4 h-4 shrink-0" />
               <div className="text-left">
-                <div className="font-semibold">Comfortable</div>
-                <div className="text-[10px] text-[#787671]">Spaced rows (40px rows)</div>
+                <div className="font-semibold">Comfortable (Preview)</div>
+                <div className="text-[10px] text-text-muted">Preview within settings (future global)</div>
               </div>
             </button>
           </div>
@@ -194,7 +194,7 @@ export const PreferencesSettingsPage: React.FC = () => {
               type="checkbox"
               checked={mentions}
               onChange={e => setMentions(e.target.checked)}
-              className="w-4 h-4 rounded border-[#e5e3df] text-[#5645d4] focus:ring-[#5645d4] cursor-pointer"
+              className="w-4 h-4 rounded border-border text-accent focus:ring-accent cursor-pointer"
             />
           </SettingsField>
 
@@ -207,7 +207,7 @@ export const PreferencesSettingsPage: React.FC = () => {
               type="checkbox"
               checked={assignments}
               onChange={e => setAssignments(e.target.checked)}
-              className="w-4 h-4 rounded border-[#e5e3df] text-[#5645d4] focus:ring-[#5645d4] cursor-pointer"
+              className="w-4 h-4 rounded border-border text-accent focus:ring-accent cursor-pointer"
             />
           </SettingsField>
 
@@ -220,7 +220,7 @@ export const PreferencesSettingsPage: React.FC = () => {
               type="checkbox"
               checked={blockerChanges}
               onChange={e => setBlockerChanges(e.target.checked)}
-              className="w-4 h-4 rounded border-[#e5e3df] text-[#5645d4] focus:ring-[#5645d4] cursor-pointer"
+              className="w-4 h-4 rounded border-border text-accent focus:ring-accent cursor-pointer"
             />
           </SettingsField>
 
@@ -233,13 +233,13 @@ export const PreferencesSettingsPage: React.FC = () => {
               type="checkbox"
               checked={cycleUpdates}
               onChange={e => setCycleUpdates(e.target.checked)}
-              className="w-4 h-4 rounded border-[#e5e3df] text-[#5645d4] focus:ring-[#5645d4] cursor-pointer"
+              className="w-4 h-4 rounded border-border text-accent focus:ring-accent cursor-pointer"
             />
           </SettingsField>
         </div>
 
-        <div className="p-3 bg-[#fafaf9] rounded-md border border-[#e5e3df] text-[11px] text-[#787671] space-y-1">
-          <p className="font-semibold text-[#1a1a1a]">Inbox & Activity History Notice:</p>
+        <div className="p-3 bg-surface-subtle rounded-md border border-border text-[11px] text-text-muted space-y-1">
+          <p className="font-semibold text-text-primary">Inbox & Activity History Notice:</p>
           <p>
             Notification preferences only configure presentation alerting. The canonical Inbox event log and team activity streams are immutable projections and are never deleted when a preference is toggled.
           </p>

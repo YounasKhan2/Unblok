@@ -50,11 +50,11 @@ export const DangerZone: React.FC<DangerZoneProps> = ({ workspaceName, workspace
         variant="danger"
       >
         {feedbackMessage && (
-          <div className="p-3 bg-amber-50 border border-amber-200 rounded-md text-xs text-amber-800 flex items-center justify-between">
+          <div className="p-3 bg-warning/10 border border-warning/30 rounded-md text-xs text-warning flex items-center justify-between">
             <span>{feedbackMessage}</span>
             <button
               onClick={() => setFeedbackMessage(null)}
-              className="text-amber-700 hover:text-amber-900 font-semibold cursor-pointer"
+              className="text-warning hover:underline font-semibold cursor-pointer"
             >
               Dismiss
             </button>
@@ -62,19 +62,19 @@ export const DangerZone: React.FC<DangerZoneProps> = ({ workspaceName, workspace
         )}
 
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-2 border-b border-red-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-2 border-b border-danger/20">
             <div>
-              <div className="text-xs font-semibold text-[#1a1a1a]">Archive Workspace</div>
-              <div className="text-[11px] text-[#787671]">
+              <div className="text-xs font-semibold text-text-primary">Archive Workspace</div>
+              <div className="text-[11px] text-text-muted">
                 Mark all active projects and issues as read-only. Can be unarchived later.
               </div>
             </div>
             <Button
               variant="secondary"
               size="sm"
-              icon={<Archive className="w-3.5 h-3.5 text-[#787671]" />}
+              icon={<Archive className="w-3.5 h-3.5 text-text-muted" />}
               onClick={() => setIsArchiveModalOpen(true)}
-              className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300"
+              className="border-danger/30 text-danger hover:bg-danger/10 hover:border-danger/50"
             >
               Archive Workspace
             </Button>
@@ -82,15 +82,15 @@ export const DangerZone: React.FC<DangerZoneProps> = ({ workspaceName, workspace
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-2">
             <div>
-              <div className="text-xs font-semibold text-red-600">Delete Workspace</div>
-              <div className="text-[11px] text-[#787671]">
+              <div className="text-xs font-semibold text-danger">Delete Workspace</div>
+              <div className="text-[11px] text-text-muted">
                 Permanently delete this workspace and all associated teams, projects, and cycles.
               </div>
             </div>
             <Button
               variant="danger"
               size="sm"
-              icon={<Trash2 className="w-3.5 h-3.5 text-red-600" />}
+              icon={<Trash2 className="w-3.5 h-3.5 text-danger" />}
               onClick={() => {
                 setDeleteConfirmationInput('');
                 setIsDeleteModalOpen(true);
@@ -111,8 +111,8 @@ export const DangerZone: React.FC<DangerZoneProps> = ({ workspaceName, workspace
         maxWidth="md"
       >
         <div className="space-y-4">
-          <div className="p-3 bg-amber-50 border border-amber-200 rounded-md flex items-start gap-2.5 text-xs text-amber-800">
-            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <div className="p-3 bg-warning/10 border border-warning/30 rounded-md flex items-start gap-2.5 text-xs text-warning">
+            <AlertTriangle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
             <p>
               Archiving disables new issue creation and pauses running cycles. Existing project
               data will remain preserved for review.
@@ -146,17 +146,17 @@ export const DangerZone: React.FC<DangerZoneProps> = ({ workspaceName, workspace
         maxWidth="md"
       >
         <div className="space-y-4">
-          <div className="p-3 bg-red-50 border border-red-200 rounded-md flex items-start gap-2.5 text-xs text-red-800">
-            <AlertTriangle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+          <div className="p-3 bg-danger/10 border border-danger/30 rounded-md flex items-start gap-2.5 text-xs text-danger">
+            <AlertTriangle className="w-4 h-4 text-danger shrink-0 mt-0.5" />
             <p>
-              Please enter the workspace name <strong className="font-semibold">{workspaceName}</strong> or key <strong className="font-semibold">{workspaceKey}</strong> to confirm.
+              Please enter the workspace name <strong className="font-semibold text-text-primary">{workspaceName}</strong> or key <strong className="font-semibold text-text-primary">{workspaceKey}</strong> to confirm.
             </p>
           </div>
 
           <div className="space-y-1.5">
             <label
               htmlFor="delete-confirm-input"
-              className="text-xs font-medium text-[#1a1a1a]"
+              className="text-xs font-medium text-text-primary"
             >
               Confirmation Input
             </label>
@@ -166,7 +166,7 @@ export const DangerZone: React.FC<DangerZoneProps> = ({ workspaceName, workspace
               value={deleteConfirmationInput}
               onChange={e => setDeleteConfirmationInput(e.target.value)}
               placeholder={workspaceName}
-              className="w-full px-3 py-1.5 text-xs border border-[#e5e3df] rounded-md focus:outline-none focus:ring-1 focus:ring-red-500 font-mono"
+              className="w-full px-3 py-1.5 text-xs bg-surface-base border border-border text-text-primary rounded-md focus:outline-none focus:ring-1 focus:ring-danger font-mono"
             />
           </div>
 

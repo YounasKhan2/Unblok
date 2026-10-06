@@ -29,7 +29,11 @@ import {
   validateTeamParameters,
 } from '../domain/teamAdministration';
 import { validateMemberInvitation } from '../domain/memberAdministration';
-import { applyThemeToDocument, createDefaultUserPreferences } from '../domain/preferences';
+import {
+  applyThemeToDocument,
+  createDefaultUserPreferences,
+  setupThemeSubscription,
+} from '../domain/preferences';
 import {
   getUserPreferencesStorageKey,
   INITIAL_PENDING_INVITATIONS,
@@ -104,12 +108,14 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     const loaded = loadUserPreferences(currentUser.id);
     setPreferences(loaded);
-    applyThemeToDocument(loaded.theme);
   }, [currentUser.id]);
 
-  // Apply theme on initial mount
+  // Apply theme and maintain reactive OS preference listener for SYSTEM theme
   useEffect(() => {
-    applyThemeToDocument(preferences.theme);
+    const cleanup = setupThemeSubscription(preferences.theme);
+    return () => {
+      cleanup();
+    };
   }, [preferences.theme]);
 
   // Reset UX-08 prototype state handler
@@ -317,18 +323,65 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       const next = [...teams, newTeam];
       updateCanonicalTeams(next);
+
+      // If initial memberIds are provided, add this team to selected users while preserving other memberships
+      if (input.memberIds && input.memberIds.length > 0) {
+        const uniqueMemberIds = new Set(input.memberIds);
+        if (uniqueMemberIds.size !== input.memberIds.length) {
+          throw new Error('Duplicate member IDs provided');
+        }
+        for (const uid of input.memberIds) {
+          if (!users.some(u => u.id === uid)) {
+            throw new Error(`User with ID ${uid} not found`);
+          }
+        }
+        const selectedSet = new Set(input.memberIds);
+        const updatedUsers = users.map(u => {
+          if (selectedSet.has(u.id)) {
+            const currentMemberships = new Set(u.teamIds || (u.teamId ? [u.teamId] : []));
+            currentMemberships.add(newTeam.id);
+            const nextTeamIds = Array.from(currentMemberships);
+            return {
+              ...u,
+              teamIds: nextTeamIds,
+              teamId: nextTeamIds[0] || '',
+            };
+          }
+          return u;
+        });
+        updateCanonicalUsers(updatedUsers);
+      }
+
       return { success: true, ...newTeam };
     },
-    [currentUser.role, teams, updateCanonicalTeams]
+    [currentUser.role, teams, users, updateCanonicalTeams, updateCanonicalUsers]
   );
 
   const updateTeam = useCallback(
     (id: string, input: EditTeamInput): { success: boolean; error?: string } => {
       assertAdminMutation(currentUser.role);
 
+      const targetTeam = teams.find(t => t.id === id);
+      if (!targetTeam) {
+        throw new Error('Team not found');
+      }
+
       const validation = validateTeamParameters(input, teams, id);
       if (!validation.valid) {
         throw new Error(validation.error || validation.errors.name || validation.errors.key || 'Invalid team parameters');
+      }
+
+      // If memberIds are provided, validate users and unique IDs
+      if (input.memberIds) {
+        const uniqueMemberIds = new Set(input.memberIds);
+        if (uniqueMemberIds.size !== input.memberIds.length) {
+          throw new Error('Duplicate member IDs provided');
+        }
+        for (const uid of input.memberIds) {
+          if (!users.some(u => u.id === uid)) {
+            throw new Error(`User with ID ${uid} not found`);
+          }
+        }
       }
 
       const next = teams.map(t => {
@@ -349,16 +402,22 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       });
       updateCanonicalTeams(next);
 
-      // If memberIds are provided, update canonical users' team memberships
+      // If memberIds are provided, update canonical users' team memberships preserving all unrelated memberships
       if (input.memberIds) {
+        const selectedSet = new Set(input.memberIds);
         const updatedUsers = users.map(u => {
-          if (input.memberIds!.includes(u.id)) {
-            return { ...u, teamId: id };
+          const currentMemberships = new Set(u.teamIds || (u.teamId ? [u.teamId] : []));
+          if (selectedSet.has(u.id)) {
+            currentMemberships.add(id);
+          } else {
+            currentMemberships.delete(id);
           }
-          if (u.teamId === id) {
-            return { ...u, teamId: '' };
-          }
-          return u;
+          const nextTeamIds = Array.from(currentMemberships);
+          return {
+            ...u,
+            teamIds: nextTeamIds,
+            teamId: nextTeamIds[0] || '',
+          };
         });
         updateCanonicalUsers(updatedUsers);
       }
@@ -567,9 +626,6 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setPreferences(prev => {
         const next = { ...prev, ...updates };
         saveSettingsToStorage(getUserPreferencesStorageKey(currentUser.id), next);
-        if (updates.theme) {
-          applyThemeToDocument(updates.theme);
-        }
         return next;
       });
     },

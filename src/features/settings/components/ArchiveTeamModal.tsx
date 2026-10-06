@@ -44,14 +44,14 @@ export const ArchiveTeamModal: React.FC<ArchiveTeamModalProps> = ({
     >
       <div className="space-y-4">
         {!archiveCheck.allowed ? (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-md space-y-2 text-xs text-red-800">
-            <div className="flex items-center gap-2 font-semibold text-red-900">
-              <AlertOctagon className="w-4 h-4 text-red-600 shrink-0" />
+          <div className="p-3 bg-danger/10 border border-danger/30 rounded-md space-y-2 text-xs text-danger">
+            <div className="flex items-center gap-2 font-semibold text-danger">
+              <AlertOctagon className="w-4 h-4 text-danger shrink-0" />
               <span>Cannot Archive Team (Domain Ownership Guard)</span>
             </div>
             <p>{archiveCheck.reason}</p>
             {archiveCheck.details && (
-              <div className="pt-1 text-[11px] text-red-700 bg-red-100/50 p-2 rounded">
+              <div className="pt-1 text-[11px] text-danger bg-danger/10 p-2 rounded border border-danger/20">
                 {archiveCheck.details.projectKeys.length > 0 && (
                   <div>
                     Active projects:{' '}
@@ -66,13 +66,13 @@ export const ArchiveTeamModal: React.FC<ArchiveTeamModalProps> = ({
                 )}
               </div>
             )}
-            <p className="text-[11px] text-red-600 italic">
+            <p className="text-[11px] text-danger/80 italic">
               Reassign active projects or conclude running cycles before archiving this team.
             </p>
           </div>
         ) : (
-          <div className="p-3 bg-amber-50 border border-amber-200 rounded-md flex items-start gap-2.5 text-xs text-amber-800">
-            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <div className="p-3 bg-warning/10 border border-warning/30 rounded-md flex items-start gap-2.5 text-xs text-warning">
+            <AlertTriangle className="w-4 h-4 text-warning shrink-0 mt-0.5" />
             <p>
               Are you sure you want to archive <strong>{team.name}</strong> ({team.key})?
               The team has 0 active project ownerships or running cycles and can be safely moved to Archived Teams.
@@ -80,7 +80,7 @@ export const ArchiveTeamModal: React.FC<ArchiveTeamModalProps> = ({
           </div>
         )}
 
-        <div className="flex justify-end gap-2 pt-3 border-t border-[#e5e3df]">
+        <div className="flex justify-end gap-2 pt-3 border-t border-border">
           <Button variant="secondary" size="sm" onClick={onClose}>
             {archiveCheck.allowed ? 'Cancel' : 'Close'}
           </Button>

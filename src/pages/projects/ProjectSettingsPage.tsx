@@ -42,13 +42,13 @@ export const ProjectSettingsPage: React.FC = () => {
   return (
     <div className="flex-1 overflow-y-auto bg-surface-subtle p-4 sm:p-6 select-none max-w-2xl">
       {toastMessage && (
-        <div className="mb-4 px-3.5 py-2 bg-[#0a1530] text-white text-xs rounded-lg shadow-lg flex items-center gap-2 animate-in fade-in duration-150">
+        <div className="mb-4 px-3.5 py-2 bg-brand-navy text-white text-xs rounded-lg shadow-lg flex items-center gap-2 animate-in fade-in duration-150">
           <CheckCircle2 className="w-4 h-4 text-success" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      <div className="bg-white border border-border rounded-lg p-5">
+      <div className="bg-surface-base border border-border rounded-lg p-5">
         <div className="flex items-center gap-2 pb-3 mb-4 border-b border-border">
           <Settings className="w-4 h-4 text-accent" />
           <h2 className="text-sm font-bold text-text-primary">Project Configuration</h2>
@@ -56,7 +56,7 @@ export const ProjectSettingsPage: React.FC = () => {
 
         <form onSubmit={handleSave} className="space-y-4 text-xs">
           {!isAdmin && (
-            <div className="p-2.5 rounded bg-amber-50 border border-amber-200 text-[11px] text-amber-800 font-medium">
+            <div className="p-2.5 rounded bg-warning/10 border border-warning/30 text-[11px] text-warning font-medium">
               You have {currentUser.role} role. Only workspace Administrators may update project configuration.
             </div>
           )}
@@ -72,7 +72,7 @@ export const ProjectSettingsPage: React.FC = () => {
               disabled={!isAdmin}
               value={name}
               onChange={e => setName(e.target.value)}
-              className="w-full px-3 py-2 text-xs bg-surface-subtle border border-border focus:border-accent rounded-[6px] focus:outline-none focus:bg-white disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 text-xs bg-surface-subtle border border-border focus:border-accent rounded-[6px] focus:outline-none focus:bg-surface-base disabled:opacity-60 disabled:cursor-not-allowed text-text-primary"
             />
           </div>
 
@@ -89,7 +89,7 @@ export const ProjectSettingsPage: React.FC = () => {
                 className="w-full px-3 py-2 text-xs bg-surface-muted border border-border rounded-[6px] text-text-muted font-mono cursor-not-allowed"
                 title="Project key prefixes issue identifiers and cannot be renamed"
               />
-              <span className="text-[10px] text-[#a4a097] mt-0.5 block">
+              <span className="text-[10px] text-text-muted mt-0.5 block">
                 Prefix for all atomic issue IDs (e.g. {project.key}-101)
               </span>
             </div>
@@ -104,7 +104,7 @@ export const ProjectSettingsPage: React.FC = () => {
                 value={project.currentSequence}
                 className="w-full px-3 py-2 text-xs bg-surface-muted border border-border rounded-[6px] text-text-muted font-mono cursor-not-allowed"
               />
-              <span className="text-[10px] text-[#a4a097] mt-0.5 block">
+              <span className="text-[10px] text-text-muted mt-0.5 block">
                 Next created issue will allocate #{project.currentSequence + 1}
               </span>
             </div>
@@ -119,7 +119,7 @@ export const ProjectSettingsPage: React.FC = () => {
               value={teamId}
               disabled={!isAdmin}
               onChange={e => setTeamId(e.target.value)}
-              className="w-full px-2.5 py-2 text-xs bg-surface-subtle border border-border rounded-[6px] focus:outline-none focus:border-accent disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full px-2.5 py-2 text-xs bg-surface-subtle border border-border rounded-[6px] focus:outline-none focus:border-accent disabled:opacity-60 disabled:cursor-not-allowed text-text-primary"
             >
               {teams.map(t => (
                 <option key={t.id} value={t.id}>
@@ -143,7 +143,7 @@ export const ProjectSettingsPage: React.FC = () => {
               value={description}
               onChange={e => setDescription(e.target.value)}
               placeholder="Describe the architectural objectives and mission of this project..."
-              className="w-full px-3 py-2 text-xs bg-surface-subtle border border-border focus:border-accent rounded-[6px] focus:outline-none focus:bg-white resize-none disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 text-xs bg-surface-subtle border border-border focus:border-accent rounded-[6px] focus:outline-none focus:bg-surface-base resize-none disabled:opacity-60 disabled:cursor-not-allowed text-text-primary"
             />
           </div>
 

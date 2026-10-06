@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { User, UserRole, Team } from '../../../types';
 import { Avatar } from '../../../components/ui/Avatar';
-import { RoleBadge } from './RoleBadge';
 import { useSettings } from '../context/SettingsContext';
 
 interface MemberRowProps {
@@ -13,7 +12,9 @@ export const MemberRow: React.FC<MemberRowProps> = ({ user, teams }) => {
   const { updateUserRole, canDemoteUser, currentUser } = useSettings();
   const [errorFeedback, setErrorFeedback] = useState<string | null>(null);
 
-  const userTeams = teams.filter(t => user.teamId === t.id);
+  const userTeams = teams.filter(t =>
+    (user.teamIds || (user.teamId ? [user.teamId] : [])).includes(t.id)
+  );
   const isCurrentUser = user.id === currentUser.id;
 
   const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -37,21 +38,21 @@ export const MemberRow: React.FC<MemberRowProps> = ({ user, teams }) => {
   };
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-lg border border-[#e5e3df] bg-white hover:border-[#c8c4be] transition-colors">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-lg border border-border bg-surface-base hover:border-border-strong transition-colors">
       <div className="flex items-center gap-3 min-w-0">
         <Avatar user={user} size="sm" />
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-[#1a1a1a] truncate">
+            <span className="text-xs font-semibold text-text-primary truncate">
               {user.name}
             </span>
             {isCurrentUser && (
-              <span className="text-[10px] bg-[#ede9e4] text-[#52504b] px-1.5 py-0.2 rounded font-medium">
+              <span className="text-[10px] bg-surface-muted text-text-secondary px-1.5 py-0.5 rounded font-medium border border-border-subtle">
                 You
               </span>
             )}
           </div>
-          <div className="text-[11px] text-[#787671] truncate">{user.email}</div>
+          <div className="text-[11px] text-text-muted truncate">{user.email}</div>
         </div>
       </div>
 
@@ -62,14 +63,14 @@ export const MemberRow: React.FC<MemberRowProps> = ({ user, teams }) => {
             userTeams.map(t => (
               <span
                 key={t.id}
-                className="text-[10px] font-mono font-medium px-1.5 py-0.5 rounded bg-[#f6f5f4] text-[#52504b] border border-[#e5e3df]"
+                className="text-[10px] font-mono font-medium px-1.5 py-0.5 rounded bg-surface-subtle text-text-secondary border border-border"
                 title={t.name}
               >
                 {t.key}
               </span>
             ))
           ) : (
-            <span className="text-[10px] text-[#a4a097] italic">No team</span>
+            <span className="text-[10px] text-text-muted italic">No team</span>
           )}
         </div>
 
@@ -79,14 +80,14 @@ export const MemberRow: React.FC<MemberRowProps> = ({ user, teams }) => {
             value={user.role}
             onChange={handleRoleChange}
             aria-label={`Role for ${user.name}`}
-            className="text-xs bg-[#fafaf9] border border-[#e5e3df] rounded-md px-2 py-1 font-medium text-[#1a1a1a] hover:border-[#c8c4be] focus:outline-none focus:ring-1 focus:ring-[#5645d4] cursor-pointer"
+            className="text-xs bg-surface-subtle border border-border rounded-md px-2 py-1 font-medium text-text-primary hover:border-border-strong focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer"
           >
             <option value="ADMIN">ADMIN</option>
             <option value="MEMBER">MEMBER</option>
             <option value="OBSERVER">OBSERVER</option>
           </select>
           {errorFeedback && (
-            <span className="text-[10px] text-red-600 font-medium mt-1 animate-in fade-in">
+            <span className="text-[10px] text-danger font-medium mt-1 animate-in fade-in">
               {errorFeedback}
             </span>
           )}

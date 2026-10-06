@@ -70,14 +70,14 @@ export const AddWebhookModal: React.FC<AddWebhookModalProps> = ({ isOpen, onClos
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-2.5 rounded-md bg-red-50 border border-red-200 text-xs text-red-700 font-medium">
+          <div className="p-2.5 rounded-md bg-danger/10 border border-danger/30 text-xs text-danger font-medium">
             {error}
           </div>
         )}
 
         <div className="space-y-1.5">
-          <label htmlFor="webhook-name" className="block text-xs font-medium text-[#1a1a1a]">
-            Webhook Name <span className="text-red-500">*</span>
+          <label htmlFor="webhook-name" className="block text-xs font-medium text-text-primary">
+            Webhook Name <span className="text-danger">*</span>
           </label>
           <input
             id="webhook-name"
@@ -86,13 +86,13 @@ export const AddWebhookModal: React.FC<AddWebhookModalProps> = ({ isOpen, onClos
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="e.g. CI/CD Pipeline Gateway"
-            className="w-full px-3 py-1.5 text-xs border border-[#e5e3df] rounded-md focus:outline-none focus:ring-1 focus:ring-[#5645d4]"
+            className="w-full px-3 py-1.5 text-xs bg-surface-base border border-border text-text-primary rounded-md focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="webhook-url" className="block text-xs font-medium text-[#1a1a1a]">
-            Payload Endpoint URL <span className="text-red-500">*</span>
+          <label htmlFor="webhook-url" className="block text-xs font-medium text-text-primary">
+            Payload Endpoint URL <span className="text-danger">*</span>
           </label>
           <input
             id="webhook-url"
@@ -101,37 +101,37 @@ export const AddWebhookModal: React.FC<AddWebhookModalProps> = ({ isOpen, onClos
             value={url}
             onChange={e => setUrl(e.target.value)}
             placeholder="https://api.acme.corp/webhooks/unblok"
-            className="w-full px-3 py-1.5 text-xs font-mono border border-[#e5e3df] rounded-md focus:outline-none focus:ring-1 focus:ring-[#5645d4]"
+            className="w-full px-3 py-1.5 text-xs font-mono bg-surface-base border border-border text-text-primary rounded-md focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
 
         <div className="space-y-1.5">
-          <label className="block text-xs font-medium text-[#1a1a1a]">
-            Subscribed Event Categories <span className="text-red-500">*</span>
+          <label className="block text-xs font-medium text-text-primary">
+            Subscribed Event Categories <span className="text-danger">*</span>
           </label>
-          <div className="space-y-1 p-2 border border-[#e5e3df] rounded-md bg-[#fafaf9]">
+          <div className="space-y-1 p-2 border border-border rounded-md bg-surface-subtle">
             {availableEvents.map(ev => (
               <label
                 key={ev.id}
-                className="flex items-center gap-2 p-1.5 rounded hover:bg-white cursor-pointer text-xs select-none"
+                className="flex items-center gap-2 p-1.5 rounded hover:bg-surface-base cursor-pointer text-xs select-none"
               >
                 <input
                   type="checkbox"
                   checked={events.includes(ev.id)}
                   onChange={() => handleToggleEvent(ev.id)}
-                  className="rounded border-[#e5e3df] text-[#5645d4] focus:ring-[#5645d4]"
+                  className="rounded border-border text-accent focus:ring-accent"
                 />
-                <span className="text-[#1a1a1a]">{ev.label}</span>
+                <span className="text-text-primary">{ev.label}</span>
               </label>
             ))}
           </div>
         </div>
 
-        <div className="p-2.5 bg-[#f6f5f4] rounded-md border border-[#e5e3df] text-[11px] text-[#787671]">
+        <div className="p-2.5 bg-surface-muted rounded-md border border-border text-[11px] text-text-muted">
           Mock signing secret will be generated automatically. No actual network calls or dispatches are performed in prototype mode.
         </div>
 
-        <div className="flex justify-end gap-2 pt-3 border-t border-[#e5e3df]">
+        <div className="flex justify-end gap-2 pt-3 border-t border-border">
           <Button variant="secondary" size="sm" type="button" onClick={onClose}>
             Cancel
           </Button>

@@ -24,8 +24,10 @@ export const TeamAdminRow: React.FC<TeamAdminRowProps> = ({
 }) => {
   const isArchived = Boolean((team as any).archivedAt);
 
-  // Metrics
-  const memberCount = users.filter(u => u.teamId === team.id).length;
+  // Metrics with multi-team membership support
+  const memberCount = users.filter(u =>
+    (u.teamIds || (u.teamId ? [u.teamId] : [])).includes(team.id)
+  ).length;
   const ownedProjects = projects.filter(p => p.teamId === team.id && !(p as any).archivedAt);
   const activeCycle = cycles.find(c => c.teamId === team.id && c.status === 'ACTIVE');
   const leadUser = (team as any).leadId ? users.find(u => u.id === (team as any).leadId) : undefined;
@@ -34,37 +36,37 @@ export const TeamAdminRow: React.FC<TeamAdminRowProps> = ({
     <div
       className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-lg border transition-colors ${
         isArchived
-          ? 'bg-[#f6f5f4]/50 border-[#e5e3df] opacity-70'
-          : 'bg-white border-[#e5e3df] hover:border-[#c8c4be]'
+          ? 'bg-surface-subtle/50 border-border opacity-70'
+          : 'bg-surface-base border-border hover:border-border-strong'
       }`}
     >
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-[#f6f5f4] text-[#52504b] border border-[#e5e3df]">
+          <span className="text-xs font-mono font-bold px-1.5 py-0.5 rounded bg-surface-muted text-text-secondary border border-border">
             {team.key}
           </span>
-          <h3 className="text-xs font-semibold text-[#1a1a1a] truncate">
+          <h3 className="text-xs font-semibold text-text-primary truncate">
             {team.name}
           </h3>
           {isArchived && (
-            <span className="text-[10px] bg-red-50 text-red-700 border border-red-200 px-1.5 py-0.2 rounded font-medium">
+            <span className="text-[10px] bg-danger/10 text-danger border border-danger/30 px-1.5 py-0.5 rounded font-medium">
               ARCHIVED
             </span>
           )}
         </div>
         {team.description && (
-          <p className="text-[11px] text-[#787671] mt-1 line-clamp-1">
+          <p className="text-[11px] text-text-muted mt-1 line-clamp-1">
             {team.description}
           </p>
         )}
-        <div className="flex items-center gap-3 mt-1.5 text-[11px] text-[#787671]">
+        <div className="flex items-center gap-3 mt-1.5 text-[11px] text-text-muted">
           <span>{memberCount} member{memberCount === 1 ? '' : 's'}</span>
           <span>•</span>
           <span>{ownedProjects.length} owned project{ownedProjects.length === 1 ? '' : 's'}</span>
           {activeCycle && (
             <>
               <span>•</span>
-              <span className="text-emerald-700 font-medium">
+              <span className="text-success font-medium">
                 Cycle: {activeCycle.name}
               </span>
             </>
@@ -84,7 +86,7 @@ export const TeamAdminRow: React.FC<TeamAdminRowProps> = ({
             <Button
               variant="secondary"
               size="sm"
-              icon={<Edit2 className="w-3.5 h-3.5 text-[#787671]" />}
+              icon={<Edit2 className="w-3.5 h-3.5 text-text-muted" />}
               onClick={() => onEdit(team)}
             >
               Edit
@@ -92,9 +94,9 @@ export const TeamAdminRow: React.FC<TeamAdminRowProps> = ({
             <Button
               variant="secondary"
               size="sm"
-              icon={<Archive className="w-3.5 h-3.5 text-red-600" />}
+              icon={<Archive className="w-3.5 h-3.5 text-danger" />}
               onClick={() => onArchive(team)}
-              className="text-red-700 hover:bg-red-50 hover:border-red-200"
+              className="text-danger hover:bg-danger/10 hover:border-danger/30"
             >
               Archive
             </Button>
@@ -104,9 +106,9 @@ export const TeamAdminRow: React.FC<TeamAdminRowProps> = ({
             <Button
               variant="secondary"
               size="sm"
-              icon={<RotateCcw className="w-3.5 h-3.5 text-emerald-600" />}
+              icon={<RotateCcw className="w-3.5 h-3.5 text-success" />}
               onClick={() => onRestore(team)}
-              className="text-emerald-700 hover:bg-emerald-50 hover:border-emerald-200"
+              className="text-success hover:bg-success/10 hover:border-success/30"
             >
               Restore
             </Button>

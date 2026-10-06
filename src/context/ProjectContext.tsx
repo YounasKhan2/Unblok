@@ -247,6 +247,32 @@ migrateStorageNamespace();
 
 const STORAGE_KEY = UNBLOK_STORAGE_NAMESPACE;
 
+/**
+ * Deterministically normalizes a user's team memberships into canonical `teamIds: string[]`.
+ * Ensures uniqueness, non-empty IDs, and provides legacy `teamId` backwards compatibility.
+ */
+export function normalizeUserMemberships(user: any): User & { teamIds: string[] } {
+  if (!user) return { ...INITIAL_USERS[0], teamIds: INITIAL_USERS[0].teamIds || ['team_eng'] };
+  const rawTeamIds = Array.isArray(user.teamIds)
+    ? user.teamIds
+    : user.teamId
+    ? [user.teamId]
+    : [];
+  const teamIds = Array.from(
+    new Set(rawTeamIds.filter((t: any) => typeof t === 'string' && t.trim().length > 0))
+  );
+  return {
+    ...user,
+    teamIds,
+    teamId: teamIds[0] || user.teamId || '',
+  };
+}
+
+export function normalizeUsersList(users: any[]): (User & { teamIds: string[] })[] {
+  if (!Array.isArray(users)) return INITIAL_USERS.map(normalizeUserMemberships);
+  return users.map(normalizeUserMemberships);
+}
+
 export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Load state from localStorage or initialize with seed data
   const [issues, setIssues] = useState<Issue[]>(() => {
@@ -300,18 +326,18 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [users, setUsers] = useState<User[]>(() => {
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_users`);
-      return stored ? JSON.parse(stored) : INITIAL_USERS;
+      return stored ? normalizeUsersList(JSON.parse(stored)) : normalizeUsersList(INITIAL_USERS);
     } catch {
-      return INITIAL_USERS;
+      return normalizeUsersList(INITIAL_USERS);
     }
   });
 
   const [currentUser, setCurrentUser] = useState<User>(() => {
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_current_user`);
-      return stored ? JSON.parse(stored) : INITIAL_USERS[0];
+      return stored ? normalizeUserMemberships(JSON.parse(stored)) : normalizeUserMemberships(INITIAL_USERS[0]);
     } catch {
-      return INITIAL_USERS[0];
+      return normalizeUserMemberships(INITIAL_USERS[0]);
     }
   });
 
@@ -325,15 +351,16 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, []);
 
   const updateCanonicalUsers = useCallback((newUsers: User[]) => {
-    setUsers(newUsers);
+    const normalized = normalizeUsersList(newUsers);
+    setUsers(normalized);
     try {
-      localStorage.setItem(`${STORAGE_KEY}_users`, JSON.stringify(newUsers));
+      localStorage.setItem(`${STORAGE_KEY}_users`, JSON.stringify(normalized));
     } catch (e) {
       console.warn('Failed to persist users:', e);
     }
     // Also keep currentUser updated if their role or info changed
     setCurrentUser(prev => {
-      const updated = newUsers.find(u => u.id === prev.id) || prev;
+      const updated = normalized.find(u => u.id === prev.id) || prev;
       try {
         localStorage.setItem(`${STORAGE_KEY}_current_user`, JSON.stringify(updated));
       } catch (e) {
@@ -344,9 +371,10 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, []);
 
   const handleSetCurrentUser = useCallback((user: User) => {
-    setCurrentUser(user);
+    const normalized = normalizeUserMemberships(user);
+    setCurrentUser(normalized);
     try {
-      localStorage.setItem(`${STORAGE_KEY}_current_user`, JSON.stringify(user));
+      localStorage.setItem(`${STORAGE_KEY}_current_user`, JSON.stringify(normalized));
     } catch (e) {
       console.warn('Failed to persist current user:', e);
     }
@@ -1471,8 +1499,8 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setMilestones(INITIAL_MILESTONES);
     setComments(INITIAL_COMMENTS);
     setTeams(INITIAL_TEAMS);
-    setUsers(INITIAL_USERS);
-    setCurrentUser(INITIAL_USERS[0]);
+    setUsers(normalizeUsersList(INITIAL_USERS));
+    setCurrentUser(normalizeUserMemberships(INITIAL_USERS[0]));
     setSelectedIssueId(INITIAL_ISSUES[1].id);
     setFilters(initialFilters);
 

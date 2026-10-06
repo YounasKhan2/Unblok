@@ -53,9 +53,9 @@ export function canAccessSettingsRoute(arg1: string, arg2: string): boolean {
  * Guard enforcing that the actor has ADMIN role for administrative mutations.
  * Throws an explicit error if actor is not an ADMIN.
  */
-export function assertAdminMutation(actorRole: UserRole): void {
+export function assertAdminMutation(actorRole: UserRole, mutationName?: string): void {
   if (actorRole !== 'ADMIN') {
-    throw new Error('Administrative mutations require ADMIN role.');
+    throw new Error(`Administrative mutations${mutationName ? ` (${mutationName})` : ''} require ADMIN role.`);
   }
 }
 

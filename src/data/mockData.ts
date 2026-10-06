@@ -143,6 +143,7 @@ export const INITIAL_USERS: User[] = [
     email: 'sarah.chen@acme.internal',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
     role: 'ADMIN',
+    teamIds: ['team_eng', 'team_web'],
     teamId: 'team_eng',
   },
   {
@@ -151,6 +152,7 @@ export const INITIAL_USERS: User[] = [
     email: 'marcus.v@acme.internal',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
     role: 'MEMBER',
+    teamIds: ['team_web'],
     teamId: 'team_web',
   },
   {
@@ -159,6 +161,7 @@ export const INITIAL_USERS: User[] = [
     email: 'elena.r@acme.internal',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     role: 'MEMBER',
+    teamIds: ['team_inf', 'team_eng'],
     teamId: 'team_inf',
   },
   {
@@ -167,6 +170,7 @@ export const INITIAL_USERS: User[] = [
     email: 'david.kim@acme.internal',
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
     role: 'MEMBER',
+    teamIds: ['team_eng'],
     teamId: 'team_eng',
   },
   {
@@ -175,6 +179,7 @@ export const INITIAL_USERS: User[] = [
     email: 'aisha.p@acme.internal',
     avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
     role: 'OBSERVER',
+    teamIds: ['team_web'],
     teamId: 'team_web',
   },
 ];

@@ -61,14 +61,14 @@ export const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ isOpen, onClos
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-2.5 rounded-md bg-red-50 border border-red-200 text-xs text-red-700 font-medium">
+          <div className="p-2.5 rounded-md bg-danger/10 border border-danger/30 text-xs text-danger font-medium">
             {error}
           </div>
         )}
 
         <div className="space-y-1.5">
-          <label htmlFor="team-name" className="block text-xs font-medium text-[#1a1a1a]">
-            Team Name <span className="text-red-500">*</span>
+          <label htmlFor="team-name" className="block text-xs font-medium text-text-primary">
+            Team Name <span className="text-danger">*</span>
           </label>
           <input
             id="team-name"
@@ -77,13 +77,13 @@ export const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ isOpen, onClos
             value={name}
             onChange={handleNameChange}
             placeholder="e.g. Security & Compliance"
-            className="w-full px-3 py-1.5 text-xs border border-[#e5e3df] rounded-md focus:outline-none focus:ring-1 focus:ring-[#5645d4]"
+            className="w-full px-3 py-1.5 text-xs bg-surface-base border border-border text-text-primary rounded-md focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="team-key" className="block text-xs font-medium text-[#1a1a1a]">
-            Team Key <span className="text-red-500">*</span>
+          <label htmlFor="team-key" className="block text-xs font-medium text-text-primary">
+            Team Key <span className="text-danger">*</span>
           </label>
           <input
             id="team-key"
@@ -93,15 +93,15 @@ export const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ isOpen, onClos
             value={key}
             onChange={e => setKey(e.target.value.toUpperCase())}
             placeholder="e.g. SEC"
-            className="w-full px-3 py-1.5 text-xs font-mono uppercase border border-[#e5e3df] rounded-md focus:outline-none focus:ring-1 focus:ring-[#5645d4]"
+            className="w-full px-3 py-1.5 text-xs font-mono uppercase bg-surface-base border border-border text-text-primary rounded-md focus:outline-none focus:ring-1 focus:ring-accent"
           />
-          <p className="text-[11px] text-[#787671]">
+          <p className="text-[11px] text-text-muted">
             2-6 uppercase letters/digits used as an identifier across the workspace.
           </p>
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="team-desc" className="block text-xs font-medium text-[#1a1a1a]">
+          <label htmlFor="team-desc" className="block text-xs font-medium text-text-primary">
             Description (Optional)
           </label>
           <textarea
@@ -110,11 +110,11 @@ export const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ isOpen, onClos
             value={description}
             onChange={e => setDescription(e.target.value)}
             placeholder="Focus and mission of this team..."
-            className="w-full px-3 py-1.5 text-xs border border-[#e5e3df] rounded-md focus:outline-none focus:ring-1 focus:ring-[#5645d4]"
+            className="w-full px-3 py-1.5 text-xs bg-surface-base border border-border text-text-primary rounded-md focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
 
-        <div className="flex justify-end gap-2 pt-3 border-t border-[#e5e3df]">
+        <div className="flex justify-end gap-2 pt-3 border-t border-border">
           <Button variant="secondary" size="sm" type="button" onClick={onClose}>
             Cancel
           </Button>

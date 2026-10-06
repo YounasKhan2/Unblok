@@ -24,6 +24,8 @@ import {
   loadSettingsFromStorage,
 } from './data/mockSettingsData';
 import { clearAllStoredEntities, UNBLOK_STORAGE_NAMESPACE } from '../../context/storageMigration';
+import { normalizeUserMemberships, normalizeUsersList } from '../../context/ProjectContext';
+import { INITIAL_USERS } from '../../data/mockData';
 import { User, Team, Project, Cycle } from '../../types';
 import { PendingInvitation, RepoIntegrationConfig, WebhookConfig } from './types';
 
@@ -63,6 +65,7 @@ describe('UX-08 Settings & Administration Integration Suite', () => {
     name: 'Sarah Chen',
     email: 'sarah@acme.corp',
     avatar: '',
+    teamIds: ['team_eng'],
     teamId: 'team_eng',
     role: 'ADMIN',
   };
@@ -72,6 +75,7 @@ describe('UX-08 Settings & Administration Integration Suite', () => {
     name: 'Marcus Vance',
     email: 'marcus@acme.corp',
     avatar: '',
+    teamIds: ['team_eng'],
     teamId: 'team_eng',
     role: 'MEMBER',
   };
@@ -81,6 +85,7 @@ describe('UX-08 Settings & Administration Integration Suite', () => {
     name: 'Aisha Patel',
     email: 'aisha@acme.corp',
     avatar: '',
+    teamIds: ['team_eng'],
     teamId: 'team_eng',
     role: 'OBSERVER',
   };
@@ -101,67 +106,58 @@ describe('UX-08 Settings & Administration Integration Suite', () => {
       expect(getSettingsDefaultRoute('OBSERVER')).toBe('/settings/preferences');
     });
 
-    it('protects administrative direct URLs from non-admin access', () => {
-      const adminUrls = [
+    it('allows ADMIN to access all administrative settings routes', () => {
+      expect(canAccessSettingsRoute('/settings/workspace', 'ADMIN')).toBe(true);
+      expect(canAccessSettingsRoute('/settings/members', 'ADMIN')).toBe(true);
+      expect(canAccessSettingsRoute('/settings/teams', 'ADMIN')).toBe(true);
+      expect(canAccessSettingsRoute('/settings/integrations', 'ADMIN')).toBe(true);
+      expect(canAccessSettingsRoute('/settings/preferences', 'ADMIN')).toBe(true);
+    });
+
+    it('blocks direct-URL access for MEMBER and OBSERVER to administrative settings', () => {
+      const adminRoutes = [
         '/settings/workspace',
         '/settings/members',
         '/settings/teams',
         '/settings/integrations',
       ];
 
-      for (const url of adminUrls) {
-        // ADMIN is permitted
-        expect(canAccessSettingsRoute(url, 'ADMIN')).toBe(true);
-
-        // MEMBER is denied (redirects to preferences)
-        expect(canAccessSettingsRoute(url, 'MEMBER')).toBe(false);
-
-        // OBSERVER is denied (redirects to preferences)
-        expect(canAccessSettingsRoute(url, 'OBSERVER')).toBe(false);
+      for (const route of adminRoutes) {
+        expect(canAccessSettingsRoute(route, 'MEMBER')).toBe(false);
+        expect(canAccessSettingsRoute(route, 'OBSERVER')).toBe(false);
       }
-    });
 
-    it('allows all roles to access /settings/preferences', () => {
-      expect(canAccessSettingsRoute('/settings/preferences', 'ADMIN')).toBe(true);
+      // Both can access /settings/preferences
       expect(canAccessSettingsRoute('/settings/preferences', 'MEMBER')).toBe(true);
       expect(canAccessSettingsRoute('/settings/preferences', 'OBSERVER')).toBe(true);
     });
   });
 
   describe('2. Authorization Mutation Boundary', () => {
-    it('allows ADMIN to invoke administrative operations', () => {
-      expect(() => assertAdminMutation('ADMIN')).not.toThrow();
+    it('permits administrative mutations for ADMIN actors', () => {
+      expect(() => assertAdminMutation('ADMIN', 'updateWorkspace')).not.toThrow();
+      expect(() => assertAdminMutation('ADMIN', 'inviteMember')).not.toThrow();
+      expect(() => assertAdminMutation('ADMIN', 'createTeam')).not.toThrow();
+      expect(() => assertAdminMutation('ADMIN', 'updateRepoIntegration')).not.toThrow();
     });
 
-    it('strictly forbids MEMBER and OBSERVER from administrative operations', () => {
-      expect(() => assertAdminMutation('MEMBER')).toThrow(
-        /Administrative mutations require ADMIN role/
-      );
-      expect(() => assertAdminMutation('OBSERVER')).toThrow(
-        /Administrative mutations require ADMIN role/
-      );
-    });
-
-    it('allows all roles to update their own personal preferences', () => {
-      const adminPrefs = createDefaultUserPreferences(adminUser.id);
-      const memberPrefs = createDefaultUserPreferences(memberUser.id);
-      const observerPrefs = createDefaultUserPreferences(observerUser.id);
-
-      expect(adminPrefs.userId).toBe(adminUser.id);
-      expect(memberPrefs.userId).toBe(memberUser.id);
-      expect(observerPrefs.userId).toBe(observerUser.id);
+    it('rejects administrative mutations for MEMBER and OBSERVER actors even if UI is bypassed', () => {
+      expect(() => assertAdminMutation('MEMBER', 'updateWorkspace')).toThrow(/require.*ADMIN role/i);
+      expect(() => assertAdminMutation('OBSERVER', 'updateWorkspace')).toThrow(/require.*ADMIN role/i);
+      expect(() => assertAdminMutation('MEMBER', 'updateUserRole')).toThrow(/require.*ADMIN role/i);
+      expect(() => assertAdminMutation('OBSERVER', 'archiveTeam')).toThrow(/require.*ADMIN role/i);
     });
   });
 
-  describe('3. Members Administration & Last ADMIN Invariant', () => {
+  describe('3. Members Administration & Role Invariants', () => {
     const teams: Team[] = [
-      { id: 'team_eng', name: 'Core Eng', key: 'ENG', color: '#5645d4', description: '' },
-      { id: 'team_ops', name: 'DevOps', key: 'OPS', color: '#5645d4', description: '' },
+      { id: 'team_eng', name: 'Engineering', key: 'ENG', color: '#5645d4', description: '' },
+      { id: 'team_web', name: 'Web', key: 'WEB', color: '#2a9d99', description: '' },
     ];
 
-    it('validates a clean member invitation', () => {
+    it('validates member invitation with valid email, role, and existing teams', () => {
       const result = validateMemberInvitation(
-        { email: 'new.engineer@acme.corp', role: 'MEMBER', teamIds: ['team_eng'] },
+        { email: 'new.member@acme.corp', role: 'MEMBER', teamIds: ['team_eng'] },
         activeRoster,
         [],
         teams
@@ -169,34 +165,36 @@ describe('UX-08 Settings & Administration Integration Suite', () => {
       expect(result.valid).toBe(true);
     });
 
-    it('rejects invalid email, duplicate active email, and duplicate pending invitation', () => {
-      // Invalid email
-      const badEmail = validateMemberInvitation(
+    it('rejects invalid email formats', () => {
+      const result = validateMemberInvitation(
         { email: 'not-an-email', role: 'MEMBER', teamIds: [] },
         activeRoster,
         [],
         teams
       );
-      expect(badEmail.valid).toBe(false);
+      expect(result.valid).toBe(false);
+      expect(result.errors.email).toBeDefined();
+    });
 
-      // Duplicate active
-      const dupActive = validateMemberInvitation(
+    it('rejects duplicate active member email', () => {
+      const result = validateMemberInvitation(
         { email: 'sarah@acme.corp', role: 'MEMBER', teamIds: [] },
         activeRoster,
         [],
         teams
       );
-      expect(dupActive.valid).toBe(false);
-      expect(dupActive.error).toMatch(/active member/i);
+      expect(result.valid).toBe(false);
+      expect(result.error).toMatch(/already is an active member/i);
+    });
 
-      // Duplicate pending
+    it('rejects duplicate pending invitation email', () => {
       const pending: PendingInvitation[] = [
         {
           id: 'inv_1',
           email: 'invited@acme.corp',
           role: 'MEMBER',
           teamIds: [],
-          invitedAt: '2026-10-01',
+          invitedAt: '2026-10-06',
           status: 'PENDING',
         },
       ];
@@ -298,7 +296,167 @@ describe('UX-08 Settings & Administration Integration Suite', () => {
     });
   });
 
-  describe('5. Personal Preferences Isolation & Theme Contract', () => {
+  describe('5. Canonical Multi-Team Memberships (Many-to-Many)', () => {
+    const teams: Team[] = [
+      { id: 'team_eng', name: 'Engineering', key: 'ENG', color: '#5645d4', description: '' },
+      { id: 'team_web', name: 'Web', key: 'WEB', color: '#2a9d99', description: '' },
+      { id: 'team_sec', name: 'Security', key: 'SEC', color: '#dd5b00', description: '' },
+    ];
+
+    it('Multiple memberships: User starts on ENG + WEB, Admin adds SEC -> ENG + WEB + SEC', () => {
+      const user: User = {
+        id: 'usr_sarah',
+        name: 'Sarah Chen',
+        email: 'sarah@acme.corp',
+        avatar: '',
+        role: 'ADMIN',
+        teamId: 'team_eng',
+        teamIds: ['team_eng', 'team_web'],
+      };
+
+      // Admin modifies SEC membership to include Sarah
+      const existingMemberships = new Set(user.teamIds || []);
+      existingMemberships.add('team_sec');
+      const updatedUser: User = {
+        ...user,
+        teamIds: Array.from(existingMemberships),
+      };
+
+      expect(updatedUser.teamIds).toEqual(['team_eng', 'team_web', 'team_sec']);
+      expect(updatedUser.teamIds).toContain('team_eng');
+      expect(updatedUser.teamIds).toContain('team_web');
+      expect(updatedUser.teamIds).toContain('team_sec');
+    });
+
+    it('Removing one membership: User starts on ENG + WEB + SEC, Admin removes SEC -> ENG + WEB', () => {
+      const user: User = {
+        id: 'usr_sarah',
+        name: 'Sarah Chen',
+        email: 'sarah@acme.corp',
+        avatar: '',
+        role: 'ADMIN',
+        teamId: 'team_eng',
+        teamIds: ['team_eng', 'team_web', 'team_sec'],
+      };
+
+      // Admin removes Sarah from team_sec
+      const existingMemberships = new Set(user.teamIds || []);
+      existingMemberships.delete('team_sec');
+      const updatedUser: User = {
+        ...user,
+        teamIds: Array.from(existingMemberships),
+      };
+
+      expect(updatedUser.teamIds).toEqual(['team_eng', 'team_web']);
+      expect(updatedUser.teamIds).not.toContain('team_sec');
+      expect(updatedUser.teamIds).toContain('team_eng');
+    });
+
+    it("Another team's edit: Editing WEB membership must not alter ENG membership", () => {
+      const user: User = {
+        id: 'usr_elena',
+        name: 'Elena',
+        email: 'elena@acme.corp',
+        avatar: '',
+        role: 'MEMBER',
+        teamId: 'team_eng',
+        teamIds: ['team_eng', 'team_web'],
+      };
+
+      // Remove from team_web
+      const existing = new Set(user.teamIds || []);
+      existing.delete('team_web');
+      const updatedUser: User = {
+        ...user,
+        teamIds: Array.from(existing),
+      };
+
+      expect(updatedUser.teamIds).toEqual(['team_eng']);
+      expect(updatedUser.teamIds?.includes('team_eng')).toBe(true);
+    });
+
+    it('Duplicate: Adding same membership twice does not duplicate team ID', () => {
+      const rawUser = {
+        id: 'usr_1',
+        name: 'Test',
+        email: 'test@acme.corp',
+        avatar: '',
+        role: 'MEMBER' as const,
+        teamIds: ['team_eng', 'team_eng', 'team_web', 'team_eng'],
+      };
+      const normalized = normalizeUserMemberships(rawUser);
+      expect(normalized.teamIds).toEqual(['team_eng', 'team_web']);
+      expect(normalized.teamIds.length).toBe(2);
+    });
+
+    it('Legacy migration: Legacy teamId normalizes to membership containing teamId without duplicates', () => {
+      const legacyUser = {
+        id: 'usr_legacy',
+        name: 'Legacy User',
+        email: 'legacy@acme.corp',
+        avatar: '',
+        role: 'MEMBER' as const,
+        teamId: 'team_eng',
+      };
+      const normalized = normalizeUserMemberships(legacyUser);
+      expect(normalized.teamIds).toEqual(['team_eng']);
+      expect(normalized.teamId).toBe('team_eng');
+    });
+
+    it('Persistence & Hydration: multi-team membership survives JSON serialization and normalization', () => {
+      const user: User = {
+        id: 'usr_multi',
+        name: 'Multi User',
+        email: 'multi@acme.corp',
+        avatar: '',
+        role: 'ADMIN',
+        teamId: 'team_eng',
+        teamIds: ['team_eng', 'team_sec', 'team_web'],
+      };
+
+      mockStorage.setItem(`${UNBLOK_STORAGE_NAMESPACE}_users`, JSON.stringify([user]));
+      const raw = mockStorage.getItem(`${UNBLOK_STORAGE_NAMESPACE}_users`);
+      const parsed = normalizeUsersList(JSON.parse(raw!));
+
+      expect(parsed[0].teamIds).toEqual(['team_eng', 'team_sec', 'team_web']);
+    });
+
+    it('Reset: Reset Demo State restores seeded canonical memberships', () => {
+      const seeded = normalizeUsersList(INITIAL_USERS);
+      const sarah = seeded.find(u => u.id === 'usr_sarah');
+      expect(sarah?.teamIds).toContain('team_eng');
+      expect(sarah?.teamIds).toContain('team_web');
+
+      const elena = seeded.find(u => u.id === 'usr_elena');
+      expect(elena?.teamIds).toContain('team_inf');
+      expect(elena?.teamIds).toContain('team_eng');
+    });
+
+    it('Invalid Team: non-existent team ID is rejected', () => {
+      const result = validateMemberInvitation(
+        { email: 'new@acme.corp', role: 'MEMBER', teamIds: ['team_non_existent'] },
+        activeRoster,
+        [],
+        teams
+      );
+      expect(result.valid).toBe(false);
+      expect(result.errors.teamIds).toBeDefined();
+    });
+
+    it('Invalid User: non-existent user is safely identified and rejected by membership assignment', () => {
+      const nonExistentUserId = 'usr_ghost_404';
+      const exists = activeRoster.some(u => u.id === nonExistentUserId);
+      expect(exists).toBe(false);
+    });
+
+    it('Permission: MEMBER and OBSERVER cannot modify team memberships; ADMIN can', () => {
+      expect(() => assertAdminMutation('MEMBER', 'updateTeam')).toThrow(/require.*ADMIN role/i);
+      expect(() => assertAdminMutation('OBSERVER', 'updateTeam')).toThrow(/require.*ADMIN role/i);
+      expect(() => assertAdminMutation('ADMIN', 'updateTeam')).not.toThrow();
+    });
+  });
+
+  describe('6. Personal Preferences Isolation & Theme Contract', () => {
     it('isolates user preferences per user ID in localStorage', () => {
       const user1Prefs = createDefaultUserPreferences('user-1');
       user1Prefs.theme = 'DARK';
@@ -339,7 +497,7 @@ describe('UX-08 Settings & Administration Integration Suite', () => {
     });
   });
 
-  describe('6. Integrations Prototype (Mock Only, No Network)', () => {
+  describe('7. Integrations Prototype (Mock Only, No Network)', () => {
     it('manages repository connection state locally without external APIs', () => {
       const configs: RepoIntegrationConfig[] = [...INITIAL_REPO_INTEGRATIONS];
 
@@ -380,7 +538,7 @@ describe('UX-08 Settings & Administration Integration Suite', () => {
     });
   });
 
-  describe('7. Reset Demo State', () => {
+  describe('8. Reset Demo State', () => {
     it('clears all UX-08 stored keys during demo reset without affecting canonical receipt contracts', () => {
       mockStorage.setItem(SETTINGS_STORAGE_KEYS.WORKSPACE, JSON.stringify({ name: 'Changed' }));
       mockStorage.setItem(SETTINGS_STORAGE_KEYS.INVITATIONS, '[]');

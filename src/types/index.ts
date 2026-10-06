@@ -16,6 +16,7 @@ export interface User {
   email: string;
   avatar: string;
   role: UserRole;
+  teamIds?: string[];
   teamId: string;
 }
 

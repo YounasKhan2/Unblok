@@ -26,10 +26,10 @@ export const TeamsSettingsPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2">
         <div>
-          <h2 className="text-base font-bold text-[#1a1a1a] tracking-tight">
+          <h2 className="text-base font-bold text-text-primary tracking-tight">
             Team Management
           </h2>
-          <p className="text-xs text-[#787671] mt-0.5">
+          <p className="text-xs text-text-muted mt-0.5">
             Configure engineering squads, project ownership domains, and squad assignments.
           </p>
         </div>
@@ -62,7 +62,7 @@ export const TeamsSettingsPage: React.FC = () => {
               />
             ))
           ) : (
-            <div className="text-center py-6 text-xs text-[#787671] bg-[#fafaf9] rounded-lg border border-[#e5e3df]">
+            <div className="text-center py-6 text-xs text-text-muted bg-surface-subtle rounded-lg border border-border">
               No active teams configured.
             </div>
           )}

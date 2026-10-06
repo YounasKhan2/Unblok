@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { RepoIntegrationConfig } from '../types';
 import { Button } from '../../../components/ui/Button';
-import { Check, AlertCircle, RefreshCw, GitBranch, Settings2 } from 'lucide-react';
+import { Settings2 } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 
 interface IntegrationCardProps {
@@ -48,28 +48,28 @@ export const IntegrationCard: React.FC<IntegrationCardProps> = ({ config, icon }
   };
 
   return (
-    <div className="p-4 rounded-lg border border-[#e5e3df] bg-white hover:border-[#c8c4be] transition-colors space-y-3">
+    <div className="p-4 rounded-lg border border-border bg-surface-base hover:border-border-strong transition-colors space-y-3">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-[#fafaf9] border border-[#e5e3df] flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-lg bg-surface-subtle border border-border flex items-center justify-center shrink-0">
             {icon}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-xs font-semibold text-[#1a1a1a]">{config.name}</h3>
+              <h3 className="text-xs font-semibold text-text-primary">{config.name}</h3>
               <span
-                className={`text-[10px] font-mono px-1.5 py-0.2 rounded font-medium ${
+                className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-medium border ${
                   isConnected
-                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                    ? 'bg-success/10 text-success border-success/30'
                     : isError
-                    ? 'bg-red-50 text-red-700 border border-red-200'
-                    : 'bg-[#f6f5f4] text-[#787671] border border-[#e5e3df]'
+                    ? 'bg-danger/10 text-danger border-danger/30'
+                    : 'bg-surface-subtle text-text-muted border-border'
                 }`}
               >
                 {config.status}
               </span>
             </div>
-            <p className="text-[11px] text-[#787671] mt-0.5">
+            <p className="text-[11px] text-text-muted mt-0.5">
               {isConnected && config.repository
                 ? `Connected to ${config.repository} • Synced ${config.lastSync || 'recently'}`
                 : 'Connect repositories to enable prototype branch and commit linking.'}
@@ -82,7 +82,7 @@ export const IntegrationCard: React.FC<IntegrationCardProps> = ({ config, icon }
             <Button
               variant="secondary"
               size="sm"
-              icon={<Settings2 className="w-3.5 h-3.5 text-[#787671]" />}
+              icon={<Settings2 className="w-3.5 h-3.5 text-text-muted" />}
               onClick={() => setIsConfiguring(!isConfiguring)}
             >
               Configure
@@ -92,7 +92,7 @@ export const IntegrationCard: React.FC<IntegrationCardProps> = ({ config, icon }
             variant={isConnected ? 'secondary' : 'primary'}
             size="sm"
             onClick={handleToggleConnect}
-            className={isConnected ? 'text-red-700 hover:bg-red-50 hover:border-red-200' : ''}
+            className={isConnected ? 'text-danger hover:bg-danger/10 hover:border-danger/30' : ''}
           >
             {isConnected ? 'Disconnect' : 'Connect'}
           </Button>
@@ -101,10 +101,10 @@ export const IntegrationCard: React.FC<IntegrationCardProps> = ({ config, icon }
 
       {/* Configuration Drawer/Accordion */}
       {isConfiguring && isConnected && (
-        <div className="pt-3 border-t border-[#e5e3df] space-y-3 text-xs bg-[#fafaf9] p-3 rounded-md animate-in fade-in">
+        <div className="pt-3 border-t border-border space-y-3 text-xs bg-surface-subtle p-3 rounded-md animate-in fade-in">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[11px] font-medium text-[#1a1a1a]">
+              <label className="text-[11px] font-medium text-text-primary">
                 Repository Path
               </label>
               <input
@@ -112,11 +112,11 @@ export const IntegrationCard: React.FC<IntegrationCardProps> = ({ config, icon }
                 value={repoInput}
                 onChange={e => setRepoInput(e.target.value)}
                 placeholder="org/repo-name"
-                className="w-full px-2.5 py-1 text-xs border border-[#e5e3df] rounded bg-white font-mono"
+                className="w-full px-2.5 py-1 text-xs border border-border rounded bg-surface-base text-text-primary font-mono focus:outline-none focus:ring-1 focus:ring-accent"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[11px] font-medium text-[#1a1a1a]">
+              <label className="text-[11px] font-medium text-text-primary">
                 Branch Pattern
               </label>
               <input
@@ -124,7 +124,7 @@ export const IntegrationCard: React.FC<IntegrationCardProps> = ({ config, icon }
                 value={patternInput}
                 onChange={e => setPatternInput(e.target.value)}
                 placeholder="feature/*, bugfix/*"
-                className="w-full px-2.5 py-1 text-xs border border-[#e5e3df] rounded bg-white font-mono"
+                className="w-full px-2.5 py-1 text-xs border border-border rounded bg-surface-base text-text-primary font-mono focus:outline-none focus:ring-1 focus:ring-accent"
               />
             </div>
           </div>
@@ -134,10 +134,10 @@ export const IntegrationCard: React.FC<IntegrationCardProps> = ({ config, icon }
               type="checkbox"
               checked={recognizeKeys}
               onChange={e => setRecognizeKeys(e.target.checked)}
-              className="rounded border-[#e5e3df] text-[#5645d4] focus:ring-[#5645d4]"
+              className="rounded border-border text-accent focus:ring-accent"
             />
-            <span className="text-[11px] text-[#1a1a1a]">
-              Recognize issue keys in commit messages (e.g., <code className="bg-white px-1 py-0.5 rounded border border-[#e5e3df]">ENG-142</code> or <code className="bg-white px-1 py-0.5 rounded border border-[#e5e3df]">fixes CORE-10</code>)
+            <span className="text-[11px] text-text-primary">
+              Recognize issue keys in commit messages (e.g., <code className="bg-surface-base px-1 py-0.5 rounded border border-border font-mono">ENG-142</code> or <code className="bg-surface-base px-1 py-0.5 rounded border border-border font-mono">fixes CORE-10</code>)
             </span>
           </label>
 

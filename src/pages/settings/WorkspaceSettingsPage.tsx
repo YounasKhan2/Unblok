@@ -94,18 +94,18 @@ export const WorkspaceSettingsPage: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2">
         <div>
-          <h2 className="text-base font-bold text-[#1a1a1a] tracking-tight">
+          <h2 className="text-base font-bold text-text-primary tracking-tight">
             Workspace Settings
           </h2>
-          <p className="text-xs text-[#787671] mt-0.5">
+          <p className="text-xs text-text-muted mt-0.5">
             Configure organization profile, enterprise defaults, and workspace parameters.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-[#787671] uppercase tracking-wider font-semibold">
+          <span className="text-[10px] text-text-muted uppercase tracking-wider font-semibold">
             Workspace ID:
           </span>
-          <code className="text-xs font-mono bg-[#ede9e4] text-[#37352f] px-2 py-0.5 rounded select-all border border-[#e5e3df]">
+          <code className="text-xs font-mono bg-surface-muted text-text-secondary px-2 py-0.5 rounded select-all border border-border">
             {workspace.id}
           </code>
         </div>
@@ -127,7 +127,7 @@ export const WorkspaceSettingsPage: React.FC = () => {
             type="text"
             value={name}
             onChange={e => setName(e.target.value)}
-            className="w-full px-3 py-1.5 text-xs border border-[#e5e3df] rounded-md focus:outline-none focus:ring-1 focus:ring-[#5645d4]"
+            className="w-full px-3 py-1.5 text-xs bg-surface-base border border-border text-text-primary rounded-md focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </SettingsField>
 
@@ -143,7 +143,7 @@ export const WorkspaceSettingsPage: React.FC = () => {
             value={key}
             maxLength={8}
             onChange={e => setKey(e.target.value.toUpperCase())}
-            className="w-full px-3 py-1.5 text-xs font-mono uppercase border border-[#e5e3df] rounded-md focus:outline-none focus:ring-1 focus:ring-[#5645d4]"
+            className="w-full px-3 py-1.5 text-xs font-mono uppercase bg-surface-base border border-border text-text-primary rounded-md focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </SettingsField>
 
@@ -157,7 +157,7 @@ export const WorkspaceSettingsPage: React.FC = () => {
             rows={2}
             value={description}
             onChange={e => setDescription(e.target.value)}
-            className="w-full px-3 py-1.5 text-xs border border-[#e5e3df] rounded-md focus:outline-none focus:ring-1 focus:ring-[#5645d4]"
+            className="w-full px-3 py-1.5 text-xs bg-surface-base border border-border text-text-primary rounded-md focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </SettingsField>
       </SettingsSection>
@@ -177,7 +177,7 @@ export const WorkspaceSettingsPage: React.FC = () => {
               id="default-priority"
               value={defaultPriority}
               onChange={e => setDefaultPriority(e.target.value as IssuePriority)}
-              className="w-full px-3 py-1.5 text-xs border border-[#e5e3df] rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-[#5645d4]"
+              className="w-full px-3 py-1.5 text-xs border border-border rounded-md bg-surface-base text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
             >
               <option value="LOW">LOW — Low priority</option>
               <option value="MEDIUM">MEDIUM — Normal priority</option>
@@ -195,7 +195,7 @@ export const WorkspaceSettingsPage: React.FC = () => {
               id="default-state"
               value={defaultInitialState}
               onChange={e => setDefaultInitialState(e.target.value as IssueState)}
-              className="w-full px-3 py-1.5 text-xs border border-[#e5e3df] rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-[#5645d4]"
+              className="w-full px-3 py-1.5 text-xs border border-border rounded-md bg-surface-base text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
             >
               <option value="BACKLOG">BACKLOG — Product backlog</option>
               <option value="TODO">TODO — Ready for sprint / cycle</option>
@@ -214,12 +214,12 @@ export const WorkspaceSettingsPage: React.FC = () => {
             type="checkbox"
             checked={autoAssignCycle}
             onChange={e => setAutoAssignCycle(e.target.checked)}
-            className="w-4 h-4 rounded border-[#e5e3df] text-[#5645d4] focus:ring-[#5645d4] cursor-pointer"
+            className="w-4 h-4 rounded border-border text-accent focus:ring-accent cursor-pointer"
           />
         </SettingsField>
 
-        <div className="p-3 bg-[#fafaf9] rounded-md border border-[#e5e3df] text-[11px] text-[#787671] space-y-1">
-          <p className="font-semibold text-[#1a1a1a]">Canonical Invariants Notice:</p>
+        <div className="p-3 bg-surface-subtle rounded-md border border-border text-[11px] text-text-muted space-y-1">
+          <p className="font-semibold text-text-primary">Canonical Invariants Notice:</p>
           <p>
             The canonical six-state lifecycle (BACKLOG → TODO → IN_PROGRESS → IN_REVIEW → DONE / CANCELED),
             completion dependency guards, and cycle rollups are permanent enterprise invariants and cannot be altered.

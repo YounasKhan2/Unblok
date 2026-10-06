@@ -32,7 +32,9 @@ export const EditTeamModal: React.FC<EditTeamModalProps> = ({
       setDescription(team.description || '');
       setLeadId((team as any).leadId || '');
       setSelectedMemberIds(
-        users.filter(u => u.teamId === team.id).map(u => u.id)
+        users
+          .filter(u => (u.teamIds || (u.teamId ? [u.teamId] : [])).includes(team.id))
+          .map(u => u.id)
       );
       setError(null);
     }
@@ -74,15 +76,15 @@ export const EditTeamModal: React.FC<EditTeamModalProps> = ({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="p-2.5 rounded-md bg-red-50 border border-red-200 text-xs text-red-700 font-medium">
+          <div className="p-2.5 rounded-md bg-danger/10 border border-danger/30 text-xs text-danger font-medium">
             {error}
           </div>
         )}
 
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <label htmlFor="edit-team-name" className="block text-xs font-medium text-[#1a1a1a]">
-              Team Name <span className="text-red-500">*</span>
+            <label htmlFor="edit-team-name" className="block text-xs font-medium text-text-primary">
+              Team Name <span className="text-danger">*</span>
             </label>
             <input
               id="edit-team-name"
@@ -90,13 +92,13 @@ export const EditTeamModal: React.FC<EditTeamModalProps> = ({
               required
               value={name}
               onChange={e => setName(e.target.value)}
-              className="w-full px-3 py-1.5 text-xs border border-[#e5e3df] rounded-md focus:outline-none focus:ring-1 focus:ring-[#5645d4]"
+              className="w-full px-3 py-1.5 text-xs bg-surface-base border border-border rounded-md text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="edit-team-key" className="block text-xs font-medium text-[#1a1a1a]">
-              Team Key <span className="text-red-500">*</span>
+            <label htmlFor="edit-team-key" className="block text-xs font-medium text-text-primary">
+              Team Key <span className="text-danger">*</span>
             </label>
             <input
               id="edit-team-key"
@@ -105,13 +107,13 @@ export const EditTeamModal: React.FC<EditTeamModalProps> = ({
               maxLength={6}
               value={key}
               onChange={e => setKey(e.target.value.toUpperCase())}
-              className="w-full px-3 py-1.5 text-xs font-mono uppercase border border-[#e5e3df] rounded-md focus:outline-none focus:ring-1 focus:ring-[#5645d4]"
+              className="w-full px-3 py-1.5 text-xs font-mono uppercase bg-surface-base border border-border rounded-md text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="edit-team-desc" className="block text-xs font-medium text-[#1a1a1a]">
+          <label htmlFor="edit-team-desc" className="block text-xs font-medium text-text-primary">
             Description
           </label>
           <textarea
@@ -119,19 +121,19 @@ export const EditTeamModal: React.FC<EditTeamModalProps> = ({
             rows={2}
             value={description}
             onChange={e => setDescription(e.target.value)}
-            className="w-full px-3 py-1.5 text-xs border border-[#e5e3df] rounded-md focus:outline-none focus:ring-1 focus:ring-[#5645d4]"
+            className="w-full px-3 py-1.5 text-xs bg-surface-base border border-border rounded-md text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="edit-team-lead" className="block text-xs font-medium text-[#1a1a1a]">
+          <label htmlFor="edit-team-lead" className="block text-xs font-medium text-text-primary">
             Team Lead (Attribution only)
           </label>
           <select
             id="edit-team-lead"
             value={leadId}
             onChange={e => setLeadId(e.target.value)}
-            className="w-full px-3 py-1.5 text-xs border border-[#e5e3df] rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-[#5645d4]"
+            className="w-full px-3 py-1.5 text-xs border border-border rounded-md bg-surface-base text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
           >
             <option value="">No Team Lead</option>
             {users.map(u => (
@@ -143,28 +145,28 @@ export const EditTeamModal: React.FC<EditTeamModalProps> = ({
         </div>
 
         <div className="space-y-1.5">
-          <label className="block text-xs font-medium text-[#1a1a1a]">
+          <label className="block text-xs font-medium text-text-primary">
             Team Members
           </label>
-          <div className="grid grid-cols-2 gap-2 p-2 border border-[#e5e3df] rounded-md max-h-40 overflow-y-auto">
+          <div className="grid grid-cols-2 gap-2 p-2 border border-border rounded-md max-h-40 overflow-y-auto bg-surface-subtle">
             {users.map(u => (
               <label
                 key={u.id}
-                className="flex items-center gap-2 p-1.5 rounded hover:bg-[#f6f5f4] cursor-pointer text-xs"
+                className="flex items-center gap-2 p-1.5 rounded hover:bg-surface-muted cursor-pointer text-xs"
               >
                 <input
                   type="checkbox"
                   checked={selectedMemberIds.includes(u.id)}
                   onChange={() => handleToggleMember(u.id)}
-                  className="rounded border-[#e5e3df] text-[#5645d4] focus:ring-[#5645d4]"
+                  className="rounded border-border text-accent focus:ring-accent"
                 />
-                <span className="font-medium text-[#1a1a1a] truncate">{u.name}</span>
+                <span className="font-medium text-text-primary truncate">{u.name}</span>
               </label>
             ))}
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 pt-3 border-t border-[#e5e3df]">
+        <div className="flex justify-end gap-2 pt-3 border-t border-border">
           <Button variant="secondary" size="sm" type="button" onClick={onClose}>
             Cancel
           </Button>

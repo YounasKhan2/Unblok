@@ -292,8 +292,8 @@ export const NavigationRail: React.FC = () => {
                 className="fixed inset-0 z-40"
                 onClick={() => setIsUserMenuOpen(false)}
               />
-              <div className="absolute left-0 bottom-full mb-1 w-56 bg-white border border-[#e5e3df] rounded-lg shadow-xl py-1.5 z-50 text-xs animate-in fade-in zoom-in-95 duration-100">
-                <div className="px-3 py-1 text-[10px] font-semibold text-[#787671] uppercase tracking-wider">
+              <div className="absolute left-0 bottom-full mb-1 w-56 bg-surface-base border border-border rounded-lg shadow-xl py-1.5 z-50 text-xs animate-in fade-in zoom-in-95 duration-100">
+                <div className="px-3 py-1 text-[10px] font-semibold text-text-muted uppercase tracking-wider">
                   Switch Active Role (Test)
                 </div>
                 {users.map(u => {
@@ -306,20 +306,20 @@ export const NavigationRail: React.FC = () => {
                         setCurrentUser(u);
                         setIsUserMenuOpen(false);
                       }}
-                      className={`w-full flex items-center justify-between px-3 py-1.5 text-left hover:bg-[#fafaf9] transition-colors cursor-pointer ${
-                        isSelected ? 'bg-purple-50/50 font-semibold' : ''
+                      className={`w-full flex items-center justify-between px-3 py-1.5 text-left hover:bg-surface-subtle transition-colors cursor-pointer ${
+                        isSelected ? 'bg-accent/10 font-semibold' : ''
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         <Avatar user={u} size="xs" />
                         <div className="min-w-0">
-                          <div className="text-xs text-[#1a1a1a] truncate">{u.name}</div>
-                          <div className="text-[10px] font-mono text-[#787671] uppercase">
+                          <div className="text-xs text-text-primary truncate">{u.name}</div>
+                          <div className="text-[10px] font-mono text-text-muted uppercase">
                             {u.role}
                           </div>
                         </div>
                       </div>
-                      {isSelected && <Check className="w-3.5 h-3.5 text-[#5645d4] shrink-0" />}
+                      {isSelected && <Check className="w-3.5 h-3.5 text-accent shrink-0" />}
                     </button>
                   );
                 })}
