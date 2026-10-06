@@ -110,6 +110,7 @@ export interface WorkspaceInsightsData {
   bottlenecks: BottleneckRankItem[];
   criticalChain: CriticalChainResult;
   crossTeamMatrix: CrossTeamMatrixData;
+  matrixScopeLabel?: string;
   projectHealth: ProjectDeliveryHealth[];
   teamHealth: TeamDeliveryHealth[];
 }

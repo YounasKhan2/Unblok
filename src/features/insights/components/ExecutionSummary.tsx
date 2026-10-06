@@ -42,13 +42,13 @@ export const ExecutionSummary: React.FC<ExecutionSummaryProps> = ({ summary }) =
       {/* 2. Blocked Issues */}
       <div className="flex flex-col gap-1 p-2 rounded bg-surface-base/60 border border-border/50">
         <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-          <ShieldAlert className="w-3.5 h-3.5 text-amber-500" />
+          <ShieldAlert className="w-3.5 h-3.5 text-warning" />
           <span className="font-medium truncate">Blocked Issues</span>
         </div>
         <div className="flex items-baseline gap-1.5">
           <span
             className={`text-xl font-bold font-mono tracking-tight ${
-              summary.blockedIssuesCount > 0 ? 'text-amber-500' : 'text-text-primary'
+              summary.blockedIssuesCount > 0 ? 'text-warning' : 'text-text-primary'
             }`}
           >
             {summary.blockedIssuesCount}
@@ -60,13 +60,13 @@ export const ExecutionSummary: React.FC<ExecutionSummaryProps> = ({ summary }) =
       {/* 3. High Risk Work */}
       <div className="flex flex-col gap-1 p-2 rounded bg-surface-base/60 border border-border/50">
         <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-          <Flame className="w-3.5 h-3.5 text-rose-500" />
+          <Flame className="w-3.5 h-3.5 text-danger" />
           <span className="font-medium truncate">High/Critical Risk</span>
         </div>
         <div className="flex items-baseline gap-1.5">
           <span
             className={`text-xl font-bold font-mono tracking-tight ${
-              summary.highRiskIssuesCount > 0 ? 'text-rose-500' : 'text-text-primary'
+              summary.highRiskIssuesCount > 0 ? 'text-danger' : 'text-text-primary'
             }`}
           >
             {summary.highRiskIssuesCount}
@@ -78,13 +78,13 @@ export const ExecutionSummary: React.FC<ExecutionSummaryProps> = ({ summary }) =
       {/* 4. Active Blockers */}
       <div className="flex flex-col gap-1 p-2 rounded bg-surface-base/60 border border-border/50">
         <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-          <AlertTriangle className="w-3.5 h-3.5 text-orange-500" />
+          <AlertTriangle className="w-3.5 h-3.5 text-blocker" />
           <span className="font-medium truncate">Active Blockers</span>
         </div>
         <div className="flex items-baseline gap-1.5">
           <span
             className={`text-xl font-bold font-mono tracking-tight ${
-              summary.activeBlockersCount > 0 ? 'text-orange-500' : 'text-text-primary'
+              summary.activeBlockersCount > 0 ? 'text-blocker' : 'text-text-primary'
             }`}
           >
             {summary.activeBlockersCount}
@@ -96,13 +96,13 @@ export const ExecutionSummary: React.FC<ExecutionSummaryProps> = ({ summary }) =
       {/* 5. At-Risk Milestones */}
       <div className="flex flex-col gap-1 p-2 rounded bg-surface-base/60 border border-border/50">
         <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-          <MilestoneIcon className="w-3.5 h-3.5 text-purple-400" />
+          <MilestoneIcon className="w-3.5 h-3.5 text-accent" />
           <span className="font-medium truncate">At-Risk Milestones</span>
         </div>
         <div className="flex items-baseline gap-1.5">
           <span
             className={`text-xl font-bold font-mono tracking-tight ${
-              summary.atRiskMilestonesCount > 0 ? 'text-purple-400' : 'text-text-primary'
+              summary.atRiskMilestonesCount > 0 ? 'text-accent' : 'text-text-primary'
             }`}
           >
             {summary.atRiskMilestonesCount}
@@ -114,13 +114,13 @@ export const ExecutionSummary: React.FC<ExecutionSummaryProps> = ({ summary }) =
       {/* 6. Overdue Work */}
       <div className="flex flex-col gap-1 p-2 rounded bg-surface-base/60 border border-border/50">
         <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-          <Clock className="w-3.5 h-3.5 text-red-400" />
+          <Clock className="w-3.5 h-3.5 text-danger" />
           <span className="font-medium truncate">Overdue Work</span>
         </div>
         <div className="flex items-baseline gap-1.5">
           <span
             className={`text-xl font-bold font-mono tracking-tight ${
-              summary.overdueIssuesCount > 0 ? 'text-red-400' : 'text-text-primary'
+              summary.overdueIssuesCount > 0 ? 'text-danger' : 'text-text-primary'
             }`}
           >
             {summary.overdueIssuesCount}

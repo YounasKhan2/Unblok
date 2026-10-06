@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Issue, Milestone, Project, Team } from '../../../types';
+import { Issue, Project, Team } from '../../../types';
+import { MilestoneSummaryData } from '../../planning/types';
 import { DeliveryHealth, ProjectDeliveryHealth, TeamDeliveryHealth, ExecutionRisk } from '../types';
 import { isActiveIssue } from './executionRisk';
 
@@ -18,7 +19,7 @@ export interface ProjectHealthInput {
   issues: Issue[];
   issueRisks: Map<string, ExecutionRisk>;
   activeBlockerCounts: Map<string, number>;
-  milestones: Milestone[];
+  milestoneSummaries: MilestoneSummaryData[];
   referenceTime: Date;
 }
 
@@ -28,7 +29,7 @@ export interface TeamHealthInput {
   issues: Issue[];
   issueRisks: Map<string, ExecutionRisk>;
   activeBlockerCounts: Map<string, number>;
-  milestones: Milestone[];
+  milestoneSummaries: MilestoneSummaryData[];
   referenceTime: Date;
 }
 
@@ -36,7 +37,7 @@ export interface TeamHealthInput {
  * Calculates delivery health for a project using explicit, explainable rules.
  */
 export function calculateProjectDeliveryHealth(input: ProjectHealthInput): ProjectDeliveryHealth {
-  const { project, team, issues, issueRisks, activeBlockerCounts, milestones, referenceTime } = input;
+  const { project, team, issues, issueRisks, activeBlockerCounts, milestoneSummaries, referenceTime } = input;
 
   const projectIssues = issues.filter(i => i.projectId === project.id);
   const activeIssues = projectIssues.filter(i => isActiveIssue(i.state));
@@ -74,13 +75,13 @@ export function calculateProjectDeliveryHealth(input: ProjectHealthInput): Proje
   const activeCount = activeIssues.length;
   const blockedRatio = activeCount > 0 ? blockedCount / activeCount : 0;
 
-  // Check linked milestone health
+  // Check linked milestone health through canonical project issues
   const linkedMilestoneIds = new Set(
     projectIssues.map(i => i.milestoneId).filter((id): id is string => Boolean(id))
   );
-  const linkedMilestones = milestones.filter(m => linkedMilestoneIds.has(m.id));
-  const hasBlockedMilestone = linkedMilestones.some(m => (m as any).health === 'BLOCKED');
-  const hasAtRiskMilestone = linkedMilestones.some(m => (m as any).health === 'AT_RISK');
+  const linkedMilestones = milestoneSummaries.filter(m => linkedMilestoneIds.has(m.milestone.id));
+  const hasBlockedMilestone = linkedMilestones.some(m => !m.isCompleted && m.health === 'BLOCKED');
+  const hasAtRiskMilestone = linkedMilestones.some(m => !m.isCompleted && m.health === 'AT_RISK');
 
   const reasons: string[] = [];
   let health: DeliveryHealth = 'HEALTHY';
@@ -150,7 +151,7 @@ export function calculateProjectDeliveryHealth(input: ProjectHealthInput): Proje
  * Ownership is derived through Project.teamId (never denormalized issue fields).
  */
 export function calculateTeamDeliveryHealth(input: TeamHealthInput): TeamDeliveryHealth {
-  const { team, projects, issues, issueRisks, activeBlockerCounts, milestones, referenceTime } = input;
+  const { team, projects, issues, issueRisks, activeBlockerCounts, milestoneSummaries, referenceTime } = input;
 
   const teamProjects = projects.filter(p => p.teamId === team.id);
   const teamProjectIds = new Set(teamProjects.map(p => p.id));
@@ -189,13 +190,13 @@ export function calculateTeamDeliveryHealth(input: TeamHealthInput): TeamDeliver
   const activeCount = activeIssues.length;
   const blockedRatio = activeCount > 0 ? blockedCount / activeCount : 0;
 
-  // Check linked milestone health
+  // Check linked milestone health through canonical team projects' issues
   const linkedMilestoneIds = new Set(
     teamIssues.map(i => i.milestoneId).filter((id): id is string => Boolean(id))
   );
-  const linkedMilestones = milestones.filter(m => linkedMilestoneIds.has(m.id));
-  const hasBlockedMilestone = linkedMilestones.some(m => (m as any).health === 'BLOCKED');
-  const hasAtRiskMilestone = linkedMilestones.some(m => (m as any).health === 'AT_RISK');
+  const linkedMilestones = milestoneSummaries.filter(m => linkedMilestoneIds.has(m.milestone.id));
+  const hasBlockedMilestone = linkedMilestones.some(m => !m.isCompleted && m.health === 'BLOCKED');
+  const hasAtRiskMilestone = linkedMilestones.some(m => !m.isCompleted && m.health === 'AT_RISK');
 
   const reasons: string[] = [];
   let health: DeliveryHealth = 'HEALTHY';

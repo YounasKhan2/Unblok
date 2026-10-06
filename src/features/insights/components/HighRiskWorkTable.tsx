@@ -30,11 +30,11 @@ export const HighRiskWorkTable: React.FC<HighRiskWorkTableProps> = ({
     return (
       <div className="p-4 rounded-lg bg-surface-card border border-border">
         <div className="flex items-center gap-2 mb-3">
-          <Flame className="w-4 h-4 text-rose-500" />
+          <Flame className="w-4 h-4 text-danger" />
           <h2 className="text-sm font-semibold text-text-primary tracking-tight">High-Risk Work</h2>
         </div>
         <div className="flex items-center gap-3 p-4 rounded bg-surface-base border border-border text-text-secondary text-xs">
-          <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+          <CheckCircle className="w-4 h-4 text-success flex-shrink-0" />
           <span>No critical or high-risk active work identified in the current scope.</span>
         </div>
       </div>
@@ -45,7 +45,7 @@ export const HighRiskWorkTable: React.FC<HighRiskWorkTableProps> = ({
     <div className="p-3.5 rounded-lg bg-surface-card border border-border">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Flame className="w-4 h-4 text-rose-500" />
+          <Flame className="w-4 h-4 text-danger" />
           <h2 className="text-sm font-semibold text-text-primary tracking-tight">High-Risk Work</h2>
           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-surface-base text-text-secondary border border-border">
             {issues.length} {issues.length === 1 ? 'issue' : 'issues'}
@@ -75,8 +75,8 @@ export const HighRiskWorkTable: React.FC<HighRiskWorkTableProps> = ({
             {issues.map(item => {
               const isCritical = item.risk.level === 'CRITICAL';
               const riskBadgeClasses = isCritical
-                ? 'bg-rose-500/15 text-rose-400 border-rose-500/30'
-                : 'bg-amber-500/15 text-amber-400 border-amber-500/30';
+                ? 'bg-danger/10 text-danger border-danger/30'
+                : 'bg-warning/10 text-warning border-warning/30';
 
               return (
                 <tr
@@ -185,8 +185,8 @@ export const HighRiskWorkTable: React.FC<HighRiskWorkTableProps> = ({
         {issues.map(item => {
           const isCritical = item.risk.level === 'CRITICAL';
           const riskBadgeClasses = isCritical
-            ? 'bg-rose-500/15 text-rose-400 border-rose-500/30'
-            : 'bg-amber-500/15 text-amber-400 border-amber-500/30';
+            ? 'bg-danger/10 text-danger border-danger/30'
+            : 'bg-warning/10 text-warning border-warning/30';
 
           return (
             <div

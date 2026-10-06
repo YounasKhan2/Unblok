@@ -114,7 +114,7 @@ describe('UX-07 Workspace Insights Selector & Filter Consistency', () => {
   });
 
   // 3. Team filtering scopes all insight sections consistently
-  it('3. filtering by team scopes summary, table, signals, and health consistently', () => {
+  it('3. filtering by team scopes summary, table, signals, bottlenecks, and health consistently', () => {
     const data = selectWorkspaceInsights({
       issues: INITIAL_ISSUES,
       dependencies: INITIAL_DEPENDENCIES,
@@ -139,10 +139,27 @@ describe('UX-07 Workspace Insights Selector & Filter Consistency', () => {
     // Team health must only contain team_eng
     expect(data.teamHealth).toHaveLength(1);
     expect(data.teamHealth[0].teamId).toBe('team_eng');
+
+    // Bottlenecks must belong to team_eng
+    for (const b of data.bottlenecks) {
+      const bTeamId = b.project?.teamId || b.team?.id;
+      expect(bTeamId).toBe('team_eng');
+    }
+
+    // Signals must involve team_eng
+    for (const sig of data.needsAttention) {
+      const matchesTeam =
+        (sig.teamIds && sig.teamIds.includes('team_eng')) ||
+        (sig.projectIds && sig.projectIds.some(pid => INITIAL_PROJECTS.find(p => p.id === pid)?.teamId === 'team_eng'));
+      expect(matchesTeam).toBe(true);
+    }
+
+    // Cross-team matrix is scoped to team_eng
+    expect(data.matrixScopeLabel).toContain('Core Platform');
   });
 
-  // 4. Project filtering scopes summary and issues consistently
-  it('4. filtering by project scopes issues, signals, and project health', () => {
+  // 4. Project filtering scopes summary and issues consistently without leaking unrelated projects
+  it('4. filtering by project scopes issues, signals, bottlenecks, and project health without leak', () => {
     const data = selectWorkspaceInsights({
       issues: INITIAL_ISSUES,
       dependencies: INITIAL_DEPENDENCIES,
@@ -160,10 +177,53 @@ describe('UX-07 Workspace Insights Selector & Filter Consistency', () => {
 
     expect(data.projectHealth).toHaveLength(1);
     expect(data.projectHealth[0].projectId).toBe('proj_eng_auth');
+
+    for (const b of data.bottlenecks) {
+      expect(b.issue.projectId).toBe('proj_eng_auth');
+    }
+
+    for (const sig of data.needsAttention) {
+      if (sig.projectIds) {
+        expect(sig.projectIds).toContain('proj_eng_auth');
+      }
+    }
+
+    expect(data.matrixScopeLabel).toContain('Authentication');
   });
 
-  // 5. Risk level filtering
-  it('5. filtering by CRITICAL risk level displays only CRITICAL risk issues in table', () => {
+  // 5. Cycle filtering scopes issue and cycle-derived surfaces
+  it('5. filtering by cycle scopes high-risk work, signals, and bottlenecks correctly', () => {
+    const activeCycle = INITIAL_CYCLES.find(c => c.status === 'ACTIVE') || INITIAL_CYCLES[0];
+    const data = selectWorkspaceInsights({
+      issues: INITIAL_ISSUES,
+      dependencies: INITIAL_DEPENDENCIES,
+      projects: INITIAL_PROJECTS,
+      teams: INITIAL_TEAMS,
+      milestones: INITIAL_MILESTONES,
+      cycles: INITIAL_CYCLES,
+      filters: { ...DEFAULT_INSIGHTS_FILTER, cycle: activeCycle.id },
+      referenceTime,
+    });
+
+    for (const item of data.highRiskIssues) {
+      expect(item.issue.cycleId).toBe(activeCycle.id);
+    }
+
+    for (const b of data.bottlenecks) {
+      expect(b.issue.cycleId).toBe(activeCycle.id);
+    }
+
+    for (const sig of data.needsAttention) {
+      if (sig.kind === 'CYCLE_PRESSURE') {
+        expect(sig.cycleId).toBe(activeCycle.id);
+      }
+    }
+
+    expect(data.matrixScopeLabel).toBe('Filtered: Selected Cycle');
+  });
+
+  // 6. Risk level filtering scopes issue-risk surfaces without leaking unrelated signals
+  it('6. filtering by CRITICAL risk displays only CRITICAL risk issues and prevents unrelated leaks', () => {
     const data = selectWorkspaceInsights({
       issues: INITIAL_ISSUES,
       dependencies: INITIAL_DEPENDENCIES,
@@ -178,10 +238,49 @@ describe('UX-07 Workspace Insights Selector & Filter Consistency', () => {
     for (const item of data.highRiskIssues) {
       expect(item.risk.level).toBe('CRITICAL');
     }
+
+    for (const b of data.bottlenecks) {
+      const risk = data.highRiskIssues.find(h => h.issue.id === b.issue.id)?.risk;
+      if (risk) {
+        expect(risk.level).toBe('CRITICAL');
+      }
+    }
+
+    expect(data.matrixScopeLabel).toContain('CRITICAL');
   });
 
-  // 6. Safe handling of invalid / orphan dependency references
-  it('6. safely handles orphan or missing issue references without crashing', () => {
+  // 7. Combined multi-dimensional filters
+  it('7. combined filters (team + project + risk) strictly enforce unified scope across all surfaces', () => {
+    const data = selectWorkspaceInsights({
+      issues: INITIAL_ISSUES,
+      dependencies: INITIAL_DEPENDENCIES,
+      projects: INITIAL_PROJECTS,
+      teams: INITIAL_TEAMS,
+      milestones: INITIAL_MILESTONES,
+      cycles: INITIAL_CYCLES,
+      filters: {
+        team: 'team_eng',
+        project: 'proj_eng_auth',
+        risk: 'CRITICAL',
+        cycle: 'ALL',
+      },
+      referenceTime,
+    });
+
+    for (const item of data.highRiskIssues) {
+      expect(item.issue.projectId).toBe('proj_eng_auth');
+      expect(item.project?.teamId).toBe('team_eng');
+      expect(item.risk.level).toBe('CRITICAL');
+    }
+
+    expect(data.projectHealth).toHaveLength(1);
+    expect(data.projectHealth[0].projectId).toBe('proj_eng_auth');
+    expect(data.teamHealth).toHaveLength(1);
+    expect(data.teamHealth[0].teamId).toBe('team_eng');
+  });
+
+  // 8. Safe handling of invalid / orphan dependency references
+  it('8. safely handles orphan or missing issue references without crashing', () => {
     const invalidDeps: Dependency[] = [
       {
         id: 'dep_bad_1',

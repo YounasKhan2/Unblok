@@ -10,9 +10,10 @@ import { Network, ExternalLink } from 'lucide-react';
 
 interface CrossTeamMatrixProps {
   matrixData: CrossTeamMatrixData;
+  scopeLabel?: string;
 }
 
-export const CrossTeamMatrix: React.FC<CrossTeamMatrixProps> = ({ matrixData }) => {
+export const CrossTeamMatrix: React.FC<CrossTeamMatrixProps> = ({ matrixData, scopeLabel }) => {
   const { teams, matrix, totalCrossTeamActiveEdges } = matrixData;
 
   if (teams.length === 0) return null;
@@ -20,7 +21,7 @@ export const CrossTeamMatrix: React.FC<CrossTeamMatrixProps> = ({ matrixData }) 
   return (
     <div className="p-3.5 rounded-lg bg-surface-card border border-border">
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Network className="w-4 h-4 text-accent" />
           <h2 className="text-sm font-semibold text-text-primary tracking-tight">
             Cross-Team Execution Pressure
@@ -28,6 +29,11 @@ export const CrossTeamMatrix: React.FC<CrossTeamMatrixProps> = ({ matrixData }) 
           <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-surface-base text-text-secondary border border-border font-mono">
             {totalCrossTeamActiveEdges} active edges
           </span>
+          {scopeLabel && (
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-surface-base text-text-secondary border border-border">
+              {scopeLabel}
+            </span>
+          )}
         </div>
         <Link
           to="/dependencies?view=matrix"
@@ -79,9 +85,9 @@ export const CrossTeamMatrix: React.FC<CrossTeamMatrixProps> = ({ matrixData }) 
 
                     const cellClasses =
                       activeCount >= 3
-                        ? 'bg-rose-500/20 text-rose-400 font-bold'
+                        ? 'bg-danger/15 text-danger font-bold'
                         : activeCount > 0
-                        ? 'bg-amber-500/15 text-amber-400 font-semibold'
+                        ? 'bg-warning/15 text-warning font-semibold'
                         : 'text-text-muted';
 
                     return (

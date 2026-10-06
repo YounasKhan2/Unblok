@@ -22,14 +22,14 @@ export const DeliveryHealthPanel: React.FC<DeliveryHealthPanelProps> = ({
     switch (health) {
       case 'AT_RISK':
         return (
-          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-rose-500/15 text-rose-400 border border-rose-500/30">
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-danger/10 text-danger border border-danger/30">
             <ShieldAlert className="w-3 h-3" />
             <span>At Risk</span>
           </span>
         );
       case 'WATCH':
         return (
-          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30">
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-warning/10 text-warning border border-warning/30">
             <AlertTriangle className="w-3 h-3" />
             <span>Watch</span>
           </span>
@@ -37,7 +37,7 @@ export const DeliveryHealthPanel: React.FC<DeliveryHealthPanelProps> = ({
       case 'HEALTHY':
       default:
         return (
-          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-success/10 text-success border border-success/30">
             <ShieldCheck className="w-3 h-3" />
             <span>Healthy</span>
           </span>
@@ -104,13 +104,13 @@ export const DeliveryHealthPanel: React.FC<DeliveryHealthPanelProps> = ({
               <div className="flex items-center gap-3 text-xs text-text-secondary flex-shrink-0 self-end sm:self-center font-mono">
                 <span>{p.activeIssueCount} active</span>
                 <span>•</span>
-                <span className={p.blockedIssueCount > 0 ? 'text-amber-400 font-semibold' : ''}>
+                <span className={p.blockedIssueCount > 0 ? 'text-warning font-semibold' : ''}>
                   {p.blockedIssueCount} blocked ({Math.round(p.blockedRatio * 100)}%)
                 </span>
                 {p.highRiskCount > 0 && (
                   <>
                     <span>•</span>
-                    <span className="text-rose-400 font-semibold">{p.highRiskCount} high risk</span>
+                    <span className="text-danger font-semibold">{p.highRiskCount} high risk</span>
                   </>
                 )}
               </div>
@@ -140,7 +140,7 @@ export const DeliveryHealthPanel: React.FC<DeliveryHealthPanelProps> = ({
                 <span>•</span>
                 <span>{t.activeIssueCount} active</span>
                 <span>•</span>
-                <span className={t.blockedIssueCount > 0 ? 'text-amber-400 font-semibold' : ''}>
+                <span className={t.blockedIssueCount > 0 ? 'text-warning font-semibold' : ''}>
                   {t.blockedIssueCount} blocked ({Math.round(t.blockedRatio * 100)}%)
                 </span>
               </div>

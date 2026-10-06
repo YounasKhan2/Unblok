@@ -151,7 +151,10 @@ export const InsightsPage: React.FC = () => {
           </div>
 
           {/* Section 4: Cross-Team Execution Pressure Matrix */}
-          <CrossTeamMatrix matrixData={insightsData.crossTeamMatrix} />
+          <CrossTeamMatrix
+            matrixData={insightsData.crossTeamMatrix}
+            scopeLabel={insightsData.matrixScopeLabel}
+          />
         </div>
       </div>
 

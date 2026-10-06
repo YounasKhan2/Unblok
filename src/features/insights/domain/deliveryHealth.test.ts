@@ -9,7 +9,8 @@ import {
   calculateTeamDeliveryHealth,
   HEALTH_THRESHOLDS,
 } from './deliveryHealth';
-import { Issue, Milestone, Project, Team } from '../../../types';
+import { Issue, Project, Team } from '../../../types';
+import { MilestoneSummaryData } from '../../planning/types';
 import { ExecutionRisk } from '../types';
 
 describe('UX-07 Delivery Health Domain Model', () => {
@@ -57,6 +58,35 @@ describe('UX-07 Delivery Health Domain Model', () => {
     ...overrides,
   });
 
+  const createMilestoneSummary = (
+    id: string,
+    health: 'ON_TRACK' | 'AT_RISK' | 'BLOCKED',
+    isCompleted: boolean = false
+  ): MilestoneSummaryData => ({
+    milestone: {
+      id,
+      name: `Milestone ${id}`,
+      description: 'Test',
+      targetDate: '2026-10-20',
+    },
+    health,
+    isCompleted,
+    progress: {
+      total: 5,
+      completed: isCompleted ? 5 : 2,
+      remaining: isCompleted ? 0 : 3,
+      blocked: health === 'BLOCKED' ? 2 : 0,
+      inProgress: 1,
+      percent: isCompleted ? 100 : 40,
+      daysRemaining: 10,
+      isOverdue: false,
+    },
+    contributingTeams: [teamEng],
+    contributingProjects: [projectAuth],
+    issues: [],
+    blockedIssues: [],
+  });
+
   const lowRisk: ExecutionRisk = { score: 0, level: 'LOW', reasons: [] };
   const highRisk: ExecutionRisk = { score: 4, level: 'HIGH', reasons: [] };
   const critRisk: ExecutionRisk = { score: 7, level: 'CRITICAL', reasons: [] };
@@ -84,7 +114,7 @@ describe('UX-07 Delivery Health Domain Model', () => {
           ['i2', 0],
           ['i3', 0],
         ]),
-        milestones: [],
+        milestoneSummaries: [],
         referenceTime,
       });
 
@@ -108,7 +138,7 @@ describe('UX-07 Delivery Health Domain Model', () => {
         issues,
         issueRisks: new Map(),
         activeBlockerCounts: new Map(),
-        milestones: [],
+        milestoneSummaries: [],
         referenceTime,
       });
 
@@ -137,7 +167,7 @@ describe('UX-07 Delivery Health Domain Model', () => {
           ['i3', 0],
           ['i4', 0],
         ]),
-        milestones: [],
+        milestoneSummaries: [],
         referenceTime,
       });
 
@@ -164,7 +194,7 @@ describe('UX-07 Delivery Health Domain Model', () => {
           ['i2', 0],
           ['i3', 0],
         ]),
-        milestones: [],
+        milestoneSummaries: [],
         referenceTime,
       });
 
@@ -198,7 +228,7 @@ describe('UX-07 Delivery Health Domain Model', () => {
           ['i3', 0],
           ['i4', 0],
         ]),
-        milestones: [],
+        milestoneSummaries: [],
         referenceTime,
       });
 
@@ -228,7 +258,7 @@ describe('UX-07 Delivery Health Domain Model', () => {
           ['i1', 1], // actively blocked
           ['i2', 0],
         ]),
-        milestones: [],
+        milestoneSummaries: [],
         referenceTime,
       });
 
@@ -237,11 +267,124 @@ describe('UX-07 Delivery Health Domain Model', () => {
         expect.arrayContaining([expect.stringContaining('overdue issue is actively blocked')])
       );
     });
+
+    // 7. Canonical Milestone Health: BLOCKED causes AT_RISK
+    it('7. derives AT_RISK when a linked active milestone has health BLOCKED', () => {
+      const issues = [
+        createIssue('i1', 'proj_auth', 'IN_PROGRESS', { milestoneId: 'ms_blocked' }),
+      ];
+      const milestoneSummaries = [
+        createMilestoneSummary('ms_blocked', 'BLOCKED', false),
+      ];
+
+      const health = calculateProjectDeliveryHealth({
+        project: projectAuth,
+        team: teamEng,
+        issues,
+        issueRisks: new Map([['i1', lowRisk]]),
+        activeBlockerCounts: new Map([['i1', 0]]),
+        milestoneSummaries,
+        referenceTime,
+      });
+
+      expect(health.health).toBe('AT_RISK');
+      expect(health.reasons).toContain('Linked milestone is BLOCKED');
+    });
+
+    // 8. Canonical Milestone Health: AT_RISK causes WATCH
+    it('8. derives WATCH when a linked active milestone has health AT_RISK', () => {
+      const issues = [
+        createIssue('i1', 'proj_auth', 'IN_PROGRESS', { milestoneId: 'ms_at_risk' }),
+      ];
+      const milestoneSummaries = [
+        createMilestoneSummary('ms_at_risk', 'AT_RISK', false),
+      ];
+
+      const health = calculateProjectDeliveryHealth({
+        project: projectAuth,
+        team: teamEng,
+        issues,
+        issueRisks: new Map([['i1', lowRisk]]),
+        activeBlockerCounts: new Map([['i1', 0]]),
+        milestoneSummaries,
+        referenceTime,
+      });
+
+      expect(health.health).toBe('WATCH');
+      expect(health.reasons).toContain('Linked milestone is AT_RISK');
+    });
+
+    // 9. Canonical Milestone Health: ON_TRACK does not worsen health
+    it('9. derives HEALTHY when a linked milestone is ON_TRACK and other signals are healthy', () => {
+      const issues = [
+        createIssue('i1', 'proj_auth', 'IN_PROGRESS', { milestoneId: 'ms_ok' }),
+      ];
+      const milestoneSummaries = [
+        createMilestoneSummary('ms_ok', 'ON_TRACK', false),
+      ];
+
+      const health = calculateProjectDeliveryHealth({
+        project: projectAuth,
+        team: teamEng,
+        issues,
+        issueRisks: new Map([['i1', lowRisk]]),
+        activeBlockerCounts: new Map([['i1', 0]]),
+        milestoneSummaries,
+        referenceTime,
+      });
+
+      expect(health.health).toBe('HEALTHY');
+      expect(health.reasons[0]).toContain('healthy thresholds');
+    });
+
+    // 10. Canonical Milestone Health: Completed milestones do not cause active risk
+    it('10. ignores completed milestones even if marked BLOCKED (follows UX-05 completion contract)', () => {
+      const issues = [
+        createIssue('i1', 'proj_auth', 'DONE', { milestoneId: 'ms_done' }),
+      ];
+      const milestoneSummaries = [
+        createMilestoneSummary('ms_done', 'BLOCKED', true), // isCompleted = true
+      ];
+
+      const health = calculateProjectDeliveryHealth({
+        project: projectAuth,
+        team: teamEng,
+        issues,
+        issueRisks: new Map([['i1', lowRisk]]),
+        activeBlockerCounts: new Map([['i1', 0]]),
+        milestoneSummaries,
+        referenceTime,
+      });
+
+      expect(health.health).toBe('HEALTHY');
+    });
+
+    // 11. Canonical Milestone Health: Unlinked milestone has no effect
+    it('11. does not worsen project health for unlinked milestones', () => {
+      const issues = [
+        createIssue('i1', 'proj_auth', 'IN_PROGRESS'), // No milestoneId
+      ];
+      const milestoneSummaries = [
+        createMilestoneSummary('ms_other', 'BLOCKED', false),
+      ];
+
+      const health = calculateProjectDeliveryHealth({
+        project: projectAuth,
+        team: teamEng,
+        issues,
+        issueRisks: new Map([['i1', lowRisk]]),
+        activeBlockerCounts: new Map([['i1', 0]]),
+        milestoneSummaries,
+        referenceTime,
+      });
+
+      expect(health.health).toBe('HEALTHY');
+    });
   });
 
   describe('Team Delivery Health & Canonical Ownership', () => {
-    // 7. Ownership derived through Project.teamId, not denormalized issue fields
-    it('7. aggregates issues across projects owned by the team based on Project.teamId', () => {
+    // 12. Ownership derived through Project.teamId, not denormalized issue fields
+    it('12. aggregates issues across projects owned by the team based on Project.teamId', () => {
       const projOther: Project = {
         id: 'proj_other',
         key: 'OTH',
@@ -276,7 +419,7 @@ describe('UX-07 Delivery Health Domain Model', () => {
           ['i_v1', 0],
           ['i_v2', 0],
         ]),
-        milestones: [],
+        milestoneSummaries: [],
         referenceTime,
       });
 
@@ -287,8 +430,8 @@ describe('UX-07 Delivery Health Domain Model', () => {
       expect(health.health).toBe('HEALTHY');
     });
 
-    // 8. AT_RISK when team blocked ratio >= 30%
-    it('8. derives team AT_RISK when combined active work across projects exceeds 30% blocked', () => {
+    // 13. AT_RISK when team blocked ratio >= 30%
+    it('13. derives team AT_RISK when combined active work across projects exceeds 30% blocked', () => {
       const issues = [
         createIssue('i1', 'proj_auth'), // blocked
         createIssue('i2', 'proj_api'),  // unblocked
@@ -303,13 +446,91 @@ describe('UX-07 Delivery Health Domain Model', () => {
           ['i1', 1],
           ['i2', 0],
         ]),
-        milestones: [],
+        milestoneSummaries: [],
         referenceTime,
       });
 
       expect(health.health).toBe('AT_RISK');
       expect(health.blockedRatio).toBe(0.5);
       expect(health.reasons[0]).toContain('50% of team\'s active work is blocked');
+    });
+
+    // 14. Team milestone association: BLOCKED milestone causes team AT_RISK
+    it('14. derives team AT_RISK when a linked milestone through team projects is BLOCKED', () => {
+      const issues = [
+        createIssue('i1', 'proj_auth', 'IN_PROGRESS', { milestoneId: 'ms_team_blocked' }),
+      ];
+      const milestoneSummaries = [
+        createMilestoneSummary('ms_team_blocked', 'BLOCKED', false),
+      ];
+
+      const health = calculateTeamDeliveryHealth({
+        team: teamEng,
+        projects: [projectAuth, projectApi],
+        issues,
+        issueRisks: new Map([['i1', lowRisk]]),
+        activeBlockerCounts: new Map([['i1', 0]]),
+        milestoneSummaries,
+        referenceTime,
+      });
+
+      expect(health.health).toBe('AT_RISK');
+      expect(health.reasons).toContain('Associated milestone is BLOCKED');
+    });
+
+    // 15. Team milestone association: AT_RISK milestone causes team WATCH
+    it('15. derives team WATCH when a linked milestone through team projects is AT_RISK', () => {
+      const issues = [
+        createIssue('i1', 'proj_auth', 'IN_PROGRESS', { milestoneId: 'ms_team_watch' }),
+      ];
+      const milestoneSummaries = [
+        createMilestoneSummary('ms_team_watch', 'AT_RISK', false),
+      ];
+
+      const health = calculateTeamDeliveryHealth({
+        team: teamEng,
+        projects: [projectAuth, projectApi],
+        issues,
+        issueRisks: new Map([['i1', lowRisk]]),
+        activeBlockerCounts: new Map([['i1', 0]]),
+        milestoneSummaries,
+        referenceTime,
+      });
+
+      expect(health.health).toBe('WATCH');
+      expect(health.reasons).toContain('Associated milestone is AT_RISK');
+    });
+
+    // 16. Team milestone association: unowned project milestones do NOT affect team
+    it('16. ignores milestones linked to projects not owned by this team', () => {
+      const projOther: Project = {
+        id: 'proj_other',
+        key: 'OTH',
+        name: 'Other Team Project',
+        teamId: 'team_inf',
+        description: 'Other description',
+        currentSequence: 1,
+      };
+
+      const issues = [
+        createIssue('i1', 'proj_other', 'IN_PROGRESS', { milestoneId: 'ms_other_blocked' }),
+        createIssue('i2', 'proj_auth', 'IN_PROGRESS'), // team_eng project, no milestone
+      ];
+      const milestoneSummaries = [
+        createMilestoneSummary('ms_other_blocked', 'BLOCKED', false),
+      ];
+
+      const health = calculateTeamDeliveryHealth({
+        team: teamEng,
+        projects: [projectAuth, projOther],
+        issues,
+        issueRisks: new Map([['i1', lowRisk], ['i2', lowRisk]]),
+        activeBlockerCounts: new Map([['i1', 0], ['i2', 0]]),
+        milestoneSummaries,
+        referenceTime,
+      });
+
+      expect(health.health).toBe('HEALTHY');
     });
   });
 });

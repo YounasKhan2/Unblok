@@ -38,13 +38,13 @@ export const NeedsAttentionPanel: React.FC<NeedsAttentionPanelProps> = ({
     return (
       <div className="p-4 rounded-lg bg-surface-card border border-border">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
           <h2 className="text-sm font-semibold text-text-primary tracking-tight">Needs Attention</h2>
         </div>
-        <div className="flex items-center gap-3 p-4 rounded bg-emerald-500/5 border border-emerald-500/20 text-emerald-400">
+        <div className="flex items-center gap-3 p-4 rounded bg-success/10 border border-success/30 text-success">
           <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
           <div className="text-xs">
-            <span className="font-semibold block text-emerald-300">Clean Execution State</span>
+            <span className="font-semibold block text-success">Clean Execution State</span>
             <span>No immediate bottlenecks or delivery risks detected in the active scope.</span>
           </div>
         </div>
@@ -56,9 +56,9 @@ export const NeedsAttentionPanel: React.FC<NeedsAttentionPanelProps> = ({
     <div className="p-3.5 rounded-lg bg-surface-card border border-border">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <AlertOctagon className="w-4 h-4 text-rose-500" />
+          <AlertOctagon className="w-4 h-4 text-danger" />
           <h2 className="text-sm font-semibold text-text-primary tracking-tight">Needs Attention</h2>
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20">
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-danger/10 text-danger border border-danger/30">
             {signals.length} {signals.length === 1 ? 'signal' : 'signals'}
           </span>
         </div>
@@ -71,17 +71,17 @@ export const NeedsAttentionPanel: React.FC<NeedsAttentionPanelProps> = ({
           const isWarning = sig.severity === 'WARNING';
 
           const badgeClasses = isCritical
-            ? 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+            ? 'bg-danger/10 text-danger border-danger/30'
             : isWarning
-            ? 'bg-amber-500/15 text-amber-400 border-amber-500/30'
-            : 'bg-blue-500/15 text-blue-400 border-blue-500/30';
+            ? 'bg-warning/10 text-warning border-warning/30'
+            : 'bg-accent/10 text-accent border-accent/30';
 
           const icon = isCritical ? (
-            <AlertOctagon className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
+            <AlertOctagon className="w-4 h-4 text-danger flex-shrink-0 mt-0.5" />
           ) : isWarning ? (
-            <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+            <AlertTriangle className="w-4 h-4 text-warning flex-shrink-0 mt-0.5" />
           ) : (
-            <Info className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+            <Info className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
           );
 
           return (

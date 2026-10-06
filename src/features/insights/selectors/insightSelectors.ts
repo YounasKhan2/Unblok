@@ -147,9 +147,8 @@ export function selectWorkspaceInsights(
   const allBottlenecks = getBottlenecks(issues, dependencies, projects, teams, 10);
   const criticalChain = calculateLongestActiveChain(issues, dependencies);
   const resolvedEdges = resolveEdges(dependencies, issues, projects, teams);
-  const crossTeamMatrix = calculateCrossTeamMatrix(teams, resolvedEdges);
 
-  // 6. Project & Team Delivery Health
+  // 6. Project & Team Delivery Health (reusing UX-05 derived MilestoneSummaryData)
   const allProjectHealth = projects.map(p =>
     calculateProjectDeliveryHealth({
       project: p,
@@ -157,7 +156,7 @@ export function selectWorkspaceInsights(
       issues,
       issueRisks,
       activeBlockerCounts,
-      milestones,
+      milestoneSummaries: milestoneOverview.allMilestones,
       referenceTime,
     })
   );
@@ -169,7 +168,7 @@ export function selectWorkspaceInsights(
       issues,
       issueRisks,
       activeBlockerCounts,
-      milestones,
+      milestoneSummaries: milestoneOverview.allMilestones,
       referenceTime,
     })
   );
@@ -183,39 +182,23 @@ export function selectWorkspaceInsights(
     bottlenecks: allBottlenecks,
     milestones: milestoneOverview.activeMilestones,
     cycles: cycleOverview.active,
-    crossTeamMatrix,
+    crossTeamMatrix: calculateCrossTeamMatrix(teams, resolvedEdges),
     referenceTime,
   });
 
-  // 8. Scope Filtering (Consistency across summary, signals, tables, health)
-  const isTeamMatch = (teamId?: string, projTeamId?: string) => {
-    if (filters.team === 'ALL') return true;
-    return teamId === filters.team || projTeamId === filters.team;
-  };
-
-  const isProjectMatch = (projectId?: string) => {
-    if (filters.project === 'ALL') return true;
-    return projectId === filters.project;
-  };
-
-  const isCycleMatch = (cycleId?: string) => {
-    if (filters.cycle === 'ALL') return true;
-    return cycleId === filters.cycle;
-  };
-
-  const isRiskMatch = (level?: string) => {
-    if (filters.risk === 'ALL') return true;
-    return level === filters.risk;
-  };
-
+  // 8. Scope Filtering (Consistent contract across summary, signals, tables, bottlenecks, matrix, health)
   // Filter Issues
   const scopedIssues = issues.filter(issue => {
     const proj = projectsMap.get(issue.projectId);
-    if (!isTeamMatch(issue.teamId, proj?.teamId)) return false;
-    if (!isProjectMatch(issue.projectId)) return false;
-    if (!isCycleMatch(issue.cycleId)) return false;
-    const risk = issueRisks.get(issue.id);
-    if (!isRiskMatch(risk?.level)) return false;
+    const resolvedTeamId = proj?.teamId || issue.teamId;
+
+    if (filters.team !== 'ALL' && resolvedTeamId !== filters.team) return false;
+    if (filters.project !== 'ALL' && issue.projectId !== filters.project) return false;
+    if (filters.cycle !== 'ALL' && issue.cycleId !== filters.cycle) return false;
+    if (filters.risk !== 'ALL') {
+      const risk = issueRisks.get(issue.id);
+      if (risk?.level !== filters.risk) return false;
+    }
     return true;
   });
 
@@ -243,8 +226,25 @@ export function selectWorkspaceInsights(
 
   // Filtered Milestones Count
   const scopedActiveMilestones = milestoneOverview.activeMilestones.filter(m => {
-    if (filters.team !== 'ALL' && m.milestone.teamId !== 'ALL' && m.milestone.teamId !== filters.team) {
-      return false;
+    if (filters.team !== 'ALL') {
+      const hasTeam =
+        m.contributingTeams.some(t => t.id === filters.team) ||
+        m.issues.some(i => (projectsMap.get(i.projectId)?.teamId || i.teamId) === filters.team);
+      if (!hasTeam) return false;
+    }
+    if (filters.project !== 'ALL') {
+      const hasProject =
+        m.contributingProjects.some(p => p.id === filters.project) ||
+        m.issues.some(i => i.projectId === filters.project);
+      if (!hasProject) return false;
+    }
+    if (filters.cycle !== 'ALL') {
+      const hasCycle = m.issues.some(i => i.cycleId === filters.cycle);
+      if (!hasCycle) return false;
+    }
+    if (filters.risk !== 'ALL') {
+      const hasRisk = m.issues.some(i => issueRisks.get(i.id)?.level === filters.risk);
+      if (!hasRisk) return false;
     }
     return true;
   });
@@ -300,19 +300,71 @@ export function selectWorkspaceInsights(
 
   // Filter Needs Attention Signals
   const scopedSignals = allSignals.filter(sig => {
+    // 1. Team filter
     if (filters.team !== 'ALL') {
-      if (sig.teamIds && !sig.teamIds.includes(filters.team)) return false;
+      const matchesTeam =
+        (sig.teamIds && sig.teamIds.includes(filters.team)) ||
+        (sig.projectIds && sig.projectIds.some(pid => projectsMap.get(pid)?.teamId === filters.team)) ||
+        (sig.issueIds && sig.issueIds.some(iid => {
+          const i = issuesMap.get(iid);
+          return i && (projectsMap.get(i.projectId)?.teamId || i.teamId) === filters.team;
+        }));
+      if (!matchesTeam) return false;
     }
+
+    // 2. Project filter
     if (filters.project !== 'ALL') {
-      if (sig.projectIds && !sig.projectIds.includes(filters.project)) return false;
+      const matchesProj =
+        (sig.projectIds && sig.projectIds.includes(filters.project)) ||
+        (sig.issueIds && sig.issueIds.some(iid => issuesMap.get(iid)?.projectId === filters.project));
+      if (!matchesProj) return false;
     }
+
+    // 3. Cycle filter
+    if (filters.cycle !== 'ALL') {
+      if (sig.kind === 'CYCLE_PRESSURE') {
+        if (sig.cycleId !== filters.cycle) return false;
+      } else {
+        const matchesCycle =
+          sig.cycleId === filters.cycle ||
+          (sig.issueIds && sig.issueIds.some(iid => issuesMap.get(iid)?.cycleId === filters.cycle));
+        if (!matchesCycle) return false;
+      }
+    }
+
+    // 4. Risk filter (consistent scoping to affected issues/signals)
+    if (filters.risk !== 'ALL') {
+      if (sig.issueIds && sig.issueIds.length > 0) {
+        const matchesRisk = sig.issueIds.some(iid => issueRisks.get(iid)?.level === filters.risk);
+        if (!matchesRisk) return false;
+      } else if (sig.kind === 'MILESTONE_RISK' && sig.milestoneId) {
+        const ms = milestoneOverview.allMilestones.find(m => m.milestone.id === sig.milestoneId);
+        const matchesRisk = ms?.issues.some(i => issueRisks.get(i.id)?.level === filters.risk);
+        if (!matchesRisk) return false;
+      } else if (sig.kind === 'CYCLE_PRESSURE' && sig.cycleId) {
+        const cycleIssues = issues.filter(i => i.cycleId === sig.cycleId);
+        const matchesRisk = cycleIssues.some(i => issueRisks.get(i.id)?.level === filters.risk);
+        if (!matchesRisk) return false;
+      } else {
+        return false;
+      }
+    }
+
     return true;
   });
 
   // Filter Bottlenecks
   const scopedBottlenecks = allBottlenecks.filter(b => {
-    if (filters.team !== 'ALL' && b.team?.id !== filters.team) return false;
-    if (filters.project !== 'ALL' && b.project?.id !== filters.project) return false;
+    const bProj = projectsMap.get(b.issue.projectId) || b.project;
+    const bTeamId = bProj?.teamId || b.team?.id;
+
+    if (filters.team !== 'ALL' && bTeamId !== filters.team) return false;
+    if (filters.project !== 'ALL' && b.issue.projectId !== filters.project) return false;
+    if (filters.cycle !== 'ALL' && b.issue.cycleId !== filters.cycle) return false;
+    if (filters.risk !== 'ALL') {
+      const risk = issueRisks.get(b.issue.id);
+      if (risk?.level !== filters.risk) return false;
+    }
     return true;
   });
 
@@ -320,13 +372,70 @@ export function selectWorkspaceInsights(
   const scopedProjectHealth = allProjectHealth.filter(p => {
     if (filters.team !== 'ALL' && p.teamId !== filters.team) return false;
     if (filters.project !== 'ALL' && p.projectId !== filters.project) return false;
+    if (filters.cycle !== 'ALL') {
+      const hasCycleIssue = issues.some(
+        i => i.projectId === p.projectId && i.cycleId === filters.cycle && isActiveIssue(i.state)
+      );
+      if (!hasCycleIssue) return false;
+    }
+    if (filters.risk !== 'ALL') {
+      const hasRiskIssue = issues.some(
+        i => i.projectId === p.projectId && issueRisks.get(i.id)?.level === filters.risk && isActiveIssue(i.state)
+      );
+      if (!hasRiskIssue) return false;
+    }
     return true;
   });
 
   const scopedTeamHealth = allTeamHealth.filter(t => {
     if (filters.team !== 'ALL' && t.teamId !== filters.team) return false;
+    if (filters.project !== 'ALL') {
+      const ownsProject = projects.some(p => p.id === filters.project && p.teamId === t.teamId);
+      if (!ownsProject) return false;
+    }
+    if (filters.cycle !== 'ALL') {
+      const hasCycleIssue = issues.some(i => {
+        const p = projectsMap.get(i.projectId);
+        return p?.teamId === t.teamId && i.cycleId === filters.cycle && isActiveIssue(i.state);
+      });
+      if (!hasCycleIssue) return false;
+    }
+    if (filters.risk !== 'ALL') {
+      const hasRiskIssue = issues.some(i => {
+        const p = projectsMap.get(i.projectId);
+        return p?.teamId === t.teamId && issueRisks.get(i.id)?.level === filters.risk && isActiveIssue(i.state);
+      });
+      if (!hasRiskIssue) return false;
+    }
     return true;
   });
+
+  // Scoped Cross-Team Dependency Matrix
+  let matrixScopeLabel = 'Workspace-wide';
+  let edgesForMatrix = resolvedEdges;
+
+  if (filters.team !== 'ALL') {
+    const selectedTeam = teamsMap.get(filters.team);
+    matrixScopeLabel = `Filtered: ${selectedTeam?.name || selectedTeam?.key || 'Team'}`;
+    edgesForMatrix = resolvedEdges.filter(
+      e => e.upstreamTeam?.id === filters.team || e.downstreamTeam?.id === filters.team
+    );
+  } else if (filters.project !== 'ALL') {
+    const selectedProject = projectsMap.get(filters.project);
+    matrixScopeLabel = `Filtered: ${selectedProject?.name || selectedProject?.key || 'Project'}`;
+    edgesForMatrix = resolvedEdges.filter(
+      e => e.upstreamProject?.id === filters.project || e.downstreamProject?.id === filters.project
+    );
+  } else if (filters.cycle !== 'ALL') {
+    matrixScopeLabel = 'Filtered: Selected Cycle';
+    edgesForMatrix = resolvedEdges.filter(
+      e => e.upstreamIssue.cycleId === filters.cycle || e.downstreamIssue.cycleId === filters.cycle
+    );
+  } else if (filters.risk !== 'ALL') {
+    matrixScopeLabel = `Workspace-wide (${filters.risk} risk filter active)`;
+  }
+
+  const crossTeamMatrix = calculateCrossTeamMatrix(teams, edgesForMatrix);
 
   return {
     summary,
@@ -335,6 +444,7 @@ export function selectWorkspaceInsights(
     bottlenecks: scopedBottlenecks,
     criticalChain,
     crossTeamMatrix,
+    matrixScopeLabel,
     projectHealth: scopedProjectHealth,
     teamHealth: scopedTeamHealth,
   };

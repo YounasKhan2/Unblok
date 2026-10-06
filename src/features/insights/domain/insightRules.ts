@@ -46,6 +46,7 @@ export function deriveInsightSignals(params: SignalDerivationParams): InsightSig
 
   const signals: InsightSignal[] = [];
   const handledIssueIds = new Set<string>();
+  const projectsMap = new Map<string, Project>(projects.map(p => [p.id, p]));
 
   // 1. Critical Blockers from Bottlenecks
   for (const b of bottlenecks) {
@@ -53,6 +54,8 @@ export function deriveInsightSignals(params: SignalDerivationParams): InsightSig
       const isCritical = b.directDownstreamCount >= 3 || b.affectedTeamCount >= 2;
       const severity = isCritical ? 'CRITICAL' : 'WARNING';
       const teamText = b.affectedTeamCount > 1 ? `across ${b.affectedTeamCount} teams` : 'within team';
+      const blockerProj = projectsMap.get(b.issue.projectId) || b.project;
+      const blockerTeamId = blockerProj?.teamId || b.team?.id;
 
       signals.push({
         id: `sig_crit_blocker_${b.issue.id}`,
@@ -62,8 +65,10 @@ export function deriveInsightSignals(params: SignalDerivationParams): InsightSig
         title: `${b.issue.key} is blocking ${b.directDownstreamCount} active issues`,
         explanation: `Actively blocks ${b.directDownstreamCount} downstream tasks ${teamText}. Blast radius: ${b.transitiveBlastRadius} issues.`,
         issueIds: [b.issue.id],
-        projectIds: b.project ? [b.project.id] : undefined,
-        teamIds: b.team ? [b.team.id] : undefined,
+        projectIds: blockerProj ? [blockerProj.id] : undefined,
+        teamIds: blockerTeamId ? [blockerTeamId] : undefined,
+        cycleId: b.issue.cycleId,
+        milestoneId: b.issue.milestoneId,
         drawerIssueKey: b.issue.key,
         targetUrl: `/dependencies?issue=${b.issue.key}`,
       });
@@ -77,6 +82,9 @@ export function deriveInsightSignals(params: SignalDerivationParams): InsightSig
     const risk = issueRisks.get(issue.id);
     if (risk && risk.level === 'CRITICAL' && !handledIssueIds.has(issue.id)) {
       const topReasons = risk.reasons.map(r => r.description).join('. ');
+      const proj = projectsMap.get(issue.projectId);
+      const resolvedTeamId = proj?.teamId || issue.teamId;
+
       signals.push({
         id: `sig_delivery_risk_${issue.id}`,
         kind: 'DELIVERY_RISK',
@@ -86,7 +94,9 @@ export function deriveInsightSignals(params: SignalDerivationParams): InsightSig
         explanation: topReasons || 'Multiple compounding execution blockers detected.',
         issueIds: [issue.id],
         projectIds: [issue.projectId],
-        teamIds: [issue.teamId],
+        teamIds: resolvedTeamId ? [resolvedTeamId] : undefined,
+        cycleId: issue.cycleId,
+        milestoneId: issue.milestoneId,
         drawerIssueKey: issue.key,
         targetUrl: `/issues/${issue.key}`,
       });
@@ -103,6 +113,9 @@ export function deriveInsightSignals(params: SignalDerivationParams): InsightSig
     if (daysDiff < 0) {
       const daysOverdue = Math.abs(daysDiff);
       const isUrgent = issue.priority === 'URGENT' || daysOverdue >= 5;
+      const proj = projectsMap.get(issue.projectId);
+      const resolvedTeamId = proj?.teamId || issue.teamId;
+
       signals.push({
         id: `sig_overdue_${issue.id}`,
         kind: 'OVERDUE_WORK',
@@ -112,7 +125,9 @@ export function deriveInsightSignals(params: SignalDerivationParams): InsightSig
         explanation: `Target date was ${issue.dueDate}. Currently ${issue.state.replace('_', ' ')} with ${issue.priority.toLowerCase()} priority.`,
         issueIds: [issue.id],
         projectIds: [issue.projectId],
-        teamIds: [issue.teamId],
+        teamIds: resolvedTeamId ? [resolvedTeamId] : undefined,
+        cycleId: issue.cycleId,
+        milestoneId: issue.milestoneId,
         drawerIssueKey: issue.key,
         targetUrl: `/issues/${issue.key}`,
       });
@@ -133,6 +148,9 @@ export function deriveInsightSignals(params: SignalDerivationParams): InsightSig
         title: `Milestone "${m.milestone.name}" is ${isBlocked ? 'Blocked' : 'At Risk'}`,
         explanation: `${m.progress.remaining} unfinished issues (${m.progress.blocked} blocked). Target date: ${m.milestone.targetDate || 'Unscheduled'}.`,
         milestoneId: m.milestone.id,
+        projectIds: m.contributingProjects.map(p => p.id),
+        teamIds: m.contributingTeams.map(t => t.id),
+        issueIds: m.issues.map(i => i.id),
         targetUrl: `/milestones/${m.milestone.id}`,
       });
     }
@@ -143,6 +161,10 @@ export function deriveInsightSignals(params: SignalDerivationParams): InsightSig
     if (c.cycle.status !== 'ACTIVE') continue;
     if (c.progress.remaining > 0 && c.progress.daysRemaining <= 3) {
       const isCritical = c.progress.daysRemaining <= 1 && c.progress.remaining >= 3;
+      const cycleIssues = issues.filter(i => i.cycleId === c.cycle.id);
+      const cycleProjectIds = Array.from(new Set(cycleIssues.map(i => i.projectId)));
+      const cycleTeamIds = c.team ? [c.team.id] : (c.cycle.teamId ? [c.cycle.teamId] : []);
+
       signals.push({
         id: `sig_cycle_${c.cycle.id}`,
         kind: 'CYCLE_PRESSURE',
@@ -151,7 +173,9 @@ export function deriveInsightSignals(params: SignalDerivationParams): InsightSig
         title: `Cycle "${c.cycle.name}" under delivery pressure`,
         explanation: `${c.progress.remaining} unfinished tasks with ${c.progress.daysRemaining} day${c.progress.daysRemaining === 1 ? '' : 's'} remaining.`,
         cycleId: c.cycle.id,
-        teamIds: c.cycle.teamId ? [c.cycle.teamId] : undefined,
+        teamIds: cycleTeamIds.length > 0 ? cycleTeamIds : undefined,
+        projectIds: cycleProjectIds.length > 0 ? cycleProjectIds : undefined,
+        issueIds: cycleIssues.map(i => i.id),
         targetUrl: `/cycles/${c.cycle.id}`,
       });
     }

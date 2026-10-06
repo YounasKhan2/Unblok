@@ -23,11 +23,11 @@ export const BottleneckPanel: React.FC<BottleneckPanelProps> = ({
     return (
       <div className="p-4 rounded-lg bg-surface-card border border-border">
         <div className="flex items-center gap-2 mb-3">
-          <GitPullRequest className="w-4 h-4 text-orange-500" />
+          <GitPullRequest className="w-4 h-4 text-blocker" />
           <h2 className="text-sm font-semibold text-text-primary tracking-tight">Dependency Bottlenecks</h2>
         </div>
         <div className="flex items-center gap-3 p-4 rounded bg-surface-base border border-border text-text-secondary text-xs">
-          <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+          <CheckCircle className="w-4 h-4 text-success flex-shrink-0" />
           <span>No active dependency bottlenecks currently blocking delivery.</span>
         </div>
       </div>
@@ -38,7 +38,7 @@ export const BottleneckPanel: React.FC<BottleneckPanelProps> = ({
     <div className="p-3.5 rounded-lg bg-surface-card border border-border">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <GitPullRequest className="w-4 h-4 text-orange-500" />
+          <GitPullRequest className="w-4 h-4 text-blocker" />
           <h2 className="text-sm font-semibold text-text-primary tracking-tight">
             Dependency Bottlenecks
           </h2>
@@ -92,7 +92,7 @@ export const BottleneckPanel: React.FC<BottleneckPanelProps> = ({
               </div>
 
               <div className="flex items-center gap-3 text-[11px] text-text-secondary mt-1 flex-wrap">
-                <span className="font-semibold text-orange-400">
+                <span className="font-semibold text-blocker">
                   Blocks {item.directDownstreamCount} active {item.directDownstreamCount === 1 ? 'task' : 'tasks'}
                 </span>
                 <span>•</span>
