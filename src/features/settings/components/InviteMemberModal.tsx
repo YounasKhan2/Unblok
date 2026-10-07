@@ -52,7 +52,7 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title="Invite Workspace Member"
-      description="Send a prototype invitation to join this workspace."
+      description="Send an invitation to join this workspace."
       maxWidth="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">

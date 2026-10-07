@@ -15,7 +15,7 @@ describe('UX-09 Complete Application-Wide Theming Invariants', () => {
     };
 
     let mediaQueryMatches = false;
-    let changeHandler: ((e: any) => void) | null = null;
+    let changeHandler: any = null;
     const mockMediaQuery = {
       get matches() {
         return mediaQueryMatches;
@@ -44,12 +44,16 @@ describe('UX-09 Complete Application-Wide Theming Invariants', () => {
 
     // 2. OS transitions to dark
     mediaQueryMatches = true;
-    changeHandler?.({ matches: true });
+    if (typeof changeHandler === 'function') {
+      changeHandler({ matches: true });
+    }
     expect(classList.has('dark')).toBe(true);
 
     // 3. OS transitions back to light
     mediaQueryMatches = false;
-    changeHandler?.({ matches: false });
+    if (typeof changeHandler === 'function') {
+      changeHandler({ matches: false });
+    }
     expect(classList.has('dark')).toBe(false);
 
     cleanup();

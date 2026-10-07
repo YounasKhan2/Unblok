@@ -39,7 +39,7 @@ export const IntegrationsSettingsPage: React.FC = () => {
           Integrations & Connections
         </h2>
         <p className="text-xs text-text-muted mt-0.5">
-          Configure code repository sync, webhook delivery endpoints, and workflow connections (Prototype simulation).
+          Configure code repository sync, webhook delivery endpoints, and workflow connections.
         </p>
       </div>
 
@@ -68,7 +68,7 @@ export const IntegrationsSettingsPage: React.FC = () => {
       {/* 2. Webhooks */}
       <SettingsSection
         title={`Webhooks (${webhooks.length})`}
-        description="Deliver real-time prototype event payloads to your external services."
+        description="Deliver real-time event payloads to your external services."
         action={
           <Button
             variant="secondary"

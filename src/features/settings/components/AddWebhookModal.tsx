@@ -65,7 +65,7 @@ export const AddWebhookModal: React.FC<AddWebhookModalProps> = ({ isOpen, onClos
       isOpen={isOpen}
       onClose={onClose}
       title="Create Webhook Endpoint"
-      description="Register an HTTP endpoint for prototype lifecycle events."
+      description="Register an HTTP endpoint for workspace lifecycle events."
       maxWidth="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -128,7 +128,7 @@ export const AddWebhookModal: React.FC<AddWebhookModalProps> = ({ isOpen, onClos
         </div>
 
         <div className="p-2.5 bg-surface-muted rounded-md border border-border text-[11px] text-text-muted">
-          Mock signing secret will be generated automatically. No actual network calls or dispatches are performed in prototype mode.
+          A signing secret will be generated automatically. Webhook configurations are securely stored within this workspace.
         </div>
 
         <div className="flex justify-end gap-2 pt-3 border-t border-border">

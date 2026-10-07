@@ -95,7 +95,7 @@ export const PendingInvitationRow: React.FC<PendingInvitationRowProps> = ({
                 )
               }
               onClick={handleResend}
-              title="Resend prototype invitation"
+              title="Resend invitation"
             >
               {resendSuccess ? 'Resent' : 'Resend'}
             </Button>
