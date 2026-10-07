@@ -8,6 +8,7 @@ import { ShieldAlert, CheckCircle2, ArrowRight, Trash2, ExternalLink, Users, Git
 import { ResolvedEdge } from '../types';
 import { formatBlockerAge } from '../selectors';
 import { DEPENDENCY_STATE_CLASSES, GRAPH_SEMANTIC_PALETTE } from '../tokens';
+import { formatUserDate } from '../../../components/ui/formatDate';
 
 interface ActiveBlockerRegistryProps {
   edges: ResolvedEdge[];
@@ -177,7 +178,7 @@ export const ActiveBlockerRegistry: React.FC<ActiveBlockerRegistryProps> = ({
 
                 {/* Honest Age */}
                 <td className="py-1.5 px-2 text-text-muted text-[11px]">
-                  <span className="inline-flex items-center gap-1" title={`Created at: ${edge.createdAt}`}>
+                  <span className="inline-flex items-center gap-1" title={`Created: ${formatUserDate(edge.createdAt)}`}>
                     <Clock className="w-3 h-3 text-border-strong" />
                     <span>{ageString}</span>
                   </span>
