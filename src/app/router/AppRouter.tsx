@@ -17,7 +17,14 @@ import { ContactPage } from '../../pages/public/ContactPage';
 import { PrivacyPage } from '../../pages/public/PrivacyPage';
 import { TermsPage } from '../../pages/public/TermsPage';
 import { PublicNotFoundPage } from '../../features/public/components/PublicNotFoundPage';
-import { AuthPlaceholderPage } from '../../features/auth/components/AuthPlaceholderPage';
+import { LoginPage } from '../../pages/auth/LoginPage';
+import { SignupPage } from '../../pages/auth/SignupPage';
+import { ForgotPasswordPage } from '../../pages/auth/ForgotPasswordPage';
+import { ResetPasswordPage } from '../../pages/auth/ResetPasswordPage';
+import { InvitePage } from '../../pages/auth/InvitePage';
+import { OnboardingPlaceholderPage } from '../../pages/auth/OnboardingPlaceholderPage';
+import { RequireAuth } from '../../features/auth/components/RequireAuth';
+import { AuthDevHarness } from '../../features/auth/components/AuthDevHarness';
 import { AppShellLayout } from '../layouts/AppShellLayout';
 import { PrivateNotFoundPage } from '../../pages/placeholder/PrivateNotFoundPage';
 import { MyWorkPage } from '../../pages/my-work/MyWorkPage';
@@ -51,7 +58,7 @@ export const AppRoutes: React.FC = () => {
   return (
     <Routes>
         {/* ========================================================= */}
-        {/* 1. PUBLIC ROUTE FAMILY (UX-11A / UX-11B)                  */}
+        {/* 1. PUBLIC ROUTE FAMILY (UX-11A / UX-11B / UX-11C)         */}
         {/* Uses PublicLayout with fixed theme, header, and footer    */}
         {/* ========================================================= */}
         <Route element={<PublicLayout />}>
@@ -70,131 +77,137 @@ export const AppRoutes: React.FC = () => {
         </Route>
 
         {/* ========================================================= */}
-        {/* 2. AUTH ROUTE FAMILY (UX-11A / UX-12 Boundary)            */}
+        {/* 2. AUTH ROUTE FAMILY (UX-11A / UX-12 Prototype Routes)    */}
         {/* Dedicated AuthLayout with centered card canvas            */}
         {/* ========================================================= */}
         <Route element={<AuthLayout />}>
-          <Route path="/login" element={<AuthPlaceholderPage mode="login" />} />
-          <Route path="/signup" element={<AuthPlaceholderPage mode="signup" />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/invite/:token" element={<InvitePage />} />
+          <Route path="/onboarding" element={<OnboardingPlaceholderPage />} />
         </Route>
 
         {/* ========================================================= */}
         {/* 3. PRIVATE APPLICATION SHELL (UX-00 through UX-10)        */}
-        {/* Authenticated workspace execution routes                  */}
+        {/* Guarded by RequireAuth prototype navigation contract      */}
         {/* ========================================================= */}
-        <Route element={<AppShellLayout />}>
-          {/* Primary UX-01 Page */}
-          <Route path="/my-work" element={<MyWorkPage />} />
-          <Route path="/my-work/*" element={<PrivateNotFoundPage />} />
+        <Route element={<RequireAuth />}>
+          <Route element={<AppShellLayout />}>
+            {/* Primary UX-01 Page */}
+            <Route path="/my-work" element={<MyWorkPage />} />
+            <Route path="/my-work/*" element={<PrivateNotFoundPage />} />
 
-          {/* Canonical Inbox Page (UX-06) */}
-          <Route path="/inbox" element={<InboxPage />} />
-          <Route path="/inbox/*" element={<PrivateNotFoundPage />} />
+            {/* Canonical Inbox Page (UX-06) */}
+            <Route path="/inbox" element={<InboxPage />} />
+            <Route path="/inbox/*" element={<PrivateNotFoundPage />} />
 
-          {/* Projects Space (UX-02 Fully Implemented) */}
-          <Route path="/projects" element={<ProjectsDirectoryPage />} />
-          <Route path="/projects/:projectKey" element={<ProjectContextLayout />}>
-            <Route index element={<ProjectOverviewPage />} />
-            <Route path="issues" element={<ProjectIssuesPage />} />
-            <Route path="board" element={<ProjectBoardPage />} />
-            <Route path="planning" element={<ProjectPlanningPage />} />
-            <Route path="settings" element={<ProjectSettingsPage />} />
-            <Route path="*" element={<PrivateNotFoundPage />} />
-          </Route>
-          <Route path="/projects/*" element={<PrivateNotFoundPage />} />
-
-          {/* Issues Space (UX-03 Real Canonical Page) */}
-          <Route path="/issues/:issueKey" element={<IssueDetailPage />} />
-          <Route path="/issues/*" element={<PrivateNotFoundPage />} />
-
-          {/* Teams Space */}
-          <Route
-            path="/teams"
-            element={
-              <PlaceholderPage
-                pageTitle="Teams Directory"
-                targetPhase="UX-04"
-                description="Engineering teams directory and ownership map."
-              />
-            }
-          />
-          <Route
-            path="/teams/:teamKey"
-            element={
-              <PlaceholderPage
-                pageTitle="Team Hub"
-                targetPhase="UX-04"
-                description="Team overview, active cycles, and owned projects."
-              />
-            }
-          />
-          <Route path="/teams/*" element={<PrivateNotFoundPage />} />
-
-          {/* Planning Space (UX-05 Canonical Implementation) */}
-          <Route path="/cycles" element={<CyclesPage />} />
-          <Route path="/cycles/:cycleId" element={<CycleDetailPage />} />
-          <Route path="/cycles/*" element={<PrivateNotFoundPage />} />
-
-          <Route path="/milestones" element={<MilestonesPage />} />
-          <Route path="/milestones/:milestoneId" element={<MilestoneDetailPage />} />
-          <Route path="/milestones/*" element={<PrivateNotFoundPage />} />
-
-          <Route path="/roadmap" element={<RoadmapPage />} />
-          <Route path="/roadmap/*" element={<PrivateNotFoundPage />} />
-
-          {/* Dependency Intelligence Space (UX-04 Canonical Page) */}
-          <Route path="/dependencies" element={<DependenciesPage />} />
-          <Route path="/dependencies/*" element={<PrivateNotFoundPage />} />
-
-          {/* Insights Space (UX-07 Canonical Destination) */}
-          <Route path="/insights" element={<InsightsPage />} />
-          <Route path="/insights/*" element={<PrivateNotFoundPage />} />
-
-          {/* Settings Space (UX-08 Canonical Implementation) */}
-          <Route path="/settings" element={<Outlet />}>
-            <Route index element={<SettingsRedirectPage />} />
-            <Route element={<SettingsLayout />}>
-              <Route
-                path="workspace"
-                element={
-                  <AdminRoute>
-                    <WorkspaceSettingsPage />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="members"
-                element={
-                  <AdminRoute>
-                    <MembersSettingsPage />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="teams"
-                element={
-                  <AdminRoute>
-                    <TeamsSettingsPage />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="integrations"
-                element={
-                  <AdminRoute>
-                    <IntegrationsSettingsPage />
-                  </AdminRoute>
-                }
-              />
-              <Route path="preferences" element={<PreferencesSettingsPage />} />
+            {/* Projects Space (UX-02 Fully Implemented) */}
+            <Route path="/projects" element={<ProjectsDirectoryPage />} />
+            <Route path="/projects/:projectKey" element={<ProjectContextLayout />}>
+              <Route index element={<ProjectOverviewPage />} />
+              <Route path="issues" element={<ProjectIssuesPage />} />
+              <Route path="board" element={<ProjectBoardPage />} />
+              <Route path="planning" element={<ProjectPlanningPage />} />
+              <Route path="settings" element={<ProjectSettingsPage />} />
               <Route path="*" element={<PrivateNotFoundPage />} />
             </Route>
-            <Route path="*" element={<PrivateNotFoundPage />} />
-          </Route>
-          <Route path="/settings/*" element={<PrivateNotFoundPage />} />
+            <Route path="/projects/*" element={<PrivateNotFoundPage />} />
 
-          {/* Explicit private fallback routes */}
-          <Route path="/app/*" element={<PrivateNotFoundPage />} />
+            {/* Issues Space (UX-03 Real Canonical Page) */}
+            <Route path="/issues/:issueKey" element={<IssueDetailPage />} />
+            <Route path="/issues/*" element={<PrivateNotFoundPage />} />
+
+            {/* Teams Space */}
+            <Route
+              path="/teams"
+              element={
+                <PlaceholderPage
+                  pageTitle="Teams Directory"
+                  targetPhase="UX-04"
+                  description="Engineering teams directory and ownership map."
+                />
+              }
+            />
+            <Route
+              path="/teams/:teamKey"
+              element={
+                <PlaceholderPage
+                  pageTitle="Team Hub"
+                  targetPhase="UX-04"
+                  description="Team overview, active cycles, and owned projects."
+                />
+              }
+            />
+            <Route path="/teams/*" element={<PrivateNotFoundPage />} />
+
+            {/* Planning Space (UX-05 Canonical Implementation) */}
+            <Route path="/cycles" element={<CyclesPage />} />
+            <Route path="/cycles/:cycleId" element={<CycleDetailPage />} />
+            <Route path="/cycles/*" element={<PrivateNotFoundPage />} />
+
+            <Route path="/milestones" element={<MilestonesPage />} />
+            <Route path="/milestones/:milestoneId" element={<MilestoneDetailPage />} />
+            <Route path="/milestones/*" element={<PrivateNotFoundPage />} />
+
+            <Route path="/roadmap" element={<RoadmapPage />} />
+            <Route path="/roadmap/*" element={<PrivateNotFoundPage />} />
+
+            {/* Dependency Intelligence Space (UX-04 Canonical Page) */}
+            <Route path="/dependencies" element={<DependenciesPage />} />
+            <Route path="/dependencies/*" element={<PrivateNotFoundPage />} />
+
+            {/* Insights Space (UX-07 Canonical Destination) */}
+            <Route path="/insights" element={<InsightsPage />} />
+            <Route path="/insights/*" element={<PrivateNotFoundPage />} />
+
+            {/* Settings Space (UX-08 Canonical Implementation) */}
+            <Route path="/settings" element={<Outlet />}>
+              <Route index element={<SettingsRedirectPage />} />
+              <Route element={<SettingsLayout />}>
+                <Route
+                  path="workspace"
+                  element={
+                    <AdminRoute>
+                      <WorkspaceSettingsPage />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="members"
+                  element={
+                    <AdminRoute>
+                      <MembersSettingsPage />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="teams"
+                  element={
+                    <AdminRoute>
+                      <TeamsSettingsPage />
+                    </AdminRoute>
+                  }
+                />
+                <Route
+                  path="integrations"
+                  element={
+                    <AdminRoute>
+                      <IntegrationsSettingsPage />
+                    </AdminRoute>
+                  }
+                />
+                <Route path="preferences" element={<PreferencesSettingsPage />} />
+                <Route path="*" element={<PrivateNotFoundPage />} />
+              </Route>
+              <Route path="*" element={<PrivateNotFoundPage />} />
+            </Route>
+            <Route path="/settings/*" element={<PrivateNotFoundPage />} />
+
+            {/* Explicit private fallback routes */}
+            <Route path="/app/*" element={<PrivateNotFoundPage />} />
+          </Route>
         </Route>
 
         {/* ========================================================= */}
@@ -212,6 +225,7 @@ export const AppRouter: React.FC = () => {
   return (
     <BrowserRouter>
       <AppRoutes />
+      <AuthDevHarness />
     </BrowserRouter>
   );
 };
