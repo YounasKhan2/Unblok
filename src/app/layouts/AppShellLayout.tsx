@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import React, { useEffect, useRef } from 'react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { NavigationRail } from '../../components/layout/NavigationRail';
 import { WorkspaceHeader } from '../../components/layout/WorkspaceHeader';
 import { IssueDrawer } from '../../components/drawer/IssueDrawer';
@@ -16,18 +16,39 @@ import { ShortcutsHelpModal } from '../../components/modals/ShortcutsHelpModal';
 import { BulkActionBar } from '../../components/layout/BulkActionBar';
 import { useKeyboard } from '../../context/KeyboardContext';
 import { useWorkspace } from '../../features/workspaces/context/WorkspaceContext';
+import { useProject } from '../../context/ProjectContext';
 import { ArchivedWorkspaceBanner } from '../../features/workspaces/components/ArchivedWorkspaceBanner';
 import { WorkspaceUnavailable } from '../../features/workspaces/components/WorkspaceUnavailable';
 
 export const AppShellLayout: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { registerRouteNavigator } = useKeyboard();
   const { status: workspaceStatus, activeWorkspaceId } = useWorkspace();
+  const { setIsDrawerOpen, setSelectedIssueId, clearSelection } = useProject();
 
   useEffect(() => {
     registerRouteNavigator(navigate);
     return () => registerRouteNavigator(null);
   }, [navigate, registerRouteNavigator]);
+
+  // Section 20: Cross-workspace transition safety
+  const prevWorkspaceIdRef = useRef<string | null>(activeWorkspaceId);
+  useEffect(() => {
+    if (prevWorkspaceIdRef.current && activeWorkspaceId && prevWorkspaceIdRef.current !== activeWorkspaceId) {
+      setIsDrawerOpen(false);
+      setSelectedIssueId(null);
+      clearSelection();
+      if (
+        location.pathname.startsWith('/teams/') ||
+        location.pathname.startsWith('/projects/') ||
+        location.pathname.startsWith('/issues/')
+      ) {
+        navigate('/my-work', { replace: true });
+      }
+    }
+    prevWorkspaceIdRef.current = activeWorkspaceId;
+  }, [activeWorkspaceId, location.pathname, navigate, setIsDrawerOpen, setSelectedIssueId, clearSelection]);
 
   const isWorkspaceUnavailable =
     workspaceStatus === 'unavailable' ||

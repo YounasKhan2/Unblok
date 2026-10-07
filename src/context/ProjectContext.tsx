@@ -71,6 +71,8 @@ import {
   executeAddComment,
   executeDeleteComment,
 } from '../features/collaboration/domain/collaborationMutations';
+import { planCreateTeam } from '../features/settings/domain/teamAdministration';
+import { planCreateProject, CreateProjectInput } from '../features/projects/domain/projectCreation';
 
 interface CompletionGuardError {
   issue: Issue;
@@ -247,6 +249,10 @@ interface ProjectContextType {
   clearCompletionGuardError: () => void;
   cycleError: CycleError | null;
   clearCycleError: () => void;
+
+  // Teams & Projects Creation (UX-14)
+  createTeam: (data: { name: string; key: string; description?: string; color?: string; leadId?: string; memberIds?: string[] }) => Team;
+  createProject: (data: CreateProjectInput) => Project;
 
   // Reset
   resetToDemoData: () => void;
@@ -1724,6 +1730,64 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     [canMutate, activeWorkspaceId, projects, effectiveCurrentUser, addDependency]
   );
 
+  // Section 7 & 19: Canonical Team Creation (UX-14)
+  const createTeam = useCallback(
+    (input: {
+      name: string;
+      key: string;
+      description?: string;
+      color?: string;
+      leadId?: string;
+      memberIds?: string[];
+    }): Team => {
+      if (!canMutate || !activeWorkspaceId) {
+        throw new Error('Cannot create team in an archived workspace or with read-only permissions.');
+      }
+      if (effectiveCurrentUser.role !== 'ADMIN') {
+        throw new Error('Administrative mutations require ADMIN role.');
+      }
+      const plan = planCreateTeam(input, teams, users, effectiveCurrentUser.role);
+      const newTeamWithWs: Team = {
+        ...plan.newTeam,
+        workspaceId: activeWorkspaceId,
+      };
+      const updatedTeams = [...masterTeams, newTeamWithWs];
+      setMasterTeams(updatedTeams);
+      try {
+        localStorage.setItem(`${STORAGE_KEY}_teams`, JSON.stringify(updatedTeams));
+      } catch (e) {
+        console.warn('Failed to persist teams:', e);
+      }
+      if (input.memberIds && input.memberIds.length > 0) {
+        updateCanonicalUsers(plan.updatedUsers);
+      }
+      return newTeamWithWs;
+    },
+    [canMutate, activeWorkspaceId, effectiveCurrentUser.role, teams, users, masterTeams, updateCanonicalUsers]
+  );
+
+  // Section 8 & 19: Canonical Project Creation (UX-14)
+  const createProject = useCallback(
+    (input: CreateProjectInput): Project => {
+      if (!canMutate || !activeWorkspaceId) {
+        throw new Error('Cannot create project in an archived workspace or with read-only permissions.');
+      }
+      if (effectiveCurrentUser.role === 'OBSERVER') {
+        throw new Error('Project creation is not permitted for read-only OBSERVER role.');
+      }
+      const plan = planCreateProject(input, projects, teams, activeWorkspaceId, effectiveCurrentUser.role);
+      const updatedProjects = [...masterProjects, plan.newProject];
+      setMasterProjects(updatedProjects);
+      try {
+        localStorage.setItem(`${STORAGE_KEY}_projects`, JSON.stringify(updatedProjects));
+      } catch (e) {
+        console.warn('Failed to persist projects:', e);
+      }
+      return plan.newProject;
+    },
+    [canMutate, activeWorkspaceId, effectiveCurrentUser.role, projects, teams, masterProjects]
+  );
+
   // Reset demo data
   const resetToDemoData = useCallback(() => {
     clearAllStoredEntities();
@@ -1812,6 +1876,8 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updateIssueDetails,
         updateIssueDates,
         createIssue,
+        createTeam,
+        createProject,
         addDependency,
         removeDependency,
         getIssueBlockerStatus,

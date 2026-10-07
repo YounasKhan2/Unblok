@@ -15,6 +15,8 @@ import {
   ArrowRight,
   User,
   Calendar,
+  FolderKanban,
+  Plus,
 } from 'lucide-react';
 import { Project, Team, Issue } from '../../types';
 import { ProjectOverviewData } from '../../features/projects/selectors';
@@ -23,7 +25,9 @@ import { StatePill } from '../../components/ui/StatePill';
 import { PriorityIcon } from '../../components/ui/PriorityIcon';
 import { BlockerBadge } from '../../components/ui/BlockerBadge';
 import { Avatar } from '../../components/ui/Avatar';
+import { Button } from '../../components/ui/Button';
 import { useProject } from '../../context/ProjectContext';
+import { useKeyboard } from '../../context/KeyboardContext';
 
 interface OutletContextType {
   project: Project;
@@ -34,7 +38,8 @@ interface OutletContextType {
 export const ProjectOverviewPage: React.FC = () => {
   const { project, team, overviewData } = useOutletContext<OutletContextType>();
   const { openDrawer } = useDrawerRoute();
-  const { users, getIssueBlockerStatus } = useProject();
+  const { users, getIssueBlockerStatus, currentUser } = useProject();
+  const { setIsCreateModalOpen } = useKeyboard();
 
   const {
     needsAttention,
@@ -47,6 +52,42 @@ export const ProjectOverviewPage: React.FC = () => {
   } = overviewData;
 
   const usersMap = React.useMemo(() => new Map(users.map(u => [u.id, u])), [users]);
+  const canCreate = currentUser.role !== 'OBSERVER';
+
+  const isProjectEmpty = !summary || summary.totalIssues === 0;
+
+  if (isProjectEmpty) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-canvas select-none">
+        <div className="max-w-md w-full p-8 rounded-xl border border-dashed border-border bg-surface-base shadow-xs">
+          <div className="w-12 h-12 rounded-xl bg-accent/10 text-accent flex items-center justify-center mx-auto mb-4">
+            <FolderKanban className="w-6 h-6 stroke-[2]" />
+          </div>
+          <h2 className="text-base font-bold text-text-primary mb-1">
+            Your project is ready
+          </h2>
+          <p className="text-xs text-text-muted mb-6 leading-relaxed">
+            Start organizing execution by creating your first issue for {project.name}.
+          </p>
+          {canCreate ? (
+            <Button
+              variant="primary"
+              size="sm"
+              icon={<Plus className="w-3.5 h-3.5" />}
+              onClick={() => setIsCreateModalOpen(true)}
+              data-testid="create-first-issue-button"
+            >
+              Create issue
+            </Button>
+          ) : (
+            <div className="text-xs text-text-muted px-3 py-1.5 bg-surface-subtle border border-border rounded-lg inline-block">
+              Observer role is read-only. Ask an admin or member to create issues.
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 overflow-y-auto bg-canvas p-4 sm:p-6 space-y-6 select-none">

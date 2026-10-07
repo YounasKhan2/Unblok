@@ -24,7 +24,12 @@ import { ResetPasswordPage } from '../../pages/auth/ResetPasswordPage';
 import { InvitePage } from '../../pages/auth/InvitePage';
 import { OnboardingRootPage } from '../../pages/onboarding/OnboardingRootPage';
 import { CreateWorkspacePage } from '../../pages/onboarding/CreateWorkspacePage';
-import { TeamOnboardingPlaceholderPage } from '../../pages/onboarding/TeamOnboardingPlaceholderPage';
+import { TeamOnboardingPage } from '../../pages/onboarding/TeamOnboardingPage';
+import { ProjectOnboardingPage } from '../../pages/onboarding/ProjectOnboardingPage';
+import { InviteTeammatesOnboardingPage } from '../../pages/onboarding/InviteTeammatesOnboardingPage';
+import { OnboardingCompletePage } from '../../pages/onboarding/OnboardingCompletePage';
+import { TeamsDirectoryPage } from '../../pages/teams/TeamsDirectoryPage';
+import { TeamHubPage } from '../../pages/teams/TeamHubPage';
 import { RequireAuth } from '../../features/auth/components/RequireAuth';
 import { AuthDevHarness } from '../../features/auth/components/AuthDevHarness';
 import { AppShellLayout } from '../layouts/AppShellLayout';
@@ -90,7 +95,10 @@ export const AppRoutes: React.FC = () => {
           <Route path="/invite/:token" element={<InvitePage />} />
           <Route path="/onboarding" element={<OnboardingRootPage />} />
           <Route path="/onboarding/workspace" element={<CreateWorkspacePage />} />
-          <Route path="/onboarding/team" element={<TeamOnboardingPlaceholderPage />} />
+          <Route path="/onboarding/team" element={<TeamOnboardingPage />} />
+          <Route path="/onboarding/project" element={<ProjectOnboardingPage />} />
+          <Route path="/onboarding/invite" element={<InviteTeammatesOnboardingPage />} />
+          <Route path="/onboarding/complete" element={<OnboardingCompletePage />} />
         </Route>
 
         {/* ========================================================= */}
@@ -123,27 +131,9 @@ export const AppRoutes: React.FC = () => {
             <Route path="/issues/:issueKey" element={<IssueDetailPage />} />
             <Route path="/issues/*" element={<PrivateNotFoundPage />} />
 
-            {/* Teams Space */}
-            <Route
-              path="/teams"
-              element={
-                <PlaceholderPage
-                  pageTitle="Teams Directory"
-                  targetPhase="UX-04"
-                  description="Engineering teams directory and ownership map."
-                />
-              }
-            />
-            <Route
-              path="/teams/:teamKey"
-              element={
-                <PlaceholderPage
-                  pageTitle="Team Hub"
-                  targetPhase="UX-04"
-                  description="Team overview, active cycles, and owned projects."
-                />
-              }
-            />
+            {/* Teams Space (UX-14 Real Canonical Pages) */}
+            <Route path="/teams" element={<TeamsDirectoryPage />} />
+            <Route path="/teams/:teamKey" element={<TeamHubPage />} />
             <Route path="/teams/*" element={<PrivateNotFoundPage />} />
 
             {/* Planning Space (UX-05 Canonical Implementation) */}

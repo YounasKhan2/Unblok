@@ -16,10 +16,12 @@ import {
   CheckCircle2,
   X,
   Target,
+  Plus,
 } from 'lucide-react';
 import { useProject } from '../../context/ProjectContext';
 import { selectProjectDirectory, ProjectDirectoryFilterParams } from '../../features/projects/selectors';
 import { Button } from '../../components/ui/Button';
+import { CreateProjectModal } from '../../features/projects/components/CreateProjectModal';
 
 export const ProjectsDirectoryPage: React.FC = () => {
   const navigate = useNavigate();
@@ -31,11 +33,15 @@ export const ProjectsDirectoryPage: React.FC = () => {
     cycles,
     milestones,
     activities: activityEvents,
+    currentUser,
   } = useProject();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [teamId, setTeamId] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'HAS_BLOCKERS' | 'ACTIVE'>('ALL');
+  const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
+
+  const canCreate = currentUser.role !== 'OBSERVER';
 
   const filterParams: ProjectDirectoryFilterParams = useMemo(
     () => ({
@@ -142,6 +148,18 @@ export const ProjectsDirectoryPage: React.FC = () => {
               Reset
             </button>
           )}
+
+          {canCreate && (
+            <Button
+              variant="primary"
+              size="sm"
+              icon={<Plus className="w-3.5 h-3.5" />}
+              onClick={() => setIsCreateProjectOpen(true)}
+              data-testid="create-project-button"
+            >
+              Create project
+            </Button>
+          )}
         </div>
       </div>
 
@@ -160,10 +178,21 @@ export const ProjectsDirectoryPage: React.FC = () => {
                 ? 'Try adjusting your search terms or clearing the team/status filters.'
                 : 'Create projects in this workspace to organize team delivery.'}
             </p>
-            {hasActiveFilters && (
+            {hasActiveFilters ? (
               <Button variant="secondary" size="sm" onClick={clearFilters}>
                 Clear All Filters
               </Button>
+            ) : (
+              canCreate && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  icon={<Plus className="w-3.5 h-3.5" />}
+                  onClick={() => setIsCreateProjectOpen(true)}
+                >
+                  Create Project
+                </Button>
+              )
             )}
           </div>
         ) : (
@@ -276,6 +305,11 @@ export const ProjectsDirectoryPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      <CreateProjectModal
+        isOpen={isCreateProjectOpen}
+        onClose={() => setIsCreateProjectOpen(false)}
+      />
     </div>
   );
 };
