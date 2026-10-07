@@ -196,7 +196,7 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
                       onClick={() => !cycleCheck.hasCycle && handleSelectBlocker(candidate)}
                       className={`flex items-center justify-between p-1.5 rounded transition-colors ${
                         cycleCheck.hasCycle
-                          ? 'opacity-50 bg-red-50/50 cursor-not-allowed'
+                          ? 'opacity-60 bg-danger/10 border border-danger/20 cursor-not-allowed'
                           : 'hover:bg-surface-base hover:border-border border border-transparent cursor-pointer'
                       }`}
                     >

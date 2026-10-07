@@ -35,7 +35,7 @@ function renderMarkdown(content: string): React.ReactNode {
         elements.push(
           <pre
             key={`code-${i}`}
-            className="my-2.5 p-3 rounded-lg bg-[#1e1e1e] text-[#f8f8f2] font-mono text-xs overflow-x-auto leading-relaxed border border-[#333]"
+            className="my-2.5 p-3 rounded-lg bg-surface-subtle text-text-primary font-mono text-xs overflow-x-auto leading-relaxed border border-border"
           >
             <code>{codeBlockLines.join('\n')}</code>
           </pre>
@@ -125,7 +125,7 @@ function renderMarkdown(content: string): React.ReactNode {
     elements.push(
       <pre
         key="code-unclosed"
-        className="my-2.5 p-3 rounded-lg bg-[#1e1e1e] text-[#f8f8f2] font-mono text-xs overflow-x-auto leading-relaxed border border-[#333]"
+        className="my-2.5 p-3 rounded-lg bg-surface-subtle text-text-primary font-mono text-xs overflow-x-auto leading-relaxed border border-border"
       >
         <code>{codeBlockLines.join('\n')}</code>
       </pre>

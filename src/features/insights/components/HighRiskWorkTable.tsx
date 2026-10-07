@@ -144,8 +144,8 @@ export const HighRiskWorkTable: React.FC<HighRiskWorkTableProps> = ({
                   <td className="py-2 px-2 whitespace-nowrap text-[11px]">
                     {item.issue.dueDate ? (
                       <div className="flex items-center gap-1 font-mono">
-                        <Clock className={`w-3 h-3 ${item.isOverdue ? 'text-red-400' : 'text-text-muted'}`} />
-                        <span className={item.isOverdue ? 'text-red-400 font-bold' : 'text-text-secondary'}>
+                        <Clock className={`w-3 h-3 ${item.isOverdue ? 'text-danger' : 'text-text-muted'}`} />
+                        <span className={item.isOverdue ? 'text-danger font-bold' : 'text-text-secondary'}>
                           {item.issue.dueDate}
                         </span>
                       </div>
@@ -213,7 +213,7 @@ export const HighRiskWorkTable: React.FC<HighRiskWorkTableProps> = ({
                 <StatePill state={item.issue.state} size="sm" />
                 <PriorityIcon priority={item.issue.priority} size="sm" />
                 {item.issue.dueDate && (
-                  <span className={`text-[11px] font-mono ${item.isOverdue ? 'text-red-400 font-bold' : 'text-text-muted'}`}>
+                  <span className={`text-[11px] font-mono ${item.isOverdue ? 'text-danger font-bold' : 'text-text-muted'}`}>
                     Due {item.issue.dueDate}
                   </span>
                 )}

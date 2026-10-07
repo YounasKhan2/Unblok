@@ -18,6 +18,7 @@
 
   /* Canonical Semantic Tokens (Future Theme-Ready) */
   --color-accent: #5645d4;
+  --color-accent-hover: #4838bd;
   --color-accent-subtle: #f0edfe;
   --color-blocker: #dd5b00;
   --color-danger: #e03e3e;
@@ -58,6 +59,7 @@
 
     /* Canonical Semantic Tokens */
     --color-accent: #5645d4;
+    --color-accent-hover: #4838bd;
     --color-accent-subtle: #f0edfe;
     --color-blocker: #dd5b00;
     --color-danger: #e03e3e;
@@ -91,12 +93,13 @@
     --color-hairline: #2e2e32;
     --color-hairline-soft: #27272a;
     --color-hairline-strong: #3f3f46;
-    --color-charcoal: #e4e4e7;
-    --color-slate: #a1a1aa;
-    --color-steel: #71717a;
-    --color-stone: #52525b;
+    --color-charcoal: #f4f4f5;
+    --color-slate: #d4d4d8;
+    --color-steel: #9ca3af;
+    --color-stone: #71717a;
 
     --color-accent: #7c6cf0;
+    --color-accent-hover: #9082f4;
     --color-accent-subtle: #28234a;
     --color-blocker: #f97316;
     --color-danger: #f87171;
@@ -109,14 +112,19 @@
     --color-border-subtle: #27272a;
     --color-border-strong: #3f3f46;
     --color-text-primary: #f4f4f5;
-    --color-text-secondary: #a1a1aa;
-    --color-text-muted: #71717a;
+    --color-text-secondary: #d4d4d8;
+    --color-text-muted: #9ca3af;
+    color-scheme: dark;
   }
 
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     color: var(--color-text-primary);
     background-color: var(--color-canvas);
+  }
+
+  input, select, textarea {
+    accent-color: var(--color-accent);
   }
 
   :focus-visible {

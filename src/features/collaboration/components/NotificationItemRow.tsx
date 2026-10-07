@@ -80,7 +80,7 @@ export const NotificationItemRow: React.FC<NotificationItemRowProps> = ({
         return {
           icon: Clock,
           label: 'Cycle',
-          className: 'text-[#8b5cf6] bg-[#8b5cf6]/10 border-[#8b5cf6]/20',
+          className: 'text-accent bg-accent/10 border-accent/20',
         };
     }
   };

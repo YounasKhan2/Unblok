@@ -102,7 +102,7 @@ export const CommandPalette: React.FC = () => {
         id: 'cmd_reset_demo',
         title: 'Reset demo data to initial state',
         category: 'ACTIONS',
-        icon: <RotateCcw className="w-4 h-4 text-red-500" />,
+        icon: <RotateCcw className="w-4 h-4 text-danger" />,
         onSelect: () => {
           setIsOpen(false);
           resetToDemoData();

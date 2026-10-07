@@ -18,13 +18,13 @@ export const CycleErrorDialog: React.FC = () => {
       maxWidth="md"
     >
       <div className="space-y-4 text-xs">
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2.5">
-          <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+        <div className="p-3 bg-danger/10 border border-danger/30 rounded-lg flex items-start gap-2.5">
+          <AlertTriangle className="w-5 h-5 text-danger shrink-0 mt-0.5" />
           <div>
-            <div className="font-semibold text-sm text-red-900">
+            <div className="font-semibold text-sm text-danger">
               Invalid Graph Mutation
             </div>
-            <p className="text-red-700 text-xs mt-1 leading-relaxed">
+            <p className="text-danger/90 text-xs mt-1 leading-relaxed">
               Adding this prerequisite edge would create an infinite circular wait loop.
             </p>
           </div>
@@ -32,18 +32,18 @@ export const CycleErrorDialog: React.FC = () => {
 
         {cycleError.cyclePath && cycleError.cyclePath.length > 0 && (
           <div>
-            <div className="font-semibold text-[#787671] uppercase tracking-wider text-[11px] mb-2 flex items-center gap-1.5">
-              <Repeat className="w-3.5 h-3.5 text-red-600" />
+            <div className="font-semibold text-text-muted uppercase tracking-wider text-[11px] mb-2 flex items-center gap-1.5">
+              <Repeat className="w-3.5 h-3.5 text-danger" />
               <span>Detected Dependency Loop:</span>
             </div>
-            <div className="p-3 bg-[#fafaf9] rounded-lg border border-[#e5e3df] font-mono text-xs text-[#5645d4] flex flex-wrap items-center gap-2">
+            <div className="p-3 bg-surface-subtle rounded-lg border border-border font-mono text-xs text-accent flex flex-wrap items-center gap-2">
               {cycleError.cyclePath.map((key, idx) => (
                 <React.Fragment key={idx}>
-                  <span className="font-bold px-1.5 py-0.5 rounded bg-purple-50 border border-purple-200">
+                  <span className="font-bold px-1.5 py-0.5 rounded bg-accent/10 border border-accent/20">
                     {key}
                   </span>
                   {idx < cycleError.cyclePath.length - 1 && (
-                    <span className="text-[#a4a097]">→</span>
+                    <span className="text-text-muted">→</span>
                   )}
                 </React.Fragment>
               ))}
@@ -51,11 +51,11 @@ export const CycleErrorDialog: React.FC = () => {
           </div>
         )}
 
-        <div className="text-[11px] text-[#787671] bg-gray-50 p-2.5 rounded border border-gray-200">
+        <div className="text-[11px] text-text-muted bg-surface-muted p-2.5 rounded border border-border">
           Rule: Issue A cannot block Issue B if Issue B already blocks Issue A (directly or indirectly).
         </div>
 
-        <div className="flex justify-end pt-3 border-t border-[#e5e3df]">
+        <div className="flex justify-end pt-3 border-t border-border">
           <Button variant="primary" size="md" onClick={clearCycleError}>
             Dismiss
           </Button>
