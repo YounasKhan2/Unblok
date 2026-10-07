@@ -153,11 +153,10 @@ export const TeamHubPage: React.FC = () => {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`text-xs pb-2 font-medium capitalize border-b-2 transition-colors cursor-pointer ${
-                activeTab === tab
+              className={`text-xs pb-2 font-medium capitalize border-b-2 transition-colors cursor-pointer ${activeTab === tab
                   ? 'border-accent text-accent font-semibold'
                   : 'border-transparent text-text-muted hover:text-text-primary'
-              }`}
+                }`}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
@@ -169,7 +168,7 @@ export const TeamHubPage: React.FC = () => {
       <div className="flex-1 overflow-y-auto min-h-0 p-6">
         {/* TAB A: OVERVIEW */}
         {activeTab === 'overview' && (
-          <div className="space-y-6 max-w-6xl">
+          <div className="space-y-6">
             {/* KPI Metric Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-3.5 rounded-xl border border-border bg-surface-base shadow-xs">
@@ -409,7 +408,7 @@ export const TeamHubPage: React.FC = () => {
 
         {/* TAB B: ISSUES */}
         {activeTab === 'issues' && (
-          <div className="space-y-4 max-w-6xl">
+          <div className="space-y-4">
             {/* Filter bar */}
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="relative flex-1 min-w-[200px] max-w-sm">
@@ -483,7 +482,7 @@ export const TeamHubPage: React.FC = () => {
 
         {/* TAB C: PROJECTS */}
         {activeTab === 'projects' && (
-          <div className="space-y-4 max-w-6xl">
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-sm font-bold text-text-primary">
@@ -553,7 +552,7 @@ export const TeamHubPage: React.FC = () => {
 
         {/* TAB D: PLANNING */}
         {activeTab === 'planning' && (
-          <div className="space-y-6 max-w-6xl">
+          <div className="space-y-6">
             <div>
               <h2 className="text-sm font-bold text-text-primary">Team Planning</h2>
               <p className="text-xs text-text-muted">
