@@ -44,10 +44,6 @@ export const FinalCtaSection: React.FC = () => {
               Explore product
             </Link>
           </div>
-
-          <p className="text-xs text-[var(--color-pub-text-muted)] mt-6">
-            Explore the live prototype with complete workspace demo data.
-          </p>
         </div>
       </MarketingContainer>
     </MarketingSection>

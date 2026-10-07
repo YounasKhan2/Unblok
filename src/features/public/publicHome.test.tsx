@@ -6,7 +6,7 @@
 import { describe, it, expect } from 'vitest';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import { HomePage } from '../../pages/public/HomePage';
 import { PublicLayout } from '../../app/layouts/PublicLayout';
 import { AuthLayout } from '../../app/layouts/AuthLayout';
@@ -18,12 +18,9 @@ import { PublicNotFoundPage } from './components/PublicNotFoundPage';
 import { PrivateNotFoundPage } from '../../pages/placeholder/PrivateNotFoundPage';
 import { ProductCapture } from './components/ProductCapture';
 import { HeroSection } from './sections/HeroSection';
-import { ExecutionSection } from './sections/ExecutionSection';
-import { DependenciesSection } from './sections/DependenciesSection';
-import { IssueContextSection } from './sections/IssueContextSection';
-import { PlanningSection } from './sections/PlanningSection';
-import { InsightsSection } from './sections/InsightsSection';
 import { FinalCtaSection } from './sections/FinalCtaSection';
+import { AppRoutes } from '../../app/router/AppRouter';
+import { AppProviders } from '../../app/providers/AppProviders';
 
 describe('UX-11B Public Homepage & Routing Architecture Validation', () => {
   describe('1. Public Homepage Narrative & Section Presence', () => {
@@ -91,6 +88,25 @@ describe('UX-11B Public Homepage & Routing Architecture Validation', () => {
       expect(html).not.toMatch(/\bAI\b/);
       expect(html).not.toMatch(/\blead intervention\b/i);
       expect(html).not.toMatch(/\batomic issue dependencies\b/i);
+    });
+
+    it('contains no fake operational status or internal prototype development copy on public surfaces', () => {
+      const homeHtml = renderToString(
+        <MemoryRouter>
+          <HomePage />
+        </MemoryRouter>
+      );
+      expect(homeHtml).not.toContain('All systems operational');
+      expect(homeHtml).not.toContain('live prototype');
+      expect(homeHtml).not.toContain('demo data');
+
+      const footerHtml = renderToString(
+        <MemoryRouter>
+          <PublicFooter />
+        </MemoryRouter>
+      );
+      expect(footerHtml).not.toContain('All systems operational');
+      expect(footerHtml).not.toContain('animate-pulse');
     });
   });
 
@@ -189,32 +205,64 @@ describe('UX-11B Public Homepage & Routing Architecture Validation', () => {
     });
   });
 
-  describe('4. Error Routing & 404 Boundaries', () => {
-    it('renders Public 404 within PublicLayout with Return Home and Explore Product', () => {
-      const html = renderToString(
-        <MemoryRouter>
-          <PublicNotFoundPage />
-        </MemoryRouter>
-      );
+  describe('4. Deterministic 404 Route Ownership', () => {
+    it('renders Public 404 for truly unknown global/public URLs within PublicLayout', () => {
+      const urls = ['/unknown', '/company', '/random-page', '/something-that-does-not-exist'];
 
-      expect(html).toContain('404 — Page Not Found');
-      expect(html).toContain('Return to Homepage');
-      expect(html).toContain('Explore Product');
-      expect(html).toContain('href="/"');
-      expect(html).toContain('href="/product"');
+      urls.forEach((url) => {
+        const html = renderToString(
+          <AppProviders>
+            <MemoryRouter initialEntries={[url]}>
+              <AppRoutes />
+            </MemoryRouter>
+          </AppProviders>
+        );
+
+        // Renders Public 404 inside PublicLayout
+        expect(html).toContain('404 — Page Not Found');
+        expect(html).toContain('Return to Homepage');
+        expect(html).toContain('Explore Product');
+        expect(html).toContain('class="unblok-public-theme"');
+
+        // Does NOT render in AppShellLayout
+        expect(html).not.toContain('Resource Not Found');
+        expect(html).not.toContain('workspace-sidebar');
+      });
     });
 
-    it('renders in-shell Private 404 with Go to My Work and search shortcut', () => {
-      const html = renderToString(
-        <MemoryRouter initialEntries={['/projects/INVALID/issues']}>
-          <PrivateNotFoundPage />
-        </MemoryRouter>
-      );
+    it('retains in-shell Private 404 ownership for unknown descendants under all canonical private namespaces', () => {
+      const privateUrls = [
+        '/projects/ENG/nonexistent',
+        '/issues/nonexistent/extra',
+        '/teams/ENG/nonexistent',
+        '/cycles/nonexistent/extra',
+        '/milestones/nonexistent/extra',
+        '/settings/nonexistent',
+        '/dependencies/nonexistent',
+        '/roadmap/nonexistent',
+        '/insights/nonexistent',
+        '/my-work/nonexistent',
+        '/inbox/nonexistent',
+      ];
 
-      expect(html).toContain('Resource Not Found');
-      expect(html).toContain('Go to My Work');
-      expect(html).toContain('Open Search (⌘K)');
-      expect(html).toContain('href="/my-work"');
+      privateUrls.forEach((url) => {
+        const html = renderToString(
+          <AppProviders>
+            <MemoryRouter initialEntries={[url]}>
+              <AppRoutes />
+            </MemoryRouter>
+          </AppProviders>
+        );
+
+        // Must stay inside AppShell and render in-shell Private 404
+        expect(html).toContain('Resource Not Found');
+        expect(html).toContain('Go to My Work');
+        expect(html).toContain('Open Search (⌘K)');
+
+        // Must NOT fall into Public 404
+        expect(html).not.toContain('404 — Page Not Found');
+        expect(html).not.toContain('Return to Homepage');
+      });
     });
   });
 
@@ -269,19 +317,20 @@ describe('UX-11B Public Homepage & Routing Architecture Validation', () => {
   });
 
   describe('7. PublicPlaceholderPage Contract', () => {
-    it('renders placeholder with clear phase labeling and auth/home actions', () => {
+    it('renders placeholder with Coming Soon and auth/home actions without internal phase jargon', () => {
       const html = renderToString(
         <MemoryRouter>
           <PublicPlaceholderPage
             title="Pricing & Packaging"
             category="Commercial"
             description="Dedicated commercial presentation surface."
-            targetPhase="UX-11C"
           />
         </MemoryRouter>
       );
 
-      expect(html).toContain('UX-11C');
+      expect(html).toContain('Coming Soon');
+      expect(html).not.toContain('UX-11C');
+      expect(html).not.toContain('Scheduled for');
       expect(html).toContain('Pricing &amp; Packaging');
       expect(html).toContain('Dedicated commercial presentation surface.');
       expect(html).toContain('href="/"');

@@ -40,10 +40,9 @@ import { TeamsSettingsPage } from '../../pages/settings/TeamsSettingsPage';
 import { IntegrationsSettingsPage } from '../../pages/settings/IntegrationsSettingsPage';
 import { PreferencesSettingsPage } from '../../pages/settings/PreferencesSettingsPage';
 
-export const AppRouter: React.FC = () => {
+export const AppRoutes: React.FC = () => {
   return (
-    <BrowserRouter>
-      <Routes>
+    <Routes>
         {/* ========================================================= */}
         {/* 1. PUBLIC ROUTE FAMILY (UX-11A / UX-11B)                  */}
         {/* Uses PublicLayout with fixed theme, header, and footer    */}
@@ -151,9 +150,11 @@ export const AppRouter: React.FC = () => {
         <Route element={<AppShellLayout />}>
           {/* Primary UX-01 Page */}
           <Route path="/my-work" element={<MyWorkPage />} />
+          <Route path="/my-work/*" element={<PrivateNotFoundPage />} />
 
           {/* Canonical Inbox Page (UX-06) */}
           <Route path="/inbox" element={<InboxPage />} />
+          <Route path="/inbox/*" element={<PrivateNotFoundPage />} />
 
           {/* Projects Space (UX-02 Fully Implemented) */}
           <Route path="/projects" element={<ProjectsDirectoryPage />} />
@@ -165,10 +166,11 @@ export const AppRouter: React.FC = () => {
             <Route path="settings" element={<ProjectSettingsPage />} />
             <Route path="*" element={<PrivateNotFoundPage />} />
           </Route>
+          <Route path="/projects/*" element={<PrivateNotFoundPage />} />
 
           {/* Issues Space (UX-03 Real Canonical Page) */}
           <Route path="/issues/:issueKey" element={<IssueDetailPage />} />
-          <Route path="/issues" element={<PrivateNotFoundPage />} />
+          <Route path="/issues/*" element={<PrivateNotFoundPage />} />
 
           {/* Teams Space */}
           <Route
@@ -191,19 +193,27 @@ export const AppRouter: React.FC = () => {
               />
             }
           />
+          <Route path="/teams/*" element={<PrivateNotFoundPage />} />
 
           {/* Planning Space (UX-05 Canonical Implementation) */}
           <Route path="/cycles" element={<CyclesPage />} />
           <Route path="/cycles/:cycleId" element={<CycleDetailPage />} />
+          <Route path="/cycles/*" element={<PrivateNotFoundPage />} />
+
           <Route path="/milestones" element={<MilestonesPage />} />
           <Route path="/milestones/:milestoneId" element={<MilestoneDetailPage />} />
+          <Route path="/milestones/*" element={<PrivateNotFoundPage />} />
+
           <Route path="/roadmap" element={<RoadmapPage />} />
+          <Route path="/roadmap/*" element={<PrivateNotFoundPage />} />
 
           {/* Dependency Intelligence Space (UX-04 Canonical Page) */}
           <Route path="/dependencies" element={<DependenciesPage />} />
+          <Route path="/dependencies/*" element={<PrivateNotFoundPage />} />
 
           {/* Insights Space (UX-07 Canonical Destination) */}
           <Route path="/insights" element={<InsightsPage />} />
+          <Route path="/insights/*" element={<PrivateNotFoundPage />} />
 
           {/* Settings Space (UX-08 Canonical Implementation) */}
           <Route path="/settings" element={<Outlet />}>
@@ -244,7 +254,9 @@ export const AppRouter: React.FC = () => {
               <Route path="preferences" element={<PreferencesSettingsPage />} />
               <Route path="*" element={<PrivateNotFoundPage />} />
             </Route>
+            <Route path="*" element={<PrivateNotFoundPage />} />
           </Route>
+          <Route path="/settings/*" element={<PrivateNotFoundPage />} />
 
           {/* Explicit private fallback routes */}
           <Route path="/app/*" element={<PrivateNotFoundPage />} />
@@ -258,6 +270,13 @@ export const AppRouter: React.FC = () => {
           <Route path="*" element={<PublicNotFoundPage />} />
         </Route>
       </Routes>
+  );
+};
+
+export const AppRouter: React.FC = () => {
+  return (
+    <BrowserRouter>
+      <AppRoutes />
     </BrowserRouter>
   );
 };

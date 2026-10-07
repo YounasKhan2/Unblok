@@ -19,7 +19,6 @@ export const PublicPlaceholderPage: React.FC<PublicPlaceholderPageProps> = ({
   title,
   category,
   description,
-  targetPhase = 'UX-11C',
 }) => {
   return (
     <div className="py-24 sm:py-32 flex-1 flex items-center">
@@ -27,7 +26,7 @@ export const PublicPlaceholderPage: React.FC<PublicPlaceholderPageProps> = ({
         <div className="bg-white border border-[var(--color-pub-border)] rounded-2xl p-8 sm:p-12 shadow-sm text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-pub-accent-subtle)] text-[var(--color-pub-accent)] text-xs font-semibold mb-6">
             <Construction className="w-3.5 h-3.5" />
-            <span>Public Route Specification · Scheduled for {targetPhase}</span>
+            <span>Coming Soon</span>
           </div>
 
           <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-pub-text-muted)] mb-2">

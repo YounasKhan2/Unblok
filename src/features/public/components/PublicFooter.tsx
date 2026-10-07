@@ -27,10 +27,6 @@ export const PublicFooter: React.FC = () => {
             <p className="text-sm text-[var(--color-pub-text-secondary)] max-w-sm leading-relaxed">
               High-density execution and dependency intelligence for technical engineering teams.
             </p>
-            <div className="flex items-center gap-2 text-xs font-medium text-[var(--color-pub-text-secondary)]">
-              <span className="w-2 h-2 rounded-full bg-[var(--color-pub-done)] animate-pulse" />
-              <span>All systems operational</span>
-            </div>
           </div>
 
           {/* Column 1: Product */}
