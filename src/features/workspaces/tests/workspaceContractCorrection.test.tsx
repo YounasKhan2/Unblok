@@ -56,6 +56,7 @@ import {
 } from '../../../context/ProjectContext';
 
 import { AuthProvider } from '../../auth/context/AuthContext';
+import { MockWorkspaceAdapter } from '../adapters/mockWorkspaceAdapter';
 import { Issue, Project } from '../../../types';
 
 const TEST_WORKSPACES: Workspace[] = [
@@ -243,13 +244,58 @@ describe('UX-13 Multi-Workspace Contract Correction', () => {
       // Status INVITED must not be selected as active workspace
       expect(resolved.activeWorkspaceId).toBeNull();
     });
+
+    it('MockWorkspaceAdapter.updateMembershipStatus prevents transitioning final ACTIVE ADMIN to non-ACTIVE status', async () => {
+      const adapter = new MockWorkspaceAdapter();
+      // Sarah is the sole active admin on ws_acme
+      await expect(
+        adapter.updateMembershipStatus('mem_sarah_acme', 'SUSPENDED')
+      ).rejects.toThrow(/Cannot remove or demote the last active Administrator/);
+
+      // Alex is a member on ws_acme and can be suspended
+      const memberUpdated = await adapter.updateMembershipStatus('mem_alex_acme', 'SUSPENDED');
+      expect(memberUpdated?.status).toBe('SUSPENDED');
+
+      // Add a second active admin to ws_acme
+      await adapter.acceptInvitation('ws_acme', 'usr_second_admin', 'ADMIN');
+
+      // Now Sarah is no longer the final active admin, so suspending Sarah is permitted
+      const adminUpdated = await adapter.updateMembershipStatus('mem_sarah_acme', 'SUSPENDED');
+      expect(adminUpdated?.status).toBe('SUSPENDED');
+    });
+
+    it('MockWorkspaceAdapter.removeMembership preserves existing last-admin removal protection', async () => {
+      const adapter = new MockWorkspaceAdapter();
+      // Sole admin on ws_apex cannot be removed
+      await expect(
+        adapter.removeMembership('mem_alex_apex')
+      ).rejects.toThrow(/Cannot remove or demote the last active Administrator/);
+    });
   });
 
   /* ======================================================================== */
   /* 3. ARCHIVED WORKSPACE MUTATION REJECTION (AUTHORITATIVE)                  */
   /* ======================================================================== */
-  describe('3. Archived Workspace Mutation Rejection', () => {
-    it('assertMutableWorkspace throws ARCHIVED_WORKSPACE_READ_ONLY for archived workspaces', () => {
+  describe('3. Fail-Closed Workspace Mutation Assertion & Archived Rejection', () => {
+    it('assertMutableWorkspace throws explicit unavailable error on null and undefined workspaces', () => {
+      expect(() => {
+        assertMutableWorkspace(null);
+      }).toThrowError(/unavailable or unresolved/i);
+
+      expect(() => {
+        assertMutableWorkspace(undefined);
+      }).toThrowError(/unavailable or unresolved/i);
+    });
+
+    it('assertMutableWorkspace permits ACTIVE workspaces without error', () => {
+      const activeWs = TEST_WORKSPACES.find(w => w.id === 'ws_alpha')!;
+      expect(isWorkspaceMutable(activeWs)).toBe(true);
+      expect(() => {
+        assertMutableWorkspace(activeWs);
+      }).not.toThrow();
+    });
+
+    it('assertMutableWorkspace throws read-only error for ARCHIVED workspaces', () => {
       const archivedWs = TEST_WORKSPACES.find(w => w.id === 'ws_archived')!;
       expect(isWorkspaceMutable(archivedWs)).toBe(false);
 

@@ -49,11 +49,15 @@ export function isWorkspaceMutable(workspace?: Workspace | null): boolean {
 }
 
 /**
- * Section 26: Enforces that active workspace is not archived.
- * Throws explicit error on attempted writes to an archived workspace.
+ * Section 26: Enforces that active workspace exists and is mutable (not archived).
+ * Fail-closed: null or undefined workspace throws an explicit unavailable-workspace error.
+ * An ARCHIVED workspace throws its read-only error.
  */
 export function assertMutableWorkspace(workspace?: Workspace | null): void {
-  if (workspace && !isWorkspaceMutable(workspace)) {
+  if (!workspace) {
+    throw new Error('Workspace is unavailable or unresolved. Mutations are forbidden.');
+  }
+  if (!isWorkspaceMutable(workspace)) {
     throw new Error(
       `Workspace '${workspace.name || workspace.id}' is archived and read-only. Mutations are forbidden.`
     );

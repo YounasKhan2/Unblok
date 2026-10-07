@@ -37,6 +37,7 @@ import {
 
 import {
   assertNotLastAdminRemoval,
+  assertMutableWorkspace,
   canPerformAdminAction,
   canPerformExecutionAction,
   isWorkspaceMutable,
@@ -335,6 +336,23 @@ describe('UX-13: Workspace Lifecycle & Multi-Workspace Architecture', () => {
       expect(isWorkspaceMutable(archivedWs)).toBe(false);
       expect(isWorkspaceMutable(null)).toBe(false);
     });
+
+    it('assertMutableWorkspace fails closed on null and undefined, allows ACTIVE, rejects ARCHIVED', () => {
+      const activeWs: Workspace = { id: 'w1', name: 'Active', slug: 'active', status: 'ACTIVE', createdAt: '2026-01-01' };
+      const archivedWs: Workspace = { id: 'w2', name: 'Archived', slug: 'archived', status: 'ARCHIVED', createdAt: '2026-01-01' };
+
+      // null throws explicit unavailable error
+      expect(() => assertMutableWorkspace(null)).toThrow(/unavailable or unresolved/i);
+
+      // undefined throws explicit unavailable error
+      expect(() => assertMutableWorkspace(undefined)).toThrow(/unavailable or unresolved/i);
+
+      // ARCHIVED throws read-only error
+      expect(() => assertMutableWorkspace(archivedWs)).toThrow(/archived and read-only/i);
+
+      // ACTIVE is permitted
+      expect(() => assertMutableWorkspace(activeWs)).not.toThrow();
+    });
   });
 
   /* ======================================================================== */
@@ -378,6 +396,33 @@ describe('UX-13: Workspace Lifecycle & Multi-Workspace Architecture', () => {
 
       const userMemberships = await adapter.getUserMemberships('user_new');
       expect(userMemberships.some(m => m.workspaceId === 'ws_apex')).toBe(true);
+    });
+
+    it('prevents transitioning the final ACTIVE ADMIN to non-ACTIVE status while allowing non-final admin', async () => {
+      const adapter = new MockWorkspaceAdapter();
+      // Sarah is the sole active admin on ws_acme
+      await expect(
+        adapter.updateMembershipStatus('mem_sarah_acme', 'SUSPENDED')
+      ).rejects.toThrow(/Cannot remove or demote the last active Administrator/);
+
+      // Alex is a member on ws_acme and can be suspended
+      const updatedAlex = await adapter.updateMembershipStatus('mem_alex_acme', 'SUSPENDED');
+      expect(updatedAlex?.status).toBe('SUSPENDED');
+
+      // Now add a second admin to ws_acme
+      await adapter.acceptInvitation('ws_acme', 'usr_second_admin', 'ADMIN');
+
+      // Now Sarah is no longer the final active admin, so suspending Sarah is permitted
+      const updatedSarah = await adapter.updateMembershipStatus('mem_sarah_acme', 'SUSPENDED');
+      expect(updatedSarah?.status).toBe('SUSPENDED');
+    });
+
+    it('preserves existing last-admin removal protection', async () => {
+      const adapter = new MockWorkspaceAdapter();
+      // Sole admin on apex cannot be removed
+      await expect(
+        adapter.removeMembership('mem_alex_apex')
+      ).rejects.toThrow(/Cannot remove or demote the last active Administrator/);
     });
   });
 

@@ -206,6 +206,12 @@ export class MockWorkspaceAdapter implements WorkspaceAdapter {
   ): Promise<WorkspaceMembership | null> {
     const mem = this.memberships.find((m) => m.id === membershipId);
     if (!mem) return null;
+
+    // Last admin protection invariant check: prevent transitioning final active admin to non-active status
+    if (status !== 'ACTIVE') {
+      assertNotLastAdminRemoval(this.memberships, mem.userId, mem.workspaceId);
+    }
+
     mem.status = status;
     this.saveMemberships();
     return { ...mem };
