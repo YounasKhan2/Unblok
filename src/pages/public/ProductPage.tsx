@@ -146,11 +146,11 @@ export const ProductPage: React.FC = () => {
             </div>
 
             <h2 className="pub-section-title mb-2">
-              Plan around live dependency readiness
+              Plan around actual execution
             </h2>
 
             <p className="pub-body-lead text-sm sm:text-base">
-              Strategic roadmaps and milestones reflect actual delivery feasibility based on unresolved blocker paths.
+              Time-boxed Cycles, Milestones, and Roadmaps structure commitments around issue state and dependency context.
             </p>
           </div>
 
@@ -208,14 +208,14 @@ export const ProductPage: React.FC = () => {
             </h2>
 
             <p className="pub-body-lead text-sm sm:text-base">
-              Delivery Health scores, Needs Attention queues, and Dependency Pressure maps calculated from active work states.
+              Delivery Health states, Needs Attention queues, and Dependency Pressure signals derived from active work states.
             </p>
           </div>
 
           <div className="relative z-10">
             <ProductCapture
               src="/marketing/proof-insights.png"
-              alt="Unblok Insights command center showing Delivery Health and Needs Attention queue"
+              alt="Unblok Insights view showing Delivery Health, Needs Attention and Dependency Pressure"
               displayUrl="unblok.app/insights"
               shadow="elevated"
             />

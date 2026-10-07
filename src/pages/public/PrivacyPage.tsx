@@ -13,87 +13,72 @@ const PRIVACY_SECTIONS: DocumentSection[] = [
     content: (
       <>
         <p>
-          This Pre-Launch Privacy Notice describes how Unblok handles information during our active product preview and development phase. Unblok is an execution and dependency intelligence platform designed for software engineering teams.
+          This Pre-Launch Privacy Notice describes the current informational state of Unblok during our active pre-launch period. Unblok is an execution and dependency intelligence platform designed for software engineering teams.
         </p>
         <p>
-          Because Unblok is currently operating as a software prototype and preview system, formal legally binding terms and production data handling contracts will accompany the general availability of the production service.
+          Unblok is currently pre-launch. This document is a transparency disclosure regarding our active pre-launch state and is not the final commercial Privacy Policy.
         </p>
       </>
     ),
   },
   {
-    id: 'data-collected',
-    title: 'Information Handled During Preview',
+    id: 'current-prototype',
+    title: 'Current Prototype Demonstrations',
     content: (
       <>
         <p>
-          During the evaluation preview, data generated within the application is maintained strictly for functional demonstration and interface validation:
+          During the active demonstration preview, user interface interactions and demonstration workspace records exist locally within the browser session for interface evaluation.
         </p>
-        <ul className="list-disc list-inside space-y-1 pl-2">
-          <li>
-            <strong>Workspace Demonstration Data:</strong> Projects, issues, blocker relationship links, cycles, milestones, and contextual comments entered into the workspace.
-          </li>
-          <li>
-            <strong>Technical Diagnostics:</strong> Standard client-side state logging necessary to diagnose application crashes, rendering faults, and route errors.
-          </li>
-          <li>
-            <strong>Communications:</strong> Inquiries, feedback, and architecture questions submitted directly to the Unblok team via email.
-          </li>
+        <p>
+          No production workspace server ingestion, background diagnostic tracking, or centralized communication processing is currently active for public preview visitors.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: 'workspace-isolation',
+    title: 'Workspace Isolation Requirement',
+    content: (
+      <>
+        <p>
+          Workspace isolation is a production requirement and must be enforced authoritatively by the production system.
+        </p>
+        <p>
+          Within the client prototype, cross-workspace relationships are forbidden by the product domain contract. When the multi-tenant backend architecture is deployed, authoritative boundary enforcement will ensure that data remains strictly partitioned.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: 'production-policy',
+    title: 'Production Privacy Policy Commitments',
+    content: (
+      <>
+        <p>
+          Prior to commercial production availability, a comprehensive, legally vetted production Privacy Policy will be published. That document will authoritatively define:
+        </p>
+        <ul className="list-disc list-inside space-y-1.5 pl-2">
+          <li>Information categories collected across accounts and workspaces</li>
+          <li>Operational purposes for data processing</li>
+          <li>Data retention schedules and deletion mechanics</li>
+          <li>Authorized infrastructure sub-processors</li>
+          <li>User rights, access requests, and export tools</li>
+          <li>Security practices and encryption standards</li>
+          <li>Applicable regional obligations (including GDPR, CCPA, and related statutory frameworks)</li>
         </ul>
-      </>
-    ),
-  },
-  {
-    id: 'data-use',
-    title: 'How Information is Used',
-    content: (
-      <>
         <p>
-          Information handled in this preview is utilized exclusively to:
-        </p>
-        <ul className="list-disc list-inside space-y-1 pl-2">
-          <li>Operate and evaluate user interface workflows, dependency graphs, and planning mechanics.</li>
-          <li>Validate layout boundaries, focus traps, and accessibility standards.</li>
-          <li>Respond to technical and commercial inquiries submitted by evaluating engineering teams.</li>
-        </ul>
-        <p>
-          We do not sell, rent, monetize, or broker workspace data to third parties, advertising networks, or data brokers.
+          Specific commitments and operational definitions will be established in that final policy rather than prematurely asserted during pre-launch.
         </p>
       </>
     ),
   },
   {
-    id: 'data-isolation',
-    title: 'Workspace Isolation & Confidentiality',
+    id: 'inquiries',
+    title: 'Inquiries',
     content: (
       <>
         <p>
-          Workspace data isolation is a core architectural requirement of Unblok. Projects, issues, and member records are scoped to their containing workspace boundary. In the production architecture, multi-tenant separation is enforced at the database row-level and server-authoritative API layers.
-        </p>
-      </>
-    ),
-  },
-  {
-    id: 'production-commitment',
-    title: 'Production Policy Finalization',
-    content: (
-      <>
-        <p>
-          Prior to commercial production availability, Unblok will publish a comprehensive, legally vetted Privacy Policy. That policy will address formal data protection rights (including GDPR, CCPA, and applicable regional frameworks), standard data processing agreements (DPAs), and third-party infrastructure sub-processors.
-        </p>
-      </>
-    ),
-  },
-  {
-    id: 'contact',
-    title: 'Contact for Privacy Questions',
-    content: (
-      <>
-        <p>
-          If you have questions regarding our privacy architecture or planned data handling policies, contact our team at{' '}
-          <a href="mailto:hello@unblok.dev" className="text-[var(--color-pub-accent)] font-semibold hover:underline">
-            hello@unblok.dev
-          </a>.
+          Inquiries regarding Unblok's planned privacy posture and enterprise governance standards will be handled through our official contact channels upon production availability.
         </p>
       </>
     ),
@@ -103,10 +88,10 @@ const PRIVACY_SECTIONS: DocumentSection[] = [
 export const PrivacyPage: React.FC = () => {
   return (
     <PublicDocumentLayout
-      title="Privacy Notice"
+      title="Pre-Launch Privacy Notice"
       eyebrow="Legal & Transparency"
       effectiveDate="October 2026"
-      preLaunchNotice="Unblok is currently in active pre-launch preview. This notice describes our development-phase information handling principles. Comprehensive, legally binding production policies will be published prior to general production availability."
+      preLaunchNotice="Unblok is currently pre-launch. This notice provides an honest description of our pre-launch status. A comprehensive, legally reviewed Privacy Policy will be published prior to general production availability."
       sections={PRIVACY_SECTIONS}
     />
   );

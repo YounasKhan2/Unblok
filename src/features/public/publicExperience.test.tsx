@@ -39,8 +39,8 @@ describe('UX-11C Complete Public Experience Tests', () => {
       { path: '/pricing', expectedTitle: 'Predictable evaluation. Commercial packaging in progress.' },
       { path: '/security', expectedTitle: 'Security principles and architecture boundaries' },
       { path: '/contact', expectedTitle: 'Contact the Unblok team' },
-      { path: '/privacy', expectedTitle: 'Privacy Notice' },
-      { path: '/terms', expectedTitle: 'Terms of Service' },
+      { path: '/privacy', expectedTitle: 'Pre-Launch Privacy Notice' },
+      { path: '/terms', expectedTitle: 'Pre-Launch Terms Notice' },
     ];
 
     routes.forEach(({ path, expectedTitle }) => {
@@ -125,6 +125,17 @@ describe('UX-11C Complete Public Experience Tests', () => {
   });
 
   describe('3. Truth Audit: Grounded Content & Absence of Fabrications', () => {
+    const getAllPublicPagesHtml = () => [
+      renderToString(<MemoryRouter><ProductPage /></MemoryRouter>),
+      renderToString(<MemoryRouter><FeaturesPage /></MemoryRouter>),
+      renderToString(<MemoryRouter><SolutionsPage /></MemoryRouter>),
+      renderToString(<MemoryRouter><PricingPage /></MemoryRouter>),
+      renderToString(<MemoryRouter><SecurityPage /></MemoryRouter>),
+      renderToString(<MemoryRouter><ContactPage /></MemoryRouter>),
+      renderToString(<MemoryRouter><PrivacyPage /></MemoryRouter>),
+      renderToString(<MemoryRouter><TermsPage /></MemoryRouter>),
+    ].join(' ');
+
     it('verifies pricing contains no invented dollar prices, fake seat limits, or SLAs', () => {
       const html = renderToString(
         <MemoryRouter>
@@ -159,39 +170,103 @@ describe('UX-11C Complete Public Experience Tests', () => {
       expect(html).toContain('pre-compliance');
     });
 
-    it('verifies privacy and terms clearly communicate pre-launch preview status', () => {
+    it('verifies explicit absence of prohibited terminology across all public pages', () => {
+      const allPublicPagesHtml = getAllPublicPagesHtml();
+
+      const prohibitedPatterns: { name: string; pattern: RegExp }[] = [
+        { name: 'sprint', pattern: /\bsprints?\b/i },
+        { name: 'burnup', pattern: /\bburnup\b/i },
+        { name: 'burndown', pattern: /\bburndown\b/i },
+        { name: 'velocity', pattern: /\bvelocity\b/i },
+        { name: 'critical path', pattern: /critical path/i },
+        { name: 'live delivery intelligence', pattern: /live delivery intelligence/i },
+        { name: 'live dependency readiness', pattern: /live dependency readiness/i },
+        { name: 'Delivery Health score', pattern: /Delivery Health score/i },
+        { name: 'SOC 2 Type II audit engagement planned', pattern: /SOC 2 Type II audit engagement planned/i },
+        { name: 'SAML/SSO', pattern: /SAML\/SSO/i },
+        { name: 'MFA support', pattern: /MFA support/i },
+        { name: 'row-level database security', pattern: /row-level database security/i },
+        { name: 'Expected response within 1 business day', pattern: /Expected response within 1 business day/i },
+        { name: 'Prototype Preview', pattern: /Prototype Preview/i },
+        { name: 'backend mail processing', pattern: /backend mail processing/i },
+        { name: 'evaluation license', pattern: /evaluation license/i },
+        { name: 'revocable', pattern: /\brevocable\b/i },
+        { name: 'non-transferable', pattern: /\bnon-transferable\b/i },
+        { name: 'reverse engineer', pattern: /reverse engineer/i },
+      ];
+
+      prohibitedPatterns.forEach(({ name, pattern }) => {
+        expect(allPublicPagesHtml, `Expected public pages NOT to contain prohibited phrase: "${name}"`).not.toMatch(pattern);
+      });
+    });
+
+    it('verifies Security clearly separates prototype invariants from production requirements', () => {
+      const securityHtml = renderToString(
+        <MemoryRouter>
+          <SecurityPage />
+        </MemoryRouter>
+      );
+
+      // Distinguishes demonstrated invariants from production requirements
+      expect(securityHtml).toContain('Demonstrated product invariant');
+      expect(securityHtml).toContain('Cross-workspace relationships are forbidden by the domain contract');
+      expect(securityHtml).toContain('Production requirement');
+      expect(securityHtml).toContain('Workspace isolation must be authoritatively enforced by the production backend and data architecture');
+      expect(securityHtml).toContain('UI permission restrictions are not production authorization');
+    });
+
+    it('verifies /privacy identifies itself as Pre-Launch Privacy Notice without premature commitments', () => {
       const privacyHtml = renderToString(
         <MemoryRouter>
           <PrivacyPage />
         </MemoryRouter>
       );
-      expect(privacyHtml).toContain('Pre-Launch Notice');
-      expect(privacyHtml).toContain('Pre-Launch Privacy Notice');
 
+      expect(privacyHtml).toContain('Pre-Launch Privacy Notice');
+      expect(privacyHtml).toContain('Workspace isolation is a production requirement and must be enforced authoritatively by the production system');
+      expect(privacyHtml).not.toContain('enforced at the database row-level');
+      expect(privacyHtml).not.toContain('hello@unblok.dev');
+    });
+
+    it('verifies /terms identifies itself as Pre-Launch Terms Notice and disclaims final commercial agreement', () => {
       const termsHtml = renderToString(
         <MemoryRouter>
           <TermsPage />
         </MemoryRouter>
       );
-      expect(termsHtml).toContain('Pre-Launch Notice');
-      expect(termsHtml).toContain('Pre-Launch Terms of Service');
+
+      expect(termsHtml).toContain('Pre-Launch Terms Notice');
+      expect(termsHtml).toContain('not the final commercial Terms of Service');
+      expect(termsHtml).toContain('Nothing on the current page or across our preview web surfaces should be interpreted as a final commercial agreement');
+      expect(termsHtml).not.toContain('evaluation license');
+      expect(termsHtml).not.toContain('reverse engineer');
+      expect(termsHtml).not.toContain('hello@unblok.dev');
+    });
+
+    it('verifies /contact has no fake operational commitments or mailbox', () => {
+      const contactHtml = renderToString(
+        <MemoryRouter>
+          <ContactPage />
+        </MemoryRouter>
+      );
+
+      expect(contactHtml).toContain('Contact the Unblok team');
+      expect(contactHtml).toContain('Inbound Closed During Pre-Launch');
+      expect(contactHtml).not.toContain('hello@unblok.dev');
+      expect(contactHtml).not.toContain('Expected response within 1 business day');
+      expect(contactHtml).not.toContain('Prototype Preview');
+      expect(contactHtml).not.toContain('Direct Client Dispatch');
+      expect(contactHtml).not.toContain('backend mail processing');
     });
 
     it('contains no internal development phase jargon on customer-facing pages', () => {
-      const allPublicPagesHtml = [
-        renderToString(<MemoryRouter><ProductPage /></MemoryRouter>),
-        renderToString(<MemoryRouter><FeaturesPage /></MemoryRouter>),
-        renderToString(<MemoryRouter><SolutionsPage /></MemoryRouter>),
-        renderToString(<MemoryRouter><PricingPage /></MemoryRouter>),
-        renderToString(<MemoryRouter><SecurityPage /></MemoryRouter>),
-        renderToString(<MemoryRouter><ContactPage /></MemoryRouter>),
-        renderToString(<MemoryRouter><PrivacyPage /></MemoryRouter>),
-        renderToString(<MemoryRouter><TermsPage /></MemoryRouter>),
-      ].join(' ');
+      const allPublicPagesHtml = getAllPublicPagesHtml();
 
       expect(allPublicPagesHtml).not.toContain('UX-11');
       expect(allPublicPagesHtml).not.toContain('UX-12');
       expect(allPublicPagesHtml).not.toContain('Scheduled for UX');
+      expect(allPublicPagesHtml).not.toContain('scheduled for production release');
+      expect(allPublicPagesHtml).not.toContain('demo data');
     });
 
     it('contains no fake customer testimonials or logos', () => {

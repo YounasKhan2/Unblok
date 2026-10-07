@@ -101,7 +101,7 @@ export const PricingPage: React.FC = () => {
                   Technical Teams
                 </h3>
                 <p className="text-xs text-[var(--color-pub-text-secondary)] leading-relaxed mb-6">
-                  Engineered for fast-moving product engineering teams running active sprint cycles and issue workflows.
+                  Engineered for fast-moving product engineering teams running active Cycles and issue workflows.
                 </p>
 
                 <div className="pt-4 border-t border-[var(--color-pub-border)] space-y-3 text-xs text-[var(--color-pub-text-secondary)]">
@@ -166,7 +166,7 @@ export const PricingPage: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-2.5">
                     <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span>Dependency Pressure systemic bottleneck radar</span>
+                    <span>Dependency Pressure analysis across teams</span>
                   </div>
                   <div className="flex items-center gap-2.5">
                     <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
@@ -257,7 +257,7 @@ export const PricingPage: React.FC = () => {
                 Is Unblok free to test during development?
               </h3>
               <p className="text-xs text-[var(--color-pub-text-secondary)] leading-relaxed">
-                Yes. Full platform capabilities are accessible during our preview phase. You can set up projects, create issues, test dependency graphs, and evaluate cycle workflows without paying any subscription fees.
+                Yes. Full platform capabilities are accessible during our pre-launch preview. You can set up projects, create issues, test dependency graphs, and evaluate cycle workflows without paying any subscription fees.
               </p>
             </div>
 

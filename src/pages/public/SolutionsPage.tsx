@@ -100,7 +100,7 @@ export const SolutionsPage: React.FC = () => {
               <div className="p-4 rounded-xl bg-[var(--color-pub-surface)] border border-[var(--color-pub-border)] shadow-sm">
                 <span className="text-[11px] font-bold text-[var(--color-pub-accent)] uppercase tracking-wider block mb-1">Step 3 · Unblock</span>
                 <h3 className="text-sm font-bold text-[var(--color-pub-text-primary)] mb-1">First-Class Resolution</h3>
-                <p className="text-xs text-[var(--color-pub-text-secondary)]">Resolving an upstream task unblocks dependent teammates automatically.</p>
+                <p className="text-xs text-[var(--color-pub-text-secondary)]">Resolving an upstream task updates dependent issue blocker status directly.</p>
               </div>
             </div>
           </div>
@@ -119,14 +119,14 @@ export const SolutionsPage: React.FC = () => {
               Delivery health without individual surveillance
             </h2>
             <p className="pub-body-lead text-sm sm:text-base">
-              Identify systemic bottleneck tasks and cross-team dependency pressure before sprint reviews turn into surprise delays.
+              Identify cross-team dependency pressure and execution risk before milestone deadlines turn into surprise delays.
             </p>
           </div>
 
           <div className="relative z-10">
             <ProductCapture
               src="/marketing/proof-insights.png"
-              alt="Unblok Insights command center showing Delivery Health and Needs Attention queue"
+              alt="Unblok Insights view showing Delivery Health, Needs Attention and Dependency Pressure"
               displayUrl="unblok.app/insights"
               shadow="elevated"
             />

@@ -85,7 +85,7 @@ export const SecurityPage: React.FC = () => {
                 Logical Workspace Isolation
               </h3>
               <p className="text-xs leading-relaxed text-[var(--color-pub-text-secondary)]">
-                All projects, issues, cycles, and team definitions are strictly partitioned by workspace identity. No cross-workspace state leakage or cross-tenant query execution is permitted.
+                Demonstrated product invariant: Cross-workspace relationships are forbidden by the domain contract. Production requirement: Workspace isolation must be authoritatively enforced by the production backend and data architecture.
               </p>
             </div>
 
@@ -111,7 +111,7 @@ export const SecurityPage: React.FC = () => {
                 Permission-Aware Experiences
               </h3>
               <p className="text-xs leading-relaxed text-[var(--color-pub-text-secondary)]">
-                Administrative settings routes and privileged actions are gated at the routing boundary. Observers cannot trigger mutation states or edit workspace governance.
+                Administrative settings routes and privileged actions are gated at the frontend UI boundary for demonstration. UI permission restrictions are not production authorization, which will be enforced server-authoritatively.
               </p>
             </div>
 
@@ -190,10 +190,10 @@ export const SecurityPage: React.FC = () => {
                     Tenant Isolation
                   </td>
                   <td className="py-4 px-4 sm:px-6">
-                    Logical in-memory workspace boundaries with scoped store keys.
+                    Demonstrated client-side workspace boundaries with scoped store keys.
                   </td>
                   <td className="py-4 px-4 sm:px-6">
-                    Row-level database security with tenant ID partition enforcement at query layer.
+                    Authoritative multi-tenant isolation enforced at the production backend and query layer.
                   </td>
                 </tr>
                 <tr>
@@ -215,7 +215,7 @@ export const SecurityPage: React.FC = () => {
                     Structural auth boundary ready for production account integration.
                   </td>
                   <td className="py-4 px-4 sm:px-6">
-                    Secure HTTP-only session cookies, MFA support, and SAML/SSO integration.
+                    Secure session management and authenticated credentials.
                   </td>
                 </tr>
                 <tr>
@@ -226,7 +226,7 @@ export const SecurityPage: React.FC = () => {
                     Client-side dependency cycle prevention and schema typing.
                   </td>
                   <td className="py-4 px-4 sm:px-6">
-                    Dual client-server transactional cycle detection with atomic rollbacks.
+                    Authoritative transactional cycle detection with atomic rollbacks.
                   </td>
                 </tr>
                 <tr>
@@ -237,7 +237,7 @@ export const SecurityPage: React.FC = () => {
                     Honest pre-compliance posture; zero fabricated certs or badges.
                   </td>
                   <td className="py-4 px-4 sm:px-6">
-                    Formal SOC 2 Type II audit engagement planned for general availability.
+                    Formal independent security evaluations targeted for general availability.
                   </td>
                 </tr>
               </tbody>

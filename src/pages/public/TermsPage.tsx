@@ -8,82 +8,53 @@ import { PublicDocumentLayout, DocumentSection } from '../../features/public/com
 
 const TERMS_SECTIONS: DocumentSection[] = [
   {
-    id: 'preview-terms',
-    title: 'Pre-Launch Preview Terms',
+    id: 'status',
+    title: 'Pre-Launch Status',
     content: (
       <>
         <p>
-          These Pre-Launch Terms of Service govern your access to and evaluation of the Unblok software application and related public web surfaces during our preview and testing period.
+          Unblok is currently pre-launch. This page is an informational notice describing our pre-launch status and is not the final commercial Terms of Service.
         </p>
         <p>
-          By accessing the Unblok preview, you acknowledge that the application is an evolving software system provided for evaluation, interface review, and architecture validation.
+          Nothing on the current page or across our preview web surfaces should be interpreted as a final commercial agreement, service contract, or enforceable commercial commitment.
         </p>
       </>
     ),
   },
   {
-    id: 'evaluation-license',
-    title: 'Evaluation License & Permitted Use',
+    id: 'future-terms',
+    title: 'Commercial Terms Publication',
     content: (
       <>
         <p>
-          During the preview phase, Unblok grants evaluating users and engineering teams a non-exclusive, revocable, non-transferable license to access the application for evaluation purposes.
+          Final, legally reviewed terms will be published before commercial and production availability.
         </p>
         <p>
-          You agree not to reverse engineer, decompile, or attempt to extract the underlying source code of restricted components, nor use the service to conduct unlawful activities or disrupt the operation of the platform.
+          Those future terms are expected to address standard enterprise and commercial topics, including:
         </p>
-      </>
-    ),
-  },
-  {
-    id: 'intellectual-property',
-    title: 'Intellectual Property & Workspace Data',
-    content: (
-      <>
+        <ul className="list-disc list-inside space-y-1.5 pl-2">
+          <li>Account creation, credentials, and authorized workspace access</li>
+          <li>Acceptable use policies and platform integrity rules</li>
+          <li>Customer data treatment, ownership, and confidentiality</li>
+          <li>Intellectual property rights and software licensing</li>
+          <li>Commercial billing, subscription plans, and tiers where applicable</li>
+          <li>Platform availability commitments and service levels</li>
+          <li>Suspension, termination, and data retrieval processes</li>
+          <li>Liability limitations, indemnification, and dispute handling</li>
+        </ul>
         <p>
-          You retain all ownership, rights, and intellectual property in any issue descriptions, project data, code references, or materials entered into your workspace during preview evaluation.
-        </p>
-        <p>
-          Unblok retains all ownership, rights, and intellectual property in the platform design, software code, user interface designs, dependency calculation logic, and trademarks.
-        </p>
-      </>
-    ),
-  },
-  {
-    id: 'availability',
-    title: 'Service Availability & Data Retention',
-    content: (
-      <>
-        <p>
-          The preview is provided on an "as-is" and "as-available" basis. As active software development continues, features, user interfaces, and database schemas may undergo breaking iterations, migrations, or maintenance resets.
-        </p>
-        <p>
-          Evaluating teams should not treat preview environments as an immutable permanent archive for unbacked mission-critical records without local copies.
-        </p>
-      </>
-    ),
-  },
-  {
-    id: 'production-terms',
-    title: 'Production Terms of Service',
-    content: (
-      <>
-        <p>
-          Formal, legally binding commercial Terms of Service—including service level commitments, commercial billing agreements, and formal dispute resolution provisions—will be established upon general production availability.
+          These terms will be established and published by legal counsel prior to production launch; they are not defined or executed in this pre-launch preview.
         </p>
       </>
     ),
   },
   {
     id: 'inquiries',
-    title: 'Questions Regarding Terms',
+    title: 'Pre-Launch Inquiries',
     content: (
       <>
         <p>
-          For legal inquiries, custom evaluation agreements, or questions regarding these terms, please contact our team at{' '}
-          <a href="mailto:hello@unblok.dev" className="text-[var(--color-pub-accent)] font-semibold hover:underline">
-            hello@unblok.dev
-          </a>.
+          Questions concerning Unblok's planned commercial rollout or upcoming terms may be directed through our official communication channels upon production availability.
         </p>
       </>
     ),
@@ -93,10 +64,10 @@ const TERMS_SECTIONS: DocumentSection[] = [
 export const TermsPage: React.FC = () => {
   return (
     <PublicDocumentLayout
-      title="Terms of Service"
+      title="Pre-Launch Terms Notice"
       eyebrow="Legal & Governance"
       effectiveDate="October 2026"
-      preLaunchNotice="Unblok is currently in active pre-launch preview. These terms outline the evaluation preview license and platform guidelines. Enforceable commercial terms will accompany our general production availability."
+      preLaunchNotice="Unblok is currently pre-launch. This page is an informational notice, not the final commercial Terms of Service. Final legally reviewed terms will be published prior to commercial availability."
       sections={TERMS_SECTIONS}
     />
   );

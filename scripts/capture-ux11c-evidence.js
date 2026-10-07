@@ -81,7 +81,14 @@ async function run() {
     });
 
     await send('Page.navigate', { url });
-    await new Promise(r => setTimeout(r, options.delay || 1500));
+    for (let i = 0; i < 30; i++) {
+      const evalRes = await send('Runtime.evaluate', {
+        expression: `Boolean(document.querySelector('main, h1, [role="main"]'))`,
+      });
+      if (evalRes?.result?.value) break;
+      await new Promise(r => setTimeout(r, 250));
+    }
+    await new Promise(r => setTimeout(r, options.delay || 1200));
 
     if (options.evalBefore) {
       await send('Runtime.evaluate', { expression: options.evalBefore });

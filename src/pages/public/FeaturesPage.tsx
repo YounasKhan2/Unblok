@@ -28,7 +28,7 @@ export const FeaturesPage: React.FC = () => {
       <PublicPageHero
         eyebrow="Capability Atlas"
         title="The visual capability atlas of Unblok"
-        description="Explore how Unblok brings high-density issue execution, first-class blocker modeling, cycle planning, and live delivery intelligence together."
+        description="Explore how Unblok brings high-density issue execution, first-class blocker modeling, cycle planning, and delivery intelligence together."
         actions={
           <>
             <Link to="/signup" className="pub-btn-primary text-sm sm:text-base px-6 py-3 shadow-sm">
@@ -230,7 +230,7 @@ export const FeaturesPage: React.FC = () => {
               Planning & Roadmaps
             </div>
             <h2 className="pub-section-title mb-2">
-              Plan around live execution state
+              Plan around actual execution
             </h2>
             <p className="pub-body-lead text-sm sm:text-base">
               Time-boxed cycles and multi-milestone roadmaps connected directly to blocker readiness.
@@ -245,12 +245,12 @@ export const FeaturesPage: React.FC = () => {
                   Time-Boxed Cycles
                 </span>
                 <span className="text-xs text-[var(--color-pub-text-muted)]">
-                  Active iteration burnup & scope tracking
+                  Active cycle scope/planning state
                 </span>
               </div>
               <ProductCapture
                 src="/marketing/proof-cycle.png"
-                alt="Unblok Cycle iteration view showing burndown status and issue scope"
+                alt="Unblok Active cycle scope and planning state view"
                 displayUrl="unblok.app/cycles"
                 shadow="default"
               />
@@ -330,7 +330,7 @@ export const FeaturesPage: React.FC = () => {
           <div className="relative z-10">
             <ProductCapture
               src="/marketing/proof-insights.png"
-              alt="Unblok Insights command center showing Delivery Health and Needs Attention queue"
+              alt="Unblok Insights view showing Delivery Health, Needs Attention and Dependency Pressure"
               displayUrl="unblok.app/insights"
               shadow="elevated"
             />
