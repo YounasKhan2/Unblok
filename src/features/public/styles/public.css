@@ -311,3 +311,74 @@
     transform: translateY(0);
   }
 }
+
+/* ========================================================= */
+/* UNBLOK ENVIRONMENTAL BACKGROUND LANGUAGE                  */
+/* Restrained SVG/CSS patterns derived from execution & DAGs */
+/* ========================================================= */
+
+/* 1. Subtle Dependency Paths & Nodes */
+.pub-env-dependency {
+  position: relative;
+}
+.pub-env-dependency::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20H80V80H100' stroke='%236366f1' stroke-opacity='0.05' stroke-width='1.5' stroke-dasharray='3 3'/%3E%3Ccircle cx='20' cy='20' r='3.5' stroke='%236366f1' stroke-opacity='0.08' stroke-width='1.5' fill='white'/%3E%3Ccircle cx='80' cy='20' r='2' fill='%236366f1' fill-opacity='0.08'/%3E%3Ccircle cx='80' cy='80' r='3.5' stroke='%236366f1' stroke-opacity='0.08' stroke-width='1.5' fill='white'/%3E%3Ccircle cx='100' cy='80' r='2' fill='%236366f1' fill-opacity='0.08'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-position: center;
+  opacity: 0.85;
+  z-index: 0;
+}
+
+/* 2. Execution Rhythm Grid */
+.pub-env-grid {
+  position: relative;
+}
+.pub-env-grid::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(17, 24, 39, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: -12px -12px;
+  z-index: 0;
+}
+
+/* 3. Planning & Timeline Rhythm */
+.pub-env-timeline {
+  position: relative;
+}
+.pub-env-timeline::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 47px,
+    rgba(17, 24, 39, 0.025) 48px
+  );
+  z-index: 0;
+}
+
+/* 4. Strategic Signal Signals */
+.pub-env-signals {
+  position: relative;
+}
+.pub-env-signals::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(99, 102, 241, 0.06) 1.5px, transparent 1.5px),
+    radial-gradient(rgba(239, 68, 68, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px, 96px 96px;
+  background-position: 0 0, 24px 24px;
+  z-index: 0;
+}
+
