@@ -17,26 +17,26 @@ export const PRIORITY_CONFIG: Record<
   URGENT: {
     label: 'Urgent',
     icon: AlertCircle,
-    colorClass: 'text-red-600',
-    bgClass: 'bg-red-50 text-red-700 border-red-200',
+    colorClass: 'text-danger',
+    bgClass: 'bg-danger-subtle text-danger border-danger/30',
   },
   HIGH: {
     label: 'High',
     icon: SignalHigh,
-    colorClass: 'text-[#dd5b00]',
-    bgClass: 'bg-orange-50 text-orange-700 border-orange-200',
+    colorClass: 'text-warning',
+    bgClass: 'bg-warning-subtle text-warning border-warning/30',
   },
   MEDIUM: {
     label: 'Medium',
     icon: SignalMedium,
-    colorClass: 'text-[#0075de]',
-    bgClass: 'bg-blue-50 text-blue-700 border-blue-200',
+    colorClass: 'text-accent',
+    bgClass: 'bg-accent-subtle text-accent border-accent/30',
   },
   LOW: {
     label: 'Low',
     icon: SignalLow,
-    colorClass: 'text-[#787671]',
-    bgClass: 'bg-gray-50 text-gray-700 border-gray-200',
+    colorClass: 'text-text-muted',
+    bgClass: 'bg-surface-muted text-text-muted border-border',
   },
 };
 

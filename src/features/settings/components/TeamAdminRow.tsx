@@ -92,11 +92,10 @@ export const TeamAdminRow: React.FC<TeamAdminRowProps> = ({
               Edit
             </Button>
             <Button
-              variant="secondary"
+              variant="danger"
               size="sm"
-              icon={<Archive className="w-3.5 h-3.5 text-danger" />}
+              icon={<Archive className="w-3.5 h-3.5" />}
               onClick={() => onArchive(team)}
-              className="text-danger hover:bg-danger/10 hover:border-danger/30"
             >
               Archive
             </Button>

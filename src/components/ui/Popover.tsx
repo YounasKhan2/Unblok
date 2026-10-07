@@ -59,7 +59,7 @@ export const Popover: React.FC<PopoverProps> = ({
       ref={popoverRef}
       className={`absolute z-50 ${width} ${placementClasses} ${
         align === 'right' ? 'right-0' : 'left-0'
-      } bg-white rounded-lg shadow-xl border border-[#e5e3df] p-1 text-xs text-[#1a1a1a] animate-in fade-in zoom-in-95 duration-100 ${className}`}
+      } bg-surface-base rounded-lg shadow-xl border border-border p-1 text-xs text-text-primary animate-in fade-in zoom-in-95 duration-100 ${className}`}
       onClick={e => e.stopPropagation()}
     >
       {children}

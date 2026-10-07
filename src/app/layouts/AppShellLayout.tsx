@@ -26,12 +26,12 @@ export const AppShellLayout: React.FC = () => {
   }, [navigate, registerRouteNavigator]);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-white text-[#1a1a1a]">
+    <div className="flex h-screen w-screen overflow-hidden bg-canvas text-text-primary">
       {/* Zone 1: Navigation Rail (52px collapsed / 220px expanded) */}
       <NavigationRail />
 
       {/* Zone 2: Main Application Canvas Area */}
-      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white relative">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-canvas relative">
         {/* Workspace Top Header (44px) */}
         <WorkspaceHeader />
 

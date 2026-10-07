@@ -56,7 +56,7 @@ export const ProjectContextLayout: React.FC = () => {
 
   if (!project) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-white">
+      <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-canvas">
         <div className="w-12 h-12 rounded-full bg-surface-muted flex items-center justify-center mb-4 text-text-muted">
           <FolderKanban className="w-6 h-6" />
         </div>
@@ -83,9 +83,9 @@ export const ProjectContextLayout: React.FC = () => {
   ];
 
   return (
-    <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white">
+    <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-canvas">
       {/* 1. Project Context Header (Ultra-compact, non-hero, high density) */}
-      <div className="border-b border-border bg-white px-4 pt-2 pb-0 shrink-0 select-none">
+      <div className="border-b border-border bg-surface-base px-4 pt-2 pb-0 shrink-0 select-none">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
           {/* Identity & Team ownership */}
           <div className="flex items-center gap-2.5 min-w-0">
@@ -110,7 +110,7 @@ export const ProjectContextLayout: React.FC = () => {
               <div className="hidden sm:flex items-center gap-1.5 pl-2 border-l border-border text-xs text-text-muted shrink-0">
                 <span
                   className="w-2 h-2 rounded-full shrink-0"
-                  style={{ backgroundColor: team.color || '#5645d4' }}
+                  style={{ backgroundColor: team.color || 'var(--color-accent)' }}
                 />
                 <span className="truncate">{team.name}</span>
               </div>
@@ -127,8 +127,8 @@ export const ProjectContextLayout: React.FC = () => {
 
             {/* Blocked alert signal */}
             {summary.blockedIssues > 0 && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-[#fff5ee] border border-[#ffd8be] text-blocker font-semibold text-xs">
-                <ShieldAlert className="w-3.5 h-3.5 text-blocker" />
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-danger-subtle border border-danger/30 text-danger font-semibold text-xs">
+                <ShieldAlert className="w-3.5 h-3.5 text-danger" />
                 <span>{summary.blockedIssues} blocked</span>
               </span>
             )}
@@ -157,7 +157,7 @@ export const ProjectContextLayout: React.FC = () => {
 
         {/* 2. Route-Driven Project Navigation Sub-Tabs */}
         <nav
-          className="flex items-center gap-1 text-xs border-t border-[#f0eeec] pt-0.5 -mb-px overflow-x-auto"
+          className="flex items-center gap-1 text-xs border-t border-border pt-0.5 -mb-px overflow-x-auto"
           aria-label="Project Sub Navigation"
         >
           {navTabs.map(tab => (

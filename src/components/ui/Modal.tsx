@@ -50,24 +50,25 @@ export const Modal: React.FC<ModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-[#0a1530]/40 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
         onClick={onClose}
       />
 
       {/* Modal Card - Notion 12px rounded-lg with elevation */}
       <div
         ref={modalRef}
-        className={`relative z-10 w-full ${widthClasses[maxWidth]} bg-white rounded-xl shadow-2xl border border-[#e5e3df] overflow-hidden animate-in fade-in zoom-in-95 duration-150`}
+        className={`relative z-10 w-full ${widthClasses[maxWidth]} bg-surface-base rounded-xl shadow-2xl border border-border overflow-hidden animate-in fade-in zoom-in-95 duration-150 text-text-primary`}
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#e5e3df] bg-[#fafaf9]">
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-border bg-surface-subtle">
           <div>
-            <h3 className="text-sm font-semibold text-[#1a1a1a]">{title}</h3>
-            {description && <p className="text-xs text-[#787671] mt-0.5">{description}</p>}
+            <h3 className="text-sm font-semibold text-text-primary">{title}</h3>
+            {description && <p className="text-xs text-text-muted mt-0.5">{description}</p>}
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-md text-[#787671] hover:text-[#1a1a1a] hover:bg-[#ede9e4] transition-colors"
+            className="p-1 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-muted transition-colors cursor-pointer"
+            aria-label="Close dialog"
           >
             <X className="w-4 h-4" />
           </button>

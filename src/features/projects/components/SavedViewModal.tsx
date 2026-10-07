@@ -50,7 +50,7 @@ export const SavedViewModal: React.FC<SavedViewModalProps> = ({
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="e.g. Blocked Triage, Critical Path, Frontend Queue"
-            className="w-full px-3 py-2 text-xs bg-surface-subtle border border-border focus:border-accent rounded-[6px] focus:outline-none focus:bg-white"
+            className="w-full px-3 py-2 text-xs bg-surface-subtle border border-border focus:border-accent rounded-[6px] focus:outline-none focus:bg-surface-base text-text-primary"
           />
         </div>
 

@@ -24,15 +24,15 @@ export const Badge: React.FC<BadgeProps> = ({
   const sizeClasses = size === 'sm' ? 'text-[11px] px-2 py-0.5 gap-1' : 'text-xs px-2.5 py-1 gap-1.5';
 
   const variantClasses = {
-    purple: 'bg-[#5645d4] text-white',
+    purple: 'bg-accent text-white',
     pink: 'bg-[#ff64c8] text-white',
-    orange: 'bg-[#dd5b00] text-white',
-    mint: 'bg-[#d9f3e1] text-[#1aae39] border border-[#b2e2be]',
-    lavender: 'bg-[#e6e0f5] text-[#5645d4] border border-[#d2c6ed]',
-    peach: 'bg-[#ffe8d4] text-[#793400] border border-[#ffd3ad]',
-    sky: 'bg-[#dcecfa] text-[#0075de] border border-[#bfdcf7]',
-    gray: 'bg-[#f0eeec] text-[#5d5b54] border border-[#e5e3df]',
-    danger: 'bg-red-50 text-red-700 border border-red-200',
+    orange: 'bg-warning text-white',
+    mint: 'bg-success-subtle text-success border border-success/30',
+    lavender: 'bg-accent-subtle text-accent border border-accent/30',
+    peach: 'bg-warning-subtle text-warning border border-warning/30',
+    sky: 'bg-accent-subtle text-accent border border-accent/30',
+    gray: 'bg-surface-muted text-text-secondary border border-border',
+    danger: 'bg-danger-subtle text-danger border border-danger/30',
   };
 
   return (

@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { ProjectProvider } from '../../context/ProjectContext';
+import { SettingsProvider } from '../../features/settings/context/SettingsContext';
 import { CollaborationProvider } from '../../features/collaboration/context/CollaborationContext';
 import { KeyboardProvider } from '../../context/KeyboardContext';
 
@@ -15,9 +16,12 @@ interface AppProvidersProps {
 export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   return (
     <ProjectProvider>
-      <CollaborationProvider>
-        <KeyboardProvider>{children}</KeyboardProvider>
-      </CollaborationProvider>
+      <SettingsProvider>
+        <CollaborationProvider>
+          <KeyboardProvider>{children}</KeyboardProvider>
+        </CollaborationProvider>
+      </SettingsProvider>
     </ProjectProvider>
   );
 };
+

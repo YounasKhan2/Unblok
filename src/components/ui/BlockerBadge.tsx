@@ -30,10 +30,10 @@ export const BlockerBadge: React.FC<BlockerBadgeProps> = ({
             setShowPopover(!showPopover);
           }}
           onMouseEnter={() => setShowPopover(true)}
-          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[4px] text-[11px] font-semibold bg-[#ffe8d4] text-[#dd5b00] border border-[#ffd3ad] hover:bg-[#fedfc2] transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[4px] text-[11px] font-semibold bg-warning-subtle text-warning border border-warning/30 hover:bg-warning-subtle/80 transition-colors cursor-pointer"
           title={`Blocked by ${status.activeCount} active task(s)`}
         >
-          <ShieldAlert className="w-3 h-3 text-[#dd5b00]" />
+          <ShieldAlert className="w-3 h-3 text-warning" />
           <span>BLOCKED {status.activeCount}</span>
         </button>
       )}
@@ -46,10 +46,10 @@ export const BlockerBadge: React.FC<BlockerBadgeProps> = ({
             setShowPopover(!showPopover);
           }}
           onMouseEnter={() => setShowPopover(true)}
-          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[4px] text-[11px] font-medium bg-[#d9f3e1] text-[#1aae39] border border-[#b2e2be] hover:bg-[#c6edd1] transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[4px] text-[11px] font-medium bg-success-subtle text-success border border-success/30 hover:bg-success-subtle/80 transition-colors cursor-pointer"
           title={`${status.resolvedCount} prerequisite(s) completed`}
         >
-          <CheckCircle2 className="w-3 h-3 text-[#1aae39]" />
+          <CheckCircle2 className="w-3 h-3 text-success" />
           {!compact && <span>RESOLVED {status.resolvedCount}</span>}
         </button>
       )}
@@ -57,10 +57,10 @@ export const BlockerBadge: React.FC<BlockerBadgeProps> = ({
       {/* 3. Downstream Blocked Indicator ("Blocks X") */}
       {status.downstreamIssues.length > 0 && (
         <span
-          className="inline-flex items-center gap-0.5 text-[11px] text-[#787671] px-1 py-0.5 rounded hover:bg-[#f0eeec] cursor-help"
+          className="inline-flex items-center gap-0.5 text-[11px] text-text-muted px-1 py-0.5 rounded hover:bg-surface-muted cursor-help"
           title={`Prerequisite for: ${status.downstreamIssues.map(d => d.key).join(', ')}`}
         >
-          <ArrowDownRight className="w-3 h-3 text-[#5645d4]" />
+          <ArrowDownRight className="w-3 h-3 text-accent" />
           <span>Blocks {status.downstreamIssues.length}</span>
         </span>
       )}
@@ -68,16 +68,16 @@ export const BlockerBadge: React.FC<BlockerBadgeProps> = ({
       {/* Popover explaining blockers on hover/click */}
       {showPopover && (
         <div
-          className="absolute z-50 bottom-full left-0 mb-1.5 w-64 bg-white rounded-lg shadow-xl border border-[#e5e3df] p-2.5 text-xs text-[#1a1a1a] animate-in fade-in zoom-in-95 duration-100"
+          className="absolute z-50 bottom-full left-0 mb-1.5 w-64 bg-surface-base rounded-lg shadow-xl border border-border p-2.5 text-xs text-text-primary animate-in fade-in zoom-in-95 duration-100"
           onClick={e => e.stopPropagation()}
         >
           {status.activeCount > 0 && (
             <div className="mb-2">
-              <div className="flex items-center gap-1.5 font-semibold text-[#dd5b00] pb-1 border-b border-[#e5e3df]">
-                <ShieldAlert className="w-3.5 h-3.5" />
+              <div className="flex items-center gap-1.5 font-semibold text-warning pb-1 border-b border-border">
+                <ShieldAlert className="w-3.5 h-3.5 text-warning" />
                 <span>Active Blockers ({status.activeCount})</span>
               </div>
-              <p className="text-[10px] text-[#787671] my-1">
+              <p className="text-[10px] text-text-muted my-1">
                 Must be resolved before this issue can transition to DONE.
               </p>
               <div className="space-y-1 mt-1.5 max-h-36 overflow-y-auto">
@@ -88,15 +88,15 @@ export const BlockerBadge: React.FC<BlockerBadgeProps> = ({
                       onSelectIssue?.(issue.id);
                       setShowPopover(false);
                     }}
-                    className="flex items-center justify-between p-1 rounded hover:bg-[#f6f5f4] cursor-pointer group"
+                    className="flex items-center justify-between p-1 rounded hover:bg-surface-subtle cursor-pointer group"
                   >
                     <div className="truncate mr-1">
-                      <span className="font-mono font-semibold text-[#5645d4] group-hover:underline">
+                      <span className="font-mono font-semibold text-accent group-hover:underline">
                         {issue.key}
                       </span>
-                      <span className="text-[#37352f] ml-1.5">{issue.title}</span>
+                      <span className="text-text-primary ml-1.5">{issue.title}</span>
                     </div>
-                    <span className="text-[10px] shrink-0 font-medium px-1.5 py-0.2 rounded bg-gray-100 text-gray-700">
+                    <span className="text-[10px] shrink-0 font-medium px-1.5 py-0.2 rounded bg-surface-muted text-text-secondary border border-border">
                       {issue.state}
                     </span>
                   </div>
@@ -107,11 +107,11 @@ export const BlockerBadge: React.FC<BlockerBadgeProps> = ({
 
           {status.resolvedCount > 0 && (
             <div className="mt-1">
-              <div className="flex items-center gap-1.5 font-semibold text-[#1aae39] pb-1 border-b border-[#e5e3df]">
-                <CheckCircle2 className="w-3.5 h-3.5" />
+              <div className="flex items-center gap-1.5 font-semibold text-success pb-1 border-b border-border">
+                <CheckCircle2 className="w-3.5 h-3.5 text-success" />
                 <span>Resolved Prerequisite Tasks ({status.resolvedCount})</span>
               </div>
-              <p className="text-[10px] text-[#787671] my-1">
+              <p className="text-[10px] text-text-muted my-1">
                 Persisted dependencies. Reopening will reactivate the blocker.
               </p>
               <div className="space-y-1 mt-1 max-h-24 overflow-y-auto">
@@ -122,12 +122,12 @@ export const BlockerBadge: React.FC<BlockerBadgeProps> = ({
                       onSelectIssue?.(issue.id);
                       setShowPopover(false);
                     }}
-                    className="flex items-center justify-between p-1 rounded hover:bg-[#f6f5f4] cursor-pointer group"
+                    className="flex items-center justify-between p-1 rounded hover:bg-surface-subtle cursor-pointer group"
                   >
-                    <span className="font-mono text-[#5645d4] group-hover:underline">
+                    <span className="font-mono text-accent group-hover:underline">
                       {issue.key}
                     </span>
-                    <span className="text-[10px] text-emerald-700 font-medium">{issue.state}</span>
+                    <span className="text-[10px] text-success font-medium">{issue.state}</span>
                   </div>
                 ))}
               </div>
@@ -135,8 +135,8 @@ export const BlockerBadge: React.FC<BlockerBadgeProps> = ({
           )}
 
           {status.downstreamIssues.length > 0 && (
-            <div className="mt-2 pt-1.5 border-t border-[#e5e3df]">
-              <span className="text-[11px] font-medium text-[#787671]">
+            <div className="mt-2 pt-1.5 border-t border-border">
+              <span className="text-[11px] font-medium text-text-muted">
                 Downstream blocked issues:
               </span>
               <div className="flex flex-wrap gap-1 mt-1">
@@ -147,7 +147,7 @@ export const BlockerBadge: React.FC<BlockerBadgeProps> = ({
                       onSelectIssue?.(d.id);
                       setShowPopover(false);
                     }}
-                    className="font-mono text-[10px] px-1 py-0.5 rounded bg-purple-50 text-[#5645d4] hover:bg-purple-100 cursor-pointer"
+                    className="font-mono text-[10px] px-1 py-0.5 rounded bg-accent-subtle text-accent hover:opacity-85 cursor-pointer border border-accent/20"
                   >
                     {d.key}
                   </span>

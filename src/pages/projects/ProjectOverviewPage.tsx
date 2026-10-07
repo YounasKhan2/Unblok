@@ -49,10 +49,10 @@ export const ProjectOverviewPage: React.FC = () => {
   const usersMap = React.useMemo(() => new Map(users.map(u => [u.id, u])), [users]);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-surface-subtle p-4 sm:p-6 space-y-6 select-none">
+    <div className="flex-1 overflow-y-auto bg-canvas p-4 sm:p-6 space-y-6 select-none">
       {/* 1. Operational Summary Strip (Concise, high-density, no vanity KPI cards) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-        <div className="bg-white border border-border p-3 rounded-lg">
+        <div className="bg-surface-base border border-border p-3 rounded-lg">
           <div className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-1 flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5 text-accent" />
             <span>Active Triage</span>
@@ -65,15 +65,15 @@ export const ProjectOverviewPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white border border-border p-3 rounded-lg">
+        <div className="bg-surface-base border border-border p-3 rounded-lg">
           <div className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-1 flex items-center gap-1.5">
-            <ShieldAlert className="w-3.5 h-3.5 text-blocker" />
+            <ShieldAlert className="w-3.5 h-3.5 text-danger" />
             <span>Prerequisites Blocked</span>
           </div>
           <div className="flex items-baseline gap-2">
             <span
               className={`text-xl font-bold font-mono ${
-                summary.blockedIssues > 0 ? 'text-blocker' : 'text-text-primary'
+                summary.blockedIssues > 0 ? 'text-danger' : 'text-text-primary'
               }`}
             >
               {summary.blockedIssues}
@@ -84,7 +84,7 @@ export const ProjectOverviewPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white border border-border p-3 rounded-lg">
+        <div className="bg-surface-base border border-border p-3 rounded-lg">
           <div className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-1 flex items-center gap-1.5">
             <GitFork className="w-3.5 h-3.5 text-accent" />
             <span>Blocking Downstream</span>
@@ -97,7 +97,7 @@ export const ProjectOverviewPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white border border-border p-3 rounded-lg">
+        <div className="bg-surface-base border border-border p-3 rounded-lg">
           <div className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-1 flex items-center gap-1.5">
             <CheckCircle2 className="w-3.5 h-3.5 text-success" />
             <span>Completed</span>
@@ -116,14 +116,14 @@ export const ProjectOverviewPage: React.FC = () => {
       </div>
 
       {/* 2. Needs Attention Section */}
-      <section className="bg-white border border-border rounded-lg overflow-hidden">
+      <section className="bg-surface-base border border-border rounded-lg overflow-hidden">
         <div className="px-4 py-2.5 bg-surface-subtle border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 text-blocker" />
+            <ShieldAlert className="w-4 h-4 text-danger" />
             <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider">
               Needs Attention
             </h2>
-            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-[#fff5ee] text-blocker border border-[#ffd8be]">
+            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-danger-subtle text-danger border border-danger/30">
               {needsAttention.length}
             </span>
             <span className="text-[11px] text-text-muted hidden sm:inline ml-1">
@@ -179,14 +179,14 @@ export const ProjectOverviewPage: React.FC = () => {
       {/* 3. Active Execution & Downstream Impact Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Active Execution */}
-        <section className="bg-white border border-border rounded-lg overflow-hidden">
+        <section className="bg-surface-base border border-border rounded-lg overflow-hidden">
           <div className="px-4 py-2.5 bg-surface-subtle border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-accent" />
               <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider">
                 Active Execution
               </h2>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-accent">
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-accent-subtle text-accent">
                 {activeExecution.length}
               </span>
             </div>
@@ -228,14 +228,14 @@ export const ProjectOverviewPage: React.FC = () => {
         </section>
 
         {/* Blocking Others: Downstream Impact */}
-        <section className="bg-white border border-border rounded-lg overflow-hidden">
+        <section className="bg-surface-base border border-border rounded-lg overflow-hidden">
           <div className="px-4 py-2.5 bg-surface-subtle border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
               <GitFork className="w-4 h-4 text-accent" />
               <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider">
                 Blocking Downstream
               </h2>
-              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-accent">
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-accent-subtle text-accent">
                 {blockingOthers.length}
               </span>
             </div>
@@ -260,13 +260,13 @@ export const ProjectOverviewPage: React.FC = () => {
                       <span>{item.issue.key}</span>
                       <span className="text-text-primary font-normal truncate">{item.issue.title}</span>
                     </div>
-                    <span className="text-[11px] font-semibold text-accent bg-purple-50 px-1.5 py-0.2 rounded border border-purple-200 shrink-0">
+                    <span className="text-[11px] font-semibold text-accent bg-accent-subtle px-1.5 py-0.2 rounded border border-accent/20 shrink-0">
                       Blocks {item.activeDownstreamIssues.length}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-1.5 text-[11px] text-text-muted truncate pl-2">
-                    <span className="text-[#a4a097]">Downstream:</span>
+                    <span className="text-text-muted">Downstream:</span>
                     {item.activeDownstreamIssues.slice(0, 3).map(down => (
                       <span
                         key={down.id}
@@ -289,7 +289,7 @@ export const ProjectOverviewPage: React.FC = () => {
       {/* 4. Current Cycle & Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Current Cycle Execution */}
-        <section className="bg-white border border-border rounded-lg overflow-hidden lg:col-span-2">
+        <section className="bg-surface-base border border-border rounded-lg overflow-hidden lg:col-span-2">
           <div className="px-4 py-2.5 bg-surface-subtle border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-accent" />
@@ -297,7 +297,7 @@ export const ProjectOverviewPage: React.FC = () => {
                 Current Cycle Execution
               </h2>
               {activeCycle && (
-                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-accent">
+                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-accent-subtle text-accent">
                   {activeCycle.name}
                 </span>
               )}
@@ -339,7 +339,7 @@ export const ProjectOverviewPage: React.FC = () => {
         </section>
 
         {/* Recent Activity */}
-        <section className="bg-white border border-border rounded-lg overflow-hidden">
+        <section className="bg-surface-base border border-border rounded-lg overflow-hidden">
           <div className="px-4 py-2.5 bg-surface-subtle border-b border-border flex items-center gap-2">
             <Activity className="w-4 h-4 text-accent" />
             <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider">

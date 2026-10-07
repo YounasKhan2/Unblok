@@ -258,7 +258,7 @@ export const ProjectIssuesPage: React.FC = () => {
   const usersMap = useMemo(() => new Map(users.map(u => [u.id, u])), [users]);
 
   return (
-    <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white select-none">
+    <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-canvas select-none">
       {/* 1. Filter Toolbar */}
       <ProjectFilterToolbar
         filters={filterParams}
@@ -272,7 +272,7 @@ export const ProjectIssuesPage: React.FC = () => {
       />
 
       {/* 2. Main Issues Triage Table Canvas */}
-      <div className="flex-1 overflow-y-auto min-h-0 bg-white" tabIndex={0}>
+      <div className="flex-1 overflow-y-auto min-h-0 bg-canvas" tabIndex={0}>
         {totalProjectIssuesCount === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 text-center">
             <div className="w-10 h-10 rounded-full bg-surface-muted flex items-center justify-center mb-3 text-text-muted">
@@ -307,7 +307,7 @@ export const ProjectIssuesPage: React.FC = () => {
                     if (el) el.indeterminate = isSomeSelected;
                   }}
                   onChange={handleMasterToggle}
-                  className="w-3.5 h-3.5 rounded-[3px] border-border-strong text-accent focus:ring-0 cursor-pointer"
+                  className="w-3.5 h-3.5 rounded-[3px] border-border text-accent focus:ring-0 cursor-pointer"
                   title="Select all filtered issues (Cmd+A)"
                 />
               </div>
@@ -374,10 +374,10 @@ export const ProjectIssuesPage: React.FC = () => {
                           }}
                           className={`group relative flex items-center h-[34px] px-3 border-b border-border text-xs cursor-pointer select-none transition-colors ${
                             isMultiSelected
-                              ? 'bg-accent/12'
+                              ? 'bg-accent-subtle'
                               : isSelected
-                              ? 'bg-accent/8 font-medium'
-                              : 'hover:bg-surface-muted bg-white'
+                              ? 'bg-accent-subtle/60 font-medium'
+                              : 'hover:bg-surface-muted bg-surface-base'
                           }`}
                         >
                           {/* Selection indicator bar */}
@@ -397,7 +397,7 @@ export const ProjectIssuesPage: React.FC = () => {
                               type="checkbox"
                               checked={isMultiSelected}
                               onChange={() => {}}
-                              className="w-3.5 h-3.5 rounded-[3px] border-border-strong text-accent focus:ring-0 cursor-pointer"
+                              className="w-3.5 h-3.5 rounded-[3px] border-border text-accent focus:ring-0 cursor-pointer"
                               aria-label={`Select ${issue.key}`}
                             />
                           </div>
@@ -417,7 +417,7 @@ export const ProjectIssuesPage: React.FC = () => {
                             <span
                               className={`truncate ${
                                 issue.state === 'CANCELLED'
-                                  ? 'line-through text-[#a4a097]'
+                                  ? 'line-through text-text-muted'
                                   : 'text-text-primary'
                               }`}
                             >
@@ -455,11 +455,11 @@ export const ProjectIssuesPage: React.FC = () => {
                           <div className="w-24 shrink-0 hidden lg:flex items-center justify-end gap-1 text-[11px] text-text-muted pr-2">
                             {issue.dueDate ? (
                               <>
-                                <Calendar className="w-3 h-3 text-[#a4a097]" />
+                                <Calendar className="w-3 h-3 text-text-muted" />
                                 <span>{issue.dueDate}</span>
                               </>
                             ) : (
-                              <span className="text-border-strong">—</span>
+                              <span className="text-text-muted">—</span>
                             )}
                           </div>
                         </div>

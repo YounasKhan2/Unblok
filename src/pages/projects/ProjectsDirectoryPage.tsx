@@ -70,9 +70,9 @@ export const ProjectsDirectoryPage: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white select-none">
+    <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-canvas select-none">
       {/* 1. Header Toolbar */}
-      <div className="border-b border-border bg-white px-4 py-2 shrink-0 flex flex-wrap items-center justify-between gap-3">
+      <div className="border-b border-border bg-surface-base px-4 py-2 shrink-0 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <FolderKanban className="w-4 h-4 text-accent" />
           <h1 className="text-sm font-bold text-text-primary tracking-tight">Projects Directory</h1>
@@ -95,7 +95,7 @@ export const ProjectsDirectoryPage: React.FC = () => {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Filter projects... (/)"
-              className="h-7 w-36 sm:w-48 pl-8 pr-7 bg-surface-muted border border-border rounded-[5px] text-xs text-text-primary placeholder-[#a4a097] focus:bg-white focus:border-accent focus:outline-none transition-all"
+              className="h-7 w-36 sm:w-48 pl-8 pr-7 bg-surface-muted border border-border rounded-[5px] text-xs text-text-primary placeholder:text-text-muted focus:bg-surface-base focus:border-accent focus:outline-none transition-all"
             />
             {searchQuery && (
               <button
@@ -146,7 +146,7 @@ export const ProjectsDirectoryPage: React.FC = () => {
       </div>
 
       {/* 2. Main High-Density Projects Table */}
-      <div className="flex-1 overflow-y-auto min-h-0 bg-white">
+      <div className="flex-1 overflow-y-auto min-h-0 bg-canvas">
         {directoryItems.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 text-center">
             <div className="w-10 h-10 rounded-full bg-surface-muted flex items-center justify-center mb-3 text-text-muted">
@@ -209,7 +209,7 @@ export const ProjectsDirectoryPage: React.FC = () => {
                 <div className="w-36 shrink-0 hidden md:flex items-center gap-1.5 truncate text-text-secondary">
                   <span
                     className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: item.team?.color || '#5645d4' }}
+                    style={{ backgroundColor: item.team?.color || 'var(--color-accent)' }}
                   />
                   <span className="truncate">{item.team?.name || 'Unassigned Team'}</span>
                 </div>
@@ -227,8 +227,8 @@ export const ProjectsDirectoryPage: React.FC = () => {
                 {/* Blocker Posture */}
                 <div className="w-28 shrink-0 text-center">
                   {item.blockedIssuesCount > 0 ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-[#fff5ee] border border-[#ffd8be] text-blocker font-semibold text-[11px]">
-                      <ShieldAlert className="w-3 h-3 text-blocker" />
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-danger-subtle border border-danger/30 text-danger font-semibold text-[11px]">
+                      <ShieldAlert className="w-3 h-3 text-danger" />
                       <span>{item.blockedIssuesCount} blocked</span>
                     </span>
                   ) : item.activeIssuesCount > 0 ? (
@@ -237,18 +237,18 @@ export const ProjectsDirectoryPage: React.FC = () => {
                       <span>Unblocked</span>
                     </span>
                   ) : (
-                    <span className="text-[11px] text-[#a4a097]">—</span>
+                    <span className="text-[11px] text-text-muted">—</span>
                   )}
                 </div>
 
                 {/* Active Cycle */}
                 <div className="w-32 shrink-0 hidden lg:flex items-center gap-1 text-[11px] text-text-muted truncate">
                   {item.activeCycle ? (
-                    <span className="px-1.5 py-0.2 rounded bg-purple-50 text-accent border border-purple-200 truncate">
+                    <span className="px-1.5 py-0.2 rounded bg-accent-subtle text-accent border border-accent/20 truncate">
                       {item.activeCycle.name}
                     </span>
                   ) : (
-                    <span className="text-[#a4a097] italic">No active cycle</span>
+                    <span className="text-text-muted italic">No active cycle</span>
                   )}
                 </div>
 
@@ -268,7 +268,7 @@ export const ProjectsDirectoryPage: React.FC = () => {
                 </div>
 
                 {/* Arrow CTA */}
-                <div className="w-8 shrink-0 flex justify-end text-[#a4a097] group-hover:text-accent">
+                <div className="w-8 shrink-0 flex justify-end text-text-muted group-hover:text-accent">
                   <ArrowRight className="w-4 h-4" />
                 </div>
               </div>

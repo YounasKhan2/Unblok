@@ -21,14 +21,14 @@ export const SearchInput: React.FC<SearchInputProps> = ({
 
   return (
     <div className={`relative flex items-center ${className}`}>
-      <Search className="w-3.5 h-3.5 absolute left-2.5 text-[#787671] pointer-events-none" />
+      <Search className="w-3.5 h-3.5 absolute left-2.5 text-text-muted pointer-events-none" />
       <input
         ref={resolvedRef}
         type="text"
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full h-8 pl-8 pr-12 text-xs bg-[#f6f5f4] hover:bg-[#ede9e4]/70 focus:bg-white text-[#1a1a1a] placeholder:text-[#a4a097] border border-[#e5e3df] focus:border-[#5645d4] rounded-[6px] focus:outline-none transition-colors"
+        className="w-full h-8 pl-8 pr-12 text-xs bg-surface-subtle hover:bg-surface-muted focus:bg-surface-base text-text-primary placeholder:text-text-muted border border-border focus:border-accent rounded-[6px] focus:outline-none transition-colors"
       />
       {value ? (
         <button
@@ -36,12 +36,12 @@ export const SearchInput: React.FC<SearchInputProps> = ({
             onChange('');
             resolvedRef.current?.focus();
           }}
-          className="absolute right-2 p-0.5 text-[#a4a097] hover:text-[#37352f] rounded"
+          className="absolute right-2 p-0.5 text-text-muted hover:text-text-primary rounded cursor-pointer"
         >
           <X className="w-3.5 h-3.5" />
         </button>
       ) : (
-        <span className="absolute right-2 text-[10px] font-mono text-[#a4a097] border border-[#e5e3df] bg-white px-1 py-0.2 rounded shadow-2xs pointer-events-none">
+        <span className="absolute right-2 text-[10px] font-mono text-text-muted border border-border bg-surface-base px-1 py-0.2 rounded shadow-2xs pointer-events-none">
           /
         </span>
       )}

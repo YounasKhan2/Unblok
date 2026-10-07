@@ -64,13 +64,13 @@ export const WorkspaceHeader: React.FC = () => {
   ];
 
   return (
-    <header className="h-[44px] bg-white border-b border-[#e5e3df] px-3.5 flex items-center justify-between shrink-0 select-none z-40 sticky top-0 shadow-2xs">
+    <header className="h-[44px] bg-surface-base border-b border-border px-3.5 flex items-center justify-between shrink-0 select-none z-40 sticky top-0 shadow-2xs">
       {/* 1. Left: Mobile Menu Toggle + Brand & Workspace Switcher Context */}
       <div className="flex items-center gap-2">
         {/* Mobile Hamburger Menu Toggle */}
         <button
           onClick={() => setIsMobileNavOpen(true)}
-          className="p-1 md:hidden text-[#787671] hover:text-[#1a1a1a] hover:bg-[#f6f5f4] rounded-[5px] transition-colors cursor-pointer"
+          className="p-1 md:hidden text-text-muted hover:text-text-primary hover:bg-surface-muted rounded-[5px] transition-colors cursor-pointer"
           aria-label="Open mobile navigation"
         >
           <Menu className="w-4 h-4" />
@@ -78,7 +78,7 @@ export const WorkspaceHeader: React.FC = () => {
 
         {/* Unblok Brand Mark */}
         <Link to="/my-work" className="flex items-center gap-2 group">
-          <div className="w-6 h-6 rounded-[5px] bg-[#5645d4] text-white flex items-center justify-center font-bold text-xs shadow-2xs group-hover:bg-[#4838b9] transition-colors">
+          <div className="w-6 h-6 rounded-[5px] bg-accent text-white flex items-center justify-center font-bold text-xs shadow-2xs hover:opacity-90 transition-opacity">
             <svg
               className="w-3.5 h-3.5 text-white"
               viewBox="0 0 24 24"
@@ -95,25 +95,25 @@ export const WorkspaceHeader: React.FC = () => {
               <path d="M18 14l4 4-4 4" />
             </svg>
           </div>
-          <span className="font-bold text-xs text-[#1a1a1a] tracking-tight hidden sm:inline">
+          <span className="font-bold text-xs text-text-primary tracking-tight hidden sm:inline">
             Unblok
           </span>
         </Link>
 
-        <span className="text-[#c8c4be] text-xs hidden sm:inline">/</span>
+        <span className="text-text-muted text-xs hidden sm:inline">/</span>
 
         {/* Workspace Context Switcher Dropdown */}
         <div className="relative">
           <button
             onClick={() => setIsWorkspaceMenuOpen(!isWorkspaceMenuOpen)}
-            className="flex items-center gap-1.5 px-2 py-1 rounded-[5px] text-xs font-semibold text-[#1a1a1a] hover:bg-[#f6f5f4] transition-colors cursor-pointer border border-transparent hover:border-[#e5e3df]"
+            className="flex items-center gap-1.5 px-2 py-1 rounded-[5px] text-xs font-semibold text-text-primary hover:bg-surface-muted transition-colors cursor-pointer border border-transparent hover:border-border"
             title="Current Workspace Context"
           >
-            <Building2 className="w-3.5 h-3.5 text-[#5645d4]" />
+            <Building2 className="w-3.5 h-3.5 text-accent" />
             <span className="truncate max-w-[150px] sm:max-w-[200px]">
               Acme Platform Engineering
             </span>
-            <ChevronDown className="w-3 h-3 text-[#787671]" />
+            <ChevronDown className="w-3 h-3 text-text-muted" />
           </button>
 
           {/* Workspace Switcher Popover */}
@@ -123,24 +123,24 @@ export const WorkspaceHeader: React.FC = () => {
                 className="fixed inset-0 z-40"
                 onClick={() => setIsWorkspaceMenuOpen(false)}
               />
-              <div className="absolute left-0 top-full mt-1 w-64 bg-white border border-[#e5e3df] rounded-lg shadow-lg py-1.5 z-50 text-xs">
-                <div className="px-3 py-1 text-[11px] font-semibold text-[#787671] uppercase tracking-wider">
+              <div className="absolute left-0 top-full mt-1 w-64 bg-surface-base border border-border rounded-lg shadow-lg py-1.5 z-50 text-xs">
+                <div className="px-3 py-1 text-[11px] font-semibold text-text-muted uppercase tracking-wider">
                   Workspaces
                 </div>
-                <div className="flex items-center justify-between px-3 py-2 bg-[#f6f5f4] font-medium text-[#1a1a1a]">
+                <div className="flex items-center justify-between px-3 py-2 bg-surface-muted font-medium text-text-primary">
                   <div className="flex items-center gap-2 truncate">
-                    <span className="w-2 h-2 rounded-full bg-[#5645d4]" />
+                    <span className="w-2 h-2 rounded-full bg-accent" />
                     <span className="truncate">Acme Platform Engineering</span>
                   </div>
-                  <Check className="w-3.5 h-3.5 text-[#5645d4] shrink-0" />
+                  <Check className="w-3.5 h-3.5 text-accent shrink-0" />
                 </div>
-                <div className="border-t border-[#e5e3df] mt-1 pt-1">
+                <div className="border-t border-border mt-1 pt-1">
                   <Link
                     to="/settings"
                     onClick={() => setIsWorkspaceMenuOpen(false)}
-                    className="block px-3 py-1.5 text-[#52504b] hover:bg-[#f6f5f4] hover:text-[#1a1a1a]"
+                    className="block px-3 py-1.5 text-text-secondary hover:bg-surface-muted hover:text-text-primary"
                   >
-                    Settings & Administration
+                    Settings &amp; Administration
                   </Link>
                 </div>
               </div>
@@ -153,14 +153,14 @@ export const WorkspaceHeader: React.FC = () => {
       <div className="flex-1 max-w-md mx-3 hidden md:block">
         <button
           onClick={handleOpenPalette}
-          className="w-full h-7 px-2.5 bg-[#f6f5f4] hover:bg-[#ede9e4]/70 border border-[#e5e3df] rounded-[5px] text-xs text-[#787671] flex items-center justify-between cursor-pointer transition-colors"
+          className="w-full h-7 px-2.5 bg-surface-subtle hover:bg-surface-muted border border-border rounded-[5px] text-xs text-text-muted flex items-center justify-between cursor-pointer transition-colors"
           title="Search or jump to... (⌘K)"
         >
           <div className="flex items-center gap-2">
-            <Search className="w-3.5 h-3.5 text-[#a4a097]" />
+            <Search className="w-3.5 h-3.5 text-text-muted" />
             <span>Search or jump to...</span>
           </div>
-          <kbd className="font-mono text-[10px] text-[#a4a097] bg-white border border-[#e5e3df] px-1.5 py-0.2 rounded shadow-2xs">
+          <kbd className="font-mono text-[10px] text-text-muted bg-surface-base border border-border px-1.5 py-0.2 rounded shadow-2xs">
             ⌘K
           </kbd>
         </button>
@@ -183,13 +183,13 @@ export const WorkspaceHeader: React.FC = () => {
           </kbd>
         </Button>
 
-        <div className="w-[1px] h-4 bg-[#e5e3df] mx-0.5 hidden sm:block" />
+        <div className="w-[1px] h-4 bg-border mx-0.5 hidden sm:block" />
 
         {/* Global Blockers Quick Badge */}
         {blockedCount > 0 && (
           <Link
             to="/dependencies"
-            className="hidden lg:flex items-center gap-1 px-2 py-1 rounded-[5px] bg-[#fff5ee] border border-[#ffd8be] text-[#dd5b00] hover:bg-[#ffe8d4] text-[11px] font-semibold transition-colors"
+            className="hidden lg:flex items-center gap-1 px-2 py-1 rounded-[5px] bg-warning-subtle border border-warning/30 text-warning hover:bg-warning-subtle/80 text-[11px] font-semibold transition-colors"
             title={`${blockedCount} active blockers across workspace`}
           >
             <ShieldAlert className="w-3.5 h-3.5" />
@@ -200,14 +200,14 @@ export const WorkspaceHeader: React.FC = () => {
         {/* Inbox / Notification Bell */}
         <Link
           to="/inbox"
-          className="p-1.5 text-[#787671] hover:text-[#1a1a1a] hover:bg-[#f6f5f4] rounded-[5px] transition-colors relative"
+          className="p-1.5 text-text-muted hover:text-text-primary hover:bg-surface-muted rounded-[5px] transition-colors relative"
           title={`Inbox & notifications (G then I)${unreadCount > 0 ? ` — ${unreadCount} unread` : ''}`}
           aria-label={unreadCount > 0 ? `Inbox (${unreadCount} unread)` : 'Inbox'}
         >
           <Bell className="w-4 h-4" />
           {unreadCount > 0 && (
             <span
-              className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#5645d4]"
+              className="absolute top-1 right-1 w-2 h-2 rounded-full bg-accent"
               aria-hidden="true"
             />
           )}
@@ -216,7 +216,7 @@ export const WorkspaceHeader: React.FC = () => {
         {/* Keyboard Shortcuts Trigger */}
         <button
           onClick={() => setIsHelpModalOpen(true)}
-          className="p-1.5 text-[#787671] hover:text-[#1a1a1a] hover:bg-[#f6f5f4] rounded-[5px] transition-colors hidden sm:block"
+          className="p-1.5 text-text-muted hover:text-text-primary hover:bg-surface-muted rounded-[5px] transition-colors hidden sm:block"
           title="Keyboard shortcuts (?)"
         >
           <HelpCircle className="w-4 h-4" />
@@ -225,7 +225,7 @@ export const WorkspaceHeader: React.FC = () => {
         {/* Current User Avatar with Settings link */}
         <Link
           to="/settings/preferences"
-          className="flex items-center gap-1.5 p-0.5 rounded-[5px] hover:bg-[#f6f5f4] transition-colors"
+          className="flex items-center gap-1.5 p-0.5 rounded-[5px] hover:bg-surface-muted transition-colors"
           title={`${currentUser.name} (${currentUser.role}) — Preferences`}
         >
           <Avatar user={currentUser} size="xs" />
@@ -236,15 +236,15 @@ export const WorkspaceHeader: React.FC = () => {
       {isMobileNavOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex">
           <div
-            className="fixed inset-0 bg-black/40 animate-in fade-in"
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs animate-in fade-in"
             onClick={() => setIsMobileNavOpen(false)}
           />
-          <div className="relative w-64 max-w-[80vw] bg-white h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-left duration-150">
-            <div className="h-[44px] px-3.5 border-b border-[#e5e3df] flex items-center justify-between">
-              <span className="font-bold text-xs text-[#1a1a1a]">Unblok Navigation</span>
+          <div className="relative w-64 max-w-[80vw] bg-surface-base border-r border-border h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-left duration-150">
+            <div className="h-[44px] px-3.5 border-b border-border flex items-center justify-between">
+              <span className="font-bold text-xs text-text-primary">Unblok Navigation</span>
               <button
                 onClick={() => setIsMobileNavOpen(false)}
-                className="p-1 text-[#787671] hover:text-[#1a1a1a] rounded cursor-pointer"
+                className="p-1 text-text-muted hover:text-text-primary rounded cursor-pointer"
                 aria-label="Close mobile menu"
               >
                 <X className="w-4 h-4" />
@@ -258,9 +258,9 @@ export const WorkspaceHeader: React.FC = () => {
                     key={item.to}
                     to={item.to}
                     onClick={() => setIsMobileNavOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-[#37352f] hover:bg-[#f6f5f4] rounded-[5px] transition-colors"
+                    className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-text-primary hover:bg-surface-muted rounded-[5px] transition-colors"
                   >
-                    <Icon className="w-4 h-4 text-[#787671]" />
+                    <Icon className="w-4 h-4 text-text-muted" />
                     <span>{item.label}</span>
                   </Link>
                 );

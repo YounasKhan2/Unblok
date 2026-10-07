@@ -21,12 +21,12 @@ export const AppShell: React.FC = () => {
   const { viewMode } = useProject();
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-white text-[#1a1a1a]">
+    <div className="flex h-screen w-screen overflow-hidden bg-canvas text-text-primary">
       {/* Region 1: Navigation Rail (220px / 48px) */}
       <NavigationRail />
 
       {/* Region 2: Execution Canvas */}
-      <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white relative">
+      <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-canvas relative">
         {/* Navy Executive Workspace Header */}
         <WorkspaceHeader />
 

@@ -113,7 +113,7 @@ export const NavigationRail: React.FC = () => {
       icon: GitFork,
       shortcut: 'G D',
       badge: totalBlockedCount > 0 ? String(totalBlockedCount) : null,
-      badgeColor: 'bg-[#dd5b00] text-white',
+      badgeColor: 'bg-blocker text-white',
     },
     {
       to: '/insights',
@@ -128,15 +128,15 @@ export const NavigationRail: React.FC = () => {
     <nav
       className={`${
         isNavCollapsed ? 'w-[52px]' : 'w-[220px]'
-      } shrink-0 bg-[#fafaf9] border-r border-[#e5e3df] h-full hidden md:flex flex-col justify-between select-none transition-all duration-150 z-30`}
+      } shrink-0 bg-surface-subtle border-r border-border h-full hidden md:flex flex-col justify-between select-none transition-all duration-150 z-30`}
       aria-label="Application Navigation"
     >
       {/* 1. Header & Collapse Toggle */}
       <div>
-        <div className="h-[44px] flex items-center justify-between px-3 border-b border-[#e5e3df]">
+        <div className="h-[44px] flex items-center justify-between px-3 border-b border-border">
           {!isNavCollapsed && (
             <div className="flex items-center gap-2 truncate">
-              <span className="font-semibold text-xs text-[#1a1a1a] truncate">
+              <span className="font-semibold text-xs text-text-primary truncate">
                 Navigation
               </span>
             </div>
@@ -144,7 +144,7 @@ export const NavigationRail: React.FC = () => {
 
           <button
             onClick={() => setIsNavCollapsed(!isNavCollapsed)}
-            className="p-1 rounded text-[#787671] hover:text-[#1a1a1a] hover:bg-[#ede9e4] transition-colors ml-auto cursor-pointer"
+            className="p-1 rounded text-text-muted hover:text-text-primary hover:bg-surface-muted transition-colors ml-auto cursor-pointer"
             title={isNavCollapsed ? 'Expand sidebar ([)' : 'Collapse sidebar ([)'}
             aria-label={isNavCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
@@ -163,7 +163,7 @@ export const NavigationRail: React.FC = () => {
               return (
                 <div
                   key={`sep-${idx}`}
-                  className="my-1 border-t border-[#e5e3df]/70 mx-1"
+                  className="my-1 border-t border-border mx-1"
                 />
               );
             }
@@ -179,14 +179,14 @@ export const NavigationRail: React.FC = () => {
                 to={item.to!}
                 className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[5px] transition-colors cursor-pointer group relative ${
                   isActive
-                    ? 'bg-[#ede9e4] font-semibold text-[#1a1a1a]'
-                    : 'text-[#52504b] hover:bg-[#ede9e4]/60 hover:text-[#1a1a1a]'
+                    ? 'bg-surface-muted font-semibold text-text-primary'
+                    : 'text-text-secondary hover:bg-surface-muted hover:text-text-primary'
                 }`}
                 title={isNavCollapsed ? `${item.label} (${item.shortcut})` : undefined}
               >
                 <Icon
                   className={`w-4 h-4 shrink-0 transition-colors ${
-                    isActive ? 'text-[#5645d4]' : 'text-[#787671] group-hover:text-[#1a1a1a]'
+                    isActive ? 'text-accent' : 'text-text-muted group-hover:text-text-primary'
                   }`}
                 />
                 {!isNavCollapsed && (
@@ -196,7 +196,7 @@ export const NavigationRail: React.FC = () => {
                 {!isNavCollapsed && item.badge && (
                   <span
                     className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
-                      item.badgeColor || 'bg-purple-100 text-[#5645d4]'
+                      item.badgeColor || 'bg-accent-subtle text-accent'
                     }`}
                   >
                     {item.badge}
@@ -205,7 +205,7 @@ export const NavigationRail: React.FC = () => {
 
                 {/* Left Active indicator bar */}
                 {isActive && (
-                  <div className="absolute left-0 top-1 bottom-1 w-[2.5px] bg-[#5645d4] rounded-r" />
+                  <div className="absolute left-0 top-1 bottom-1 w-[2.5px] bg-accent rounded-r" />
                 )}
               </NavLink>
             );
@@ -214,27 +214,27 @@ export const NavigationRail: React.FC = () => {
       </div>
 
       {/* 3. Bottom Pinned Items (Settings, Help, User) */}
-      <div className="p-1.5 border-t border-[#e5e3df] space-y-0.5 text-xs">
+      <div className="p-1.5 border-t border-border space-y-0.5 text-xs">
         {/* Settings Navigation Link */}
         <NavLink
           to="/settings"
           className={({ isActive }) =>
             `w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[5px] transition-colors cursor-pointer ${
               isActive || location.pathname.startsWith('/settings')
-                ? 'bg-[#ede9e4] font-semibold text-[#1a1a1a]'
-                : 'text-[#52504b] hover:bg-[#ede9e4]/60 hover:text-[#1a1a1a]'
+                ? 'bg-surface-muted font-semibold text-text-primary'
+                : 'text-text-secondary hover:bg-surface-muted hover:text-text-primary'
             }`
           }
           title={isNavCollapsed ? 'Settings' : undefined}
         >
-          <Settings className="w-4 h-4 text-[#787671] shrink-0" />
+          <Settings className="w-4 h-4 text-text-muted shrink-0" />
           {!isNavCollapsed && <span>Settings</span>}
         </NavLink>
 
         {/* Shortcuts Help */}
         <button
           onClick={() => setIsHelpModalOpen(true)}
-          className="w-full flex items-center gap-2.5 px-2.5 py-1.5 text-[#787671] hover:text-[#1a1a1a] hover:bg-[#ede9e4] rounded-[5px] transition-colors cursor-pointer"
+          className="w-full flex items-center gap-2.5 px-2.5 py-1.5 text-text-muted hover:text-text-primary hover:bg-surface-muted rounded-[5px] transition-colors cursor-pointer"
           title="Keyboard shortcuts (?)"
         >
           <HelpCircle className="w-4 h-4 shrink-0" />
@@ -244,7 +244,7 @@ export const NavigationRail: React.FC = () => {
         {/* Reset Demo State */}
         <button
           onClick={resetToDemoData}
-          className="w-full flex items-center gap-2.5 px-2.5 py-1.5 text-[#787671] hover:text-red-600 hover:bg-red-50 rounded-[5px] transition-colors cursor-pointer"
+          className="w-full flex items-center gap-2.5 px-2.5 py-1.5 text-text-muted hover:text-danger hover:bg-danger-subtle rounded-[5px] transition-colors cursor-pointer"
           title="Reset to initial seed data"
         >
           <RotateCcw className="w-4 h-4 shrink-0" />
@@ -252,8 +252,8 @@ export const NavigationRail: React.FC = () => {
         </button>
 
         {/* Current User Card & Role Switcher Popover */}
-        <div className="pt-1 border-t border-[#e5e3df]/70 mt-1 relative">
-          <div className="flex items-center justify-between p-1 rounded-[5px] hover:bg-[#ede9e4] transition-colors group">
+        <div className="pt-1 border-t border-border mt-1 relative">
+          <div className="flex items-center justify-between p-1 rounded-[5px] hover:bg-surface-muted transition-colors group">
             <Link
               to="/settings/preferences"
               className="flex items-center gap-2 flex-1 min-w-0"
@@ -262,10 +262,10 @@ export const NavigationRail: React.FC = () => {
               <Avatar user={currentUser} size="xs" />
               {!isNavCollapsed && (
                 <div className="flex-1 min-w-0 text-left">
-                  <div className="text-xs font-semibold text-[#1a1a1a] truncate leading-tight">
+                  <div className="text-xs font-semibold text-text-primary truncate leading-tight">
                     {currentUser.name}
                   </div>
-                  <div className="text-[10px] text-[#787671] uppercase font-mono">
+                  <div className="text-[10px] text-text-muted uppercase font-mono">
                     {currentUser.role}
                   </div>
                 </div>
@@ -276,7 +276,7 @@ export const NavigationRail: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="p-1 rounded text-[#787671] hover:text-[#1a1a1a] hover:bg-[#e5e3df] transition-colors cursor-pointer"
+                className="p-1 rounded text-text-muted hover:text-text-primary hover:bg-surface-muted transition-colors cursor-pointer"
                 title="Switch User / Test Roles"
                 aria-label="Switch User / Test Roles"
               >

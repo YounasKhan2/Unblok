@@ -47,11 +47,11 @@ export const MyWorkSection: React.FC<MyWorkSectionProps> = ({
       {/* Section Header */}
       <div
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="flex items-center justify-between px-3 py-1.5 bg-[#f6f5f4] border-y border-[#e5e3df] text-xs cursor-pointer select-none group"
+        className="flex items-center justify-between px-3 py-1.5 bg-surface-subtle border-y border-border text-xs cursor-pointer select-none group"
       >
         <div className="flex items-center gap-2">
           <button
-            className="p-0.5 text-[#787671] group-hover:text-[#1a1a1a] transition-colors"
+            className="p-0.5 text-text-muted group-hover:text-text-primary transition-colors"
             aria-label={isCollapsed ? `Expand ${title}` : `Collapse ${title}`}
           >
             {isCollapsed ? (
@@ -60,18 +60,18 @@ export const MyWorkSection: React.FC<MyWorkSectionProps> = ({
               <ChevronDown className="w-3.5 h-3.5" />
             )}
           </button>
-          <span className="font-bold text-[#1a1a1a] tracking-tight">{title}</span>
+          <span className="font-bold text-text-primary tracking-tight">{title}</span>
           <span
             className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
               id === 'needsAttention' && count > 0
-                ? 'bg-[#dd5b00] text-white'
-                : 'bg-[#e5e3df] text-[#52504b]'
+                ? 'bg-danger text-white'
+                : 'bg-surface-muted text-text-secondary'
             }`}
           >
             {count}
           </span>
           {subtitle && (
-            <span className="text-[11px] text-[#787671] hidden md:inline ml-1">
+            <span className="text-[11px] text-text-muted hidden md:inline ml-1">
               · {subtitle}
             </span>
           )}
@@ -94,7 +94,7 @@ export const MyWorkSection: React.FC<MyWorkSectionProps> = ({
               />
             ))
           ) : (
-            <div className="px-6 py-2.5 text-xs text-[#a4a097] italic bg-white border-b border-[#e5e3df]">
+            <div className="px-6 py-2.5 text-xs text-text-muted italic bg-surface-base border-b border-border">
               {emptyMessage}
             </div>
           )}
