@@ -22,6 +22,7 @@ export interface User {
 
 export interface Team {
   id: string;
+  workspaceId?: string;
   name: string;
   key: string;
   color: string;
@@ -30,6 +31,7 @@ export interface Team {
 
 export interface Project {
   id: string;
+  workspaceId?: string;
   teamId: string;
   name: string;
   key: string;
@@ -39,6 +41,7 @@ export interface Project {
 
 export interface Dependency {
   id: string;
+  workspaceId?: string;
   upstreamIssueId: string;   // A (the blocker)
   downstreamIssueId: string; // B (the blocked issue) - A BLOCKS B
   createdAt: string;
@@ -67,6 +70,7 @@ export type ActivityEventType =
 
 export interface IssueComment {
   id: string;
+  workspaceId?: string;
   issueId: string;
   authorId: string;
   authorName: string;
@@ -79,6 +83,7 @@ export interface IssueComment {
 
 export interface ActivityEvent {
   id: string;
+  workspaceId?: string;
   issueId: string;
   eventType: ActivityEventType;
   userId: string;
@@ -109,6 +114,7 @@ export interface ActivityEvent {
 
 export interface Cycle {
   id: string;
+  workspaceId?: string;
   name: string;
   startDate: string;
   endDate: string;
@@ -121,6 +127,7 @@ export type MilestoneHealth = 'ON_TRACK' | 'AT_RISK' | 'BLOCKED';
 
 export interface Milestone {
   id: string;
+  workspaceId?: string;
   name: string;
   targetDate: string;
   description: string;
@@ -129,6 +136,7 @@ export interface Milestone {
 
 export interface Issue {
   id: string;
+  workspaceId?: string;
   key: string;               // e.g. "ENG-142"
   projectId: string;
   teamId: string;

@@ -12,26 +12,31 @@ import { AuthProvider, useAuth } from '../../features/auth/context/AuthContext';
 import { bridgeToLegacyUser } from '../../features/auth/domain/legacyBridge';
 import { AuthStatus, AuthenticatedUser } from '../../features/auth/types';
 
+import { WorkspaceProvider, useWorkspace } from '../../features/workspaces/context/WorkspaceContext';
+
 interface AppProvidersProps {
   children: React.ReactNode;
   initialAuthStatus?: AuthStatus;
   initialUser?: AuthenticatedUser | null;
+  initialActiveWorkspaceId?: string | null;
 }
 
 /**
- * Bridges authenticated identity from AuthContext into legacy AppShell ProjectContext.
- * Isolated boundary for backwards compatibility until UX-13.
+ * Bridges authenticated identity and active workspace membership from
+ * AuthContext and WorkspaceContext into legacy AppShell ProjectContext.
  */
 const ProjectAuthBridge: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, membership, status } = useAuth();
+  const { user, status } = useAuth();
+  const { activeMembership, activeWorkspaceId } = useWorkspace();
   const { setCurrentUser } = useProject();
 
   useEffect(() => {
     if (status === 'authenticated' && user) {
-      const legacyUser = bridgeToLegacyUser(user, membership);
+      const effectiveMembership = activeWorkspaceId ? activeMembership : null;
+      const legacyUser = bridgeToLegacyUser(user, effectiveMembership);
       setCurrentUser(legacyUser);
     }
-  }, [status, user, membership, setCurrentUser]);
+  }, [status, user, activeWorkspaceId, activeMembership, setCurrentUser]);
 
   return <>{children}</>;
 };
@@ -40,18 +45,21 @@ export const AppProviders: React.FC<AppProvidersProps> = ({
   children,
   initialAuthStatus,
   initialUser,
+  initialActiveWorkspaceId,
 }) => {
   return (
-    <ProjectProvider>
-      <AuthProvider initialStatus={initialAuthStatus} initialUser={initialUser}>
-        <ProjectAuthBridge>
-          <SettingsProvider>
-            <CollaborationProvider>
-              <KeyboardProvider>{children}</KeyboardProvider>
-            </CollaborationProvider>
-          </SettingsProvider>
-        </ProjectAuthBridge>
-      </AuthProvider>
-    </ProjectProvider>
+    <AuthProvider initialStatus={initialAuthStatus} initialUser={initialUser}>
+      <WorkspaceProvider initialActiveWorkspaceId={initialActiveWorkspaceId}>
+        <ProjectProvider>
+          <ProjectAuthBridge>
+            <SettingsProvider>
+              <CollaborationProvider>
+                <KeyboardProvider>{children}</KeyboardProvider>
+              </CollaborationProvider>
+            </SettingsProvider>
+          </ProjectAuthBridge>
+        </ProjectProvider>
+      </WorkspaceProvider>
+    </AuthProvider>
   );
 };

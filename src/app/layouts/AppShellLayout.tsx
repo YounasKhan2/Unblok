@@ -15,15 +15,24 @@ import { CycleErrorDialog } from '../../components/modals/CycleErrorDialog';
 import { ShortcutsHelpModal } from '../../components/modals/ShortcutsHelpModal';
 import { BulkActionBar } from '../../components/layout/BulkActionBar';
 import { useKeyboard } from '../../context/KeyboardContext';
+import { useWorkspace } from '../../features/workspaces/context/WorkspaceContext';
+import { ArchivedWorkspaceBanner } from '../../features/workspaces/components/ArchivedWorkspaceBanner';
+import { WorkspaceUnavailable } from '../../features/workspaces/components/WorkspaceUnavailable';
 
 export const AppShellLayout: React.FC = () => {
   const navigate = useNavigate();
   const { registerRouteNavigator } = useKeyboard();
+  const { status: workspaceStatus, activeWorkspaceId } = useWorkspace();
 
   useEffect(() => {
     registerRouteNavigator(navigate);
     return () => registerRouteNavigator(null);
   }, [navigate, registerRouteNavigator]);
+
+  const isWorkspaceUnavailable =
+    workspaceStatus === 'unavailable' ||
+    workspaceStatus === 'empty' ||
+    (workspaceStatus === 'ready' && !activeWorkspaceId);
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-canvas text-text-primary">
@@ -35,9 +44,16 @@ export const AppShellLayout: React.FC = () => {
         {/* Workspace Top Header (44px) */}
         <WorkspaceHeader />
 
+        {/* Section 26: Archived Workspace Banner */}
+        <ArchivedWorkspaceBanner />
+
         {/* Dynamic Routed Page Content */}
         <main className="flex-1 flex min-w-0 overflow-hidden relative" role="main">
-          <Outlet />
+          {isWorkspaceUnavailable ? (
+            <WorkspaceUnavailable />
+          ) : (
+            <Outlet />
+          )}
         </main>
 
         {/* Floating Bulk Action Bar (Multi-selection) */}

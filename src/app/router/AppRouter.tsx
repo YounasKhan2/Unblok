@@ -22,7 +22,9 @@ import { SignupPage } from '../../pages/auth/SignupPage';
 import { ForgotPasswordPage } from '../../pages/auth/ForgotPasswordPage';
 import { ResetPasswordPage } from '../../pages/auth/ResetPasswordPage';
 import { InvitePage } from '../../pages/auth/InvitePage';
-import { OnboardingPlaceholderPage } from '../../pages/auth/OnboardingPlaceholderPage';
+import { OnboardingRootPage } from '../../pages/onboarding/OnboardingRootPage';
+import { CreateWorkspacePage } from '../../pages/onboarding/CreateWorkspacePage';
+import { TeamOnboardingPlaceholderPage } from '../../pages/onboarding/TeamOnboardingPlaceholderPage';
 import { RequireAuth } from '../../features/auth/components/RequireAuth';
 import { AuthDevHarness } from '../../features/auth/components/AuthDevHarness';
 import { AppShellLayout } from '../layouts/AppShellLayout';
@@ -86,7 +88,9 @@ export const AppRoutes: React.FC = () => {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/invite/:token" element={<InvitePage />} />
-          <Route path="/onboarding" element={<OnboardingPlaceholderPage />} />
+          <Route path="/onboarding" element={<OnboardingRootPage />} />
+          <Route path="/onboarding/workspace" element={<CreateWorkspacePage />} />
+          <Route path="/onboarding/team" element={<TeamOnboardingPlaceholderPage />} />
         </Route>
 
         {/* ========================================================= */}
