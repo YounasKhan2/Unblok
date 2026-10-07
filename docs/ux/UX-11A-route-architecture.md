@@ -3,7 +3,7 @@
 **Platform**: Unblok — High-Density Engineering Execution & Dependency Intelligence  
 **Document**: Route Architecture, Layout Ownership, Route Guards & Navigation Flow  
 **Phase**: UX-11A (Public Experience & Routing Architecture)  
-**Status**: FROZEN ARCHITECTURAL SPECIFICATION  
+**Status**: PROPOSED — HUMAN REVIEW  
 
 ---
 
@@ -22,7 +22,7 @@ Unblok strictly defines and decouples four distinct route families. These are no
 │ • No session check   │   layout             │ • Multi-step wizard   │ • Full AppShell       │
 │ • SEO indexable      │ • No marketing fluff │ • Dedicated           │ • Theme engine active │
 │ • Marketing/legal    │ • Strict returnTo    │   Onboarding layout   │ • Deep execution UI   │
-│ • Static + hydrated  │ • CSRF / auth state  │ • Isolation from App  │ • Real-time syncing   │
+│ • Static + hydrated  │ • Dedicated forms    │ • Isolation from App  │ • Reactive client UI  │
 └──────────────────────┴──────────────────────┴───────────────────────┴───────────────────────┘
 ```
 
@@ -33,7 +33,7 @@ Unblok strictly defines and decouples four distinct route families. These are no
 * **Layout**: Wrapped in `PublicLayout` (standalone header, minimal navigation, full-width fluid editorial container, standard public footer).
 
 ### Route Family 2: AUTH
-* **Purpose**: Identity management and authentication ceremonies (login, signup, password recovery, magic link redemption, invitation acceptance).
+* **Purpose**: Identity management and authentication ceremonies (login, signup, password recovery, reset password, invitation acceptance).
 * **Authentication Rule**: Guest/unauthenticated access by default. If accessed by an already authenticated user with an active workspace, redirects to `/my-work` (or the safe `returnTo` target). Exception: `/invite/:token`, which accepts both authenticated and unauthenticated sessions to bind user identity to an invitation.
 * **Theme Contract**: Fixed, focused visual treatment aligned with the core Unblok brand. Clean, compact, minimal distractions.
 * **Layout**: Wrapped in `AuthLayout` (centered card canvas, brand watermark, no application rail, no marketing feature cards).
@@ -204,7 +204,7 @@ The root route `/` acts as the intelligent traffic director. The resolution rule
 | :--- | :--- | :--- | :--- |
 | **Anonymous** | None | `/` (Public Home) | Render Home page in `PublicLayout`. |
 | **Authenticated** | Active workspace selected | `/my-work` | Clean client redirect (`replace: true`). |
-| **Authenticated** | Single workspace, not yet loaded in session | `/my-work` | Automatically select single workspace context, navigate to `/my-work`. |
+| **Authenticated** | Single workspace, not yet loaded in session | `/my-work` | Select single workspace context, navigate to `/my-work`. |
 | **Authenticated** | Multiple workspace memberships, none active | Workspace Resolution | Modal or selection route to choose target workspace. |
 | **Authenticated** | Zero workspace memberships | `/onboarding` | Direct user to create their first workspace. |
 | **Authenticated (via Invite)** | Pending invite token active | `/invite/:token` | Invitation verification takes precedence over generic onboarding. |
@@ -218,17 +218,17 @@ The root route `/` acts as the intelligent traffic director. The resolution rule
 
 ## 5. Return Destination (`returnTo`) & Safe Redirect Contract
 
-When an unauthenticated user attempts to access a protected deep link (e.g., received via Slack, GitHub PR, or email notification), their intended destination must be preserved and honored upon successful authentication.
+When an unauthenticated user attempts to access a protected deep link (e.g., received via Slack, GitHub PR, or notification), their intended destination must be preserved and honored upon successful authentication.
 
 ### Workflow Example
 1. Anonymous visitor clicks link to private issue:  
-   `/projects/ENG/issues?drawer=ENG-142`
+   `/projects/ENG/issues?drawer=ENG-1`
 2. `AuthenticatedRoute` intercepts request:
-   - Evaluates target: `/projects/ENG/issues?drawer=ENG-142`.
-   - Encodes path: `encodeURIComponent('/projects/ENG/issues?drawer=ENG-142')`.
-   - Redirects: `/login?returnTo=%2Fprojects%2FENG%2Fissues%3Fdrawer%3DENG-142`.
+   - Evaluates target: `/projects/ENG/issues?drawer=ENG-1`.
+   - Encodes path: `encodeURIComponent('/projects/ENG/issues?drawer=ENG-1')`.
+   - Redirects: `/login?returnTo=%2Fprojects%2FENG%2Fissues%3Fdrawer%3DENG-1`.
 3. User completes login or signup.
-4. Client router parses `returnTo`, validates safety, and navigates directly to `/projects/ENG/issues?drawer=ENG-142`.
+4. Client router parses `returnTo`, validates safety, and navigates directly to `/projects/ENG/issues?drawer=ENG-1`.
 
 ### Safe Redirect Contract & Injection Prevention
 To prevent **Open Redirect Vulnerabilities** (where an attacker crafts a malicious link like `/login?returnTo=https://evil-phishing.com/steal-creds`), the redirect processor must enforce strict validation rules:
@@ -306,23 +306,23 @@ A dedicated, reusable product-quality permission barrier component (`ForbiddenSt
 
 ## 7. Session Expiration UX Contract
 
-In modern high-density engineering workflows, session expiration must never cause catastrophic loss of in-progress edits, form data, or graph filters.
+### Core Principle
+> **Session expiration must not unnecessarily destroy user work.**
 
-### Session Expiration Protocol
-1. **Detection**: The API client or authentication listener intercepts a `401 Unauthorized` response with an `expired_session` code.
-2. **Non-Destructive Notification**:
-   - The user is **not** immediately kicked out of their screen or blasted with a hard page reload.
-   - A non-blocking top banner or modal dialog appears:  
-     `"Your session has expired. Please re-authenticate to save your changes and continue."`
-3. **In-Flight Draft Preservation**:
-   - Issue descriptions, comments, or modal form inputs remain preserved in local React/localStorage state.
-4. **Re-Authentication Flow**:
-   - User clicks `Re-authenticate`.
-   - An inline auth dialog or popup sheet opens without navigating away from the current route.
-   - Upon successful credential verification, the session token refreshes in-place, and pending mutations retry automatically.
-5. **Hard Fallback**:
-   - If user dismisses the prompt or full re-authentication is required, router navigates to `/login?returnTo=${currentSafePath}`.
-   - Any unsaved draft is stored in transient local storage keyed by entity key (`draft:issue:ENG-142`).
+In high-density engineering workflows, session expiration must never cause catastrophic loss of in-progress edits, form data, or graph filters.
+
+### Future UX Contract (Architecture Requirements)
+1. **User Notification**:
+   - The user is **not** immediately kicked out of their screen or blasted with a destructive page reload.
+   - An informative, non-blocking notification or modal alerts the user that their session has ended and prompts re-authentication.
+2. **Draft & State Protection**:
+   - Text inputs, markdown descriptions, comments, or modal form inputs must not be wiped out upon session expiration.
+   - Unsaved work is preserved in local view state or local client storage while re-authentication is requested.
+3. **Return Destination Preservation**:
+   - If navigation to `/login` is required, the current route and query state are preserved via `returnTo`.
+4. **Implementation Deferral**:
+   - The exact server session lifetime, token renewal mechanics, persistence storage strategy, and background replay protocols are **deferred** to future Auth, API, and System Design phases.
+   - The client routing contract guarantees only that routes support safe re-entry without destroying user input.
 
 ---
 
@@ -334,9 +334,9 @@ The routing architecture is verified against all core user journeys:
 | :--- | :--- | :--- | :--- | :--- |
 | **1** | Anonymous visitor discovers Unblok | Anonymous | `/` | Lands on Home page in `PublicLayout`. |
 | **2** | Anonymous visitor evaluates capabilities | Anonymous | `/product` | Lands on Product page in `PublicLayout`. |
-| **3** | Anonymous visitor opens Slack link to issue | Anonymous | `/projects/ENG/issues?drawer=ENG-142` | Intercepted by `AuthenticatedRoute` → Redirected to `/login?returnTo=%2Fprojects%2FENG%2Fissues%3Fdrawer%3DENG-142`. Post-login returns directly to issue drawer. |
+| **3** | Anonymous visitor opens Slack link to issue | Anonymous | `/projects/ENG/issues?drawer=ENG-1` | Intercepted by `AuthenticatedRoute` → Redirected to `/login?returnTo=%2Fprojects%2FENG%2Fissues%3Fdrawer%3DENG-1`. Post-login returns directly to issue drawer. |
 | **4** | Authenticated engineer opens root URL | Authenticated + Active Workspace | `/` | Deterministically routed to `/my-work` via replace state. |
-| **5** | Authenticated engineer clicks deep link | Authenticated + Active Workspace | `/dependencies?filter=critical-path` | Loads directly into `AppShellLayout` with active graph filter intact. |
+| **5** | Authenticated engineer clicks deep link | Authenticated + Active Workspace | `/dependencies` | Loads directly into `AppShellLayout` with view state intact. |
 | **6** | New user signs up without workspace | Authenticated + Zero Workspaces | `/` or `/my-work` | Guard redirects to `/onboarding/workspace`. |
 | **7** | Invited user accepts invitation | Anonymous or Authenticated | `/invite/inv_tok_991` | Renders invitation acceptance view. Binds member to invited workspace; bypasses generic onboarding. |
 | **8** | Visitor enters invalid marketing URL | Anonymous | `/pricing-plans` | Renders Public 404 in `PublicLayout` with "Return to Homepage" action. |
