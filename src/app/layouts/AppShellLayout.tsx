@@ -22,12 +22,17 @@ import { WorkspaceUnavailable } from '../../features/workspaces/components/Works
 export const AppShellLayout: React.FC = () => {
   const navigate = useNavigate();
   const { registerRouteNavigator } = useKeyboard();
-  const { status: workspaceStatus } = useWorkspace();
+  const { status: workspaceStatus, activeWorkspaceId } = useWorkspace();
 
   useEffect(() => {
     registerRouteNavigator(navigate);
     return () => registerRouteNavigator(null);
   }, [navigate, registerRouteNavigator]);
+
+  const isWorkspaceUnavailable =
+    workspaceStatus === 'unavailable' ||
+    workspaceStatus === 'empty' ||
+    (workspaceStatus === 'ready' && !activeWorkspaceId);
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-canvas text-text-primary">
@@ -44,7 +49,7 @@ export const AppShellLayout: React.FC = () => {
 
         {/* Dynamic Routed Page Content */}
         <main className="flex-1 flex min-w-0 overflow-hidden relative" role="main">
-          {workspaceStatus === 'unavailable' ? (
+          {isWorkspaceUnavailable ? (
             <WorkspaceUnavailable />
           ) : (
             <Outlet />

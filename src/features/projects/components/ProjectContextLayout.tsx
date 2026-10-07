@@ -21,6 +21,7 @@ import { useProject } from '../../../context/ProjectContext';
 import { useKeyboard } from '../../../context/KeyboardContext';
 import { resolveProject, selectProjectOverview } from '../selectors';
 import { Button } from '../../../components/ui/Button';
+import { PrivateNotFoundPage } from '../../../pages/placeholder/PrivateNotFoundPage';
 
 export const ProjectContextLayout: React.FC = () => {
   const { projectKey } = useParams<{ projectKey: string }>();
@@ -55,21 +56,7 @@ export const ProjectContextLayout: React.FC = () => {
   }, [project, issues, dependencies, users, cycles, milestones, activityEvents]);
 
   if (!project) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-canvas">
-        <div className="w-12 h-12 rounded-full bg-surface-muted flex items-center justify-center mb-4 text-text-muted">
-          <FolderKanban className="w-6 h-6" />
-        </div>
-        <h2 className="text-base font-bold text-text-primary mb-1">Project Not Found</h2>
-        <p className="text-xs text-text-muted max-w-sm mb-6 leading-relaxed">
-          The project identifier &ldquo;{projectKey}&rdquo; does not match any project registered in this workspace.
-        </p>
-        <Button variant="primary" size="sm" onClick={() => navigate('/projects')}>
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Return to Projects Directory</span>
-        </Button>
-      </div>
-    );
+    return <PrivateNotFoundPage />;
   }
 
   const { summary } = overviewData!;

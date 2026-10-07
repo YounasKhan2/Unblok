@@ -40,10 +40,36 @@ export function assertNotLastAdminRemoval(
 }
 
 /**
+ * Checks if workspace is mutable.
+ * Section 26: Archived workspaces are read-only.
+ */
+export function isWorkspaceMutable(workspace?: Workspace | null): boolean {
+  if (!workspace) return false;
+  return workspace.status === 'ACTIVE';
+}
+
+/**
+ * Section 26: Enforces that active workspace is not archived.
+ * Throws explicit error on attempted writes to an archived workspace.
+ */
+export function assertMutableWorkspace(workspace?: Workspace | null): void {
+  if (workspace && !isWorkspaceMutable(workspace)) {
+    throw new Error(
+      `Workspace '${workspace.name || workspace.id}' is archived and read-only. Mutations are forbidden.`
+    );
+  }
+}
+
+/**
  * Checks if membership role allows administrative workspace operations.
  * Section 14: Permissions resolve strictly from WorkspaceMembership.role.
+ * In an archived workspace, administrative mutations are rejected.
  */
-export function canPerformAdminAction(membership?: WorkspaceMembership | null): boolean {
+export function canPerformAdminAction(
+  membership?: WorkspaceMembership | null,
+  workspace?: Workspace | null
+): boolean {
+  if (workspace && !isWorkspaceMutable(workspace)) return false;
   if (!membership || membership.status !== 'ACTIVE') return false;
   return membership.role === 'ADMIN';
 }
@@ -51,19 +77,32 @@ export function canPerformAdminAction(membership?: WorkspaceMembership | null): 
 /**
  * Checks if membership role allows normal execution / editing actions.
  * OBSERVER is read-only.
+ * In an archived workspace, execution mutations are rejected.
  */
-export function canPerformExecutionAction(membership?: WorkspaceMembership | null): boolean {
+export function canPerformExecutionAction(
+  membership?: WorkspaceMembership | null,
+  workspace?: Workspace | null
+): boolean {
+  if (workspace && !isWorkspaceMutable(workspace)) return false;
   if (!membership || membership.status !== 'ACTIVE') return false;
   return membership.role === 'ADMIN' || membership.role === 'MEMBER';
 }
 
 /**
- * Checks if workspace is mutable.
- * Section 26: Archived workspaces are read-only.
+ * Section 16 & 26: Asserts execution permission for a given mutation.
  */
-export function isWorkspaceMutable(workspace?: Workspace | null): boolean {
-  if (!workspace) return false;
-  return workspace.status === 'ACTIVE';
+export function assertExecutionPermission(
+  membership?: WorkspaceMembership | null,
+  workspace?: Workspace | null,
+  actionName = 'Mutation'
+): void {
+  assertMutableWorkspace(workspace);
+  if (!membership || membership.status !== 'ACTIVE') {
+    throw new Error(`${actionName} forbidden: active workspace membership required.`);
+  }
+  if (!canPerformExecutionAction(membership, workspace)) {
+    throw new Error(`${actionName} forbidden: ${membership.role} role is read-only.`);
+  }
 }
 
 /**

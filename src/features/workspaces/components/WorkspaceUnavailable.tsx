@@ -12,6 +12,8 @@ import { useWorkspace } from '../context/WorkspaceContext';
 import { ShieldAlert, Plus, RefreshCw } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 
+import { resolveActiveWorkspace } from '../domain/workspaceSelection';
+
 export const WorkspaceUnavailable: React.FC = () => {
   const { memberships, workspaces, switchWorkspace } = useWorkspace();
   const navigate = useNavigate();
@@ -19,8 +21,9 @@ export const WorkspaceUnavailable: React.FC = () => {
   const activeMemberships = memberships.filter((m) => m.status === 'ACTIVE');
 
   const handleSwitchToFirstValid = async () => {
-    if (activeMemberships.length > 0) {
-      await switchWorkspace(activeMemberships[0].workspaceId);
+    const resolution = resolveActiveWorkspace(activeMemberships, null, workspaces);
+    if (resolution.activeWorkspaceId) {
+      await switchWorkspace(resolution.activeWorkspaceId);
       navigate('/my-work');
     } else {
       navigate('/onboarding/workspace');

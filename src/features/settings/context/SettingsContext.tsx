@@ -46,6 +46,7 @@ import {
   saveSettingsToStorage,
   SETTINGS_STORAGE_KEYS,
 } from '../data/mockSettingsData';
+import { useWorkspace } from '../../workspaces/context/WorkspaceContext';
 
 const SettingsContext = createContext<SettingsContextType | null>(null);
 
@@ -59,6 +60,20 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     updateCanonicalTeams,
     updateCanonicalUsers,
   } = useProject();
+
+  let activeWorkspace: any = null;
+  try {
+    const ws = useWorkspace();
+    activeWorkspace = ws.activeWorkspace;
+  } catch {
+    // standalone unit test compatibility
+  }
+
+  const assertMutableWorkspace = useCallback(() => {
+    if (activeWorkspace?.status === 'ARCHIVED') {
+      throw new Error('Cannot mutate an archived workspace.');
+    }
+  }, [activeWorkspace?.status]);
 
   const isAdmin = canAccessAdministrativeSettings(currentUser.role);
 
@@ -174,6 +189,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // ==========================================
   const updateWorkspaceSettings = useCallback(
     (updates: Partial<WorkspaceSettings>) => {
+      assertMutableWorkspace();
       assertAdminMutation(currentUser.role);
       setWorkspaceSettings(prev => {
         const next: WorkspaceSettings = {
@@ -229,6 +245,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const updateMemberRole = useCallback(
     (userId: string, newRole: UserRole): { success: boolean; error?: string } => {
+      assertMutableWorkspace();
       assertAdminMutation(currentUser.role);
 
       const check = canChangeUserRole(currentUser.role, userId, newRole, users);
@@ -240,11 +257,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       updateCanonicalUsers(updatedUsers);
       return { success: true };
     },
-    [currentUser.role, users, updateCanonicalUsers]
+    [currentUser.role, users, updateCanonicalUsers, assertMutableWorkspace]
   );
 
   const inviteMember = useCallback(
     (input: InviteMemberInput): { success: boolean; error?: string } => {
+      assertMutableWorkspace();
       assertAdminMutation(currentUser.role);
 
       const validation = validateMemberInvitation(
@@ -276,11 +294,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       saveSettingsToStorage(SETTINGS_STORAGE_KEYS.INVITATIONS, next);
       return { success: true };
     },
-    [currentUser.role, users, pendingInvitations, teams]
+    [currentUser.role, users, pendingInvitations, teams, assertMutableWorkspace]
   );
 
   const resendInvitation = useCallback(
     (invitationId: string): { success: boolean; error?: string } => {
+      assertMutableWorkspace();
       assertAdminMutation(currentUser.role);
       const next = pendingInvitations.map(inv =>
         inv.id === invitationId
@@ -291,11 +310,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       saveSettingsToStorage(SETTINGS_STORAGE_KEYS.INVITATIONS, next);
       return { success: true };
     },
-    [currentUser.role, pendingInvitations]
+    [currentUser.role, pendingInvitations, assertMutableWorkspace]
   );
 
   const revokeInvitation = useCallback(
     (invitationId: string): { success: boolean; error?: string } => {
+      assertMutableWorkspace();
       assertAdminMutation(currentUser.role);
       const next = pendingInvitations.map(inv =>
         inv.id === invitationId ? { ...inv, status: 'REVOKED' as const } : inv
@@ -304,7 +324,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       saveSettingsToStorage(SETTINGS_STORAGE_KEYS.INVITATIONS, next);
       return { success: true };
     },
-    [currentUser.role, pendingInvitations]
+    [currentUser.role, pendingInvitations, assertMutableWorkspace]
   );
 
   // ==========================================
@@ -320,6 +340,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const createTeam = useCallback(
     (input: CreateTeamInput): { success: boolean; error?: string; id: string } => {
+      assertMutableWorkspace();
       // Atomic pre-validation & planning: all role, team, and member validations run
       // BEFORE any state or storage mutations occur.
       const plan = planCreateTeam(input, teams, users, currentUser.role);
@@ -332,11 +353,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       return { success: true, ...plan.newTeam };
     },
-    [currentUser.role, teams, users, updateCanonicalTeams, updateCanonicalUsers]
+    [currentUser.role, teams, users, updateCanonicalTeams, updateCanonicalUsers, assertMutableWorkspace]
   );
 
   const updateTeam = useCallback(
     (id: string, input: EditTeamInput): { success: boolean; error?: string } => {
+      assertMutableWorkspace();
       assertAdminMutation(currentUser.role);
 
       const targetTeam = teams.find(t => t.id === id);
@@ -402,11 +424,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       return { success: true };
     },
-    [currentUser.role, teams, users, updateCanonicalTeams, updateCanonicalUsers]
+    [currentUser.role, teams, users, updateCanonicalTeams, updateCanonicalUsers, assertMutableWorkspace]
   );
 
   const archiveTeam = useCallback(
     (id: string): { success: boolean; error?: string } => {
+      assertMutableWorkspace();
       assertAdminMutation(currentUser.role);
 
       const teamToArchive = teams.find(t => t.id === id);
@@ -433,11 +456,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       return { success: true };
     },
-    [currentUser.role, teams, projects, cycles, archivedTeams, updateCanonicalTeams]
+    [currentUser.role, teams, projects, cycles, archivedTeams, updateCanonicalTeams, assertMutableWorkspace]
   );
 
   const restoreTeam = useCallback(
     (id: string): { success: boolean; error?: string } => {
+      assertMutableWorkspace();
       assertAdminMutation(currentUser.role);
 
       const teamToRestore = archivedTeams.find(t => t.id === id);
@@ -459,7 +483,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
       return { success: true };
     },
-    [currentUser.role, archivedTeams, teams, updateCanonicalTeams]
+    [currentUser.role, archivedTeams, teams, updateCanonicalTeams, assertMutableWorkspace]
   );
 
   // ==========================================
@@ -467,6 +491,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // ==========================================
   const connectRepo = useCallback(
     (provider: IntegrationProvider, repoName: string) => {
+      assertMutableWorkspace();
       assertAdminMutation(currentUser.role);
       const next = repoIntegrations.map(r =>
         r.provider === provider
@@ -483,11 +508,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setRepoIntegrations(next);
       saveSettingsToStorage(SETTINGS_STORAGE_KEYS.INTEGRATIONS, next);
     },
-    [currentUser.role, repoIntegrations]
+    [currentUser.role, repoIntegrations, assertMutableWorkspace]
   );
 
   const disconnectRepo = useCallback(
     (provider: IntegrationProvider) => {
+      assertMutableWorkspace();
       assertAdminMutation(currentUser.role);
       const next = repoIntegrations.map(r =>
         r.provider === provider
@@ -504,11 +530,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setRepoIntegrations(next);
       saveSettingsToStorage(SETTINGS_STORAGE_KEYS.INTEGRATIONS, next);
     },
-    [currentUser.role, repoIntegrations]
+    [currentUser.role, repoIntegrations, assertMutableWorkspace]
   );
 
   const updateRepoIntegration = useCallback(
     (provider: IntegrationProvider, updates: Partial<RepoIntegrationConfig>) => {
+      assertMutableWorkspace();
       assertAdminMutation(currentUser.role);
       setRepoIntegrations(prev => {
         const next = prev.map(r => {
@@ -531,11 +558,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return next;
       });
     },
-    [currentUser.role]
+    [currentUser.role, assertMutableWorkspace]
   );
 
   const createWebhook = useCallback(
     (name: string, endpointUrl: string, events: string[]): { success: boolean; error?: string } => {
+      assertMutableWorkspace();
       assertAdminMutation(currentUser.role);
 
       if (!name.trim()) throw new Error('Webhook name is required.');
@@ -560,7 +588,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       saveSettingsToStorage(SETTINGS_STORAGE_KEYS.WEBHOOKS, next);
       return { success: true };
     },
-    [currentUser.role, webhooks]
+    [currentUser.role, webhooks, assertMutableWorkspace]
   );
 
   const addWebhook = useCallback(
@@ -572,6 +600,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   const toggleWebhook = useCallback(
     (id: string, enabled?: boolean) => {
+      assertMutableWorkspace();
       assertAdminMutation(currentUser.role);
       setWebhooks(prev => {
         const next = prev.map(w =>
@@ -581,11 +610,12 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return next;
       });
     },
-    [currentUser.role]
+    [currentUser.role, assertMutableWorkspace]
   );
 
   const deleteWebhook = useCallback(
     (id: string) => {
+      assertMutableWorkspace();
       assertAdminMutation(currentUser.role);
       setWebhooks(prev => {
         const next = prev.filter(w => w.id !== id);
@@ -593,7 +623,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         return next;
       });
     },
-    [currentUser.role]
+    [currentUser.role, assertMutableWorkspace]
   );
 
   // ==========================================

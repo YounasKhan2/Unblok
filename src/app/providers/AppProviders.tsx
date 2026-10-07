@@ -27,15 +27,16 @@ interface AppProvidersProps {
  */
 const ProjectAuthBridge: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, status } = useAuth();
-  const { activeMembership } = useWorkspace();
+  const { activeMembership, activeWorkspaceId } = useWorkspace();
   const { setCurrentUser } = useProject();
 
   useEffect(() => {
     if (status === 'authenticated' && user) {
-      const legacyUser = bridgeToLegacyUser(user, activeMembership);
+      const effectiveMembership = activeWorkspaceId ? activeMembership : null;
+      const legacyUser = bridgeToLegacyUser(user, effectiveMembership);
       setCurrentUser(legacyUser);
     }
-  }, [status, user, activeMembership, setCurrentUser]);
+  }, [status, user, activeWorkspaceId, activeMembership, setCurrentUser]);
 
   return <>{children}</>;
 };

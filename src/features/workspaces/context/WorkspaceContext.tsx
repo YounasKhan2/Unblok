@@ -30,6 +30,7 @@ export interface WorkspaceContextType {
   createWorkspace: (input: CreateWorkspaceInput) => Promise<Workspace>;
   archiveActiveWorkspace: () => Promise<void>;
   simulateMembershipStatus: (workspaceId: string, status: MembershipStatus) => Promise<void>;
+  removeMembership: (membershipId: string) => Promise<boolean>;
   reloadWorkspaces: () => Promise<void>;
 }
 
@@ -39,20 +40,35 @@ export interface WorkspaceProviderProps {
   children: React.ReactNode;
   adapter?: WorkspaceAdapter;
   initialActiveWorkspaceId?: string | null;
+  initialWorkspaces?: Workspace[];
+  initialMemberships?: WorkspaceMembership[];
 }
 
 export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({
   children,
   adapter = defaultWorkspaceAdapter,
   initialActiveWorkspaceId,
+  initialWorkspaces,
+  initialMemberships,
 }) => {
   const { user, status: authStatus } = useAuth();
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [memberships, setMemberships] = useState<WorkspaceMembership[]>([]);
-  const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(
-    initialActiveWorkspaceId ?? null
-  );
-  const [lifecycleStatus, setLifecycleStatus] = useState<WorkspaceLifecycleState>('loading');
+  const [workspaces, setWorkspaces] = useState<Workspace[]>(() => initialWorkspaces ?? []);
+  const [memberships, setMemberships] = useState<WorkspaceMembership[]>(() => initialMemberships ?? []);
+  const [activeWorkspaceId, setActiveWorkspaceId] = useState<string | null>(() => {
+    if (initialActiveWorkspaceId !== undefined) return initialActiveWorkspaceId;
+    if (initialMemberships && initialMemberships.length > 0) {
+      return resolveActiveWorkspace(initialMemberships, null, initialWorkspaces ?? []).activeWorkspaceId;
+    }
+    return null;
+  });
+  const [lifecycleStatus, setLifecycleStatus] = useState<WorkspaceLifecycleState>(() => {
+    if (initialMemberships !== undefined) {
+      if (initialMemberships.length === 0) return 'empty';
+      const resolved = resolveActiveWorkspace(initialMemberships, initialActiveWorkspaceId ?? null, initialWorkspaces ?? []);
+      return resolved.activeWorkspaceId ? 'ready' : (resolved.resolutionSource === 'zero_memberships' ? 'empty' : 'unavailable');
+    }
+    return 'loading';
+  });
 
   const currentUserId = user?.id;
 
@@ -120,7 +136,7 @@ export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({
       }
 
       const targetWorkspace = workspaces.find((w) => w.id === targetWorkspaceId);
-      if (!targetWorkspace) {
+      if (!targetWorkspace || (targetWorkspace.status !== 'ACTIVE' && targetWorkspace.status !== 'ARCHIVED')) {
         return false;
       }
 
@@ -167,24 +183,69 @@ export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({
 
       const updated = await adapter.updateMembershipStatus(targetMem.id, status);
       if (updated) {
-        setMemberships((prev) =>
-          prev.map((m) => (m.id === targetMem.id ? { ...m, status } : m))
+        const nextMemberships = memberships.map((m) =>
+          m.id === targetMem.id ? { ...m, status } : m
         );
-        // If the active membership was suspended, re-resolve active workspace
+        setMemberships(nextMemberships);
+
+        // If the active membership was suspended or revoked, re-resolve active workspace
         if (workspaceId === activeWorkspaceId && status !== 'ACTIVE') {
-          const remainingActive = memberships.filter(
-            (m) => m.id !== targetMem.id && m.status === 'ACTIVE'
-          );
-          if (remainingActive.length > 0) {
-            await switchWorkspace(remainingActive[0].workspaceId);
+          const resolution = resolveActiveWorkspace(nextMemberships, null, workspaces);
+          if (resolution.activeWorkspaceId) {
+            setActiveWorkspaceId(resolution.activeWorkspaceId);
+            if (currentUserId) {
+              await adapter.setActiveWorkspaceId(currentUserId, resolution.activeWorkspaceId);
+            }
+            setLifecycleStatus('ready');
           } else {
             setActiveWorkspaceId(null);
-            setLifecycleStatus('unavailable');
+            if (currentUserId) {
+              await adapter.setActiveWorkspaceId(currentUserId, '');
+            }
+            setLifecycleStatus(
+              resolution.resolutionSource === 'zero_memberships' ? 'empty' : 'unavailable'
+            );
           }
         }
       }
     },
-    [memberships, activeWorkspaceId, adapter, switchWorkspace]
+    [memberships, activeWorkspaceId, workspaces, currentUserId, adapter]
+  );
+
+  const removeMembership = useCallback(
+    async (membershipId: string): Promise<boolean> => {
+      const targetMem = memberships.find((m) => m.id === membershipId);
+      if (!targetMem) return false;
+
+      const success = await adapter.removeMembership(membershipId);
+      if (success) {
+        const nextMemberships = memberships.filter((m) => m.id !== membershipId);
+        setMemberships(nextMemberships);
+
+        // If the active membership was removed, re-resolve active workspace
+        if (targetMem.workspaceId === activeWorkspaceId) {
+          const resolution = resolveActiveWorkspace(nextMemberships, null, workspaces);
+          if (resolution.activeWorkspaceId) {
+            setActiveWorkspaceId(resolution.activeWorkspaceId);
+            if (currentUserId) {
+              await adapter.setActiveWorkspaceId(currentUserId, resolution.activeWorkspaceId);
+            }
+            setLifecycleStatus('ready');
+          } else {
+            setActiveWorkspaceId(null);
+            if (currentUserId) {
+              await adapter.setActiveWorkspaceId(currentUserId, '');
+            }
+            setLifecycleStatus(
+              resolution.resolutionSource === 'zero_memberships' ? 'empty' : 'unavailable'
+            );
+          }
+        }
+        return true;
+      }
+      return false;
+    },
+    [memberships, activeWorkspaceId, workspaces, currentUserId, adapter]
   );
 
   const value = useMemo(
@@ -199,6 +260,7 @@ export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({
       createWorkspace,
       archiveActiveWorkspace,
       simulateMembershipStatus,
+      removeMembership,
       reloadWorkspaces: loadWorkspaceState,
     }),
     [
@@ -212,6 +274,7 @@ export const WorkspaceProvider: React.FC<WorkspaceProviderProps> = ({
       createWorkspace,
       archiveActiveWorkspace,
       simulateMembershipStatus,
+      removeMembership,
       loadWorkspaceState,
     ]
   );

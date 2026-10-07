@@ -285,29 +285,48 @@ export function normalizeUsersList(users: any[]): (User & { teamIds: string[] })
   return users.map(normalizeUserMemberships);
 }
 
-function ensureWorkspaceTag<T extends { workspaceId?: string }>(items: T[]): T[] {
-  return items.map((item) => (item.workspaceId ? item : { ...item, workspaceId: 'ws_acme' }));
+/**
+ * Controlled one-time migration for legacy pre-UX-13 storage records.
+ * Distinguishes explicit legacy-data migration from normal entity creation.
+ */
+function migrateLegacyStorageRecords<T extends { id: string; workspaceId?: string }>(
+  stored: T[] | null,
+  seeds: T[]
+): T[] {
+  if (!stored) return seeds;
+  const migrated = stored.map((item) => (item.workspaceId ? item : { ...item, workspaceId: 'ws_acme' }));
+  const storedIds = new Set(migrated.map((item) => item.id));
+  const missingSeeds = seeds.filter((item) => !storedIds.has(item.id));
+  return missingSeeds.length > 0 ? [...migrated, ...missingSeeds] : migrated;
 }
 
 export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Section 6: Resolve active workspace context
-  let activeWorkspaceId = 'ws_acme';
-  let activeMembershipRole: UserRole | undefined;
+  let workspaceContext: ReturnType<typeof useWorkspace> | null = null;
+  let isStandaloneLegacyTest = false;
   try {
-    const ws = useWorkspace();
-    activeWorkspaceId = ws.activeWorkspaceId || 'ws_acme';
-    activeMembershipRole = ws.activeMembership?.role;
+    workspaceContext = useWorkspace();
   } catch {
-    // Graceful fallback for test environments without WorkspaceProvider
-    activeWorkspaceId = 'ws_acme';
+    // Isolated legacy test environment without WorkspaceProvider
+    isStandaloneLegacyTest = true;
   }
+
+  const activeWorkspaceId = isStandaloneLegacyTest
+    ? 'ws_acme'
+    : (workspaceContext?.activeWorkspaceId ?? null);
+  const activeMembershipRole = isStandaloneLegacyTest
+    ? undefined
+    : workspaceContext?.activeMembership?.role;
+  const activeWorkspace = isStandaloneLegacyTest
+    ? null
+    : (workspaceContext?.activeWorkspace ?? null);
 
   // Load master states from localStorage or initialize with multi-workspace seeds
   const [masterIssues, setMasterIssues] = useState<Issue[]>(() => {
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_issues`);
       const parsed = stored ? JSON.parse(stored) : null;
-      return ensureWorkspaceTag(mergeSeedRecordsById(parsed, MULTI_WORKSPACE_INITIAL_ISSUES));
+      return migrateLegacyStorageRecords(parsed, MULTI_WORKSPACE_INITIAL_ISSUES);
     } catch {
       return MULTI_WORKSPACE_INITIAL_ISSUES;
     }
@@ -317,7 +336,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_dependencies`);
       const parsed = stored ? JSON.parse(stored) : null;
-      return ensureWorkspaceTag(mergeSeedRecordsById(parsed, MULTI_WORKSPACE_INITIAL_DEPENDENCIES));
+      return migrateLegacyStorageRecords(parsed, MULTI_WORKSPACE_INITIAL_DEPENDENCIES);
     } catch {
       return MULTI_WORKSPACE_INITIAL_DEPENDENCIES;
     }
@@ -327,7 +346,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_projects`);
       const parsed = stored ? JSON.parse(stored) : null;
-      return ensureWorkspaceTag(mergeSeedRecordsById(parsed, MULTI_WORKSPACE_INITIAL_PROJECTS));
+      return migrateLegacyStorageRecords(parsed, MULTI_WORKSPACE_INITIAL_PROJECTS);
     } catch {
       return MULTI_WORKSPACE_INITIAL_PROJECTS;
     }
@@ -337,7 +356,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_activities`);
       const parsed = stored ? JSON.parse(stored) : null;
-      return ensureWorkspaceTag(mergeSeedRecordsById(parsed, MULTI_WORKSPACE_INITIAL_ACTIVITIES));
+      return migrateLegacyStorageRecords(parsed, MULTI_WORKSPACE_INITIAL_ACTIVITIES);
     } catch {
       return MULTI_WORKSPACE_INITIAL_ACTIVITIES;
     }
@@ -347,7 +366,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_teams`);
       const parsed = stored ? JSON.parse(stored) : null;
-      return ensureWorkspaceTag(mergeSeedRecordsById(parsed, MULTI_WORKSPACE_INITIAL_TEAMS));
+      return migrateLegacyStorageRecords(parsed, MULTI_WORKSPACE_INITIAL_TEAMS);
     } catch {
       return MULTI_WORKSPACE_INITIAL_TEAMS;
     }
@@ -372,10 +391,9 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
   });
 
   const updateCanonicalTeams = useCallback((newTeams: Team[]) => {
-    const tagged = ensureWorkspaceTag(newTeams);
-    setMasterTeams(tagged);
+    setMasterTeams(newTeams);
     try {
-      localStorage.setItem(`${STORAGE_KEY}_teams`, JSON.stringify(tagged));
+      localStorage.setItem(`${STORAGE_KEY}_teams`, JSON.stringify(newTeams));
     } catch (e) {
       console.warn('Failed to persist teams:', e);
     }
@@ -440,7 +458,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_cycles`);
       const parsed = stored ? JSON.parse(stored) : null;
-      return ensureWorkspaceTag(mergeSeedRecordsById(parsed, MULTI_WORKSPACE_INITIAL_CYCLES));
+      return migrateLegacyStorageRecords(parsed, MULTI_WORKSPACE_INITIAL_CYCLES);
     } catch {
       return MULTI_WORKSPACE_INITIAL_CYCLES;
     }
@@ -451,7 +469,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_milestones`);
       const parsed = stored ? JSON.parse(stored) : null;
-      return ensureWorkspaceTag(mergeSeedRecordsById(parsed, MULTI_WORKSPACE_INITIAL_MILESTONES));
+      return migrateLegacyStorageRecords(parsed, MULTI_WORKSPACE_INITIAL_MILESTONES);
     } catch {
       return MULTI_WORKSPACE_INITIAL_MILESTONES;
     }
@@ -462,7 +480,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_comments`);
       const parsed = stored ? JSON.parse(stored) : null;
-      return ensureWorkspaceTag(mergeSeedRecordsById(parsed, MULTI_WORKSPACE_INITIAL_COMMENTS));
+      return migrateLegacyStorageRecords(parsed, MULTI_WORKSPACE_INITIAL_COMMENTS);
     } catch {
       return MULTI_WORKSPACE_INITIAL_COMMENTS;
     }
@@ -479,48 +497,51 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const setComments = setMasterComments;
 
   // Section 10 & 11: Active Workspace Scoped Projections
+  // When activeWorkspaceId is null/invalid: projections must be strictly empty (no Acme leakage)
   const issues = useMemo(
-    () => masterIssues.filter((i) => (i.workspaceId || 'ws_acme') === activeWorkspaceId),
+    () => (!activeWorkspaceId ? [] : masterIssues.filter((i) => Boolean(i.workspaceId) && i.workspaceId === activeWorkspaceId)),
     [masterIssues, activeWorkspaceId]
   );
 
   const projects = useMemo(
-    () => masterProjects.filter((p) => (p.workspaceId || 'ws_acme') === activeWorkspaceId),
+    () => (!activeWorkspaceId ? [] : masterProjects.filter((p) => Boolean(p.workspaceId) && p.workspaceId === activeWorkspaceId)),
     [masterProjects, activeWorkspaceId]
   );
 
   const teams = useMemo(
-    () => masterTeams.filter((t) => (t.workspaceId || 'ws_acme') === activeWorkspaceId),
+    () => (!activeWorkspaceId ? [] : masterTeams.filter((t) => Boolean(t.workspaceId) && t.workspaceId === activeWorkspaceId)),
     [masterTeams, activeWorkspaceId]
   );
 
   const cycles = useMemo(
-    () => masterCycles.filter((c) => (c.workspaceId || 'ws_acme') === activeWorkspaceId),
+    () => (!activeWorkspaceId ? [] : masterCycles.filter((c) => Boolean(c.workspaceId) && c.workspaceId === activeWorkspaceId)),
     [masterCycles, activeWorkspaceId]
   );
 
   const milestones = useMemo(
-    () => masterMilestones.filter((m) => (m.workspaceId || 'ws_acme') === activeWorkspaceId),
+    () => (!activeWorkspaceId ? [] : masterMilestones.filter((m) => Boolean(m.workspaceId) && m.workspaceId === activeWorkspaceId)),
     [masterMilestones, activeWorkspaceId]
   );
 
   const dependencies = useMemo(() => {
+    if (!activeWorkspaceId) return [];
     const scopedIssueIds = new Set(issues.map((i) => i.id));
     return masterDependencies.filter(
       (d) =>
-        (d.workspaceId || 'ws_acme') === activeWorkspaceId &&
+        Boolean(d.workspaceId) &&
+        d.workspaceId === activeWorkspaceId &&
         scopedIssueIds.has(d.upstreamIssueId) &&
         scopedIssueIds.has(d.downstreamIssueId)
     );
   }, [masterDependencies, issues, activeWorkspaceId]);
 
   const activities = useMemo(
-    () => masterActivities.filter((a) => (a.workspaceId || 'ws_acme') === activeWorkspaceId),
+    () => (!activeWorkspaceId ? [] : masterActivities.filter((a) => Boolean(a.workspaceId) && a.workspaceId === activeWorkspaceId)),
     [masterActivities, activeWorkspaceId]
   );
 
   const comments = useMemo(
-    () => masterComments.filter((c) => (c.workspaceId || 'ws_acme') === activeWorkspaceId),
+    () => (!activeWorkspaceId ? [] : masterComments.filter((c) => Boolean(c.workspaceId) && c.workspaceId === activeWorkspaceId)),
     [masterComments, activeWorkspaceId]
   );
 
@@ -558,6 +579,42 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [activeMembershipRole, currentUser.role]);
 
+  /**
+   * Section 14: Permission Authority Bridge
+   * Canonical authority is `activeMembership.role`.
+   * For backwards compatibility with frozen legacy consumers (e.g. WorkflowSettingsSection,
+   * TeamSettingsSection, TriageToolbar, IssueDetailDrawer, etc.), `effectiveCurrentUser`
+   * binds `currentUser.role` directly to `activeMembershipRole` with zero stale window.
+   */
+  const effectiveCurrentUser: User = useMemo(() => {
+    if (isStandaloneLegacyTest) {
+      return currentUser;
+    }
+    if (!activeWorkspaceId || !activeMembershipRole) {
+      return {
+        ...currentUser,
+        role: 'OBSERVER' as UserRole,
+      };
+    }
+    return {
+      ...currentUser,
+      role: activeMembershipRole,
+    };
+  }, [currentUser, isStandaloneLegacyTest, activeWorkspaceId, activeMembershipRole]);
+
+  /**
+   * Section 2: Authoritative Mutation Policy
+   * Execution mutations are rejected if workspace is null/unavailable,
+   * archived, or if the user has an OBSERVER role.
+   */
+  const canMutate = useMemo(() => {
+    if (isStandaloneLegacyTest) return true;
+    if (!activeWorkspaceId) return false;
+    if (activeWorkspace && activeWorkspace.status === 'ARCHIVED') return false;
+    if (activeMembershipRole === 'OBSERVER') return false;
+    return true;
+  }, [isStandaloneLegacyTest, activeWorkspaceId, activeWorkspace, activeMembershipRole]);
+
   // Persist master state
   useEffect(() => {
     localStorage.setItem(`${STORAGE_KEY}_issues`, JSON.stringify(masterIssues));
@@ -593,9 +650,20 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const issuesMap = useMemo(() => new Map(issues.map((i) => [i.id, i])), [issues]);
 
+  useEffect(() => {
+    if (!activeWorkspaceId || issues.length === 0) {
+      setSelectedIssueId(null);
+    } else if (selectedIssueId && !issues.some((i) => i.id === selectedIssueId)) {
+      setSelectedIssueId(issues[0]?.id ?? null);
+    }
+  }, [activeWorkspaceId, issues, selectedIssueId]);
+
   const selectedIssue = useMemo(
-    () => (selectedIssueId ? issuesMap.get(selectedIssueId) || null : issues[0] || null),
-    [selectedIssueId, issuesMap, issues]
+    () => {
+      if (!activeWorkspaceId || issues.length === 0) return null;
+      return (selectedIssueId ? issuesMap.get(selectedIssueId) || null : issues[0] || null);
+    },
+    [selectedIssueId, issuesMap, issues, activeWorkspaceId]
   );
 
   const getIssueBlockerStatus = useCallback(
@@ -743,8 +811,9 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Update Issue Cycle
   const updateIssueCycle = useCallback(
     (issueId: string, cycleId?: string): boolean => {
+      if (!canMutate) return false;
       const res = executeUpdateIssueCycle(
-        { cycles, issues, projects, teams, currentUser, activities },
+        { cycles, issues, projects, teams, currentUser: effectiveCurrentUser, activities },
         issueId,
         cycleId
       );
@@ -753,13 +822,13 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setActivities(res.nextState.activities);
       return true;
     },
-    [cycles, issues, projects, teams, currentUser, activities]
+    [canMutate, cycles, issues, projects, teams, effectiveCurrentUser, activities]
   );
 
   // Bulk Update Cycle
   const bulkUpdateCycle = useCallback(
     (cycleId?: string) => {
-      if (!canMutatePlanning(currentUser.role)) return;
+      if (!canMutate || !canMutatePlanning(effectiveCurrentUser.role)) return;
       if (selectedIssueIds.length === 0) return;
 
       const targetCycle = cycleId ? cycles.find(c => c.id === cycleId) : undefined;
@@ -794,7 +863,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return createActivityEvent(
           id,
           cycleId ? 'CYCLE_ASSIGNED' : 'CYCLE_REMOVED',
-          currentUser,
+          effectiveCurrentUser,
           {
             from: fromCycle?.name || 'Unscheduled',
             to: targetCycle?.name || 'Unscheduled',
@@ -806,13 +875,13 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       });
       setActivities(prev => [...events, ...prev]);
     },
-    [selectedIssueIds, cycles, issuesMap, projects, currentUser]
+    [canMutate, effectiveCurrentUser, selectedIssueIds, cycles, issuesMap, projects]
   );
 
   // Rollover Incomplete Issues
   const rolloverIncompleteIssues = useCallback(
     (fromCycleId: string, toCycleId: string): { rolledCount: number } => {
-      if (!canMutatePlanning(currentUser.role)) return { rolledCount: 0 };
+      if (!canMutate || !canMutatePlanning(effectiveCurrentUser.role)) return { rolledCount: 0 };
 
       const fromCycle = cycles.find(c => c.id === fromCycleId);
       const toCycle = cycles.find(c => c.id === toCycleId);
@@ -843,7 +912,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         );
 
         const events = eligibleIds.map(id =>
-          createActivityEvent(id, 'CYCLE_ROLLED_OVER', currentUser, {
+          createActivityEvent(id, 'CYCLE_ROLLED_OVER', effectiveCurrentUser, {
             from: fromCycle.name,
             to: toCycle.name,
             sourceCycleId: fromCycle.id,
@@ -856,7 +925,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       return { rolledCount: eligibleIds.length };
     },
-    [issues, cycles, currentUser]
+    [canMutate, effectiveCurrentUser, issues, cycles]
   );
 
   // Create Cycle (enforcing all creation invariants at mutation boundary)
@@ -869,22 +938,28 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       status?: 'ACTIVE' | 'UPCOMING' | 'COMPLETED';
       description?: string;
     }): Cycle | null => {
+      if (!canMutate || !activeWorkspaceId) return null;
       const res = executeCreateCycle(
-        { cycles, issues, projects, teams, currentUser, activities },
+        { cycles, issues, projects, teams, currentUser: effectiveCurrentUser, activities },
         data
       );
       if (!res.success || !res.nextState || !res.newCycle) return null;
-      setCycles(res.nextState.cycles);
-      return res.newCycle;
+      const cycleWithWorkspace: Cycle = {
+        ...res.newCycle,
+        workspaceId: activeWorkspaceId,
+      };
+      setCycles(prev => [cycleWithWorkspace, ...prev.filter(c => c.id !== cycleWithWorkspace.id)]);
+      return cycleWithWorkspace;
     },
-    [cycles, issues, projects, teams, currentUser, activities]
+    [canMutate, activeWorkspaceId, cycles, issues, projects, teams, effectiveCurrentUser, activities]
   );
 
   // Update Cycle (validates candidate cycle state before mutating)
   const updateCycle = useCallback(
     (id: string, updates: Partial<Cycle>): boolean => {
+      if (!canMutate) return false;
       const res = executeUpdateCycle(
-        { cycles, issues, projects, teams, currentUser, activities },
+        { cycles, issues, projects, teams, currentUser: effectiveCurrentUser, activities },
         id,
         updates
       );
@@ -892,7 +967,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setCycles(res.nextState.cycles);
       return true;
     },
-    [cycles, issues, projects, teams, currentUser, activities]
+    [canMutate, cycles, issues, projects, teams, effectiveCurrentUser, activities]
   );
 
   // Complete Cycle & Rollover (ATOMIC: perform ALL validation before ANY mutation)
@@ -901,8 +976,11 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       cycleId: string,
       rolloverData?: { targetCycleId?: string; issueIdsToRollover?: string[] }
     ): { success: boolean; rolledCount: number; error?: string } => {
+      if (!canMutate) {
+        return { success: false, rolledCount: 0, error: 'Mutations not permitted' };
+      }
       const res = executeCompleteCycle(
-        { cycles, issues, projects, teams, currentUser, activities },
+        { cycles, issues, projects, teams, currentUser: effectiveCurrentUser, activities },
         { cycleId, rolloverData }
       );
       if (!res.success || !res.nextState) {
@@ -913,14 +991,15 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setActivities(res.nextState.activities);
       return { success: true, rolledCount: res.rolledCount };
     },
-    [cycles, issues, projects, teams, currentUser, activities]
+    [canMutate, cycles, issues, projects, teams, effectiveCurrentUser, activities]
   );
 
   // Strategic Milestones Methods
   const updateIssueMilestone = useCallback(
     (issueId: string, milestoneId?: string): boolean => {
+      if (!canMutate) return false;
       const res = executeUpdateIssueMilestone(
-        { cycles, issues, projects, teams, currentUser, activities },
+        { cycles, issues, projects, teams, currentUser: effectiveCurrentUser, activities },
         milestones,
         issueId,
         milestoneId
@@ -930,27 +1009,33 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setActivities(res.nextState.activities);
       return true;
     },
-    [cycles, issues, projects, teams, currentUser, activities, milestones]
+    [canMutate, cycles, issues, projects, teams, effectiveCurrentUser, activities, milestones]
   );
 
   const createMilestone = useCallback(
     (data: { name: string; targetDate: string; description?: string; teamId?: string }): Milestone | null => {
+      if (!canMutate || !activeWorkspaceId) return null;
       const res = executeCreateMilestone(
-        { cycles, issues, projects, teams, currentUser, activities },
+        { cycles, issues, projects, teams, currentUser: effectiveCurrentUser, activities },
         milestones,
         data
       );
       if (!res.success || !res.nextMilestones || !res.newMilestone) return null;
-      setMilestones(res.nextMilestones);
-      return res.newMilestone;
+      const milestoneWithWorkspace: Milestone = {
+        ...res.newMilestone,
+        workspaceId: activeWorkspaceId,
+      };
+      setMilestones(prev => [milestoneWithWorkspace, ...prev.filter(m => m.id !== milestoneWithWorkspace.id)]);
+      return milestoneWithWorkspace;
     },
-    [cycles, issues, projects, teams, currentUser, activities, milestones]
+    [canMutate, activeWorkspaceId, cycles, issues, projects, teams, effectiveCurrentUser, activities, milestones]
   );
 
   const updateMilestone = useCallback(
     (id: string, updates: Partial<Milestone>): boolean => {
+      if (!canMutate) return false;
       const res = executeUpdateMilestone(
-        { cycles, issues, projects, teams, currentUser, activities },
+        { cycles, issues, projects, teams, currentUser: effectiveCurrentUser, activities },
         milestones,
         id,
         updates
@@ -959,7 +1044,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setMilestones(res.nextMilestones);
       return true;
     },
-    [cycles, issues, projects, teams, currentUser, activities, milestones]
+    [canMutate, cycles, issues, projects, teams, effectiveCurrentUser, activities, milestones]
   );
 
   // Collaboration & Threaded Comments (Phase C & UX-06)
@@ -970,11 +1055,12 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       parentId?: string,
       mentionIds?: string[]
     ): IssueComment | null => {
+      if (!canMutate || !activeWorkspaceId) return null;
       const res = executeAddComment({
         issueId,
         content,
         parentId,
-        actor: currentUser,
+        actor: effectiveCurrentUser,
         allUsers: users,
         issues,
         existingComments: comments,
@@ -985,18 +1071,24 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return null;
       }
 
-      setComments(prev => [...prev, res.comment!]);
+      const commentWithWorkspace: IssueComment = {
+        ...res.comment,
+        workspaceId: activeWorkspaceId,
+      };
+
+      setComments(prev => [...prev, commentWithWorkspace]);
       setActivities(prev => [...res.events, ...prev]);
-      return res.comment;
+      return commentWithWorkspace;
     },
-    [currentUser, users, issues, comments]
+    [canMutate, activeWorkspaceId, effectiveCurrentUser, users, issues, comments]
   );
 
   const deleteComment = useCallback(
     (commentId: string): boolean => {
+      if (!canMutate) return false;
       const res = executeDeleteComment({
         commentId,
-        actor: currentUser,
+        actor: effectiveCurrentUser,
         existingComments: comments,
       });
 
@@ -1007,7 +1099,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setComments(prev => prev.filter(c => !res.deletedCommentIds.includes(c.id)));
       return true;
     },
-    [currentUser, comments]
+    [canMutate, effectiveCurrentUser, comments]
   );
 
   // Multi-Selection Methods
@@ -1049,6 +1141,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Bulk Update State (enforces Hard Completion Guard!)
   const bulkUpdateState = useCallback(
     (newState: IssueState): { updated: number; blocked: number } => {
+      if (!canMutate) return { updated: 0, blocked: selectedIssueIds.length };
       if (selectedIssueIds.length === 0) return { updated: 0, blocked: 0 };
 
       const idsToUpdate: string[] = [];
@@ -1083,7 +1176,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
         const newEvents: ActivityEvent[] = idsToUpdate.map(id => {
           const prev = issuesMap.get(id);
-          return createActivityEvent(id, 'STATE_CHANGED', currentUser, {
+          return createActivityEvent(id, 'STATE_CHANGED', effectiveCurrentUser, {
             from: prev?.state,
             to: newState,
             reason: 'Bulk triage update',
@@ -1102,12 +1195,13 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       return { updated: idsToUpdate.length, blocked: blockedIssues.length };
     },
-    [selectedIssueIds, issuesMap, issues, dependencies, currentUser]
+    [canMutate, selectedIssueIds, issuesMap, issues, dependencies, effectiveCurrentUser]
   );
 
   // Bulk Update Priority
   const bulkUpdatePriority = useCallback(
     (newPriority: IssuePriority) => {
+      if (!canMutate) return;
       if (selectedIssueIds.length === 0) return;
 
       const now = new Date().toISOString();
@@ -1121,7 +1215,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       const newEvents: ActivityEvent[] = selectedIssueIds.map(id => {
         const prev = issuesMap.get(id);
-        return createActivityEvent(id, 'PRIORITY_CHANGED', currentUser, {
+        return createActivityEvent(id, 'PRIORITY_CHANGED', effectiveCurrentUser, {
           from: prev?.priority,
           to: newPriority,
           reason: 'Bulk triage update',
@@ -1129,12 +1223,13 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       });
       setActivities(prev => [...newEvents, ...prev]);
     },
-    [selectedIssueIds, issuesMap, currentUser]
+    [canMutate, selectedIssueIds, issuesMap, effectiveCurrentUser]
   );
 
   // Bulk Update Assignee
   const bulkUpdateAssignee = useCallback(
     (assigneeId?: string) => {
+      if (!canMutate) return;
       if (selectedIssueIds.length === 0) return;
 
       const now = new Date().toISOString();
@@ -1150,7 +1245,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const newEvents: ActivityEvent[] = selectedIssueIds.map(id => {
         const prev = issuesMap.get(id);
         const prevUser = users.find(u => u.id === prev?.assigneeId);
-        return createActivityEvent(id, 'ASSIGNEE_CHANGED', currentUser, {
+        return createActivityEvent(id, 'ASSIGNEE_CHANGED', effectiveCurrentUser, {
           from: prevUser?.name || 'Unassigned',
           to: targetUser?.name || 'Unassigned',
           fromAssigneeId: prev?.assigneeId,
@@ -1160,7 +1255,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       });
       setActivities(prev => [...newEvents, ...prev]);
     },
-    [selectedIssueIds, issuesMap, users, currentUser]
+    [canMutate, selectedIssueIds, issuesMap, users, effectiveCurrentUser]
   );
 
   // Saved Views Management
@@ -1229,8 +1324,9 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Update Issue State with Hard Completion Guard & Reactivation Check
   const updateIssueState = useCallback(
     (issueId: string, newState: IssueState): boolean => {
-      const issue = issuesMap.get(issueId);
-      if (!issue) return false;
+      if (!canMutate) return false;
+      const issue = masterIssues.find((i) => i.id === issueId);
+      if (!issue || !issue.workspaceId || issue.workspaceId !== activeWorkspaceId) return false;
       if (issue.state === newState) return true;
 
       // Check lifecycle rules
@@ -1264,7 +1360,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       );
 
       // 2. Record state change event
-      const stateEvent = createActivityEvent(issueId, 'STATE_CHANGED', currentUser, {
+      const stateEvent = createActivityEvent(issueId, 'STATE_CHANGED', effectiveCurrentUser, {
         from: previousState,
         to: newState,
       });
@@ -1290,7 +1386,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
           downstreamIssue.id,
           prevStatus.activeCount,
           nextStatus.activeCount,
-          currentUser,
+          effectiveCurrentUser,
           `Prerequisite ${issue.key} moved to ${newState}`
         );
 
@@ -1300,14 +1396,16 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setActivities(prev => [newActivities[0], ...newActivities.slice(1), ...prev]);
       return true;
     },
-    [issues, issuesMap, dependencies, currentUser]
+    [canMutate, activeWorkspaceId, masterIssues, issues, issuesMap, dependencies, effectiveCurrentUser]
   );
 
   // Update Priority
   const updateIssuePriority = useCallback(
     (issueId: string, newPriority: IssuePriority) => {
-      const issue = issuesMap.get(issueId);
-      if (!issue || issue.priority === newPriority) return;
+      if (!canMutate) return;
+      const issue = masterIssues.find((i) => i.id === issueId);
+      if (!issue || !issue.workspaceId || issue.workspaceId !== activeWorkspaceId) return;
+      if (issue.priority === newPriority) return;
 
       const prevPriority = issue.priority;
       setIssues(prev =>
@@ -1318,20 +1416,22 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         )
       );
 
-      const event = createActivityEvent(issueId, 'PRIORITY_CHANGED', currentUser, {
+      const event = createActivityEvent(issueId, 'PRIORITY_CHANGED', effectiveCurrentUser, {
         from: prevPriority,
         to: newPriority,
       });
       setActivities(prev => [event, ...prev]);
     },
-    [issuesMap, currentUser]
+    [canMutate, activeWorkspaceId, masterIssues, effectiveCurrentUser]
   );
 
   // Update Assignee
   const updateIssueAssignee = useCallback(
     (issueId: string, assigneeId?: string) => {
-      const issue = issuesMap.get(issueId);
-      if (!issue || issue.assigneeId === assigneeId) return;
+      if (!canMutate) return;
+      const issue = masterIssues.find((i) => i.id === issueId);
+      if (!issue || !issue.workspaceId || issue.workspaceId !== activeWorkspaceId) return;
+      if (issue.assigneeId === assigneeId) return;
 
       const prevAssigneeId = issue.assigneeId;
       setIssues(prev =>
@@ -1345,7 +1445,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const prevUser = users.find(u => u.id === prevAssigneeId);
       const nextUser = users.find(u => u.id === assigneeId);
 
-      const event = createActivityEvent(issueId, 'ASSIGNEE_CHANGED', currentUser, {
+      const event = createActivityEvent(issueId, 'ASSIGNEE_CHANGED', effectiveCurrentUser, {
         from: prevUser?.name || 'Unassigned',
         to: nextUser?.name || 'Unassigned',
         fromAssigneeId: prevAssigneeId,
@@ -1353,14 +1453,15 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       });
       setActivities(prev => [event, ...prev]);
     },
-    [issuesMap, users, currentUser]
+    [canMutate, activeWorkspaceId, masterIssues, users, effectiveCurrentUser]
   );
 
   // Update Title & Description
   const updateIssueDetails = useCallback(
     (issueId: string, title: string, description: string) => {
-      const issue = issuesMap.get(issueId);
-      if (!issue) return;
+      if (!canMutate) return;
+      const issue = masterIssues.find((i) => i.id === issueId);
+      if (!issue || !issue.workspaceId || issue.workspaceId !== activeWorkspaceId) return;
 
       const titleChanged = issue.title !== title;
       const descChanged = issue.description !== description;
@@ -1378,7 +1479,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const newEvents: ActivityEvent[] = [];
       if (titleChanged) {
         newEvents.push(
-          createActivityEvent(issueId, 'TITLE_MODIFIED', currentUser, {
+          createActivityEvent(issueId, 'TITLE_MODIFIED', effectiveCurrentUser, {
             from: issue.title,
             to: title,
           })
@@ -1386,7 +1487,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
       if (descChanged) {
         newEvents.push(
-          createActivityEvent(issueId, 'DESCRIPTION_MODIFIED', currentUser, {
+          createActivityEvent(issueId, 'DESCRIPTION_MODIFIED', effectiveCurrentUser, {
             reason: 'Description updated',
           })
         );
@@ -1394,13 +1495,17 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       setActivities(prev => [...newEvents, ...prev]);
     },
-    [issuesMap, currentUser]
+    [canMutate, activeWorkspaceId, masterIssues, effectiveCurrentUser]
   );
 
   const updateIssueDates = useCallback(
     (issueId: string, startDate?: string, dueDate?: string): boolean => {
+      if (!canMutate) return false;
+      const issue = masterIssues.find((i) => i.id === issueId);
+      if (!issue || !issue.workspaceId || issue.workspaceId !== activeWorkspaceId) return false;
+
       const res = executeUpdateIssueDates(
-        { cycles, issues, projects, teams, currentUser, activities },
+        { cycles, issues, projects, teams, currentUser: effectiveCurrentUser, activities },
         issueId,
         startDate,
         dueDate
@@ -1410,12 +1515,14 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setActivities(res.nextState.activities);
       return true;
     },
-    [cycles, issues, projects, teams, currentUser, activities]
+    [canMutate, activeWorkspaceId, masterIssues, cycles, issues, projects, teams, effectiveCurrentUser, activities]
   );
 
   // Add Dependency (with Cycle check & Boundary check)
   const addDependency = useCallback(
     (upstreamId: string, downstreamId: string): boolean => {
+      if (!canMutate) return false;
+
       // 1. Cycle detection (PRD Section 16 & 17)
       const cycleCheck = wouldCreateCycle(upstreamId, downstreamId, dependencies, issuesMap);
       if (cycleCheck.hasCycle) {
@@ -1432,11 +1539,14 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (!upstream || !downstream) return false;
 
       // Section 12: Invariant Check - Cross-workspace dependencies are strictly forbidden
-      const upstreamWs = upstream.workspaceId || 'ws_acme';
-      const downstreamWs = downstream.workspaceId || 'ws_acme';
-      if (upstreamWs !== downstreamWs || upstreamWs !== activeWorkspaceId) {
+      // Missing or malformed workspaceIds must NOT silently default to Acme
+      if (!upstream.workspaceId || !downstream.workspaceId) {
+        console.warn('Cross-workspace dependency forbidden: missing workspaceId on entity');
+        return false;
+      }
+      if (upstream.workspaceId !== downstream.workspaceId || upstream.workspaceId !== activeWorkspaceId) {
         console.warn(
-          `Cross-workspace dependency forbidden between '${upstreamWs}' and '${downstreamWs}'`
+          `Cross-workspace dependency forbidden between '${upstream.workspaceId}' and '${downstream.workspaceId}'`
         );
         return false;
       }
@@ -1450,14 +1560,14 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         upstreamIssueId: upstreamId,
         downstreamIssueId: downstreamId,
         createdAt: new Date().toISOString(),
-        createdBy: currentUser.id,
+        createdBy: effectiveCurrentUser.id,
       };
 
       const updatedDeps = [...dependencies, newDep];
       setDependencies(updatedDeps);
 
       // Audit event
-      const depEvent = createActivityEvent(downstreamId, 'DEPENDENCY_ADDED', currentUser, {
+      const depEvent = createActivityEvent(downstreamId, 'DEPENDENCY_ADDED', effectiveCurrentUser, {
         upstreamKey: upstream.key,
         targetIssueTitle: upstream.title,
       });
@@ -1468,21 +1578,22 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         downstreamId,
         prevStatus.activeCount,
         nextStatus.activeCount,
-        currentUser,
+        effectiveCurrentUser,
         `Blocked by prerequisite ${upstream.key}`
       );
 
       setActivities(prev => [depEvent, ...boundaryEvents, ...prev]);
       return true;
     },
-    [dependencies, issues, issuesMap, currentUser]
+    [canMutate, dependencies, issues, issuesMap, masterIssues, activeWorkspaceId, effectiveCurrentUser]
   );
 
   // Remove Dependency
   const removeDependency = useCallback(
     (dependencyId: string) => {
-      const dep = dependencies.find(d => d.id === dependencyId);
-      if (!dep) return;
+      if (!canMutate) return;
+      const dep = masterDependencies.find(d => d.id === dependencyId);
+      if (!dep || !dep.workspaceId || dep.workspaceId !== activeWorkspaceId) return;
 
       const upstream = issuesMap.get(dep.upstreamIssueId);
       const downstream = issuesMap.get(dep.downstreamIssueId);
@@ -1493,7 +1604,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setDependencies(updatedDeps);
 
       if (downstream && upstream) {
-        const depEvent = createActivityEvent(dep.downstreamIssueId, 'DEPENDENCY_REMOVED', currentUser, {
+        const depEvent = createActivityEvent(dep.downstreamIssueId, 'DEPENDENCY_REMOVED', effectiveCurrentUser, {
           upstreamKey: upstream.key,
           targetIssueTitle: upstream.title,
         });
@@ -1503,19 +1614,20 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
           dep.downstreamIssueId,
           prevStatus.activeCount,
           nextStatus.activeCount,
-          currentUser,
+          effectiveCurrentUser,
           `Prerequisite ${upstream.key} link removed`
         );
 
         setActivities(prev => [depEvent, ...boundaryEvents, ...prev]);
       }
     },
-    [dependencies, issues, issuesMap, currentUser]
+    [canMutate, masterDependencies, activeWorkspaceId, dependencies, issues, issuesMap, effectiveCurrentUser]
   );
 
   // Bulk Add Blocker
   const bulkAddBlocker = useCallback(
     (upstreamId: string): { added: number; failed: number } => {
+      if (!canMutate) return { added: 0, failed: selectedIssueIds.length };
       let added = 0;
       let failed = 0;
 
@@ -1537,7 +1649,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       return { added, failed };
     },
-    [selectedIssueIds, dependencies, issuesMap, addDependency]
+    [canMutate, selectedIssueIds, dependencies, issuesMap, addDependency]
   );
 
   // Create Issue (Atomic sequence allocation per project)
@@ -1550,7 +1662,19 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       assigneeId?: string;
       upstreamBlockerId?: string;
     }): Issue => {
+      if (!canMutate) {
+        throw new Error('Cannot create issue in an archived workspace or with read-only permissions.');
+      }
+      if (!activeWorkspaceId) {
+        throw new Error('Cannot create issue without an active workspace context.');
+      }
       const targetProject = projects.find(p => p.id === data.projectId) || projects[0];
+      if (!targetProject) {
+        throw new Error('Cannot create issue without a project in active workspace.');
+      }
+      if (!targetProject.workspaceId || targetProject.workspaceId !== activeWorkspaceId) {
+        throw new Error(`Target project does not belong to active workspace '${activeWorkspaceId}'.`);
+      }
       const nextNumber = targetProject.currentSequence;
       const issueKey = `${targetProject.key}-${nextNumber}`;
 
@@ -1571,7 +1695,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         state: 'TODO',
         priority: data.priority,
         assigneeId: data.assigneeId,
-        creatorId: currentUser.id,
+        creatorId: effectiveCurrentUser.id,
         createdAt: now,
         updatedAt: now,
         version: 1,
@@ -1579,7 +1703,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       setIssues(prev => [newIssue, ...prev]);
 
-      const createEvent = createActivityEvent(newIssue.id, 'ISSUE_CREATED', currentUser, {
+      const createEvent = createActivityEvent(newIssue.id, 'ISSUE_CREATED', effectiveCurrentUser, {
         to: 'TODO',
         reason: 'Issue created',
       });
@@ -1597,7 +1721,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       return newIssue;
     },
-    [projects, currentUser, addDependency, activeWorkspaceId]
+    [canMutate, activeWorkspaceId, projects, effectiveCurrentUser, addDependency]
   );
 
   // Reset demo data
@@ -1635,7 +1759,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         projects,
         users,
         activities,
-        currentUser,
+        currentUser: effectiveCurrentUser,
         setCurrentUser: handleSetCurrentUser,
         updateCanonicalTeams,
         updateCanonicalUsers,
