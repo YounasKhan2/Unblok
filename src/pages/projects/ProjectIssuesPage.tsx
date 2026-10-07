@@ -313,8 +313,8 @@ export const ProjectIssuesPage: React.FC = () => {
               </div>
               <div className="w-6 shrink-0 text-center">Pri</div>
               <div className="w-20 shrink-0">Key</div>
-              <div className="flex-1 min-w-0 pr-3">Title</div>
-              <div className="shrink-0 mr-3 w-28">Blocker Status</div>
+              <div className="flex-1 min-w-0 pr-3 truncate">Title</div>
+              <div className="shrink-0 mr-3 w-28 truncate hidden sm:block">Blocker Status</div>
               <div className="w-28 shrink-0">State</div>
               <div className="w-28 shrink-0 hidden md:block">Assignee</div>
               <div className="w-24 shrink-0 hidden lg:block text-right pr-2">Due Date</div>

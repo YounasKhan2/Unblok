@@ -81,7 +81,7 @@ export const IssueTitleEditor: React.FC<IssueTitleEditorProps> = ({
             type="button"
             onClick={handleSave}
             disabled={!draftTitle.trim()}
-            className="inline-flex items-center gap-1.5 px-3 py-1 bg-accent hover:opacity-90 text-surface-base text-xs font-semibold rounded-[6px] shadow-2xs transition-opacity cursor-pointer disabled:opacity-40"
+            className="inline-flex items-center gap-1.5 px-3 py-1 bg-accent hover:opacity-90 text-white text-xs font-semibold rounded-[6px] shadow-2xs transition-opacity cursor-pointer disabled:opacity-40"
           >
             <Check className="w-3.5 h-3.5" />
             <span>Save Title</span>

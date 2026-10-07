@@ -248,7 +248,7 @@ export const IssueDescription: React.FC<IssueDescriptionProps> = ({
               <button
                 type="button"
                 onClick={handleSave}
-                className="inline-flex items-center gap-1.5 px-3 py-1 bg-accent hover:opacity-90 text-surface-base text-xs font-semibold rounded-[6px] shadow-2xs transition-opacity cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1 bg-accent hover:opacity-90 text-white text-xs font-semibold rounded-[6px] shadow-2xs transition-opacity cursor-pointer"
               >
                 <Check className="w-3.5 h-3.5" />
                 <span>Save Description</span>

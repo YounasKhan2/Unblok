@@ -139,7 +139,7 @@ export const InlineReplyComposer: React.FC<InlineReplyComposerProps> = ({
             type="button"
             onClick={handleSubmit}
             disabled={!content.trim()}
-            className="flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded bg-accent text-surface-base hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity cursor-pointer shadow-2xs"
+            className="flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded bg-accent text-white hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity cursor-pointer shadow-2xs"
           >
             <Send className="w-3 h-3" />
             <span>Reply</span>
