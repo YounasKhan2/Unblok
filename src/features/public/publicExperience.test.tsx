@@ -34,8 +34,8 @@ describe('UX-11C Complete Public Experience Tests', () => {
   describe('1. Public Routes Completion & Real Page Rendering', () => {
     const routes = [
       { path: '/product', expectedTitle: 'The complete execution lifecycle' },
-      { path: '/features', expectedTitle: 'Comprehensive features for engineering execution' },
-      { path: '/solutions', expectedTitle: 'Purpose-built for technical teams' },
+      { path: '/features', expectedTitle: 'The visual capability atlas of Unblok' },
+      { path: '/solutions', expectedTitle: 'Purpose-built workflows for technical teams' },
       { path: '/pricing', expectedTitle: 'Predictable evaluation. Commercial packaging in progress.' },
       { path: '/security', expectedTitle: 'Security principles and architecture boundaries' },
       { path: '/contact', expectedTitle: 'Contact the Unblok team' },

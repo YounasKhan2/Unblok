@@ -22,7 +22,7 @@ import { PublicCtaBanner } from '../../features/public/components/PublicCtaBanne
 
 export const PricingPage: React.FC = () => {
   return (
-    <div className="flex flex-col w-full">
+    <div className="flex flex-col w-full pub-env-grid">
       {/* 1. Hero */}
       <PublicPageHero
         eyebrow="Pricing & Packaging"
