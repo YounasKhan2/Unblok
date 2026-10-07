@@ -149,23 +149,73 @@ describe('UX-14 Project Creation & Ownership Tests', () => {
       expect(res.errors.key).toContain('already in use');
     });
 
-    it('allows identical project keys in different workspaces', () => {
-      // In a new workspace gamma with 0 projects, key 'CORE' is valid
+    it('allows identical project keys in different workspaces even when mixed-workspace projects are passed', () => {
+      // In ws_beta, key 'CORE' already exists. In ws_gamma, key 'CORE' is valid.
       const res = validateProjectInput(
         {
           name: 'Core Platform Gamma',
           key: 'CORE',
           teamId: 'team_gamma_1',
         },
-        [], // no projects in workspace gamma
-        [{ id: 'team_gamma_1', name: 'Gamma Team', key: 'GAM', color: '#111', workspaceId: 'ws_gamma', description: 'Gamma team' }]
+        existingProjects, // contains CORE in ws_acme and CORE in ws_beta
+        [{ id: 'team_gamma_1', name: 'Gamma Team', key: 'GAM', color: '#111', workspaceId: 'ws_gamma', description: 'Gamma team' }],
+        'ws_gamma'
       );
 
       expect(res.valid).toBe(true);
+      expect(res.errors.key).toBeUndefined();
+    });
+
+    it('rejects team from a different workspace when mixed-workspace teams are passed to validateProjectInput', () => {
+      const mixedTeams: Team[] = [
+        ...existingTeams, // workspaceId: 'ws_acme'
+        {
+          id: 'team_beta_infra',
+          name: 'Beta Infra',
+          key: 'INFRA',
+          color: '#22c55e',
+          workspaceId: 'ws_beta',
+          description: 'Beta team',
+        },
+      ];
+
+      const res = validateProjectInput(
+        {
+          name: 'Beta Tooling',
+          key: 'BTOOL',
+          teamId: 'team_beta_infra',
+        },
+        existingProjects,
+        mixedTeams,
+        'ws_acme'
+      );
+
+      expect(res.valid).toBe(false);
+      expect(res.errors.teamId).toBe('Selected team does not belong to the active workspace.');
     });
   });
 
   describe('2. Canonical Project Factory (planCreateProject)', () => {
+    const mixedTeams: Team[] = [
+      ...existingTeams,
+      {
+        id: 'team_beta_infra',
+        name: 'Beta Infra',
+        key: 'INFRA',
+        color: '#22c55e',
+        workspaceId: 'ws_beta',
+        description: 'Beta team',
+      },
+      {
+        id: 'team_acme_archived',
+        name: 'Archived Acme Team',
+        key: 'AARCH',
+        color: '#999999',
+        workspaceId: 'ws_acme',
+        description: 'Archived team',
+      },
+    ];
+
     it('constructs a project with strict activeWorkspaceId and teamId ownership', () => {
       const { newProject } = planCreateProject(
         {
@@ -185,6 +235,68 @@ describe('UX-14 Project Creation & Ownership Tests', () => {
       expect(newProject.teamId).toBe('team_eng');
       expect(newProject.workspaceId).toBe('ws_acme');
       expect(newProject.id).toBeDefined();
+    });
+
+    it('rejects mixed-workspace team passed directly to planCreateProject', () => {
+      expect(() =>
+        planCreateProject(
+          {
+            name: 'Foreign Project',
+            key: 'FOR',
+            teamId: 'team_beta_infra', // belongs to ws_beta
+          },
+          existingProjects,
+          mixedTeams,
+          'ws_acme', // active is ws_acme
+          'ADMIN'
+        )
+      ).toThrow('Selected team does not belong to the active workspace.');
+    });
+
+    it('rejects archived team passed directly to planCreateProject', () => {
+      expect(() =>
+        planCreateProject(
+          {
+            name: 'Archived Project',
+            key: 'ARCH',
+            teamId: 'team_acme_archived',
+          },
+          existingProjects,
+          mixedTeams,
+          'ws_acme',
+          'ADMIN',
+          new Set(['team_acme_archived'])
+        )
+      ).toThrow('Cannot create project under an archived team.');
+    });
+
+    it('allows identical project keys in different workspaces when calling planCreateProject', () => {
+      // existingProjects already has CORE in ws_beta and CORE in ws_acme.
+      // In ws_gamma, creating CORE should succeed!
+      const gammaTeam: Team = {
+        id: 'team_gamma_core',
+        name: 'Gamma Core',
+        key: 'GCORE',
+        color: '#f59e0b',
+        workspaceId: 'ws_gamma',
+        description: 'Gamma Core',
+      };
+
+      const { newProject } = planCreateProject(
+        {
+          name: 'Gamma Core Project',
+          key: 'CORE',
+          teamId: 'team_gamma_core',
+        },
+        existingProjects,
+        [...mixedTeams, gammaTeam],
+        'ws_gamma',
+        'ADMIN'
+      );
+
+      expect(newProject.key).toBe('CORE');
+      expect(newProject.workspaceId).toBe('ws_gamma');
+      expect(newProject.teamId).toBe('team_gamma_core');
     });
 
     it('throws when activeWorkspaceId is missing', () => {

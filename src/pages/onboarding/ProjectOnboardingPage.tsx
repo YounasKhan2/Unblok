@@ -63,7 +63,8 @@ export const ProjectOnboardingPage: React.FC = () => {
     const validation = validateProjectInput(
       { name, key, teamId, description },
       projects,
-      teams
+      teams,
+      activeWorkspace?.id
     );
     if (!validation.valid) {
       setError(validation.error || 'Please correct the form errors.');

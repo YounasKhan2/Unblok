@@ -9,6 +9,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
 import { useProject } from '../../../context/ProjectContext';
+import { useWorkspace } from '../../workspaces/context/WorkspaceContext';
 import { useSettings } from '../../settings/context/SettingsContext';
 import { Modal } from '../../../components/ui/Modal';
 import { Button } from '../../../components/ui/Button';
@@ -30,6 +31,14 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
 }) => {
   const navigate = useNavigate();
   const { projects, teams, currentUser, createProject } = useProject();
+
+  let activeWorkspaceId: string | undefined;
+  try {
+    const ws = useWorkspace();
+    activeWorkspaceId = ws.activeWorkspaceId || ws.activeWorkspace?.id;
+  } catch {
+    // Standalone fallback
+  }
 
   let archivedTeamIds = new Set<string>();
   try {
@@ -79,6 +88,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     { name, key, teamId, description },
     projects,
     teams,
+    activeWorkspaceId || undefined,
     archivedTeamIds
   );
 

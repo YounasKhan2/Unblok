@@ -12,7 +12,11 @@ import { AuthCard } from '../../features/auth/components/AuthCard';
 import { useWorkspace } from '../../features/workspaces/context/WorkspaceContext';
 import { useSettings } from '../../features/settings/context/SettingsContext';
 import { saveStoredOnboardingState } from '../../features/onboarding/domain/onboardingProgression';
-import { Mail, Plus, Trash2, ArrowRight, UserPlus, Info } from 'lucide-react';
+import {
+  submitTeammateInvitations,
+  validateInviteEmail,
+} from '../../features/onboarding/domain/inviteSubmission';
+import { Mail, Plus, Trash2, ArrowRight, UserPlus, Info, Check } from 'lucide-react';
 
 interface InviteRow {
   id: string;
@@ -33,6 +37,7 @@ export const InviteTeammatesOnboardingPage: React.FC = () => {
   const [invites, setInvites] = useState<InviteRow[]>([
     { id: '1', email: '', role: 'MEMBER' },
   ]);
+  const [succeededEmails, setSucceededEmails] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -68,6 +73,10 @@ export const InviteTeammatesOnboardingPage: React.FC = () => {
     if (activeWorkspace) {
       saveStoredOnboardingState(activeWorkspace.id, {
         inviteCompletedOrSkipped: true,
+        sentInvitations: Array.from(succeededEmails).map((email) => ({
+          email,
+          role: 'MEMBER' as const,
+        })),
       });
     }
     navigate('/onboarding/complete');
@@ -77,10 +86,17 @@ export const InviteTeammatesOnboardingPage: React.FC = () => {
     e.preventDefault();
     const validInvites = invites.filter((r) => r.email.trim().length > 0);
 
-    // Validate email formats if provided
+    // If no invites entered, treat as skip/proceed
+    if (validInvites.length === 0) {
+      handleSkip();
+      return;
+    }
+
+    // Validate email formats
     for (const inv of validInvites) {
-      if (!inv.email.includes('@') || !inv.email.includes('.')) {
-        setError(`"${inv.email}" is not a valid email address.`);
+      const emailValidation = validateInviteEmail(inv.email);
+      if (!emailValidation.valid) {
+        setError(emailValidation.error || 'Please enter a valid email address.');
         return;
       }
     }
@@ -89,21 +105,31 @@ export const InviteTeammatesOnboardingPage: React.FC = () => {
     setError(null);
 
     try {
-      if (validInvites.length > 0 && settingsContext?.inviteMember) {
-        for (const inv of validInvites) {
-          try {
-            await settingsContext.inviteMember(inv.email.trim(), inv.role, []);
-          } catch {
-            // allow prototype fallback
-          }
-        }
+      const result = await submitTeammateInvitations(
+        validInvites,
+        succeededEmails,
+        settingsContext?.inviteMember
+      );
+
+      const nextSucceeded = new Set(result.succeeded);
+      setSucceededEmails(nextSucceeded);
+
+      if (!result.allSucceeded) {
+        // Do not mark failed invitations as saved; display actionable errors
+        const failureMessages = result.failed
+          .map((f) => `${f.email}: ${f.error}`)
+          .join('\n');
+        setError(`Failed to save one or more invitations:\n${failureMessages}`);
+        setIsSubmitting(false);
+        return;
       }
 
+      // All invitations succeeded
       if (activeWorkspace) {
         saveStoredOnboardingState(activeWorkspace.id, {
           inviteCompletedOrSkipped: true,
           sentInvitations: validInvites.map((i) => ({
-            email: i.email.trim(),
+            email: i.email.trim().toLowerCase(),
             role: i.role,
           })),
         });
@@ -165,45 +191,61 @@ export const InviteTeammatesOnboardingPage: React.FC = () => {
         </div>
 
         {error && (
-          <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-700" role="alert">
+          <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-700 whitespace-pre-line" role="alert">
             {error}
           </div>
         )}
 
         <div className="space-y-2.5">
-          {invites.map((row, idx) => (
-            <div key={row.id} className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <Mail className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-pub-text-muted)]" />
-                <input
-                  type="email"
-                  value={row.email}
-                  onChange={(e) => handleRowChange(row.id, 'email', e.target.value)}
-                  placeholder="colleague@company.com"
-                  className="w-full pl-9 pr-3 py-1.5 text-xs border border-[var(--color-pub-border)] rounded-md bg-[var(--color-pub-surface-base)] text-[var(--color-pub-text-primary)] placeholder-[var(--color-pub-text-muted)] focus:outline-none focus:border-[var(--color-pub-accent)]"
-                  autoFocus={idx === 0}
-                />
+          {invites.map((row, idx) => {
+            const isInvited =
+              Boolean(row.email.trim()) &&
+              succeededEmails.has(row.email.trim().toLowerCase());
+
+            return (
+              <div key={row.id} className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Mail className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-pub-text-muted)]" />
+                  <input
+                    type="email"
+                    value={row.email}
+                    disabled={isInvited}
+                    onChange={(e) => handleRowChange(row.id, 'email', e.target.value)}
+                    placeholder="colleague@company.com"
+                    className={`w-full pl-9 pr-3 py-1.5 text-xs border border-[var(--color-pub-border)] rounded-md bg-[var(--color-pub-surface-base)] text-[var(--color-pub-text-primary)] placeholder-[var(--color-pub-text-muted)] focus:outline-none focus:border-[var(--color-pub-accent)] ${
+                      isInvited ? 'opacity-70 bg-gray-50' : ''
+                    }`}
+                    autoFocus={idx === 0}
+                  />
+                </div>
+
+                {isInvited ? (
+                  <span className="w-28 px-2 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md inline-flex items-center justify-center gap-1">
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Invited</span>
+                  </span>
+                ) : (
+                  <select
+                    value={row.role}
+                    onChange={(e) => handleRowChange(row.id, 'role', e.target.value as any)}
+                    className="w-28 px-2 py-1.5 text-xs border border-[var(--color-pub-border)] rounded-md bg-[var(--color-pub-surface-base)] text-[var(--color-pub-text-primary)] focus:outline-none focus:border-[var(--color-pub-accent)]"
+                  >
+                    <option value="MEMBER">Member</option>
+                    <option value="OBSERVER">Observer</option>
+                  </select>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => handleRemoveRow(row.id)}
+                  className="p-1.5 text-[var(--color-pub-text-muted)] hover:text-rose-600 rounded transition-colors"
+                  title="Remove row"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
               </div>
-
-              <select
-                value={row.role}
-                onChange={(e) => handleRowChange(row.id, 'role', e.target.value as any)}
-                className="w-28 px-2 py-1.5 text-xs border border-[var(--color-pub-border)] rounded-md bg-[var(--color-pub-surface-base)] text-[var(--color-pub-text-primary)] focus:outline-none focus:border-[var(--color-pub-accent)]"
-              >
-                <option value="MEMBER">Member</option>
-                <option value="OBSERVER">Observer</option>
-              </select>
-
-              <button
-                type="button"
-                onClick={() => handleRemoveRow(row.id)}
-                className="p-1.5 text-[var(--color-pub-text-muted)] hover:text-rose-600 rounded transition-colors"
-                title="Remove row"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <button
