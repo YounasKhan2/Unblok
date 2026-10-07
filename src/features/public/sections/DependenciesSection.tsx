@@ -38,14 +38,14 @@ export const DependenciesSection: React.FC = () => {
             shadow="elevated"
           />
 
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#4b5563] px-2">
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--color-pub-text-secondary)] px-2">
             <p className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#ef4444]" />
+              <span className="w-2 h-2 rounded-full bg-[var(--color-pub-blocked)]" />
               <span>Active blockers explicitly link prerequisite issues across teams</span>
             </p>
             <Link
               to="/features"
-              className="inline-flex items-center font-semibold text-[#6366f1] hover:text-[#4f46e5]"
+              className="pub-link-accent text-xs font-semibold"
             >
               <span>Explore dependency intelligence</span>
               <ArrowRight className="w-3.5 h-3.5 ml-1" />

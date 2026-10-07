@@ -13,15 +13,15 @@ export const FinalCtaSection: React.FC = () => {
   return (
     <MarketingSection id="final-cta" className="py-24 sm:py-32">
       <MarketingContainer size="narrow">
-        <div className="bg-white border border-[#e5e3df] rounded-2xl p-10 sm:p-16 text-center shadow-lg shadow-black/[0.03] relative overflow-hidden">
+        <div className="bg-white border border-[var(--color-pub-border)] rounded-2xl p-10 sm:p-16 text-center shadow-lg shadow-black/[0.03] relative overflow-hidden">
           {/* Subtle accent backdrop indicator */}
-          <div className="absolute top-0 inset-x-0 h-1.5 bg-[#6366f1]" />
+          <div className="absolute top-0 inset-x-0 h-1.5 bg-[var(--color-pub-accent)]" />
 
-          <div className="w-12 h-12 rounded-xl bg-[#eef2ff] text-[#6366f1] mx-auto flex items-center justify-center mb-6 shadow-sm">
+          <div className="w-12 h-12 rounded-xl bg-[var(--color-pub-accent-subtle)] text-[var(--color-pub-accent)] mx-auto flex items-center justify-center mb-6 shadow-sm">
             <Layers className="w-6 h-6 stroke-[2.2]" />
           </div>
 
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#111827] tracking-tight mb-4">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[var(--color-pub-text-primary)] tracking-tight mb-4">
             Less chasing. More shipping.
           </h2>
 
@@ -31,7 +31,7 @@ export const FinalCtaSection: React.FC = () => {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
             <Link
-              to="/my-work"
+              to="/signup"
               className="pub-btn-primary text-base px-7 py-3.5 w-full sm:w-auto shadow-md"
             >
               Get started
@@ -45,7 +45,7 @@ export const FinalCtaSection: React.FC = () => {
             </Link>
           </div>
 
-          <p className="text-xs text-[#9ca3af] mt-6">
+          <p className="text-xs text-[var(--color-pub-text-muted)] mt-6">
             Explore the live prototype with complete workspace demo data.
           </p>
         </div>

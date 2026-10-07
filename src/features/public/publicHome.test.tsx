@@ -6,14 +6,17 @@
 import { describe, it, expect } from 'vitest';
 import React from 'react';
 import { renderToString } from 'react-dom/server';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { HomePage } from '../../pages/public/HomePage';
 import { PublicLayout } from '../../app/layouts/PublicLayout';
+import { AuthLayout } from '../../app/layouts/AuthLayout';
+import { AuthPlaceholderPage } from '../auth/components/AuthPlaceholderPage';
 import { PublicHeader } from './components/PublicHeader';
 import { PublicFooter } from './components/PublicFooter';
 import { PublicPlaceholderPage } from './components/PublicPlaceholderPage';
+import { PublicNotFoundPage } from './components/PublicNotFoundPage';
+import { PrivateNotFoundPage } from '../../pages/placeholder/PrivateNotFoundPage';
 import { ProductCapture } from './components/ProductCapture';
-import { MarketingContainer } from './components/MarketingContainer';
 import { HeroSection } from './sections/HeroSection';
 import { ExecutionSection } from './sections/ExecutionSection';
 import { DependenciesSection } from './sections/DependenciesSection';
@@ -24,7 +27,7 @@ import { FinalCtaSection } from './sections/FinalCtaSection';
 
 describe('UX-11B Public Homepage & Routing Architecture Validation', () => {
   describe('1. Public Homepage Narrative & Section Presence', () => {
-    it('renders all seven canonical homepage sections with correct headings and semantics', () => {
+    it('renders all seven canonical homepage sections with minimal, grounded copy', () => {
       const html = renderToString(
         <MemoryRouter>
           <HomePage />
@@ -61,20 +64,33 @@ describe('UX-11B Public Homepage & Routing Architecture Validation', () => {
       expect(html).toContain('Start unblocking your team today.');
     });
 
-    it('contains no forbidden SaaS marketing fluff or fake proof', () => {
+    it('contains no forbidden SaaS marketing fluff, ungrounded claims, or fake proof', () => {
       const html = renderToString(
         <MemoryRouter>
           <HomePage />
         </MemoryRouter>
       );
 
+      // Prohibited generic SaaS tropes
       expect(html).not.toContain('10,000 teams');
       expect(html).not.toContain('Trusted by');
       expect(html).not.toContain('Free trial');
       expect(html).not.toContain('free trial');
       expect(html).not.toContain('Zero setup');
       expect(html).not.toContain('zero setup');
-      expect(html).not.toContain('predictive AI');
+
+      // Prohibited ungrounded capability claims (Item 8 Capability Audit)
+      expect(html).not.toMatch(/\bburndown\b/i);
+      expect(html).not.toMatch(/\bvelocity\b/i);
+      expect(html).not.toMatch(/\bsprint\b/i);
+      expect(html).not.toMatch(/\bcritical path\b/i);
+      expect(html).not.toMatch(/\breal-time\b/i);
+      expect(html).not.toMatch(/\bautomatic\b/i);
+      expect(html).not.toMatch(/\bautomated\b/i);
+      expect(html).not.toMatch(/\bpredictive\b/i);
+      expect(html).not.toMatch(/\bAI\b/);
+      expect(html).not.toMatch(/\blead intervention\b/i);
+      expect(html).not.toMatch(/\batomic issue dependencies\b/i);
     });
   });
 
@@ -99,7 +115,6 @@ describe('UX-11B Public Homepage & Routing Architecture Validation', () => {
         </MemoryRouter>
       );
 
-      // No Light/Dark/System theme switcher buttons
       expect(html).not.toContain('Dark Mode');
       expect(html).not.toContain('Light Mode');
       expect(html).not.toContain('System Theme');
@@ -107,49 +122,117 @@ describe('UX-11B Public Homepage & Routing Architecture Validation', () => {
     });
   });
 
-  describe('3. PublicHeader Navigation & Semantics', () => {
-    it('exposes desktop navigation links and direct live product entry', () => {
+  describe('3. Auth CTA Routing & Boundary Ownership', () => {
+    it('routes Sign in to /login and Get started to /signup across header, hero, and final CTA', () => {
+      const headerHtml = renderToString(
+        <MemoryRouter>
+          <PublicHeader />
+        </MemoryRouter>
+      );
+
+      // Desktop & Mobile Header CTAs
+      expect(headerHtml).toContain('href="/login"');
+      expect(headerHtml).toContain('href="/signup"');
+      expect(headerHtml).not.toContain('href="/my-work"');
+
+      // Hero CTA
+      const heroHtml = renderToString(
+        <MemoryRouter>
+          <HeroSection />
+        </MemoryRouter>
+      );
+      expect(heroHtml).toContain('href="/signup"');
+      expect(heroHtml).not.toContain('href="/my-work"');
+
+      // Final CTA
+      const finalCtaHtml = renderToString(
+        <MemoryRouter>
+          <FinalCtaSection />
+        </MemoryRouter>
+      );
+      expect(finalCtaHtml).toContain('href="/signup"');
+      expect(finalCtaHtml).not.toContain('href="/my-work"');
+    });
+
+    it('renders dedicated AuthLayout with centered canvas and no AppShell rail', () => {
+      const authHtml = renderToString(
+        <MemoryRouter>
+          <AuthLayout />
+        </MemoryRouter>
+      );
+
+      expect(authHtml).toContain('Back to homepage');
+      expect(authHtml).toContain('Terms of Service');
+      expect(authHtml).toContain('Privacy Policy');
+      expect(authHtml).not.toContain('nav-rail');
+      expect(authHtml).not.toContain('workspace-header');
+    });
+
+    it('renders honest UX-12 AuthPlaceholderPage for /login and /signup', () => {
+      const loginHtml = renderToString(
+        <MemoryRouter>
+          <AuthPlaceholderPage mode="login" />
+        </MemoryRouter>
+      );
+      expect(loginHtml).toContain('Sign in to Unblok');
+      expect(loginHtml).toContain('Authentication experience coming in UX-12');
+      expect(loginHtml).toContain('href="/signup"');
+
+      const signupHtml = renderToString(
+        <MemoryRouter>
+          <AuthPlaceholderPage mode="signup" />
+        </MemoryRouter>
+      );
+      expect(signupHtml).toContain('Create your Unblok account');
+      expect(signupHtml).toContain('Authentication experience coming in UX-12');
+      expect(signupHtml).toContain('href="/login"');
+    });
+  });
+
+  describe('4. Error Routing & 404 Boundaries', () => {
+    it('renders Public 404 within PublicLayout with Return Home and Explore Product', () => {
+      const html = renderToString(
+        <MemoryRouter>
+          <PublicNotFoundPage />
+        </MemoryRouter>
+      );
+
+      expect(html).toContain('404 — Page Not Found');
+      expect(html).toContain('Return to Homepage');
+      expect(html).toContain('Explore Product');
+      expect(html).toContain('href="/"');
+      expect(html).toContain('href="/product"');
+    });
+
+    it('renders in-shell Private 404 with Go to My Work and search shortcut', () => {
+      const html = renderToString(
+        <MemoryRouter initialEntries={['/projects/INVALID/issues']}>
+          <PrivateNotFoundPage />
+        </MemoryRouter>
+      );
+
+      expect(html).toContain('Resource Not Found');
+      expect(html).toContain('Go to My Work');
+      expect(html).toContain('Open Search (⌘K)');
+      expect(html).toContain('href="/my-work"');
+    });
+  });
+
+  describe('5. Mobile Navigation & Accessibility Attributes', () => {
+    it('configures accessible dialog attributes on mobile navigation', () => {
       const html = renderToString(
         <MemoryRouter>
           <PublicHeader />
         </MemoryRouter>
       );
 
-      // Main Navigation links
-      expect(html).toContain('href="/product"');
-      expect(html).toContain('href="/features"');
-      expect(html).toContain('href="/solutions"');
-      expect(html).toContain('href="/pricing"');
-      expect(html).toContain('href="/security"');
-
-      // Actions linking to live product cockpit
-      expect(html).toContain('href="/my-work"');
-      expect(html).toContain('Sign in');
-      expect(html).toContain('Get started');
-
-      // Accessible toggle button
       expect(html).toContain('aria-label="Open navigation menu"');
       expect(html).toContain('aria-expanded="false"');
+      expect(html).toContain('aria-controls="mobile-navigation-menu"');
     });
   });
 
-  describe('4. PublicFooter Structure', () => {
-    it('renders clean four-column footer with legal and status indicators', () => {
-      const html = renderToString(
-        <MemoryRouter>
-          <PublicFooter />
-        </MemoryRouter>
-      );
-
-      expect(html).toContain('All systems operational');
-      expect(html).toContain('href="/privacy"');
-      expect(html).toContain('href="/terms"');
-      expect(html).toContain('href="/security"');
-      expect(html).toContain('© 2026 Unblok. Minimal. Informative. Creative.');
-    });
-  });
-
-  describe('5. ProductCapture Component & Proof Quality', () => {
+  describe('6. ProductCapture Component & Proof Quality', () => {
     it('renders browser bezel frame with window dots and URL label', () => {
       const html = renderToString(
         <ProductCapture
@@ -185,8 +268,8 @@ describe('UX-11B Public Homepage & Routing Architecture Validation', () => {
     });
   });
 
-  describe('6. PublicPlaceholderPage Contract', () => {
-    it('renders placeholder with clear phase labeling and return actions', () => {
+  describe('7. PublicPlaceholderPage Contract', () => {
+    it('renders placeholder with clear phase labeling and auth/home actions', () => {
       const html = renderToString(
         <MemoryRouter>
           <PublicPlaceholderPage
@@ -202,7 +285,7 @@ describe('UX-11B Public Homepage & Routing Architecture Validation', () => {
       expect(html).toContain('Pricing &amp; Packaging');
       expect(html).toContain('Dedicated commercial presentation surface.');
       expect(html).toContain('href="/"');
-      expect(html).toContain('href="/my-work"');
+      expect(html).toContain('href="/signup"');
     });
   });
 });

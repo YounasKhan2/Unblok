@@ -160,6 +160,14 @@ async function run() {
     // 5. Existing Private Route Regression Protection (My Work in AppShell)
     await capture('12_regression_appshell_my_work.png', 'http://localhost:3000/my-work', { width: 1440, height: 900 });
 
+    // 6. Auth Boundary Placeholders (/login and /signup)
+    await capture('13_auth_login.png', 'http://localhost:3000/login', { width: 1440, height: 900 });
+    await capture('14_auth_signup.png', 'http://localhost:3000/signup', { width: 1440, height: 900 });
+
+    // 7. Explicit 404 Boundaries (Public 404 and In-Shell Private 404)
+    await capture('15_public_404.png', 'http://localhost:3000/something-that-does-not-exist', { width: 1440, height: 900 });
+    await capture('16_private_404.png', 'http://localhost:3000/projects/ENG/nonexistent-view', { width: 1440, height: 900 });
+
     console.log('All UX-11B browser visual evidence captured successfully into validation/ux-11b/');
   } finally {
     ws.close();

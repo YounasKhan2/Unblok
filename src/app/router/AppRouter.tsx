@@ -6,9 +6,13 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { PublicLayout } from '../layouts/PublicLayout';
+import { AuthLayout } from '../layouts/AuthLayout';
 import { HomePage } from '../../pages/public/HomePage';
 import { PublicPlaceholderPage } from '../../features/public/components/PublicPlaceholderPage';
+import { PublicNotFoundPage } from '../../features/public/components/PublicNotFoundPage';
+import { AuthPlaceholderPage } from '../../features/auth/components/AuthPlaceholderPage';
 import { AppShellLayout } from '../layouts/AppShellLayout';
+import { PrivateNotFoundPage } from '../../pages/placeholder/PrivateNotFoundPage';
 import { MyWorkPage } from '../../pages/my-work/MyWorkPage';
 import { ProjectsDirectoryPage } from '../../pages/projects/ProjectsDirectoryPage';
 import { ProjectContextLayout } from '../../features/projects/components/ProjectContextLayout';
@@ -132,14 +136,23 @@ export const AppRouter: React.FC = () => {
         </Route>
 
         {/* ========================================================= */}
-        {/* 2. PRIVATE APPLICATION SHELL (UX-00 through UX-10)        */}
-        {/* All existing authenticated execution routes preserved      */}
+        {/* 2. AUTH ROUTE FAMILY (UX-11A / UX-12 Boundary)            */}
+        {/* Dedicated AuthLayout with centered card canvas            */}
+        {/* ========================================================= */}
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<AuthPlaceholderPage mode="login" />} />
+          <Route path="/signup" element={<AuthPlaceholderPage mode="signup" />} />
+        </Route>
+
+        {/* ========================================================= */}
+        {/* 3. PRIVATE APPLICATION SHELL (UX-00 through UX-10)        */}
+        {/* Authenticated workspace execution routes                  */}
         {/* ========================================================= */}
         <Route element={<AppShellLayout />}>
-          {/* 1. Primary UX-01 Page */}
+          {/* Primary UX-01 Page */}
           <Route path="/my-work" element={<MyWorkPage />} />
 
-          {/* 2. Canonical Inbox Page (UX-06) */}
+          {/* Canonical Inbox Page (UX-06) */}
           <Route path="/inbox" element={<InboxPage />} />
 
           {/* Projects Space (UX-02 Fully Implemented) */}
@@ -150,10 +163,12 @@ export const AppRouter: React.FC = () => {
             <Route path="board" element={<ProjectBoardPage />} />
             <Route path="planning" element={<ProjectPlanningPage />} />
             <Route path="settings" element={<ProjectSettingsPage />} />
+            <Route path="*" element={<PrivateNotFoundPage />} />
           </Route>
 
           {/* Issues Space (UX-03 Real Canonical Page) */}
           <Route path="/issues/:issueKey" element={<IssueDetailPage />} />
+          <Route path="/issues" element={<PrivateNotFoundPage />} />
 
           {/* Teams Space */}
           <Route
@@ -227,11 +242,20 @@ export const AppRouter: React.FC = () => {
                 }
               />
               <Route path="preferences" element={<PreferencesSettingsPage />} />
+              <Route path="*" element={<PrivateNotFoundPage />} />
             </Route>
           </Route>
 
-          {/* Catch-all for Application Shell */}
-          <Route path="*" element={<Navigate to="/my-work" replace />} />
+          {/* Explicit private fallback routes */}
+          <Route path="/app/*" element={<PrivateNotFoundPage />} />
+        </Route>
+
+        {/* ========================================================= */}
+        {/* 4. PUBLIC 404 CATCH-ALL                                   */}
+        {/* Unknown URLs render Public 404 in PublicLayout            */}
+        {/* ========================================================= */}
+        <Route element={<PublicLayout />}>
+          <Route path="*" element={<PublicNotFoundPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

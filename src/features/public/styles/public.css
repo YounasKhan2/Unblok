@@ -51,6 +51,62 @@
   color: var(--color-pub-text-secondary);
 }
 
+/* Public text & surface token utilities */
+.pub-text-primary {
+  color: var(--color-pub-text-primary);
+}
+
+.pub-text-secondary {
+  color: var(--color-pub-text-secondary);
+}
+
+.pub-text-muted {
+  color: var(--color-pub-text-muted);
+}
+
+.pub-text-accent {
+  color: var(--color-pub-accent);
+}
+
+.pub-text-accent:hover {
+  color: var(--color-pub-accent-hover);
+}
+
+.pub-link-accent {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-pub-accent);
+  transition: color 0.15s ease;
+  text-decoration: none;
+}
+
+.pub-link-accent:hover {
+  color: var(--color-pub-accent-hover);
+}
+
+.pub-card {
+  background-color: var(--color-pub-surface);
+  border: 1px solid var(--color-pub-border);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+}
+
+.pub-accent-icon-box {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  background-color: var(--color-pub-accent-subtle);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  color: var(--color-pub-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 /* Eyebrow styling */
 .pub-eyebrow {
   display: inline-flex;

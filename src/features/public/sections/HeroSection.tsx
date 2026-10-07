@@ -30,7 +30,7 @@ export const HeroSection: React.FC = () => {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
             <Link
-              to="/my-work"
+              to="/signup"
               className="pub-btn-primary text-base px-6 py-3 w-full sm:w-auto shadow-md"
             >
               Get started
