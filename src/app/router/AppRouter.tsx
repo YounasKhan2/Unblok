@@ -221,11 +221,21 @@ export const AppRoutes: React.FC = () => {
   );
 };
 
-export const AppRouter: React.FC = () => {
+export interface AppRouterProps {
+  /**
+   * Optional override for automated test suites to control harness visibility.
+   * In normal production builds, defaults to import.meta.env.DEV (evaluating to false in production).
+   */
+  enableDevHarness?: boolean;
+}
+
+export const AppRouter: React.FC<AppRouterProps> = ({ enableDevHarness }) => {
+  const showDevHarness = enableDevHarness !== undefined ? enableDevHarness : Boolean(import.meta.env.DEV);
+
   return (
     <BrowserRouter>
       <AppRoutes />
-      <AuthDevHarness />
+      {showDevHarness && <AuthDevHarness enabled={true} />}
     </BrowserRouter>
   );
 };

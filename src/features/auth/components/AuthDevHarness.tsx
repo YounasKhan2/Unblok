@@ -23,7 +23,32 @@ import {
   ChevronRight,
 } from 'lucide-react';
 
-export const AuthDevHarness: React.FC = () => {
+export interface AuthDevHarnessProps {
+  /**
+   * Explicit control for test suites or reviewer environments.
+   * When false (or in production builds without an override), the harness returns null
+   * and registers no event listeners or DOM nodes.
+   * Defaults to import.meta.env.DEV.
+   */
+  enabled?: boolean;
+}
+
+export const isDevHarnessEnabled = (): boolean => {
+  return Boolean(import.meta.env.DEV);
+};
+
+export const AuthDevHarness: React.FC<AuthDevHarnessProps> = ({ enabled }) => {
+  const isEnabled = enabled !== undefined ? enabled : isDevHarnessEnabled();
+
+  // In production builds / customer mode, do not render or register any event listeners
+  if (!isEnabled) {
+    return null;
+  }
+
+  return <AuthDevHarnessContent />;
+};
+
+const AuthDevHarnessContent: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { status, user, membership, switchReviewerUser, logout, expireSession } = useAuth();
   const navigate = useNavigate();

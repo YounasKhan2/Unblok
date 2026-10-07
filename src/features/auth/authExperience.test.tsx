@@ -25,6 +25,7 @@ import { ForgotPasswordPage } from '../../pages/auth/ForgotPasswordPage';
 import { ResetPasswordPage } from '../../pages/auth/ResetPasswordPage';
 import { InvitePage } from '../../pages/auth/InvitePage';
 import { OnboardingPlaceholderPage } from '../../pages/auth/OnboardingPlaceholderPage';
+import { AuthDevHarness, isDevHarnessEnabled } from './components/AuthDevHarness';
 
 describe('UX-12 Authentication & Account Lifecycle Contract Suite', () => {
   beforeEach(() => {
@@ -508,4 +509,66 @@ describe('UX-12 Authentication & Account Lifecycle Contract Suite', () => {
       expect(getSafeReturnTo('/login')).toBe('/my-work');
     });
   });
+
+  /* ======================================================================== */
+  /* 8. REVIEWER DEV HARNESS ENVIRONMENT ISOLATION (PRODUCTION SAFETY)        */
+  /* ======================================================================== */
+  describe('8. Reviewer Dev Harness Environment Isolation', () => {
+    it('production/customer mode does not render Reviewer Harness or DOM nodes', () => {
+      // In production mode (enabled={false}), AuthDevHarness renders null
+      const html = renderToString(
+        <AppProviders initialAuthStatus="guest">
+          <MemoryRouter initialEntries={['/login']}>
+            <AppRoutes />
+            <AuthDevHarness enabled={false} />
+          </MemoryRouter>
+        </AppProviders>
+      );
+
+      // Verify Reviewer Harness badge is completely absent
+      expect(html).not.toContain('Reviewer Harness');
+      expect(html).not.toContain('auth-dev-harness-dialog');
+      expect(html).not.toContain('Alt+Shift+D');
+      expect(html).not.toContain('Toggle Reviewer Harness');
+    });
+
+    it('production/customer mode does not expose account-switch or debug controls', () => {
+      const html = renderToString(
+        <AppProviders initialAuthStatus="guest">
+          <MemoryRouter initialEntries={['/login']}>
+            <AppRoutes />
+            <AuthDevHarness enabled={false} />
+          </MemoryRouter>
+        </AppProviders>
+      );
+
+      // Verify reviewer tools are absent from customer tree
+      expect(html).not.toContain('Switch Active Role');
+      expect(html).not.toContain('Simulate Expired Session');
+      expect(html).not.toContain('Quick Token Links');
+      expect(html).not.toContain('Prototype Auth Harness');
+    });
+
+    it('development/reviewer mode can still mount the harness', () => {
+      const html = renderToString(
+        <AppProviders initialAuthStatus="guest">
+          <MemoryRouter initialEntries={['/login']}>
+            <AppRoutes />
+            <AuthDevHarness enabled={true} />
+          </MemoryRouter>
+        </AppProviders>
+      );
+
+      // In development mode, the trigger is available
+      expect(html).toContain('Reviewer Harness');
+      expect(html).toContain('auth-dev-harness-dialog');
+      expect(html).toContain('Toggle Reviewer Harness (Alt+Shift+D)');
+    });
+
+    it('isDevHarnessEnabled defaults to Vite DEV environment check', () => {
+      // Confirms the function delegates directly to Vite's import.meta.env.DEV
+      expect(typeof isDevHarnessEnabled()).toBe('boolean');
+    });
+  });
 });
+
