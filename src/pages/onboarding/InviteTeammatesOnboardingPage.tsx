@@ -37,7 +37,9 @@ export const InviteTeammatesOnboardingPage: React.FC = () => {
   const [invites, setInvites] = useState<InviteRow[]>([
     { id: '1', email: '', role: 'MEMBER' },
   ]);
-  const [succeededEmails, setSucceededEmails] = useState<Set<string>>(new Set());
+  const [succeededInvites, setSucceededInvites] = useState<Map<string, 'MEMBER' | 'OBSERVER'>>(
+    new Map()
+  );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -71,12 +73,13 @@ export const InviteTeammatesOnboardingPage: React.FC = () => {
 
   const handleSkip = () => {
     if (activeWorkspace) {
+      const persisted = Array.from(succeededInvites.entries()).map(([email, role]) => ({
+        email,
+        role,
+      }));
       saveStoredOnboardingState(activeWorkspace.id, {
         inviteCompletedOrSkipped: true,
-        sentInvitations: Array.from(succeededEmails).map((email) => ({
-          email,
-          role: 'MEMBER' as const,
-        })),
+        sentInvitations: persisted.length > 0 ? persisted : undefined,
       });
     }
     navigate('/onboarding/complete');
@@ -107,12 +110,15 @@ export const InviteTeammatesOnboardingPage: React.FC = () => {
     try {
       const result = await submitTeammateInvitations(
         validInvites,
-        succeededEmails,
+        succeededInvites,
         settingsContext?.inviteMember
       );
 
-      const nextSucceeded = new Set(result.succeeded);
-      setSucceededEmails(nextSucceeded);
+      const nextSucceeded = new Map<string, 'MEMBER' | 'OBSERVER'>();
+      for (const item of result.succeeded) {
+        nextSucceeded.set(item.email, item.role);
+      }
+      setSucceededInvites(nextSucceeded);
 
       if (!result.allSucceeded) {
         // Do not mark failed invitations as saved; display actionable errors
@@ -124,14 +130,11 @@ export const InviteTeammatesOnboardingPage: React.FC = () => {
         return;
       }
 
-      // All invitations succeeded
+      // All invitations succeeded and genuinely persisted
       if (activeWorkspace) {
         saveStoredOnboardingState(activeWorkspace.id, {
           inviteCompletedOrSkipped: true,
-          sentInvitations: validInvites.map((i) => ({
-            email: i.email.trim().toLowerCase(),
-            role: i.role,
-          })),
+          sentInvitations: result.succeeded,
         });
       }
 
@@ -198,9 +201,9 @@ export const InviteTeammatesOnboardingPage: React.FC = () => {
 
         <div className="space-y-2.5">
           {invites.map((row, idx) => {
-            const isInvited =
-              Boolean(row.email.trim()) &&
-              succeededEmails.has(row.email.trim().toLowerCase());
+            const rawEmail = row.email.trim();
+            const normalizedEmail = rawEmail.toLowerCase();
+            const isInvited = Boolean(rawEmail) && succeededInvites.has(normalizedEmail);
 
             return (
               <div key={row.id} className="flex items-center gap-2">

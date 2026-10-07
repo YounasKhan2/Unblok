@@ -78,7 +78,8 @@ describe('UX-14 Project Creation & Ownership Tests', () => {
           description: 'Developer tooling and pipeline systems',
         },
         existingProjects.filter((p) => p.workspaceId === 'ws_acme'),
-        existingTeams
+        existingTeams,
+        'ws_acme'
       );
 
       expect(res.valid).toBe(true);
@@ -95,7 +96,8 @@ describe('UX-14 Project Creation & Ownership Tests', () => {
           teamId: '',
         },
         existingProjects.filter((p) => p.workspaceId === 'ws_acme'),
-        existingTeams
+        existingTeams,
+        'ws_acme'
       );
 
       expect(res.valid).toBe(false);
@@ -110,7 +112,8 @@ describe('UX-14 Project Creation & Ownership Tests', () => {
           teamId: 'team_nonexistent_or_other_workspace',
         },
         existingProjects.filter((p) => p.workspaceId === 'ws_acme'),
-        existingTeams
+        existingTeams,
+        'ws_acme'
       );
 
       expect(res.valid).toBe(false);
@@ -127,6 +130,7 @@ describe('UX-14 Project Creation & Ownership Tests', () => {
         },
         existingProjects.filter((p) => p.workspaceId === 'ws_acme'),
         existingTeams,
+        'ws_acme',
         archivedSet
       );
 
@@ -142,7 +146,8 @@ describe('UX-14 Project Creation & Ownership Tests', () => {
           teamId: 'team_eng',
         },
         existingProjects.filter((p) => p.workspaceId === 'ws_acme'),
-        existingTeams
+        existingTeams,
+        'ws_acme'
       );
 
       expect(res.valid).toBe(false);
@@ -192,6 +197,55 @@ describe('UX-14 Project Creation & Ownership Tests', () => {
 
       expect(res.valid).toBe(false);
       expect(res.errors.teamId).toBe('Selected team does not belong to the active workspace.');
+    });
+
+    it('rejects team with missing or empty workspaceId (fail closed)', () => {
+      const teamsWithMissingWs: Team[] = [
+        {
+          id: 'team_missing_ws',
+          name: 'Missing WS Team',
+          key: 'NOWS',
+          color: '#111',
+          description: 'Malformed team',
+        },
+        {
+          id: 'team_empty_ws',
+          name: 'Empty WS Team',
+          key: 'EMPWS',
+          color: '#222',
+          workspaceId: '',
+          description: 'Malformed team',
+        },
+      ];
+
+      const resMissing = validateProjectInput(
+        { name: 'Test Project', key: 'TEST', teamId: 'team_missing_ws' },
+        existingProjects,
+        teamsWithMissingWs,
+        'ws_acme'
+      );
+      expect(resMissing.valid).toBe(false);
+      expect(resMissing.errors.teamId).toBe('Selected team does not belong to the active workspace.');
+
+      const resEmpty = validateProjectInput(
+        { name: 'Test Project 2', key: 'TEST2', teamId: 'team_empty_ws' },
+        existingProjects,
+        teamsWithMissingWs,
+        'ws_acme'
+      );
+      expect(resEmpty.valid).toBe(false);
+      expect(resEmpty.errors.teamId).toBe('Selected team does not belong to the active workspace.');
+    });
+
+    it('rejects validation when activeWorkspaceId is missing or empty', () => {
+      const res = validateProjectInput(
+        { name: 'Test Project', key: 'TEST', teamId: 'team_eng' },
+        existingProjects,
+        existingTeams,
+        ''
+      );
+      expect(res.valid).toBe(false);
+      expect(res.errors.teamId).toBe('No active workspace context.');
     });
   });
 
@@ -248,6 +302,30 @@ describe('UX-14 Project Creation & Ownership Tests', () => {
           existingProjects,
           mixedTeams,
           'ws_acme', // active is ws_acme
+          'ADMIN'
+        )
+      ).toThrow('Selected team does not belong to the active workspace.');
+    });
+
+    it('rejects team with missing workspaceId in planCreateProject even when prefiltered', () => {
+      const corruptTeam: Team = {
+        id: 'team_corrupt',
+        name: 'Corrupt Team',
+        key: 'CORR',
+        color: '#ff0000',
+        description: 'Missing workspaceId',
+      };
+
+      expect(() =>
+        planCreateProject(
+          {
+            name: 'Corrupt Project',
+            key: 'CORR',
+            teamId: 'team_corrupt',
+          },
+          existingProjects,
+          [corruptTeam], // caller array is prefiltered
+          'ws_acme',
           'ADMIN'
         )
       ).toThrow('Selected team does not belong to the active workspace.');

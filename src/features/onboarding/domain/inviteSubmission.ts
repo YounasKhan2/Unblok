@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  * 
  * UX-14 Teammate Invitation Submission Domain Logic
- * Handles validation, idempotency, non-swallowing of failures, and partial-retry correctness.
+ * Handles validation, idempotency, role preservation, and adapter availability checks.
  */
 
 import { UserRole } from '../../../types';
@@ -14,8 +14,13 @@ export interface TeammateInviteRow {
   role: 'MEMBER' | 'OBSERVER';
 }
 
+export interface SucceededInvitation {
+  email: string;
+  role: 'MEMBER' | 'OBSERVER';
+}
+
 export interface InviteSubmissionResult {
-  succeeded: string[]; // Normalized lowercase emails that are verified as invited
+  succeeded: SucceededInvitation[]; // Genuinely persisted invitations preserving original roles
   failed: Array<{ email: string; error: string }>;
   allSucceeded: boolean;
 }
@@ -40,34 +45,59 @@ export type InviteMemberFunction = (input: {
 }) => Promise<{ success: boolean; error?: string } | void> | { success: boolean; error?: string } | void;
 
 /**
- * Submits teammate invitations while preserving idempotency and failure boundaries:
- * - Skips already succeeded emails to prevent duplicate invitations on retry
- * - Collects individual failures without silently swallowing errors
- * - Does not mark failed invitations as successfully saved
+ * Submits teammate invitations while preserving idempotency, role accuracy, and fail-closed persistence:
+ * - Never marks an invitation successful without successful persistence through the invitation adapter
+ * - If inviteMemberFn is unavailable, returns explicit failures for pending invitations
+ * - Preserves each successful invitation's original MEMBER or OBSERVER role (no rewriting)
+ * - Skips already succeeded addresses on retry to prevent duplicate invitations
  */
 export async function submitTeammateInvitations(
   invites: Array<{ email: string; role: 'MEMBER' | 'OBSERVER' }>,
-  alreadySucceededEmails: Set<string>,
+  alreadySucceeded:
+    | SucceededInvitation[]
+    | Map<string, 'MEMBER' | 'OBSERVER'>
+    | Set<string> = [],
   inviteMemberFn?: InviteMemberFunction
 ): Promise<InviteSubmissionResult> {
   const validInvites = invites.filter((inv) => inv.email.trim().length > 0);
-  const succeeded = new Set<string>(
-    Array.from(alreadySucceededEmails).map((e) => e.trim().toLowerCase())
-  );
+
+  // Normalize existing succeeded records into a Map preserving original roles
+  const succeededMap = new Map<string, 'MEMBER' | 'OBSERVER'>();
+  if (alreadySucceeded instanceof Map) {
+    for (const [email, role] of alreadySucceeded.entries()) {
+      succeededMap.set(email.trim().toLowerCase(), role);
+    }
+  } else if (Array.isArray(alreadySucceeded)) {
+    for (const item of alreadySucceeded) {
+      if (typeof item === 'object' && item !== null && 'email' in item) {
+        succeededMap.set(item.email.trim().toLowerCase(), item.role || 'MEMBER');
+      } else if (typeof item === 'string') {
+        succeededMap.set((item as string).trim().toLowerCase(), 'MEMBER');
+      }
+    }
+  } else if (alreadySucceeded instanceof Set) {
+    for (const email of alreadySucceeded) {
+      succeededMap.set(email.trim().toLowerCase(), 'MEMBER');
+    }
+  }
+
   const failed: Array<{ email: string; error: string }> = [];
 
   for (const inv of validInvites) {
     const rawEmail = inv.email.trim();
     const normalizedEmail = rawEmail.toLowerCase();
 
-    // If this invitation was already successfully dispatched in a prior attempt, skip to prevent duplicates
-    if (succeeded.has(normalizedEmail)) {
+    // Prevent duplicate submission of already successful addresses
+    if (succeededMap.has(normalizedEmail)) {
       continue;
     }
 
+    // Fail closed: Never mark an invitation successful without persistence adapter
     if (!inviteMemberFn) {
-      // Standalone prototype mode without settings context
-      succeeded.add(normalizedEmail);
+      failed.push({
+        email: rawEmail,
+        error: 'Invitation adapter is unavailable. Cannot persist invitation.',
+      });
       continue;
     }
 
@@ -84,7 +114,8 @@ export async function submitTeammateInvitations(
           error: res.error || 'Invitation failed.',
         });
       } else {
-        succeeded.add(normalizedEmail);
+        // Persist genuinely successful invitation preserving original role
+        succeededMap.set(normalizedEmail, inv.role);
       }
     } catch (err: any) {
       failed.push({
@@ -94,8 +125,12 @@ export async function submitTeammateInvitations(
     }
   }
 
+  const succeeded: SucceededInvitation[] = Array.from(succeededMap.entries()).map(
+    ([email, role]) => ({ email, role })
+  );
+
   return {
-    succeeded: Array.from(succeeded),
+    succeeded,
     failed,
     allSucceeded: failed.length === 0,
   };

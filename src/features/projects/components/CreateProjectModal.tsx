@@ -40,6 +40,10 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     // Standalone fallback
   }
 
+  if (!activeWorkspaceId) {
+    activeWorkspaceId = teams[0]?.workspaceId || projects[0]?.workspaceId;
+  }
+
   let archivedTeamIds = new Set<string>();
   try {
     const settings = useSettings();

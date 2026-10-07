@@ -66,8 +66,9 @@ export function validateProjectInput(
   } else {
     // Project keys must be unique within the active workspace.
     // Identical project keys in different workspaces remain valid.
+    const activeWs = (activeWorkspaceId || '').trim();
     const isDuplicateKey = existingProjects.some((p) => {
-      if (activeWorkspaceId && p.workspaceId && p.workspaceId !== activeWorkspaceId) {
+      if (activeWs && p.workspaceId && p.workspaceId.trim() !== activeWs) {
         return false;
       }
       return p.key.toUpperCase() === rawKey;
@@ -85,19 +86,22 @@ export function validateProjectInput(
     const owningTeam = existingTeams.find((t) => t.id === teamId);
     if (!owningTeam) {
       errors.teamId = 'Selected team does not exist in this workspace.';
-    } else if (
-      activeWorkspaceId &&
-      owningTeam.workspaceId &&
-      owningTeam.workspaceId !== activeWorkspaceId
-    ) {
-      errors.teamId = 'Selected team does not belong to the active workspace.';
-    } else if (
-      archivedTeamIds?.has(teamId) ||
-      (owningTeam as any).archivedAt != null ||
-      (owningTeam as any).archived === true ||
-      (owningTeam as any).status === 'ARCHIVED'
-    ) {
-      errors.teamId = 'Cannot create project under an archived team.';
+    } else {
+      const activeWs = (activeWorkspaceId || '').trim();
+      const teamWs = (owningTeam.workspaceId || '').trim();
+
+      if (!activeWs) {
+        errors.teamId = 'No active workspace context.';
+      } else if (!teamWs || teamWs !== activeWs) {
+        errors.teamId = 'Selected team does not belong to the active workspace.';
+      } else if (
+        archivedTeamIds?.has(teamId) ||
+        (owningTeam as any).archivedAt != null ||
+        (owningTeam as any).archived === true ||
+        (owningTeam as any).status === 'ARCHIVED'
+      ) {
+        errors.teamId = 'Cannot create project under an archived team.';
+      }
     }
   }
 
@@ -112,7 +116,7 @@ export function validateProjectInput(
 /**
  * Plans and constructs a new Project record after validating all invariants.
  * Explicitly verifies:
- * - The owning Team belongs to activeWorkspaceId
+ * - The owning Team belongs to activeWorkspaceId (fail-closed on missing/null/empty/foreign)
  * - The Team is not archived
  * - Project key is unique within activeWorkspaceId
  */
@@ -129,7 +133,8 @@ export function planCreateProject(
     throw new Error('Project creation is not permitted for read-only OBSERVER role.');
   }
 
-  if (!activeWorkspaceId) {
+  const activeWs = (activeWorkspaceId || '').trim();
+  if (!activeWs) {
     throw new Error('No active workspace context.');
   }
 
@@ -137,7 +142,7 @@ export function planCreateProject(
     input,
     existingProjects,
     existingTeams,
-    activeWorkspaceId,
+    activeWs,
     archivedTeamIds
   );
 
@@ -145,13 +150,14 @@ export function planCreateProject(
     throw new Error(validation.error || 'Invalid project parameters.');
   }
 
-  // Double-check owning team directly against workspace ownership and archived state
+  // Double-check owning team directly against workspace ownership and archived state (fail closed)
   const trimmedTeamId = input.teamId.trim();
   const owningTeam = existingTeams.find((t) => t.id === trimmedTeamId);
   if (!owningTeam) {
     throw new Error('Selected team does not exist in this workspace.');
   }
-  if (owningTeam.workspaceId && owningTeam.workspaceId !== activeWorkspaceId) {
+  const teamWs = (owningTeam.workspaceId || '').trim();
+  if (!teamWs || teamWs !== activeWs) {
     throw new Error('Selected team does not belong to the active workspace.');
   }
   if (
