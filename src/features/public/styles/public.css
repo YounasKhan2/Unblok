@@ -1,0 +1,313 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ * 
+ * Unblok Public Theme Styles
+ * Strictly scoped under .unblok-public-theme to prevent leakage into AppShell.
+ */
+
+.unblok-public-theme {
+  --color-pub-bg: #faf9f6;
+  --color-pub-surface: #ffffff;
+  --color-pub-surface-subtle: #f4f2ed;
+  --color-pub-surface-card: #ffffff;
+
+  --color-pub-text-primary: #111827;
+  --color-pub-text-secondary: #4b5563;
+  --color-pub-text-muted: #6b7280;
+
+  --color-pub-border: #e5e3df;
+  --color-pub-border-strong: #d1cfc7;
+  --color-pub-border-subtle: #edeae4;
+
+  --color-pub-accent: #6366f1;
+  --color-pub-accent-hover: #4f46e5;
+  --color-pub-accent-subtle: #eef2ff;
+
+  --color-pub-blocked: #ef4444;
+  --color-pub-done: #10b981;
+
+  color-scheme: light;
+  background-color: var(--color-pub-bg);
+  color: var(--color-pub-text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* Base typography resets inside public theme */
+.unblok-public-theme h1,
+.unblok-public-theme h2,
+.unblok-public-theme h3,
+.unblok-public-theme h4 {
+  color: var(--color-pub-text-primary);
+  letter-spacing: -0.025em;
+  font-weight: 700;
+}
+
+.unblok-public-theme p {
+  color: var(--color-pub-text-secondary);
+}
+
+/* Public text & surface token utilities */
+.pub-text-primary {
+  color: var(--color-pub-text-primary);
+}
+
+.pub-text-secondary {
+  color: var(--color-pub-text-secondary);
+}
+
+.pub-text-muted {
+  color: var(--color-pub-text-muted);
+}
+
+.pub-text-accent {
+  color: var(--color-pub-accent);
+}
+
+.pub-text-accent:hover {
+  color: var(--color-pub-accent-hover);
+}
+
+.pub-link-accent {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-pub-accent);
+  transition: color 0.15s ease;
+  text-decoration: none;
+}
+
+.pub-link-accent:hover {
+  color: var(--color-pub-accent-hover);
+}
+
+.pub-card {
+  background-color: var(--color-pub-surface);
+  border: 1px solid var(--color-pub-border);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+}
+
+.pub-accent-icon-box {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  background-color: var(--color-pub-accent-subtle);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  color: var(--color-pub-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Eyebrow styling */
+.pub-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-pub-accent);
+  margin-bottom: 0.75rem;
+}
+
+/* Hero Display Title */
+.pub-hero-title {
+  font-size: clamp(2.5rem, 6vw, 4.25rem);
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  color: var(--color-pub-text-primary);
+}
+
+/* Section Title */
+.pub-section-title {
+  font-size: clamp(1.875rem, 4vw, 2.75rem);
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--color-pub-text-primary);
+}
+
+/* Body Lead */
+.pub-body-lead {
+  font-size: clamp(1.0625rem, 2vw, 1.25rem);
+  line-height: 1.5;
+  color: var(--color-pub-text-secondary);
+  max-width: 42rem;
+}
+
+/* Browser Bezel Product Frame */
+.pub-browser-frame {
+  background-color: var(--color-pub-surface);
+  border: 1px solid var(--color-pub-border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+
+.pub-browser-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  background-color: #f6f5f2;
+  border-bottom: 1px solid var(--color-pub-border);
+}
+
+.pub-browser-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #d1cfc7;
+}
+
+.pub-browser-dot:nth-child(1) {
+  background-color: #f87171;
+}
+
+.pub-browser-dot:nth-child(2) {
+  background-color: #fbbf24;
+}
+
+.pub-browser-dot:nth-child(3) {
+  background-color: #34d399;
+}
+
+.pub-browser-url {
+  margin-left: 12px;
+  font-size: 11px;
+  color: #787671;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background-color: #ffffff;
+  padding: 2px 10px;
+  border-radius: 4px;
+  border: 1px solid #e5e3df;
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Buttons in Public Theme */
+.pub-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 8px;
+  background-color: var(--color-pub-accent);
+  color: #ffffff;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.pub-btn-primary:hover {
+  background-color: var(--color-pub-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+}
+
+.pub-btn-primary:focus-visible {
+  outline: 2px solid var(--color-pub-accent);
+  outline-offset: 2px;
+}
+
+.pub-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 8px;
+  background-color: var(--color-pub-surface);
+  color: var(--color-pub-text-primary);
+  border: 1px solid var(--color-pub-border-strong);
+  transition: all 0.15s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.pub-btn-secondary:hover {
+  background-color: var(--color-pub-surface-subtle);
+  border-color: #a4a097;
+  transform: translateY(-1px);
+}
+
+.pub-btn-secondary:focus-visible {
+  outline: 2px solid var(--color-pub-accent);
+  outline-offset: 2px;
+}
+
+.pub-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-pub-text-secondary);
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.pub-btn-ghost:hover {
+  color: var(--color-pub-text-primary);
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+.pub-btn-ghost:focus-visible {
+  outline: 2px solid var(--color-pub-accent);
+  outline-offset: 2px;
+}
+
+/* Feature pill / badge */
+.pub-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background-color: var(--color-pub-accent-subtle);
+  color: var(--color-pub-accent);
+}
+
+/* Motion: Subtle entrance transitions */
+@media (prefers-reduced-motion: no-preference) {
+  .pub-animate-fade-in {
+    animation: pubFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+@keyframes pubFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
