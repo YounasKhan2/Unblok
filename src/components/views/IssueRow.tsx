@@ -77,7 +77,7 @@ export const IssueRow: React.FC<IssueRowProps> = ({
       </div>
 
       {/* Blocker & Dependency Status Badge */}
-      <div className="shrink-0 mr-3 flex items-center">
+      <div className="w-28 shrink-0 mr-3 flex items-center">
         <BlockerBadge
           status={blockerStatus}
           onSelectIssue={id => setSelectedIssueId(id)}

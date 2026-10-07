@@ -96,7 +96,7 @@ export const IssueDetailPage: React.FC = () => {
 
         <Link
           to="/my-work"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-accent hover:opacity-90 text-surface-base text-xs font-semibold rounded-lg shadow-sm transition-opacity cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-accent hover:opacity-90 text-white text-xs font-semibold rounded-lg shadow-sm transition-opacity cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Return to My Work</span>

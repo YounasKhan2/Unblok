@@ -475,7 +475,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({
                 type="button"
                 onClick={handleSubmit}
                 disabled={!commentText.trim()}
-                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded bg-accent hover:opacity-90 text-surface-base disabled:opacity-40 disabled:cursor-not-allowed transition-opacity cursor-pointer"
+                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded bg-accent hover:opacity-90 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-opacity cursor-pointer"
               >
                 <Send className="w-3 h-3" />
                 <span>Send</span>
