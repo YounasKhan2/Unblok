@@ -14,7 +14,7 @@ import { INITIAL_USERS } from '../../../data/mockData';
 
 export function bridgeToLegacyUser(
   authUser: AuthenticatedUser,
-  membership?: WorkspaceMembership | null
+  membership?: { role?: any; teamIds?: string[] } | null
 ): User {
   // Check if this matches a seeded demo user in INITIAL_USERS
   const seeded = INITIAL_USERS.find((u) => u.id === authUser.id || u.email === authUser.email);

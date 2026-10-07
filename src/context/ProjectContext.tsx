@@ -15,6 +15,7 @@ import {
   Cycle,
   Milestone,
   IssueComment,
+  UserRole,
 } from '../types';
 import {
   INITIAL_ISSUES,
@@ -27,6 +28,17 @@ import {
   INITIAL_MILESTONES,
   INITIAL_COMMENTS,
 } from '../data/mockData';
+import {
+  MULTI_WORKSPACE_INITIAL_ISSUES,
+  MULTI_WORKSPACE_INITIAL_DEPENDENCIES,
+  MULTI_WORKSPACE_INITIAL_TEAMS,
+  MULTI_WORKSPACE_INITIAL_PROJECTS,
+  MULTI_WORKSPACE_INITIAL_ACTIVITIES,
+  MULTI_WORKSPACE_INITIAL_CYCLES,
+  MULTI_WORKSPACE_INITIAL_MILESTONES,
+  MULTI_WORKSPACE_INITIAL_COMMENTS,
+} from '../features/workspaces/data/multiWorkspaceMockData';
+import { useWorkspace } from '../features/workspaces/context/WorkspaceContext';
 import { canTransition } from '../domain/lifecycle';
 import {
   getBlockerStatus,
@@ -273,53 +285,71 @@ export function normalizeUsersList(users: any[]): (User & { teamIds: string[] })
   return users.map(normalizeUserMemberships);
 }
 
+function ensureWorkspaceTag<T extends { workspaceId?: string }>(items: T[]): T[] {
+  return items.map((item) => (item.workspaceId ? item : { ...item, workspaceId: 'ws_acme' }));
+}
+
 export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Load state from localStorage or initialize with seed data
-  const [issues, setIssues] = useState<Issue[]>(() => {
+  // Section 6: Resolve active workspace context
+  let activeWorkspaceId = 'ws_acme';
+  let activeMembershipRole: UserRole | undefined;
+  try {
+    const ws = useWorkspace();
+    activeWorkspaceId = ws.activeWorkspaceId || 'ws_acme';
+    activeMembershipRole = ws.activeMembership?.role;
+  } catch {
+    // Graceful fallback for test environments without WorkspaceProvider
+    activeWorkspaceId = 'ws_acme';
+  }
+
+  // Load master states from localStorage or initialize with multi-workspace seeds
+  const [masterIssues, setMasterIssues] = useState<Issue[]>(() => {
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_issues`);
-      return stored ? JSON.parse(stored) : INITIAL_ISSUES;
+      const parsed = stored ? JSON.parse(stored) : null;
+      return ensureWorkspaceTag(mergeSeedRecordsById(parsed, MULTI_WORKSPACE_INITIAL_ISSUES));
     } catch {
-      return INITIAL_ISSUES;
+      return MULTI_WORKSPACE_INITIAL_ISSUES;
     }
   });
 
-  const [dependencies, setDependencies] = useState<Dependency[]>(() => {
+  const [masterDependencies, setMasterDependencies] = useState<Dependency[]>(() => {
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_dependencies`);
-      return stored ? JSON.parse(stored) : INITIAL_DEPENDENCIES;
+      const parsed = stored ? JSON.parse(stored) : null;
+      return ensureWorkspaceTag(mergeSeedRecordsById(parsed, MULTI_WORKSPACE_INITIAL_DEPENDENCIES));
     } catch {
-      return INITIAL_DEPENDENCIES;
+      return MULTI_WORKSPACE_INITIAL_DEPENDENCIES;
     }
   });
 
-  const [projects, setProjects] = useState<Project[]>(() => {
+  const [masterProjects, setMasterProjects] = useState<Project[]>(() => {
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_projects`);
-      return stored ? JSON.parse(stored) : INITIAL_PROJECTS;
+      const parsed = stored ? JSON.parse(stored) : null;
+      return ensureWorkspaceTag(mergeSeedRecordsById(parsed, MULTI_WORKSPACE_INITIAL_PROJECTS));
     } catch {
-      return INITIAL_PROJECTS;
+      return MULTI_WORKSPACE_INITIAL_PROJECTS;
     }
   });
 
-  const [activities, setActivities] = useState<ActivityEvent[]>(() => {
+  const [masterActivities, setMasterActivities] = useState<ActivityEvent[]>(() => {
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_activities`);
-      return mergeSeedRecordsById(
-        stored ? (JSON.parse(stored) as ActivityEvent[]) : null,
-        INITIAL_ACTIVITIES
-      );
+      const parsed = stored ? JSON.parse(stored) : null;
+      return ensureWorkspaceTag(mergeSeedRecordsById(parsed, MULTI_WORKSPACE_INITIAL_ACTIVITIES));
     } catch {
-      return INITIAL_ACTIVITIES;
+      return MULTI_WORKSPACE_INITIAL_ACTIVITIES;
     }
   });
 
-  const [teams, setTeams] = useState<Team[]>(() => {
+  const [masterTeams, setMasterTeams] = useState<Team[]>(() => {
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_teams`);
-      return stored ? JSON.parse(stored) : INITIAL_TEAMS;
+      const parsed = stored ? JSON.parse(stored) : null;
+      return ensureWorkspaceTag(mergeSeedRecordsById(parsed, MULTI_WORKSPACE_INITIAL_TEAMS));
     } catch {
-      return INITIAL_TEAMS;
+      return MULTI_WORKSPACE_INITIAL_TEAMS;
     }
   });
 
@@ -342,9 +372,10 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
   });
 
   const updateCanonicalTeams = useCallback((newTeams: Team[]) => {
-    setTeams(newTeams);
+    const tagged = ensureWorkspaceTag(newTeams);
+    setMasterTeams(tagged);
     try {
-      localStorage.setItem(`${STORAGE_KEY}_teams`, JSON.stringify(newTeams));
+      localStorage.setItem(`${STORAGE_KEY}_teams`, JSON.stringify(tagged));
     } catch (e) {
       console.warn('Failed to persist teams:', e);
     }
@@ -404,30 +435,99 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [completionGuardError, setCompletionGuardError] = useState<CompletionGuardError | null>(null);
   const [cycleError, setCycleError] = useState<CycleError | null>(null);
 
-  // Cycles state
-  const [cycles, setCycles] = useState<Cycle[]>(() => {
+  // Cycles master state
+  const [masterCycles, setMasterCycles] = useState<Cycle[]>(() => {
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_cycles`);
-      return stored ? JSON.parse(stored) : INITIAL_CYCLES;
+      const parsed = stored ? JSON.parse(stored) : null;
+      return ensureWorkspaceTag(mergeSeedRecordsById(parsed, MULTI_WORKSPACE_INITIAL_CYCLES));
     } catch {
-      return INITIAL_CYCLES;
+      return MULTI_WORKSPACE_INITIAL_CYCLES;
     }
   });
 
-  const activeCycle = useMemo(
-    () => cycles.find(c => c.status === 'ACTIVE') || cycles[0] || null,
-    [cycles]
-  );
-
-  // Milestones state
-  const [milestones, setMilestones] = useState<Milestone[]>(() => {
+  // Milestones master state
+  const [masterMilestones, setMasterMilestones] = useState<Milestone[]>(() => {
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_milestones`);
-      return stored ? JSON.parse(stored) : INITIAL_MILESTONES;
+      const parsed = stored ? JSON.parse(stored) : null;
+      return ensureWorkspaceTag(mergeSeedRecordsById(parsed, MULTI_WORKSPACE_INITIAL_MILESTONES));
     } catch {
-      return INITIAL_MILESTONES;
+      return MULTI_WORKSPACE_INITIAL_MILESTONES;
     }
   });
+
+  // Comments master state
+  const [masterComments, setMasterComments] = useState<IssueComment[]>(() => {
+    try {
+      const stored = localStorage.getItem(`${STORAGE_KEY}_comments`);
+      const parsed = stored ? JSON.parse(stored) : null;
+      return ensureWorkspaceTag(mergeSeedRecordsById(parsed, MULTI_WORKSPACE_INITIAL_COMMENTS));
+    } catch {
+      return MULTI_WORKSPACE_INITIAL_COMMENTS;
+    }
+  });
+
+  // State mutator aliases for existing internal actions
+  const setIssues = setMasterIssues;
+  const setDependencies = setMasterDependencies;
+  const setProjects = setMasterProjects;
+  const setTeams = setMasterTeams;
+  const setActivities = setMasterActivities;
+  const setCycles = setMasterCycles;
+  const setMilestones = setMasterMilestones;
+  const setComments = setMasterComments;
+
+  // Section 10 & 11: Active Workspace Scoped Projections
+  const issues = useMemo(
+    () => masterIssues.filter((i) => (i.workspaceId || 'ws_acme') === activeWorkspaceId),
+    [masterIssues, activeWorkspaceId]
+  );
+
+  const projects = useMemo(
+    () => masterProjects.filter((p) => (p.workspaceId || 'ws_acme') === activeWorkspaceId),
+    [masterProjects, activeWorkspaceId]
+  );
+
+  const teams = useMemo(
+    () => masterTeams.filter((t) => (t.workspaceId || 'ws_acme') === activeWorkspaceId),
+    [masterTeams, activeWorkspaceId]
+  );
+
+  const cycles = useMemo(
+    () => masterCycles.filter((c) => (c.workspaceId || 'ws_acme') === activeWorkspaceId),
+    [masterCycles, activeWorkspaceId]
+  );
+
+  const milestones = useMemo(
+    () => masterMilestones.filter((m) => (m.workspaceId || 'ws_acme') === activeWorkspaceId),
+    [masterMilestones, activeWorkspaceId]
+  );
+
+  const dependencies = useMemo(() => {
+    const scopedIssueIds = new Set(issues.map((i) => i.id));
+    return masterDependencies.filter(
+      (d) =>
+        (d.workspaceId || 'ws_acme') === activeWorkspaceId &&
+        scopedIssueIds.has(d.upstreamIssueId) &&
+        scopedIssueIds.has(d.downstreamIssueId)
+    );
+  }, [masterDependencies, issues, activeWorkspaceId]);
+
+  const activities = useMemo(
+    () => masterActivities.filter((a) => (a.workspaceId || 'ws_acme') === activeWorkspaceId),
+    [masterActivities, activeWorkspaceId]
+  );
+
+  const comments = useMemo(
+    () => masterComments.filter((c) => (c.workspaceId || 'ws_acme') === activeWorkspaceId),
+    [masterComments, activeWorkspaceId]
+  );
+
+  const activeCycle = useMemo(
+    () => cycles.find((c) => c.status === 'ACTIVE') || cycles[0] || null,
+    [cycles]
+  );
 
   // Filters state
   const initialFilters: FilterState = {
@@ -443,57 +543,59 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
   const [filters, setFilters] = useState<FilterState>(initialFilters);
 
-  // Persist state
+  // Section 33: Clear transient drawer and filters on workspace switch
   useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_issues`, JSON.stringify(issues));
-  }, [issues]);
+    setSelectedIssueIds([]);
+    setIsDrawerOpen(false);
+    setActiveSavedViewId(null);
+    setFilters(initialFilters);
+  }, [activeWorkspaceId]);
+
+  // Section 14: Synchronize role from active membership
+  useEffect(() => {
+    if (activeMembershipRole && currentUser.role !== activeMembershipRole) {
+      setCurrentUser((prev) => ({ ...prev, role: activeMembershipRole }));
+    }
+  }, [activeMembershipRole, currentUser.role]);
+
+  // Persist master state
+  useEffect(() => {
+    localStorage.setItem(`${STORAGE_KEY}_issues`, JSON.stringify(masterIssues));
+  }, [masterIssues]);
 
   useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_dependencies`, JSON.stringify(dependencies));
-  }, [dependencies]);
+    localStorage.setItem(`${STORAGE_KEY}_dependencies`, JSON.stringify(masterDependencies));
+  }, [masterDependencies]);
 
   useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_projects`, JSON.stringify(projects));
-  }, [projects]);
+    localStorage.setItem(`${STORAGE_KEY}_projects`, JSON.stringify(masterProjects));
+  }, [masterProjects]);
 
   useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_activities`, JSON.stringify(activities));
-  }, [activities]);
+    localStorage.setItem(`${STORAGE_KEY}_activities`, JSON.stringify(masterActivities));
+  }, [masterActivities]);
 
   useEffect(() => {
     localStorage.setItem(`${STORAGE_KEY}_saved_views`, JSON.stringify(savedViews));
   }, [savedViews]);
 
   useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_cycles`, JSON.stringify(cycles));
-  }, [cycles]);
+    localStorage.setItem(`${STORAGE_KEY}_cycles`, JSON.stringify(masterCycles));
+  }, [masterCycles]);
 
   useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_milestones`, JSON.stringify(milestones));
-  }, [milestones]);
-
-  // Comments state
-  const [comments, setComments] = useState<IssueComment[]>(() => {
-    try {
-      const stored = localStorage.getItem(`${STORAGE_KEY}_comments`);
-      return mergeSeedRecordsById(
-        stored ? (JSON.parse(stored) as IssueComment[]) : null,
-        INITIAL_COMMENTS
-      );
-    } catch {
-      return INITIAL_COMMENTS;
-    }
-  });
+    localStorage.setItem(`${STORAGE_KEY}_milestones`, JSON.stringify(masterMilestones));
+  }, [masterMilestones]);
 
   useEffect(() => {
-    localStorage.setItem(`${STORAGE_KEY}_comments`, JSON.stringify(comments));
-  }, [comments]);
+    localStorage.setItem(`${STORAGE_KEY}_comments`, JSON.stringify(masterComments));
+  }, [masterComments]);
 
-  const issuesMap = useMemo(() => new Map(issues.map(i => [i.id, i])), [issues]);
+  const issuesMap = useMemo(() => new Map(issues.map((i) => [i.id, i])), [issues]);
 
   const selectedIssue = useMemo(
-    () => (selectedIssueId ? issuesMap.get(selectedIssueId) || null : null),
-    [selectedIssueId, issuesMap]
+    () => (selectedIssueId ? issuesMap.get(selectedIssueId) || null : issues[0] || null),
+    [selectedIssueId, issuesMap, issues]
   );
 
   const getIssueBlockerStatus = useCallback(
@@ -1325,15 +1427,26 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return false;
       }
 
-      const upstream = issuesMap.get(upstreamId);
-      const downstream = issuesMap.get(downstreamId);
+      const upstream = masterIssues.find((i) => i.id === upstreamId);
+      const downstream = masterIssues.find((i) => i.id === downstreamId);
       if (!upstream || !downstream) return false;
+
+      // Section 12: Invariant Check - Cross-workspace dependencies are strictly forbidden
+      const upstreamWs = upstream.workspaceId || 'ws_acme';
+      const downstreamWs = downstream.workspaceId || 'ws_acme';
+      if (upstreamWs !== downstreamWs || upstreamWs !== activeWorkspaceId) {
+        console.warn(
+          `Cross-workspace dependency forbidden between '${upstreamWs}' and '${downstreamWs}'`
+        );
+        return false;
+      }
 
       // Previous active count on downstream
       const prevStatus = getBlockerStatus(downstreamId, issues, dependencies);
 
       const newDep: Dependency = {
         id: `dep_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        workspaceId: activeWorkspaceId,
         upstreamIssueId: upstreamId,
         downstreamIssueId: downstreamId,
         createdAt: new Date().toISOString(),
@@ -1449,9 +1562,10 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const now = new Date().toISOString();
       const newIssue: Issue = {
         id: `iss_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        workspaceId: activeWorkspaceId,
         key: issueKey,
-        projectId: targetProject.id,
-        teamId: targetProject.teamId,
+        projectId: targetProject?.id || data.projectId,
+        teamId: targetProject?.teamId || '',
         title: data.title.trim(),
         description: data.description.trim(),
         state: 'TODO',
@@ -1483,25 +1597,25 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       return newIssue;
     },
-    [projects, currentUser, addDependency]
+    [projects, currentUser, addDependency, activeWorkspaceId]
   );
 
   // Reset demo data
   const resetToDemoData = useCallback(() => {
     clearAllStoredEntities();
 
-    setIssues(INITIAL_ISSUES);
-    setDependencies(INITIAL_DEPENDENCIES);
-    setProjects(INITIAL_PROJECTS);
-    setActivities(INITIAL_ACTIVITIES);
+    setIssues(MULTI_WORKSPACE_INITIAL_ISSUES);
+    setDependencies(MULTI_WORKSPACE_INITIAL_DEPENDENCIES);
+    setProjects(MULTI_WORKSPACE_INITIAL_PROJECTS);
+    setActivities(MULTI_WORKSPACE_INITIAL_ACTIVITIES);
     setSavedViews(DEFAULT_SAVED_VIEWS);
-    setCycles(INITIAL_CYCLES);
-    setMilestones(INITIAL_MILESTONES);
-    setComments(INITIAL_COMMENTS);
-    setTeams(INITIAL_TEAMS);
+    setCycles(MULTI_WORKSPACE_INITIAL_CYCLES);
+    setMilestones(MULTI_WORKSPACE_INITIAL_MILESTONES);
+    setComments(MULTI_WORKSPACE_INITIAL_COMMENTS);
+    setTeams(MULTI_WORKSPACE_INITIAL_TEAMS);
     setUsers(normalizeUsersList(INITIAL_USERS));
     setCurrentUser(normalizeUserMemberships(INITIAL_USERS[0]));
-    setSelectedIssueId(INITIAL_ISSUES[1].id);
+    setSelectedIssueId(MULTI_WORKSPACE_INITIAL_ISSUES[1]?.id || null);
     setFilters(initialFilters);
 
     // CollaborationProvider owns user-scoped receipt state outside this
