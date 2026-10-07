@@ -11,7 +11,7 @@ import { KeyboardProvider } from '../../context/KeyboardContext';
 import { AuthProvider, useAuth } from '../../features/auth/context/AuthContext';
 import { bridgeToLegacyUser } from '../../features/auth/domain/legacyBridge';
 import { AuthStatus, AuthenticatedUser } from '../../features/auth/types';
-
+import { Workspace, WorkspaceMembership } from '../../features/workspaces/types';
 import { WorkspaceProvider, useWorkspace } from '../../features/workspaces/context/WorkspaceContext';
 
 interface AppProvidersProps {
@@ -19,6 +19,8 @@ interface AppProvidersProps {
   initialAuthStatus?: AuthStatus;
   initialUser?: AuthenticatedUser | null;
   initialActiveWorkspaceId?: string | null;
+  initialWorkspaces?: Workspace[];
+  initialMemberships?: WorkspaceMembership[];
 }
 
 /**
@@ -46,10 +48,16 @@ export const AppProviders: React.FC<AppProvidersProps> = ({
   initialAuthStatus,
   initialUser,
   initialActiveWorkspaceId,
+  initialWorkspaces,
+  initialMemberships,
 }) => {
   return (
     <AuthProvider initialStatus={initialAuthStatus} initialUser={initialUser}>
-      <WorkspaceProvider initialActiveWorkspaceId={initialActiveWorkspaceId}>
+      <WorkspaceProvider
+        initialActiveWorkspaceId={initialActiveWorkspaceId}
+        initialWorkspaces={initialWorkspaces}
+        initialMemberships={initialMemberships}
+      >
         <ProjectProvider>
           <ProjectAuthBridge>
             <SettingsProvider>
