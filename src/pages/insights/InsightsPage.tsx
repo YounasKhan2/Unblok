@@ -1,10 +1,5 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React, { useMemo, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { useProject } from '../../context/ProjectContext';
 import { useDrawerRoute } from '../../app/router/useDrawerRoute';
 import { selectWorkspaceInsights, DEFAULT_INSIGHTS_FILTER } from '../../features/insights/selectors/insightSelectors';
@@ -16,8 +11,7 @@ import { HighRiskWorkTable } from '../../features/insights/components/HighRiskWo
 import { BottleneckPanel } from '../../features/insights/components/BottleneckPanel';
 import { DeliveryHealthPanel } from '../../features/insights/components/DeliveryHealthPanel';
 import { CrossTeamMatrix } from '../../features/insights/components/CrossTeamMatrix';
-import { IssueDrawer } from '../../components/drawer/IssueDrawer';
-import { Sparkles, BarChart2 } from 'lucide-react';
+import { BarChart2, GitFork, ArrowRight } from 'lucide-react';
 
 export const InsightsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -92,7 +86,7 @@ export const InsightsPage: React.FC = () => {
   }, [issues, dependencies, projects, teams, milestones, cycles, activities, filters]);
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-surface-base overflow-y-auto">
+    <div className="flex-1 flex flex-col min-h-0 bg-canvas overflow-y-auto">
       <div className="max-w-[1600px] w-full mx-auto p-4 sm:p-6 space-y-4">
         {/* Page Header */}
         <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-border/60">
@@ -109,10 +103,10 @@ export const InsightsPage: React.FC = () => {
           </div>
         </header>
 
-        {/* Top Summary Metric Strip */}
+        {/* 1. Top Summary Metric Strip: High-density orientation */}
         <ExecutionSummary summary={insightsData.summary} />
 
-        {/* Filter Bar */}
+        {/* 2. Filter Bar */}
         <InsightsFilterBar
           filters={filters}
           teams={teams}
@@ -122,21 +116,45 @@ export const InsightsPage: React.FC = () => {
           onResetFilters={handleResetFilters}
         />
 
-        {/* Main Content Layout: High-priority signal control surface */}
-        <div className="space-y-4">
-          {/* Section 1: Needs Attention Signals */}
+        {/* 3. Primary Action & Health 2-Column Region */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Left: Prioritized action signals */}
           <NeedsAttentionPanel
             signals={insightsData.needsAttention}
             onOpenDrawer={openDrawer}
           />
 
-          {/* Section 2: High-Risk Work Table */}
-          <HighRiskWorkTable
-            issues={insightsData.highRiskIssues}
-            onOpenDrawer={openDrawer}
+          {/* Right: Aggregate delivery condition */}
+          <DeliveryHealthPanel
+            projectHealth={insightsData.projectHealth}
+            teamHealth={insightsData.teamHealth}
           />
+        </div>
 
-          {/* Section 3: Dual Intelligence Grid (Bottlenecks & Delivery Health) */}
+        {/* 4. Detailed High-Risk Work List (Dense Execution Table) */}
+        <HighRiskWorkTable
+          issues={insightsData.highRiskIssues}
+          onOpenDrawer={openDrawer}
+        />
+
+        {/* 5. Systemic Dependency Pressure Region */}
+        <section className="space-y-3 pt-2">
+          <div className="flex items-center justify-between pb-1 border-b border-border/50">
+            <div className="flex items-center gap-2">
+              <GitFork className="w-4 h-4 text-accent" />
+              <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider">
+                Dependency Pressure
+              </h2>
+            </div>
+            <Link
+              to="/dependencies"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:underline"
+            >
+              <span>Open Dependency Intelligence</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <BottleneckPanel
               bottlenecks={insightsData.bottlenecks}
@@ -144,22 +162,13 @@ export const InsightsPage: React.FC = () => {
               onOpenDrawer={openDrawer}
             />
 
-            <DeliveryHealthPanel
-              projectHealth={insightsData.projectHealth}
-              teamHealth={insightsData.teamHealth}
+            <CrossTeamMatrix
+              matrixData={insightsData.crossTeamMatrix}
+              scopeLabel={insightsData.matrixScopeLabel}
             />
           </div>
-
-          {/* Section 4: Cross-Team Execution Pressure Matrix */}
-          <CrossTeamMatrix
-            matrixData={insightsData.crossTeamMatrix}
-            scopeLabel={insightsData.matrixScopeLabel}
-          />
-        </div>
+        </section>
       </div>
-
-      {/* Slide-over Issue Drawer */}
-      <IssueDrawer />
     </div>
   );
 };

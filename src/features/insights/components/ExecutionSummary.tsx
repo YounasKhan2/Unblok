@@ -23,109 +23,103 @@ export const ExecutionSummary: React.FC<ExecutionSummaryProps> = ({ summary }) =
     <div
       role="region"
       aria-label="Execution Summary Metrics"
-      className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 p-3 rounded-lg bg-surface-card border border-border"
+      className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 p-2 rounded-lg bg-surface-base border border-border"
     >
       {/* 1. Active Issues */}
-      <div className="flex flex-col gap-1 p-2 rounded bg-surface-base/60 border border-border/50">
-        <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-          <Layers className="w-3.5 h-3.5 text-accent" />
-          <span className="font-medium truncate">Active Work</span>
-        </div>
-        <div className="flex items-baseline gap-1.5">
-          <span className="text-xl font-bold font-mono text-text-primary tracking-tight">
-            {summary.activeIssuesCount}
-          </span>
-          <span className="text-[10px] text-text-muted">issues</span>
+      <div className="flex items-center gap-2 p-2 rounded bg-surface-subtle border border-border/40">
+        <Layers className="w-4 h-4 text-accent shrink-0" />
+        <div className="min-w-0">
+          <div className="flex items-baseline gap-1">
+            <span className="text-sm font-bold font-mono text-text-primary tracking-tight">
+              {summary.activeIssuesCount}
+            </span>
+            <span className="text-[11px] font-semibold text-text-secondary truncate">Active</span>
+          </div>
         </div>
       </div>
 
       {/* 2. Blocked Issues */}
-      <div className="flex flex-col gap-1 p-2 rounded bg-surface-base/60 border border-border/50">
-        <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-          <ShieldAlert className="w-3.5 h-3.5 text-warning" />
-          <span className="font-medium truncate">Blocked Issues</span>
-        </div>
-        <div className="flex items-baseline gap-1.5">
-          <span
-            className={`text-xl font-bold font-mono tracking-tight ${
-              summary.blockedIssuesCount > 0 ? 'text-warning' : 'text-text-primary'
-            }`}
-          >
-            {summary.blockedIssuesCount}
-          </span>
-          <span className="text-[10px] text-text-muted">active</span>
+      <div className="flex items-center gap-2 p-2 rounded bg-surface-subtle border border-border/40">
+        <ShieldAlert className="w-4 h-4 text-warning shrink-0" />
+        <div className="min-w-0">
+          <div className="flex items-baseline gap-1">
+            <span
+              className={`text-sm font-bold font-mono tracking-tight ${
+                summary.blockedIssuesCount > 0 ? 'text-warning' : 'text-text-primary'
+              }`}
+            >
+              {summary.blockedIssuesCount}
+            </span>
+            <span className="text-[11px] font-semibold text-text-secondary truncate">Blocked</span>
+          </div>
         </div>
       </div>
 
       {/* 3. High Risk Work */}
-      <div className="flex flex-col gap-1 p-2 rounded bg-surface-base/60 border border-border/50">
-        <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-          <Flame className="w-3.5 h-3.5 text-danger" />
-          <span className="font-medium truncate">High/Critical Risk</span>
-        </div>
-        <div className="flex items-baseline gap-1.5">
-          <span
-            className={`text-xl font-bold font-mono tracking-tight ${
-              summary.highRiskIssuesCount > 0 ? 'text-danger' : 'text-text-primary'
-            }`}
-          >
-            {summary.highRiskIssuesCount}
-          </span>
-          <span className="text-[10px] text-text-muted">issues</span>
+      <div className="flex items-center gap-2 p-2 rounded bg-surface-subtle border border-border/40">
+        <Flame className="w-4 h-4 text-danger shrink-0" />
+        <div className="min-w-0">
+          <div className="flex items-baseline gap-1">
+            <span
+              className={`text-sm font-bold font-mono tracking-tight ${
+                summary.highRiskIssuesCount > 0 ? 'text-danger' : 'text-text-primary'
+              }`}
+            >
+              {summary.highRiskIssuesCount}
+            </span>
+            <span className="text-[11px] font-semibold text-text-secondary truncate">High Risk</span>
+          </div>
         </div>
       </div>
 
       {/* 4. Active Blockers */}
-      <div className="flex flex-col gap-1 p-2 rounded bg-surface-base/60 border border-border/50">
-        <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-          <AlertTriangle className="w-3.5 h-3.5 text-blocker" />
-          <span className="font-medium truncate">Active Blockers</span>
-        </div>
-        <div className="flex items-baseline gap-1.5">
-          <span
-            className={`text-xl font-bold font-mono tracking-tight ${
-              summary.activeBlockersCount > 0 ? 'text-blocker' : 'text-text-primary'
-            }`}
-          >
-            {summary.activeBlockersCount}
-          </span>
-          <span className="text-[10px] text-text-muted">blocking others</span>
+      <div className="flex items-center gap-2 p-2 rounded bg-surface-subtle border border-border/40">
+        <AlertTriangle className="w-4 h-4 text-blocker shrink-0" />
+        <div className="min-w-0">
+          <div className="flex items-baseline gap-1">
+            <span
+              className={`text-sm font-bold font-mono tracking-tight ${
+                summary.activeBlockersCount > 0 ? 'text-blocker' : 'text-text-primary'
+              }`}
+            >
+              {summary.activeBlockersCount}
+            </span>
+            <span className="text-[11px] font-semibold text-text-secondary truncate">Bottlenecks</span>
+          </div>
         </div>
       </div>
 
       {/* 5. At-Risk Milestones */}
-      <div className="flex flex-col gap-1 p-2 rounded bg-surface-base/60 border border-border/50">
-        <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-          <MilestoneIcon className="w-3.5 h-3.5 text-accent" />
-          <span className="font-medium truncate">At-Risk Milestones</span>
-        </div>
-        <div className="flex items-baseline gap-1.5">
-          <span
-            className={`text-xl font-bold font-mono tracking-tight ${
-              summary.atRiskMilestonesCount > 0 ? 'text-accent' : 'text-text-primary'
-            }`}
-          >
-            {summary.atRiskMilestonesCount}
-          </span>
-          <span className="text-[10px] text-text-muted">milestones</span>
+      <div className="flex items-center gap-2 p-2 rounded bg-surface-subtle border border-border/40">
+        <MilestoneIcon className="w-4 h-4 text-accent shrink-0" />
+        <div className="min-w-0">
+          <div className="flex items-baseline gap-1">
+            <span
+              className={`text-sm font-bold font-mono tracking-tight ${
+                summary.atRiskMilestonesCount > 0 ? 'text-accent' : 'text-text-primary'
+              }`}
+            >
+              {summary.atRiskMilestonesCount}
+            </span>
+            <span className="text-[11px] font-semibold text-text-secondary truncate">At-Risk MS</span>
+          </div>
         </div>
       </div>
 
       {/* 6. Overdue Work */}
-      <div className="flex flex-col gap-1 p-2 rounded bg-surface-base/60 border border-border/50">
-        <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-          <Clock className="w-3.5 h-3.5 text-danger" />
-          <span className="font-medium truncate">Overdue Work</span>
-        </div>
-        <div className="flex items-baseline gap-1.5">
-          <span
-            className={`text-xl font-bold font-mono tracking-tight ${
-              summary.overdueIssuesCount > 0 ? 'text-danger' : 'text-text-primary'
-            }`}
-          >
-            {summary.overdueIssuesCount}
-          </span>
-          <span className="text-[10px] text-text-muted">past due</span>
+      <div className="flex items-center gap-2 p-2 rounded bg-surface-subtle border border-border/40">
+        <Clock className="w-4 h-4 text-danger shrink-0" />
+        <div className="min-w-0">
+          <div className="flex items-baseline gap-1">
+            <span
+              className={`text-sm font-bold font-mono tracking-tight ${
+                summary.overdueIssuesCount > 0 ? 'text-danger' : 'text-text-primary'
+              }`}
+            >
+              {summary.overdueIssuesCount}
+            </span>
+            <span className="text-[11px] font-semibold text-text-secondary truncate">Overdue</span>
+          </div>
         </div>
       </div>
     </div>

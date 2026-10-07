@@ -98,4 +98,38 @@ describe('UX-07 /insights Canonical Route Contracts & Integration', () => {
 
     expect(data.summary.activeIssuesCount).toBeGreaterThan(0);
   });
+
+  it('5. UX-09: Insights preserves drill-down issue keys and summary metrics across layout restructuring', () => {
+    const data = selectWorkspaceInsights({
+      issues: INITIAL_ISSUES,
+      dependencies: INITIAL_DEPENDENCIES,
+      projects: INITIAL_PROJECTS,
+      teams: INITIAL_TEAMS,
+      milestones: INITIAL_MILESTONES,
+      cycles: INITIAL_CYCLES,
+      filters: DEFAULT_INSIGHTS_FILTER,
+      referenceTime,
+    });
+
+    // Summary strip metrics must be accessible
+    expect(typeof data.summary.activeIssuesCount).toBe('number');
+    expect(typeof data.summary.blockedIssuesCount).toBe('number');
+    expect(typeof data.summary.highRiskIssuesCount).toBe('number');
+    expect(typeof data.summary.activeBlockersCount).toBe('number');
+    expect(typeof data.summary.atRiskMilestonesCount).toBe('number');
+    expect(typeof data.summary.overdueIssuesCount).toBe('number');
+
+    // Needs attention signals must include drawerIssueKey for drill-down where applicable
+    const signalsWithDrawer = data.needsAttention.filter(s => s.drawerIssueKey);
+    for (const signal of signalsWithDrawer) {
+      expect(typeof signal.drawerIssueKey).toBe('string');
+      expect(signal.drawerIssueKey!.length).toBeGreaterThan(0);
+    }
+
+    // High risk issues must link correctly to issue keys
+    for (const enriched of data.highRiskIssues) {
+      expect(enriched.issue.key).toMatch(/^[A-Z]+-\d+$/);
+    }
+  });
 });
+
