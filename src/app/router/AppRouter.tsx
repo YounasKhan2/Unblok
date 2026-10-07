@@ -8,7 +8,14 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom
 import { PublicLayout } from '../layouts/PublicLayout';
 import { AuthLayout } from '../layouts/AuthLayout';
 import { HomePage } from '../../pages/public/HomePage';
-import { PublicPlaceholderPage } from '../../features/public/components/PublicPlaceholderPage';
+import { ProductPage } from '../../pages/public/ProductPage';
+import { FeaturesPage } from '../../pages/public/FeaturesPage';
+import { SolutionsPage } from '../../pages/public/SolutionsPage';
+import { PricingPage } from '../../pages/public/PricingPage';
+import { SecurityPage } from '../../pages/public/SecurityPage';
+import { ContactPage } from '../../pages/public/ContactPage';
+import { PrivacyPage } from '../../pages/public/PrivacyPage';
+import { TermsPage } from '../../pages/public/TermsPage';
 import { PublicNotFoundPage } from '../../features/public/components/PublicNotFoundPage';
 import { AuthPlaceholderPage } from '../../features/auth/components/AuthPlaceholderPage';
 import { AppShellLayout } from '../layouts/AppShellLayout';
@@ -51,87 +58,15 @@ export const AppRoutes: React.FC = () => {
           {/* Public Homepage (UX-11B Primary Surface) */}
           <Route path="/" element={<HomePage />} />
 
-          {/* Placeholder Public Routes (Scheduled for UX-11C) */}
-          <Route
-            path="/product"
-            element={
-              <PublicPlaceholderPage
-                title="Product Overview"
-                category="Product"
-                description="The complete execution lifecycle: Execute, Unblock, Plan, Collaborate, and Understand."
-              />
-            }
-          />
-          <Route
-            path="/features"
-            element={
-              <PublicPlaceholderPage
-                title="Features Directory"
-                category="Capabilities"
-                description="Comprehensive technical directory covering DAG invariants, completion guards, slide-over triage, and execution insights."
-              />
-            }
-          />
-          <Route
-            path="/solutions"
-            element={
-              <PublicPlaceholderPage
-                title="Solutions"
-                category="Audience"
-                description="Purpose-built execution workflows for Engineering Teams, Engineering Leaders, and Consultancies."
-              />
-            }
-          />
-          <Route
-            path="/pricing"
-            element={
-              <PublicPlaceholderPage
-                title="Pricing & Packaging"
-                category="Commercial"
-                description="Dedicated commercial presentation surface. Packaging, tiers, and limits will be presented following business decisions."
-              />
-            }
-          />
-          <Route
-            path="/security"
-            element={
-              <PublicPlaceholderPage
-                title="Security & Architecture"
-                category="Trust"
-                description="Logical workspace boundaries, RBAC permissions, audit events, and production security direction."
-              />
-            }
-          />
-          <Route
-            path="/contact"
-            element={
-              <PublicPlaceholderPage
-                title="Contact Architecture Team"
-                category="Inquiry"
-                description="Get in touch with the Unblok team for architecture questions and deployment discussions."
-              />
-            }
-          />
-          <Route
-            path="/privacy"
-            element={
-              <PublicPlaceholderPage
-                title="Privacy Policy"
-                category="Legal"
-                description="Data privacy, processing principles, and customer data handling policies."
-              />
-            }
-          />
-          <Route
-            path="/terms"
-            element={
-              <PublicPlaceholderPage
-                title="Terms of Service"
-                category="Legal"
-                description="Platform terms, usage guidelines, and licensing specifications."
-              />
-            }
-          />
+          {/* Complete Public Experience Pages (UX-11C) */}
+          <Route path="/product" element={<ProductPage />} />
+          <Route path="/features" element={<FeaturesPage />} />
+          <Route path="/solutions" element={<SolutionsPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/security" element={<SecurityPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
         </Route>
 
         {/* ========================================================= */}
