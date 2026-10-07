@@ -24,7 +24,6 @@ import { RoadmapPage } from '../../pages/roadmap/RoadmapPage';
 import { InboxPage } from '../../pages/inbox/InboxPage';
 import { InsightsPage } from '../../pages/insights/InsightsPage';
 import { PlaceholderPage } from '../../pages/placeholder/PlaceholderPage';
-import { SettingsProvider } from '../../features/settings/context/SettingsContext';
 import { SettingsLayout } from '../../features/settings/components/SettingsLayout';
 import { AdminRoute } from '../../features/settings/components/ProtectedRoute';
 import { SettingsRedirectPage } from '../../pages/settings/SettingsRedirectPage';
@@ -98,14 +97,7 @@ export const AppRouter: React.FC = () => {
           <Route path="/insights" element={<InsightsPage />} />
 
           {/* Settings Space (UX-08 Canonical Implementation) */}
-          <Route
-            path="/settings"
-            element={
-              <SettingsProvider>
-                <Outlet />
-              </SettingsProvider>
-            }
-          >
+          <Route path="/settings" element={<Outlet />}>
             {/* Direct /settings redirects based on role: ADMIN -> workspace, MEMBER/OBSERVER -> preferences */}
             <Route index element={<SettingsRedirectPage />} />
 

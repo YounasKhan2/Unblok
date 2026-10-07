@@ -30,17 +30,17 @@ export const IssueRow: React.FC<IssueRowProps> = ({
   return (
     <div
       onClick={onSelect}
-      className={`group relative flex items-center h-[34px] px-3 border-b border-[#e5e3df] text-xs cursor-pointer select-none transition-colors ${
+      className={`group relative flex items-center h-[34px] px-3 border-b border-border text-xs cursor-pointer select-none transition-colors ${
         isMultiSelected
-          ? 'bg-[#5645d4]/12'
+          ? 'bg-accent/15'
           : isSelected
-          ? 'bg-[#5645d4]/8 font-medium'
-          : 'hover:bg-[#f6f5f4] bg-white'
+          ? 'bg-accent/10 font-medium'
+          : 'hover:bg-surface-subtle bg-surface-base'
       }`}
     >
       {/* Selection Left Accent Bar */}
       {isSelected && (
-        <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-[#5645d4]" />
+        <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-accent" />
       )}
 
       {/* Checkbox for Multi-select */}
@@ -55,7 +55,7 @@ export const IssueRow: React.FC<IssueRowProps> = ({
           type="checkbox"
           checked={isMultiSelected}
           onChange={() => {}} // Controlled via parent onClick
-          className="w-3.5 h-3.5 rounded-[3px] border-[#c8c4be] text-[#5645d4] focus:ring-0 cursor-pointer"
+          className="w-3.5 h-3.5 rounded-[3px] border-border text-accent focus:ring-0 cursor-pointer"
         />
       </div>
 
@@ -65,13 +65,13 @@ export const IssueRow: React.FC<IssueRowProps> = ({
       </div>
 
       {/* Key Column */}
-      <div className="w-20 shrink-0 font-mono font-semibold text-[#5645d4] group-hover:underline">
+      <div className="w-20 shrink-0 font-mono font-semibold text-accent group-hover:underline">
         {issue.key}
       </div>
 
       {/* Title Column */}
       <div className="flex-1 min-w-0 pr-3 truncate flex items-center gap-2">
-        <span className={`truncate ${issue.state === 'CANCELLED' ? 'line-through text-[#a4a097]' : 'text-[#1a1a1a]'}`}>
+        <span className={`truncate ${issue.state === 'CANCELLED' ? 'line-through text-text-muted' : 'text-text-primary'}`}>
           {issue.title}
         </span>
       </div>
@@ -90,10 +90,10 @@ export const IssueRow: React.FC<IssueRowProps> = ({
       </div>
 
       {/* Team Column */}
-      <div className="w-24 shrink-0 hidden md:flex items-center gap-1.5 truncate text-[#787671]">
+      <div className="w-24 shrink-0 hidden md:flex items-center gap-1.5 truncate text-text-muted">
         <span
           className="w-1.5 h-1.5 rounded-full shrink-0"
-          style={{ backgroundColor: team?.color || '#5645d4' }}
+          style={{ backgroundColor: team?.color || 'var(--color-accent)' }}
         />
         <span className="truncate">{team?.key}</span>
       </div>
@@ -101,7 +101,7 @@ export const IssueRow: React.FC<IssueRowProps> = ({
       {/* Assignee Column */}
       <div className="w-28 shrink-0 flex items-center gap-1.5 truncate">
         <Avatar user={assignee} size="xs" />
-        <span className="truncate text-[#787671]">{assignee ? assignee.name.split(' ')[0] : '—'}</span>
+        <span className="truncate text-text-muted">{assignee ? assignee.name.split(' ')[0] : '—'}</span>
       </div>
     </div>
   );

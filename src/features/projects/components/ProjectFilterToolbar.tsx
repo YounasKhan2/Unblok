@@ -66,7 +66,7 @@ export const ProjectFilterToolbar: React.FC<ProjectFilterToolbarProps> = ({
     .join(' ');
 
   return (
-    <div className="bg-white border-b border-border px-4 py-2 flex flex-wrap items-center justify-between gap-2.5 text-xs select-none">
+    <div className="bg-surface-base border-b border-border px-4 py-2 flex flex-wrap items-center justify-between gap-2.5 text-xs select-none">
       {/* 1. Left: Search Bar & Core Filters */}
       <div className="flex items-center gap-2 flex-wrap flex-1 min-w-[280px]">
         {/* Search Input */}
@@ -77,7 +77,7 @@ export const ProjectFilterToolbar: React.FC<ProjectFilterToolbarProps> = ({
             value={filters.searchQuery || ''}
             onChange={e => onFilterChange({ searchQuery: e.target.value })}
             placeholder="Search or is:blocked, priority:... (/)"
-            className="h-7 w-44 sm:w-56 pl-8 pr-7 bg-surface-muted border border-border rounded-[5px] text-xs text-text-primary placeholder-[#a4a097] focus:bg-white focus:border-accent focus:outline-none transition-all"
+            className="h-7 w-44 sm:w-56 pl-8 pr-7 bg-surface-muted border border-border rounded-[5px] text-xs text-text-primary placeholder:text-text-muted focus:bg-surface-base focus:border-accent focus:outline-none transition-all"
           />
           {filters.searchQuery && (
             <button
@@ -211,7 +211,7 @@ export const ProjectFilterToolbar: React.FC<ProjectFilterToolbarProps> = ({
         {/* Save Current View Button */}
         <button
           onClick={() => setIsSavedViewModalOpen(true)}
-          className="h-7 px-2 border border-border hover:border-accent hover:text-accent rounded-[5px] flex items-center gap-1 text-xs text-text-muted bg-white transition-colors cursor-pointer"
+          className="h-7 px-2 border border-border hover:border-accent hover:text-accent rounded-[5px] flex items-center gap-1 text-xs text-text-muted bg-surface-base transition-colors cursor-pointer"
           title="Save active filter configuration as a view"
         >
           <Bookmark className="w-3 h-3" />

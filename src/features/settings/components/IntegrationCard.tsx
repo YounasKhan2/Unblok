@@ -72,7 +72,7 @@ export const IntegrationCard: React.FC<IntegrationCardProps> = ({ config, icon }
             <p className="text-[11px] text-text-muted mt-0.5">
               {isConnected && config.repository
                 ? `Connected to ${config.repository} • Synced ${config.lastSync || 'recently'}`
-                : 'Connect repositories to enable prototype branch and commit linking.'}
+                : 'Connect repositories to enable branch and commit linking.'}
             </p>
           </div>
         </div>

@@ -478,6 +478,22 @@ describe('Keyboard Architecture & Scope Hierarchy', () => {
       }
     });
 
+    it('suppresses all navigation, search, help, and action shortcuts when input/select is focused', () => {
+      const keys = ['j', 'k', 'c', 'x', '/', '?', '1', '2', '3', '[', ']'];
+      for (const key of keys) {
+        expect(
+          evaluateKeyAction({
+            key,
+            isInputFocused: true,
+            scope: 'CANVAS',
+            hasSelection: false,
+            userRole: 'ADMIN',
+            canEdit: true,
+          })
+        ).toBe('NONE');
+      }
+    });
+
     it('suppresses S, P, A, M shortcuts when in MODAL or POPOVER scope', () => {
       expect(
         evaluateKeyAction({

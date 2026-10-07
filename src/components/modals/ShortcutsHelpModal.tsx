@@ -51,15 +51,15 @@ export const ShortcutsHelpModal: React.FC = () => {
     >
       <div className="space-y-4 text-xs">
         {shortcutGroups.map(group => (
-          <div key={group.group} className="border border-[#e5e3df] rounded-lg overflow-hidden">
-            <div className="bg-[#fafaf9] px-3 py-1.5 font-semibold text-[11px] text-[#787671] uppercase tracking-wider border-b border-[#e5e3df]">
+          <div key={group.group} className="border border-border rounded-lg overflow-hidden">
+            <div className="bg-surface-subtle px-3 py-1.5 font-semibold text-[11px] text-text-muted uppercase tracking-wider border-b border-border">
               {group.group}
             </div>
-            <div className="divide-y divide-[#e5e3df]">
-              {group.shortcuts.map(sc => (
-                <div key={sc.key} className="flex items-center justify-between px-3 py-2 bg-white">
-                  <span className="text-[#37352f]">{sc.action}</span>
-                  <kbd className="font-mono text-xs px-2 py-0.5 rounded bg-[#f0eeec] text-[#1a1a1a] border border-[#d4d0c9] shadow-2xs font-semibold">
+            <div className="divide-y divide-border">
+              {shortcutGroups.find(g => g.group === group.group)?.shortcuts.map(sc => (
+                <div key={sc.key} className="flex items-center justify-between px-3 py-2 bg-surface-base">
+                  <span className="text-text-primary">{sc.action}</span>
+                  <kbd className="font-mono text-xs px-2 py-0.5 rounded bg-surface-muted text-text-primary border border-border shadow-2xs font-semibold">
                     {sc.key}
                   </kbd>
                 </div>

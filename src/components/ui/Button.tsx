@@ -19,7 +19,7 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   // Notion uses rectangular geometry (rounded-md / 8px), NOT pills!
   const baseClasses =
-    'inline-flex items-center justify-center font-medium transition-colors select-none rounded-[6px] focus:outline-none focus:ring-2 focus:ring-[#5645d4]/40 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer';
+    'inline-flex items-center justify-center font-medium transition-colors select-none rounded-[6px] focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer';
 
   const sizeClasses = {
     sm: 'text-xs px-2.5 py-1 gap-1.5 h-7',
@@ -28,24 +28,24 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   const variantClasses = {
-    // Notion signature purple
+    // Signature accent
     primary:
-      'bg-[#5645d4] hover:bg-[#4534b3] active:bg-[#3a2a99] text-white shadow-xs',
-    // Black button
+      'bg-accent hover:opacity-90 active:opacity-80 text-white shadow-xs',
+    // Dark/Neutral button
     dark:
-      'bg-[#1a1a1a] hover:bg-[#000000] active:bg-[#2a2a2a] text-white shadow-xs',
+      'bg-surface-muted hover:bg-surface-subtle text-text-primary border border-border shadow-xs',
     // Outlined secondary
     secondary:
-      'bg-white hover:bg-[#f6f5f4] active:bg-[#ede9e4] text-[#1a1a1a] border border-[#e5e3df] hover:border-[#c8c4be]',
+      'bg-surface-base hover:bg-surface-subtle active:bg-surface-muted text-text-primary border border-border hover:border-border-strong',
     // Ghost
     ghost:
-      'bg-transparent hover:bg-[#f6f5f4] active:bg-[#ede9e4] text-[#37352f]',
+      'bg-transparent hover:bg-surface-subtle active:bg-surface-muted text-text-secondary hover:text-text-primary',
     // On-dark surface button
     'on-dark':
       'bg-white/10 hover:bg-white/20 active:bg-white/30 text-white border border-white/20',
     // Danger
     danger:
-      'bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 active:bg-red-200',
+      'bg-danger-subtle hover:bg-danger/20 text-danger border border-danger/30 active:bg-danger/30',
   };
 
   return (

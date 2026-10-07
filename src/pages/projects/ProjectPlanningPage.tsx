@@ -88,7 +88,7 @@ export const ProjectPlanningPage: React.FC = () => {
   );
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-surface-subtle overflow-hidden select-none">
+    <div className="flex-1 flex flex-col h-full bg-canvas overflow-hidden select-none">
       {/* 1. Header Toolbar */}
       <div className="bg-surface-base border-b border-border px-6 py-3.5 shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>

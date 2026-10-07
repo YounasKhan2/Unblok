@@ -6,6 +6,8 @@ import { Button } from '../../../components/ui/Button';
 import { RotateCcw, XCircle, Check } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 
+import { formatUserDate } from '../../../components/ui/formatDate';
+
 interface PendingInvitationRowProps {
   invitation: PendingInvitation;
   teams: Team[];
@@ -56,8 +58,8 @@ export const PendingInvitationRow: React.FC<PendingInvitationRowProps> = ({
           </span>
         </div>
         <div className="text-[11px] text-text-muted mt-0.5">
-          Invited on {invitation.invitedAt}
-          {invitation.resentAt && ` • Resent on ${invitation.resentAt}`}
+          Invited on {formatUserDate(invitation.invitedAt)}
+          {invitation.resentAt && ` • Resent on ${formatUserDate(invitation.resentAt)}`}
         </div>
       </div>
 
@@ -93,7 +95,7 @@ export const PendingInvitationRow: React.FC<PendingInvitationRowProps> = ({
                 )
               }
               onClick={handleResend}
-              title="Resend prototype invitation"
+              title="Resend invitation"
             >
               {resendSuccess ? 'Resent' : 'Resend'}
             </Button>

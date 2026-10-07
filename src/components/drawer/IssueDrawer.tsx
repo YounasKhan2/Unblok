@@ -172,13 +172,15 @@ export const IssueDrawer: React.FC = () => {
   return (
     <>
       {/* Mobile backdrop */}
+      {/* Backdrop for tablet & mobile overlay mode */}
       <div
-        className="fixed inset-0 bg-black/20 z-40 sm:hidden"
+        className="fixed inset-0 bg-black/40 z-40 lg:hidden transition-opacity"
         onClick={closeDrawer}
+        aria-hidden="true"
       />
 
       <aside
-        className="fixed sm:static inset-y-0 right-0 w-full sm:w-[440px] shrink-0 border-l border-border bg-surface-base h-full flex flex-col shadow-[-4px_0_24px_rgba(15,15,15,0.06)] z-50 sm:z-30 animate-in slide-in-from-right duration-150"
+        className="fixed lg:static inset-y-0 right-0 w-full sm:w-[440px] shrink-0 border-l border-border bg-surface-base h-full flex flex-col shadow-[-4px_0_24px_rgba(15,15,15,0.06)] z-50 lg:z-30 animate-in slide-in-from-right duration-150"
         aria-label="Issue Detail Drawer"
       >
         {/* 1. Header Toolbar */}

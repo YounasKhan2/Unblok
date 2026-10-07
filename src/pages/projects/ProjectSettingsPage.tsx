@@ -40,9 +40,9 @@ export const ProjectSettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-surface-subtle p-4 sm:p-6 select-none max-w-2xl">
+    <div className="flex-1 overflow-y-auto bg-canvas p-4 sm:p-6 select-none max-w-2xl">
       {toastMessage && (
-        <div className="mb-4 px-3.5 py-2 bg-brand-navy text-white text-xs rounded-lg shadow-lg flex items-center gap-2 animate-in fade-in duration-150">
+        <div className="mb-4 px-3.5 py-2 bg-surface-elevated text-text-primary border border-border text-xs rounded-lg shadow-lg flex items-center gap-2 animate-in fade-in duration-150">
           <CheckCircle2 className="w-4 h-4 text-success" />
           <span>{toastMessage}</span>
         </div>

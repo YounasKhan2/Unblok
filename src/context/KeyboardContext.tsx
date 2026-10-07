@@ -378,7 +378,11 @@ export const KeyboardProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const isInput =
         activeEl instanceof HTMLInputElement ||
         activeEl instanceof HTMLTextAreaElement ||
-        activeEl?.getAttribute('contenteditable') === 'true';
+        activeEl instanceof HTMLSelectElement ||
+        activeEl?.getAttribute('contenteditable') === 'true' ||
+        activeEl?.tagName === 'INPUT' ||
+        activeEl?.tagName === 'TEXTAREA' ||
+        activeEl?.tagName === 'SELECT';
       setScope(isInput ? 'DRAWER_EDIT' : 'DRAWER_NAV');
     } else if (inboxHandlersRef.current !== null) {
       setScope('INBOX');
@@ -403,7 +407,11 @@ export const KeyboardProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const isInputFocused =
         activeEl instanceof HTMLInputElement ||
         activeEl instanceof HTMLTextAreaElement ||
-        activeEl?.getAttribute('contenteditable') === 'true';
+        activeEl instanceof HTMLSelectElement ||
+        activeEl?.getAttribute('contenteditable') === 'true' ||
+        activeEl?.tagName === 'INPUT' ||
+        activeEl?.tagName === 'TEXTAREA' ||
+        activeEl?.tagName === 'SELECT';
 
       // Current active scope determination
       let currentScope: KeyboardScope = 'CANVAS';

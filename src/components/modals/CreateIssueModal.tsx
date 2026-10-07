@@ -68,8 +68,8 @@ export const CreateIssueModal: React.FC = () => {
       <form onSubmit={handleSubmit} className="space-y-4 text-xs">
         {/* Title */}
         <div>
-          <label className="block text-xs font-semibold text-[#1a1a1a] mb-1">
-            Title <span className="text-red-500">*</span>
+          <label className="block text-xs font-semibold text-text-primary mb-1">
+            Title <span className="text-danger">*</span>
           </label>
           <input
             type="text"
@@ -78,20 +78,20 @@ export const CreateIssueModal: React.FC = () => {
             value={title}
             onChange={e => setTitle(e.target.value)}
             placeholder="e.g. Implement rate limiting on public webhook endpoints"
-            className="w-full px-3 py-2 text-xs bg-[#fafaf9] border border-[#e5e3df] focus:border-[#5645d4] rounded-[6px] focus:outline-none focus:bg-white"
+            className="w-full px-3 py-2 text-xs bg-surface-subtle border border-border focus:border-accent rounded-[6px] focus:outline-none focus:bg-surface-base text-text-primary placeholder:text-text-muted"
           />
         </div>
 
         {/* Project & Priority Row */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-[#1a1a1a] mb-1">
-              Project <span className="text-red-500">*</span>
+            <label className="block text-xs font-semibold text-text-primary mb-1">
+              Project <span className="text-danger">*</span>
             </label>
             <select
               value={projectId}
               onChange={e => setProjectId(e.target.value)}
-              className="w-full px-2.5 py-1.5 text-xs bg-[#fafaf9] border border-[#e5e3df] rounded-[6px] focus:outline-none focus:border-[#5645d4]"
+              className="w-full px-2.5 py-1.5 text-xs bg-surface-subtle border border-border rounded-[6px] focus:outline-none focus:border-accent text-text-primary"
             >
               {projects.map(p => (
                 <option key={p.id} value={p.id}>
@@ -102,13 +102,13 @@ export const CreateIssueModal: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#1a1a1a] mb-1">
+            <label className="block text-xs font-semibold text-text-primary mb-1">
               Priority
             </label>
             <select
               value={priority}
               onChange={e => setPriority(e.target.value as IssuePriority)}
-              className="w-full px-2.5 py-1.5 text-xs bg-[#fafaf9] border border-[#e5e3df] rounded-[6px] focus:outline-none focus:border-[#5645d4]"
+              className="w-full px-2.5 py-1.5 text-xs bg-surface-subtle border border-border rounded-[6px] focus:outline-none focus:border-accent text-text-primary"
             >
               <option value="URGENT">Urgent</option>
               <option value="HIGH">High</option>
@@ -121,13 +121,13 @@ export const CreateIssueModal: React.FC = () => {
         {/* Assignee & Initial Blocker Row */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-[#1a1a1a] mb-1">
+            <label className="block text-xs font-semibold text-text-primary mb-1">
               Assignee
             </label>
             <select
               value={assigneeId}
               onChange={e => setAssigneeId(e.target.value)}
-              className="w-full px-2.5 py-1.5 text-xs bg-[#fafaf9] border border-[#e5e3df] rounded-[6px] focus:outline-none focus:border-[#5645d4]"
+              className="w-full px-2.5 py-1.5 text-xs bg-surface-subtle border border-border rounded-[6px] focus:outline-none focus:border-accent text-text-primary"
             >
               <option value="">Unassigned</option>
               {users.map(u => (
@@ -139,13 +139,13 @@ export const CreateIssueModal: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-[#1a1a1a] mb-1">
+            <label className="block text-xs font-semibold text-text-primary mb-1">
               Blocked By (Optional Prerequisite)
             </label>
             <select
               value={upstreamBlockerId}
               onChange={e => setUpstreamBlockerId(e.target.value)}
-              className="w-full px-2.5 py-1.5 text-xs bg-[#fafaf9] border border-[#e5e3df] rounded-[6px] focus:outline-none focus:border-[#5645d4]"
+              className="w-full px-2.5 py-1.5 text-xs bg-surface-subtle border border-border rounded-[6px] focus:outline-none focus:border-accent text-text-primary"
             >
               <option value="">No prerequisite blocker</option>
               {issues.map(i => (
@@ -159,7 +159,7 @@ export const CreateIssueModal: React.FC = () => {
 
         {/* Description */}
         <div>
-          <label className="block text-xs font-semibold text-[#1a1a1a] mb-1">
+          <label className="block text-xs font-semibold text-text-primary mb-1">
             Description
           </label>
           <textarea
@@ -167,12 +167,12 @@ export const CreateIssueModal: React.FC = () => {
             value={description}
             onChange={e => setDescription(e.target.value)}
             placeholder="Acceptance criteria, architectural notes, or technical dependencies..."
-            className="w-full px-3 py-2 text-xs bg-[#fafaf9] border border-[#e5e3df] focus:border-[#5645d4] rounded-[6px] focus:outline-none focus:bg-white"
+            className="w-full px-3 py-2 text-xs bg-surface-subtle border border-border focus:border-accent rounded-[6px] focus:outline-none focus:bg-surface-base text-text-primary placeholder:text-text-muted"
           />
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#e5e3df]">
+        <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
           <Button
             type="button"
             variant="ghost"

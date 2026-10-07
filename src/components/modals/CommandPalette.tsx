@@ -102,7 +102,7 @@ export const CommandPalette: React.FC = () => {
         id: 'cmd_reset_demo',
         title: 'Reset demo data to initial state',
         category: 'ACTIONS',
-        icon: <RotateCcw className="w-4 h-4 text-red-500" />,
+        icon: <RotateCcw className="w-4 h-4 text-danger" />,
         onSelect: () => {
           setIsOpen(false);
           resetToDemoData();
@@ -308,12 +308,12 @@ export const CommandPalette: React.FC = () => {
 
       {/* Palette Container */}
       <div
-        className="relative z-10 w-full max-w-xl bg-white rounded-xl shadow-2xl border border-[#e5e3df] overflow-hidden animate-in fade-in zoom-in-95 duration-100 flex flex-col max-h-[480px]"
+        className="relative z-10 w-full max-w-xl bg-surface-base rounded-xl shadow-2xl border border-border overflow-hidden animate-in fade-in zoom-in-95 duration-100 flex flex-col max-h-[480px]"
         onClick={e => e.stopPropagation()}
       >
         {/* Search Input Bar */}
-        <div className="flex items-center px-4 py-3 border-b border-[#e5e3df] bg-[#fafaf9]">
-          <Search className="w-4 h-4 text-[#787671] mr-2.5 shrink-0" />
+        <div className="flex items-center px-4 py-3 border-b border-border bg-surface-subtle">
+          <Search className="w-4 h-4 text-text-muted mr-2.5 shrink-0" />
           <input
             ref={inputRef}
             type="text"
@@ -324,17 +324,17 @@ export const CommandPalette: React.FC = () => {
             }}
             onKeyDown={handleKeyDown}
             placeholder="Type a command, issue key (ENG-1), or filter... (Press Esc to close)"
-            className="w-full text-sm bg-transparent border-0 focus:outline-none text-[#1a1a1a] placeholder:text-[#a4a097]"
+            className="w-full text-sm bg-transparent border-0 focus:outline-none text-text-primary placeholder:text-text-muted"
           />
-          <kbd className="font-mono text-[10px] text-[#a4a097] border border-[#e5e3df] bg-white px-1.5 py-0.5 rounded shadow-2xs">
+          <kbd className="font-mono text-[10px] text-text-muted border border-border bg-surface-base px-1.5 py-0.5 rounded shadow-2xs">
             ESC
           </kbd>
         </div>
 
         {/* Command Results */}
-        <div className="flex-1 overflow-y-auto p-2 divide-y divide-[#e5e3df]/40">
+        <div className="flex-1 overflow-y-auto p-2 divide-y divide-border/40">
           {filteredCommands.length === 0 ? (
-            <div className="p-8 text-center text-xs text-[#787671]">
+            <div className="p-8 text-center text-xs text-text-muted">
               No commands or issues matching "{query}"
             </div>
           ) : (
@@ -347,14 +347,14 @@ export const CommandPalette: React.FC = () => {
                   onClick={() => cmd.onSelect()}
                   onMouseEnter={() => setSelectedIndex(idx)}
                   className={`flex items-center justify-between px-3 py-2 text-xs rounded-lg cursor-pointer transition-colors ${
-                    isSelected ? 'bg-[#5645d4]/10 text-[#1a1a1a]' : 'hover:bg-[#f6f5f4] text-[#37352f]'
+                    isSelected ? 'bg-accent-subtle text-text-primary' : 'hover:bg-surface-muted text-text-secondary'
                   }`}
                 >
                   <div className="flex items-center gap-2.5 truncate mr-2">
                     <span className="shrink-0">{cmd.icon}</span>
 
                     {cmd.issueKey && (
-                      <span className="font-mono font-bold text-[#5645d4]">
+                      <span className="font-mono font-bold text-accent">
                         {cmd.issueKey}
                       </span>
                     )}
@@ -369,11 +369,11 @@ export const CommandPalette: React.FC = () => {
                       <StatePill state={cmd.issueState} size="sm" showLabel={false} />
                     )}
                     {cmd.shortcut && (
-                      <kbd className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[#ede9e4] text-[#787671] border border-[#d4d0c9]">
+                      <kbd className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-surface-muted text-text-muted border border-border">
                         {cmd.shortcut}
                       </kbd>
                     )}
-                    <span className="text-[10px] uppercase font-semibold text-[#a4a097] tracking-wider">
+                    <span className="text-[10px] uppercase font-semibold text-text-muted tracking-wider">
                       {cmd.category}
                     </span>
                   </div>
@@ -384,9 +384,9 @@ export const CommandPalette: React.FC = () => {
         </div>
 
         {/* Footer Hint */}
-        <div className="px-4 py-2 border-t border-[#e5e3df] bg-[#fafaf9] flex items-center justify-between text-[11px] text-[#787671]">
+        <div className="px-4 py-2 border-t border-border bg-surface-subtle flex items-center justify-between text-[11px] text-text-muted">
           <span>
-            Use <kbd className="font-mono px-1 border rounded bg-white">↑</kbd> <kbd className="font-mono px-1 border rounded bg-white">↓</kbd> to navigate, <kbd className="font-mono px-1 border rounded bg-white">Enter</kbd> to select
+            Use <kbd className="font-mono px-1 border border-border rounded bg-surface-base">↑</kbd> <kbd className="font-mono px-1 border border-border rounded bg-surface-base">↓</kbd> to navigate, <kbd className="font-mono px-1 border border-border rounded bg-surface-base">Enter</kbd> to select
           </span>
           <span className="font-mono">Cmd + K</span>
         </div>

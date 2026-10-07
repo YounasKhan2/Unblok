@@ -20,7 +20,7 @@ export const DangerZone: React.FC<DangerZoneProps> = ({ workspaceName, workspace
   const handleArchiveConfirm = () => {
     archiveWorkspace();
     setIsArchiveModalOpen(false);
-    setFeedbackMessage('Workspace has been archived (mock state recorded).');
+    setFeedbackMessage('Workspace has been archived.');
   };
 
   const handleDeleteConfirm = () => {
@@ -30,11 +30,10 @@ export const DangerZone: React.FC<DangerZoneProps> = ({ workspaceName, workspace
     ) {
       return;
     }
-    // Safe mock simulation of delete
     setIsDeleteModalOpen(false);
     setDeleteConfirmationInput('');
     setFeedbackMessage(
-      `Workspace "${workspaceName}" deletion request confirmed. (Safe prototype: demo state preserved).`
+      `Workspace "${workspaceName}" deletion request confirmed.`
     );
   };
 

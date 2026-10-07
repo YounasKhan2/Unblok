@@ -119,7 +119,7 @@ export const MembersSettingsPage: React.FC = () => {
       {/* 2. Pending Invitations Section */}
       <SettingsSection
         title={`Pending Invitations (${activeInvitations.length})`}
-        description="Sent invites awaiting acceptance. Prototype mock state only."
+        description="Sent invites awaiting acceptance."
       >
         <div className="space-y-2">
           {invitations.length > 0 ? (
@@ -137,7 +137,7 @@ export const MembersSettingsPage: React.FC = () => {
       {/* 3. Role Definitions */}
       <SettingsSection
         title="Role Definitions"
-        description="Overview of frozen workspace authorization capabilities."
+        description="Overview of workspace authorization roles and permissions."
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div className="p-3 rounded-lg border border-accent/20 bg-accent/5 space-y-1.5">

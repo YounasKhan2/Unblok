@@ -101,13 +101,29 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // ==========================================
   // User Preferences State (Per-user)
   // ==========================================
-  const [preferences, setPreferences] = useState<UserPreferences>(() =>
-    loadUserPreferences(currentUser.id)
-  );
+  const [preferences, setPreferences] = useState<UserPreferences>(() => {
+    const loaded = loadUserPreferences(currentUser.id);
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlTheme = urlParams.get('theme')?.toUpperCase();
+      if (urlTheme === 'DARK' || urlTheme === 'LIGHT' || urlTheme === 'SYSTEM') {
+        return { ...loaded, theme: urlTheme as any };
+      }
+    }
+    return loaded;
+  });
 
-  // Keep preferences in sync when currentUser changes
+  // Keep preferences in sync when currentUser changes or URL search changes
   useEffect(() => {
     const loaded = loadUserPreferences(currentUser.id);
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlTheme = urlParams.get('theme')?.toUpperCase();
+      if (urlTheme === 'DARK' || urlTheme === 'LIGHT' || urlTheme === 'SYSTEM') {
+        setPreferences({ ...loaded, theme: urlTheme as any });
+        return;
+      }
+    }
     setPreferences(loaded);
   }, [currentUser.id]);
 

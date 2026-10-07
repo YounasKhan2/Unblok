@@ -16,7 +16,7 @@ export const StatusPicker: React.FC<StatusPickerProps> = ({ currentState, onSele
 
   return (
     <div className="py-1">
-      <div className="px-2 py-1 text-[10px] font-semibold tracking-wider text-[#787671] uppercase">
+      <div className="px-2 py-1 text-[10px] font-semibold tracking-wider text-text-muted uppercase">
         Change Status
       </div>
       <div className="space-y-0.5">
@@ -32,15 +32,15 @@ export const StatusPicker: React.FC<StatusPickerProps> = ({ currentState, onSele
                 onSelect(state);
                 onClose();
               }}
-              className={`w-full flex items-center justify-between px-2.5 py-1.5 text-xs rounded hover:bg-[#f6f5f4] cursor-pointer transition-colors ${
-                isSelected ? 'bg-[#ede9e4]/70 font-medium' : ''
+              className={`w-full flex items-center justify-between px-2.5 py-1.5 text-xs rounded hover:bg-surface-subtle cursor-pointer transition-colors ${
+                isSelected ? 'bg-surface-muted font-medium' : ''
               }`}
             >
               <div className="flex items-center gap-2">
-                <Icon className="w-3.5 h-3.5 text-[#37352f]" />
+                <Icon className="w-3.5 h-3.5 text-text-primary" />
                 <span className={config.textClass}>{config.label}</span>
               </div>
-              {isSelected && <Check className="w-3.5 h-3.5 text-[#5645d4]" />}
+              {isSelected && <Check className="w-3.5 h-3.5 text-accent" />}
             </button>
           );
         })}
@@ -64,7 +64,7 @@ export const PriorityPicker: React.FC<PriorityPickerProps> = ({
 
   return (
     <div className="py-1">
-      <div className="px-2 py-1 text-[10px] font-semibold tracking-wider text-[#787671] uppercase">
+      <div className="px-2 py-1 text-[10px] font-semibold tracking-wider text-text-muted uppercase">
         Change Priority
       </div>
       <div className="space-y-0.5">
@@ -80,15 +80,15 @@ export const PriorityPicker: React.FC<PriorityPickerProps> = ({
                 onSelect(priority);
                 onClose();
               }}
-              className={`w-full flex items-center justify-between px-2.5 py-1.5 text-xs rounded hover:bg-[#f6f5f4] cursor-pointer transition-colors ${
-                isSelected ? 'bg-[#ede9e4]/70 font-medium' : ''
+              className={`w-full flex items-center justify-between px-2.5 py-1.5 text-xs rounded hover:bg-surface-subtle cursor-pointer transition-colors ${
+                isSelected ? 'bg-surface-muted font-medium' : ''
               }`}
             >
               <div className="flex items-center gap-2">
                 <Icon className={`w-3.5 h-3.5 ${config.colorClass}`} />
-                <span className="text-[#1a1a1a]">{config.label}</span>
+                <span className="text-text-primary">{config.label}</span>
               </div>
-              {isSelected && <Check className="w-3.5 h-3.5 text-[#5645d4]" />}
+              {isSelected && <Check className="w-3.5 h-3.5 text-accent" />}
             </button>
           );
         })}
@@ -112,7 +112,7 @@ export const AssigneePicker: React.FC<AssigneePickerProps> = ({
 }) => {
   return (
     <div className="py-1 max-h-64 overflow-y-auto">
-      <div className="px-2 py-1 text-[10px] font-semibold tracking-wider text-[#787671] uppercase">
+      <div className="px-2 py-1 text-[10px] font-semibold tracking-wider text-text-muted uppercase">
         Assign To
       </div>
       <div className="space-y-0.5">
@@ -121,17 +121,17 @@ export const AssigneePicker: React.FC<AssigneePickerProps> = ({
             onSelect(undefined);
             onClose();
           }}
-          className={`w-full flex items-center justify-between px-2.5 py-1.5 text-xs rounded hover:bg-[#f6f5f4] cursor-pointer transition-colors ${
-            !currentAssigneeId ? 'bg-[#ede9e4]/70 font-medium' : ''
+          className={`w-full flex items-center justify-between px-2.5 py-1.5 text-xs rounded hover:bg-surface-subtle cursor-pointer transition-colors ${
+            !currentAssigneeId ? 'bg-surface-muted font-medium' : ''
           }`}
         >
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-full border border-dashed border-[#a4a097] flex items-center justify-center text-[10px] text-[#787671]">
+            <div className="w-5 h-5 rounded-full border border-dashed border-border-strong flex items-center justify-center text-[10px] text-text-muted">
               -
             </div>
-            <span className="text-[#787671]">Unassigned</span>
+            <span className="text-text-muted">Unassigned</span>
           </div>
-          {!currentAssigneeId && <Check className="w-3.5 h-3.5 text-[#5645d4]" />}
+          {!currentAssigneeId && <Check className="w-3.5 h-3.5 text-accent" />}
         </button>
 
         {users.map(user => {
@@ -143,18 +143,18 @@ export const AssigneePicker: React.FC<AssigneePickerProps> = ({
                 onSelect(user.id);
                 onClose();
               }}
-              className={`w-full flex items-center justify-between px-2.5 py-1.5 text-xs rounded hover:bg-[#f6f5f4] cursor-pointer transition-colors ${
-                isSelected ? 'bg-[#ede9e4]/70 font-medium' : ''
+              className={`w-full flex items-center justify-between px-2.5 py-1.5 text-xs rounded hover:bg-surface-subtle cursor-pointer transition-colors ${
+                isSelected ? 'bg-surface-muted font-medium' : ''
               }`}
             >
               <div className="flex items-center gap-2">
                 <Avatar user={user} size="sm" />
                 <div className="text-left">
-                  <div className="text-[#1a1a1a] font-medium leading-tight">{user.name}</div>
-                  <div className="text-[10px] text-[#787671]">{user.role}</div>
+                  <div className="text-text-primary font-medium leading-tight">{user.name}</div>
+                  <div className="text-[10px] text-text-muted">{user.role}</div>
                 </div>
               </div>
-              {isSelected && <Check className="w-3.5 h-3.5 text-[#5645d4]" />}
+              {isSelected && <Check className="w-3.5 h-3.5 text-accent" />}
             </button>
           );
         })}
