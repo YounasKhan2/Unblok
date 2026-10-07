@@ -4,7 +4,10 @@
  */
 
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { PublicLayout } from '../layouts/PublicLayout';
+import { HomePage } from '../../pages/public/HomePage';
+import { PublicPlaceholderPage } from '../../features/public/components/PublicPlaceholderPage';
 import { AppShellLayout } from '../layouts/AppShellLayout';
 import { MyWorkPage } from '../../pages/my-work/MyWorkPage';
 import { ProjectsDirectoryPage } from '../../pages/projects/ProjectsDirectoryPage';
@@ -32,20 +35,111 @@ import { MembersSettingsPage } from '../../pages/settings/MembersSettingsPage';
 import { TeamsSettingsPage } from '../../pages/settings/TeamsSettingsPage';
 import { IntegrationsSettingsPage } from '../../pages/settings/IntegrationsSettingsPage';
 import { PreferencesSettingsPage } from '../../pages/settings/PreferencesSettingsPage';
-import { Outlet } from 'react-router-dom';
 
 export const AppRouter: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route element={<AppShellLayout />}>
-          {/* 1. Root redirect */}
-          <Route path="/" element={<Navigate to="/my-work" replace />} />
+        {/* ========================================================= */}
+        {/* 1. PUBLIC ROUTE FAMILY (UX-11A / UX-11B)                  */}
+        {/* Uses PublicLayout with fixed theme, header, and footer    */}
+        {/* ========================================================= */}
+        <Route element={<PublicLayout />}>
+          {/* Public Homepage (UX-11B Primary Surface) */}
+          <Route path="/" element={<HomePage />} />
 
-          {/* 2. Primary UX-01 Page */}
+          {/* Placeholder Public Routes (Scheduled for UX-11C) */}
+          <Route
+            path="/product"
+            element={
+              <PublicPlaceholderPage
+                title="Product Overview"
+                category="Product"
+                description="The complete execution lifecycle: Execute, Unblock, Plan, Collaborate, and Understand."
+              />
+            }
+          />
+          <Route
+            path="/features"
+            element={
+              <PublicPlaceholderPage
+                title="Features Directory"
+                category="Capabilities"
+                description="Comprehensive technical directory covering DAG invariants, completion guards, slide-over triage, and execution insights."
+              />
+            }
+          />
+          <Route
+            path="/solutions"
+            element={
+              <PublicPlaceholderPage
+                title="Solutions"
+                category="Audience"
+                description="Purpose-built execution workflows for Engineering Teams, Engineering Leaders, and Consultancies."
+              />
+            }
+          />
+          <Route
+            path="/pricing"
+            element={
+              <PublicPlaceholderPage
+                title="Pricing & Packaging"
+                category="Commercial"
+                description="Dedicated commercial presentation surface. Packaging, tiers, and limits will be presented following business decisions."
+              />
+            }
+          />
+          <Route
+            path="/security"
+            element={
+              <PublicPlaceholderPage
+                title="Security & Architecture"
+                category="Trust"
+                description="Logical workspace boundaries, RBAC permissions, audit events, and production security direction."
+              />
+            }
+          />
+          <Route
+            path="/contact"
+            element={
+              <PublicPlaceholderPage
+                title="Contact Architecture Team"
+                category="Inquiry"
+                description="Get in touch with the Unblok team for architecture questions and deployment discussions."
+              />
+            }
+          />
+          <Route
+            path="/privacy"
+            element={
+              <PublicPlaceholderPage
+                title="Privacy Policy"
+                category="Legal"
+                description="Data privacy, processing principles, and customer data handling policies."
+              />
+            }
+          />
+          <Route
+            path="/terms"
+            element={
+              <PublicPlaceholderPage
+                title="Terms of Service"
+                category="Legal"
+                description="Platform terms, usage guidelines, and licensing specifications."
+              />
+            }
+          />
+        </Route>
+
+        {/* ========================================================= */}
+        {/* 2. PRIVATE APPLICATION SHELL (UX-00 through UX-10)        */}
+        {/* All existing authenticated execution routes preserved      */}
+        {/* ========================================================= */}
+        <Route element={<AppShellLayout />}>
+          {/* 1. Primary UX-01 Page */}
           <Route path="/my-work" element={<MyWorkPage />} />
 
-          {/* 3. Canonical Inbox Page (UX-06) */}
+          {/* 2. Canonical Inbox Page (UX-06) */}
           <Route path="/inbox" element={<InboxPage />} />
 
           {/* Projects Space (UX-02 Fully Implemented) */}
@@ -98,10 +192,7 @@ export const AppRouter: React.FC = () => {
 
           {/* Settings Space (UX-08 Canonical Implementation) */}
           <Route path="/settings" element={<Outlet />}>
-            {/* Direct /settings redirects based on role: ADMIN -> workspace, MEMBER/OBSERVER -> preferences */}
             <Route index element={<SettingsRedirectPage />} />
-
-            {/* Reusable Settings Shell Layout */}
             <Route element={<SettingsLayout />}>
               <Route
                 path="workspace"
@@ -139,7 +230,7 @@ export const AppRouter: React.FC = () => {
             </Route>
           </Route>
 
-          {/* Catch-all */}
+          {/* Catch-all for Application Shell */}
           <Route path="*" element={<Navigate to="/my-work" replace />} />
         </Route>
       </Routes>
