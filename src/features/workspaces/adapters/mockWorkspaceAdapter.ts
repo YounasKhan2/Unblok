@@ -50,7 +50,19 @@ export class MockWorkspaceAdapter implements WorkspaceAdapter {
         localStorage.setItem(STORAGE_WORKSPACES_KEY, JSON.stringify(this.seedWorkspaces));
         return this.seedWorkspaces.map(workspace => ({ ...workspace }));
       }
-      return JSON.parse(raw);
+      const parsed: Workspace[] = JSON.parse(raw);
+      const existingIds = new Set(parsed.map((w) => w.id));
+      const missing = SEED_WORKSPACES.filter((w) => !existingIds.has(w.id));
+      if (missing.length > 0 || !existingIds.has('ws_nexus')) {
+        const merged = [
+          ...SEED_WORKSPACES.filter((w) => w.id === 'ws_nexus'),
+          ...parsed.filter((w) => w.id !== 'ws_nexus'),
+          ...missing.filter((w) => w.id !== 'ws_nexus'),
+        ];
+        localStorage.setItem(STORAGE_WORKSPACES_KEY, JSON.stringify(merged));
+        return merged;
+      }
+      return parsed;
     } catch {
       return this.seedWorkspaces.map(workspace => ({ ...workspace }));
     }
@@ -80,7 +92,15 @@ export class MockWorkspaceAdapter implements WorkspaceAdapter {
           teamIds: membership.teamIds ? [...membership.teamIds] : undefined,
         }));
       }
-      return JSON.parse(raw);
+      const parsed: WorkspaceMembership[] = JSON.parse(raw);
+      const existingIds = new Set(parsed.map((m) => m.id));
+      const missing = SEED_MEMBERSHIPS.filter((m) => !existingIds.has(m.id));
+      if (missing.length > 0) {
+        const merged = [...parsed, ...missing];
+        localStorage.setItem(STORAGE_MEMBERSHIPS_KEY, JSON.stringify(merged));
+        return merged;
+      }
+      return parsed;
     } catch {
       return this.seedMemberships.map(membership => ({
         ...membership,
@@ -109,7 +129,23 @@ export class MockWorkspaceAdapter implements WorkspaceAdapter {
   }
 
   async getUserMemberships(userId: string): Promise<WorkspaceMembership[]> {
-    return this.memberships.filter((m) => m.userId === userId).map((m) => ({ ...m }));
+    const existing = this.memberships.filter((m) => m.userId === userId).map((m) => ({ ...m }));
+    if (existing.length > 0) return existing;
+
+    // Provide default active ADMIN membership in NEXUS Commerce for any custom authenticated user
+    const dynamicMembership: WorkspaceMembership = {
+      id: `mem_${userId.replace('usr_', '')}_nexus`,
+      workspaceId: 'ws_nexus',
+      workspaceName: 'NEXUS Commerce',
+      userId,
+      role: 'ADMIN',
+      status: 'ACTIVE',
+      joinedAt: '2026-04-01T08:00:00.000Z',
+      teamIds: ['team_cp'],
+    };
+    this.memberships.push(dynamicMembership);
+    this.saveMemberships();
+    return [dynamicMembership];
   }
 
   private memoryActiveWorkspace = new Map<string, string>();
@@ -120,9 +156,9 @@ export class MockWorkspaceAdapter implements WorkspaceAdapter {
         const val = localStorage.getItem(`${STORAGE_ACTIVE_WORKSPACE_PREFIX}${userId}`);
         if (val) return val;
       }
-      return this.memoryActiveWorkspace.get(userId) || null;
+      return this.memoryActiveWorkspace.get(userId) || 'ws_nexus';
     } catch {
-      return this.memoryActiveWorkspace.get(userId) || null;
+      return this.memoryActiveWorkspace.get(userId) || 'ws_nexus';
     }
   }
 

@@ -76,6 +76,9 @@ export function resolveActiveWorkspace(
     if (priorityA !== priorityB) {
       return priorityA - priorityB;
     }
+    // Prefer NEXUS Commerce as canonical primary workspace when roles are tied
+    if (a.workspaceId === 'ws_nexus') return -1;
+    if (b.workspaceId === 'ws_nexus') return 1;
     return a.workspaceId.localeCompare(b.workspaceId);
   });
 
