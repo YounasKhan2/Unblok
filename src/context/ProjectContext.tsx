@@ -27,7 +27,7 @@ import {
   INITIAL_CYCLES,
   INITIAL_MILESTONES,
   INITIAL_COMMENTS,
-} from '../data/mockData';
+} from '../data/nexusEnterprise';
 import {
   MULTI_WORKSPACE_INITIAL_ISSUES,
   MULTI_WORKSPACE_INITIAL_DEPENDENCIES,
@@ -436,7 +436,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, []);
 
   // UI state
-  const [selectedIssueId, setSelectedIssueId] = useState<string | null>(INITIAL_ISSUES[1].id);
+  const [selectedIssueId, setSelectedIssueId] = useState<string | null>(INITIAL_ISSUES[1]?.id ?? null);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(true);
   const [viewMode, setViewMode] = useState<ViewMode>('LIST');
   const [isNavCollapsed, setIsNavCollapsed] = useState<boolean>(false);

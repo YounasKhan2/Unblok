@@ -21,7 +21,7 @@ export const INITIAL_WORKSPACE_SETTINGS: WorkspaceSettings = {
 export const INITIAL_PENDING_INVITATIONS: PendingInvitation[] = [
   {
     id: 'inv_1',
-    email: 'jordan.lee@acme.internal',
+    email: 'contractor.qa@nexus.example',
     role: 'MEMBER',
     teamIds: ['team_eng'],
     invitedAt: '2026-10-04T10:15:00.000Z',
@@ -29,7 +29,7 @@ export const INITIAL_PENDING_INVITATIONS: PendingInvitation[] = [
   },
   {
     id: 'inv_2',
-    email: 'alex.morgan@acme.internal',
+    email: 'release.observer@nexus.example',
     role: 'OBSERVER',
     teamIds: ['team_web'],
     invitedAt: '2026-10-05T14:30:00.000Z',
@@ -37,7 +37,7 @@ export const INITIAL_PENDING_INVITATIONS: PendingInvitation[] = [
   },
   {
     id: 'inv_3',
-    email: 'sam.security@partner-audit.org',
+    email: 'audit.partner@nexus.example',
     role: 'OBSERVER',
     teamIds: [],
     invitedAt: '2026-10-06T09:00:00.000Z',
@@ -48,9 +48,9 @@ export const INITIAL_PENDING_INVITATIONS: PendingInvitation[] = [
 export const INITIAL_REPO_INTEGRATIONS: RepoIntegrationConfig[] = [
   {
     provider: 'GITHUB',
-    repositoryName: 'acme-corp/unblok-platform',
-    status: 'CONNECTED',
-    lastSyncText: 'Synced 14 minutes ago',
+    repositoryName: 'nexus-commerce/platform',
+    status: 'NOT_CONNECTED',
+    lastSyncText: 'Prototype only — not connected',
     commitLinkingEnabled: true,
     issueKeyPattern: '[A-Z]+-[0-9]+',
   },
@@ -67,9 +67,9 @@ export const INITIAL_WEBHOOKS: WebhookConfig[] = [
   {
     id: 'wh_deploy_sync',
     name: 'CI/CD Pipeline Dispatcher',
-    endpointUrl: 'https://ci-gateway.acme.internal/hooks/unblok-events',
+    endpointUrl: 'https://example.invalid/nexus/hooks',
     events: ['STATE_CHANGED', 'DEPENDENCY_ADDED', 'CYCLE_ASSIGNED'],
-    enabled: true,
+    enabled: false,
     mockSecret: 'whsec_demo_98f12a34b56c78d',
     createdAt: '2026-10-01T08:00:00.000Z',
   },
