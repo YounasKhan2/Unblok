@@ -104,8 +104,8 @@ export const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Create Team" maxWidth="md">
-      <form onSubmit={handleSubmit} className="p-6 space-y-4">
+    <Modal isOpen={isOpen} onClose={onClose} title="Create team" maxWidth="md">
+      <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-4">
         {!isAdmin && (
           <div
             role="alert"
@@ -128,7 +128,7 @@ export const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
 
         {/* Team Name */}
         <div>
-          <label className="block text-xs font-semibold text-text-primary mb-1">
+          <label className="block text-xs font-medium text-text-primary mb-1">
             Team name <span className="text-danger">*</span>
           </label>
           <input
@@ -148,7 +148,7 @@ export const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
 
         {/* Team Key */}
         <div>
-          <label className="block text-xs font-semibold text-text-primary mb-1">
+          <label className="block text-xs font-medium text-text-primary mb-1">
             Team key <span className="text-danger">*</span>
           </label>
           <input
@@ -196,7 +196,7 @@ export const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
 
         {/* Description */}
         <div>
-          <label className="block text-xs font-semibold text-text-primary mb-1">
+          <label className="block text-xs font-medium text-text-primary mb-1">
             Description <span className="text-text-muted font-normal">(optional)</span>
           </label>
           <textarea

@@ -70,7 +70,7 @@ export const EditTeamModal: React.FC<EditTeamModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={`Edit Team: ${team.name}`}
+      title={`Edit team: ${team.name}`}
       description="Update team attributes and member assignments."
       maxWidth="md"
     >

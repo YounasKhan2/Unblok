@@ -100,11 +100,11 @@ export const TeamHubPage: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-canvas select-none">
       {/* 1. Context Header */}
-      <div className="border-b border-border bg-surface-base px-6 py-4 shrink-0">
+      <div className="border-b border-border bg-surface-base px-4 py-2.5 shrink-0">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-start gap-3.5">
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shadow-xs shrink-0"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-semibold shrink-0"
               style={{ backgroundColor: team.color || '#5645d4' }}
             >
               {team.key.slice(0, 2)}
@@ -112,7 +112,7 @@ export const TeamHubPage: React.FC = () => {
 
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-base font-bold text-text-primary tracking-tight">
+                <h1 className="text-sm font-bold text-text-primary tracking-tight">
                   {team.name}
                 </h1>
                 <span className="font-mono text-xs px-2 py-0.5 rounded bg-surface-subtle text-text-muted border border-border">
@@ -148,7 +148,7 @@ export const TeamHubPage: React.FC = () => {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-6 mt-4 border-t border-border/60 pt-2 -mb-2">
+        <div className="flex items-center gap-5 mt-3 border-t border-border/60 pt-2 -mb-1 overflow-x-auto">
           {(['overview', 'issues', 'projects', 'planning'] as TeamHubTab[]).map((tab) => (
             <button
               key={tab}
@@ -165,17 +165,17 @@ export const TeamHubPage: React.FC = () => {
       </div>
 
       {/* 2. Tab Content */}
-      <div className="flex-1 overflow-y-auto min-h-0 p-6">
+      <div className="flex-1 overflow-y-auto min-h-0 p-4 sm:p-5">
         {/* TAB A: OVERVIEW */}
         {activeTab === 'overview' && (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* KPI Metric Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-3.5 rounded-xl border border-border bg-surface-base shadow-xs">
                 <span className="text-[11px] font-semibold text-text-muted uppercase tracking-wider block">
                   Active Issues
                 </span>
-                <span className="text-xl font-bold text-text-primary mt-1 block">
+                <span className="text-xl font-semibold text-text-primary mt-1 block">
                   {overview.activeIssues.length}
                 </span>
               </div>
@@ -193,7 +193,7 @@ export const TeamHubPage: React.FC = () => {
                 <span className="text-[11px] font-semibold text-text-muted uppercase tracking-wider block">
                   Owned Projects
                 </span>
-                <span className="text-xl font-bold text-text-primary mt-1 block">
+                <span className="text-xl font-semibold text-text-primary mt-1 block">
                   {overview.ownedProjects.length}
                 </span>
               </div>
@@ -202,7 +202,7 @@ export const TeamHubPage: React.FC = () => {
                 <span className="text-[11px] font-semibold text-text-muted uppercase tracking-wider block">
                   Team Members
                 </span>
-                <span className="text-xl font-bold text-text-primary mt-1 block">
+                <span className="text-xl font-semibold text-text-primary mt-1 block">
                   {overview.members.length}
                 </span>
               </div>
@@ -213,7 +213,7 @@ export const TeamHubPage: React.FC = () => {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-warning" />
-                  <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider">
+                  <h2 className="text-xs font-semibold text-text-primary uppercase tracking-wider">
                     Needs Attention
                   </h2>
                 </div>
@@ -265,7 +265,7 @@ export const TeamHubPage: React.FC = () => {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <FolderKanban className="w-4 h-4 text-accent" />
-                    <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider">
+                    <h2 className="text-xs font-semibold text-text-primary uppercase tracking-wider">
                       Owned Projects
                     </h2>
                   </div>
@@ -318,7 +318,7 @@ export const TeamHubPage: React.FC = () => {
               <div className="p-4 rounded-xl border border-border bg-surface-base shadow-xs">
                 <div className="flex items-center gap-2 mb-3">
                   <Calendar className="w-4 h-4 text-accent" />
-                  <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider">
+                  <h2 className="text-xs font-semibold text-text-primary uppercase tracking-wider">
                     Current Planning
                   </h2>
                 </div>
@@ -370,7 +370,7 @@ export const TeamHubPage: React.FC = () => {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4 text-accent" />
-                  <h2 className="text-xs font-bold text-text-primary uppercase tracking-wider">
+                  <h2 className="text-xs font-semibold text-text-primary uppercase tracking-wider">
                     Team Members ({overview.members.length})
                   </h2>
                 </div>
@@ -485,7 +485,7 @@ export const TeamHubPage: React.FC = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-sm font-bold text-text-primary">
+                <h2 className="text-xs font-semibold text-text-primary">
                   Owned Projects ({overview.ownedProjects.length})
                 </h2>
                 <p className="text-xs text-text-muted">
@@ -552,9 +552,9 @@ export const TeamHubPage: React.FC = () => {
 
         {/* TAB D: PLANNING */}
         {activeTab === 'planning' && (
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div>
-              <h2 className="text-sm font-bold text-text-primary">Team Planning</h2>
+              <h2 className="text-xs font-semibold text-text-primary">Team Planning</h2>
               <p className="text-xs text-text-muted">
                 Cycles, sprints, and strategic delivery milestones for {team.name}.
               </p>
@@ -562,7 +562,7 @@ export const TeamHubPage: React.FC = () => {
 
             {/* Cycles */}
             <div className="p-4 rounded-xl border border-border bg-surface-base shadow-xs">
-              <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider mb-3">
+              <h3 className="text-xs font-semibold text-text-primary uppercase tracking-wider mb-3">
                 Cycles
               </h3>
               {overview.cycles.length === 0 ? (
@@ -595,7 +595,7 @@ export const TeamHubPage: React.FC = () => {
 
             {/* Milestones */}
             <div className="p-4 rounded-xl border border-border bg-surface-base shadow-xs">
-              <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider mb-3">
+              <h3 className="text-xs font-semibold text-text-primary uppercase tracking-wider mb-3">
                 Milestones
               </h3>
               {overview.milestones.length === 0 ? (
