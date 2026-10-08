@@ -11,9 +11,9 @@ import { ArchiveTeamGuardResult } from './domain/teamAdministration';
 // ==========================================
 
 export interface WorkspaceSettings {
-  id: string; // Read-only identifier e.g. "ws_acme_eng"
-  name: string; // e.g. "Acme Platform Engineering"
-  key: string; // e.g. "ACME"
+  id: string; // Read-only identifier, e.g. "ws_nexus"
+  name: string; // e.g. "NEXUS Commerce"
+  key: string; // e.g. "NEX"
   description: string;
   defaultIssuePriority: IssuePriority;
   defaultInitialState: IssueState;

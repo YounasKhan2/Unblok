@@ -247,28 +247,28 @@ describe('UX-13 Multi-Workspace Contract Correction', () => {
 
     it('MockWorkspaceAdapter.updateMembershipStatus prevents transitioning final ACTIVE ADMIN to non-ACTIVE status', async () => {
       const adapter = new MockWorkspaceAdapter();
-      // Sarah is the sole active admin on ws_acme
+      // Sarah is the sole active admin in the NEXUS fixture.
       await expect(
-        adapter.updateMembershipStatus('mem_sarah_acme', 'SUSPENDED')
+        adapter.updateMembershipStatus('mem_nex_usr_sarah', 'SUSPENDED')
       ).rejects.toThrow(/Cannot remove or demote the last active Administrator/);
 
-      // Alex is a member on ws_acme and can be suspended
-      const memberUpdated = await adapter.updateMembershipStatus('mem_alex_acme', 'SUSPENDED');
+      // Alex is a member of the same workspace and can be suspended.
+      const memberUpdated = await adapter.updateMembershipStatus('mem_nex_usr_alex', 'SUSPENDED');
       expect(memberUpdated?.status).toBe('SUSPENDED');
 
-      // Add a second active admin to ws_acme
-      await adapter.acceptInvitation('ws_acme', 'usr_second_admin', 'ADMIN');
+      // Add a second active admin to NEXUS Commerce.
+      await adapter.acceptInvitation('ws_nexus', 'usr_second_admin', 'ADMIN');
 
       // Now Sarah is no longer the final active admin, so suspending Sarah is permitted
-      const adminUpdated = await adapter.updateMembershipStatus('mem_sarah_acme', 'SUSPENDED');
+      const adminUpdated = await adapter.updateMembershipStatus('mem_nex_usr_sarah', 'SUSPENDED');
       expect(adminUpdated?.status).toBe('SUSPENDED');
     });
 
     it('MockWorkspaceAdapter.removeMembership preserves existing last-admin removal protection', async () => {
       const adapter = new MockWorkspaceAdapter();
-      // Sole admin on ws_apex cannot be removed
+      // Sole admin on NEXUS Commerce cannot be removed
       await expect(
-        adapter.removeMembership('mem_alex_apex')
+        adapter.removeMembership('mem_nex_usr_sarah')
       ).rejects.toThrow(/Cannot remove or demote the last active Administrator/);
     });
   });

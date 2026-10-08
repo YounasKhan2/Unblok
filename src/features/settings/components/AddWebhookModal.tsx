@@ -100,7 +100,7 @@ export const AddWebhookModal: React.FC<AddWebhookModalProps> = ({ isOpen, onClos
             required
             value={url}
             onChange={e => setUrl(e.target.value)}
-            placeholder="https://api.acme.corp/webhooks/unblok"
+            placeholder="https://api.nexus.example/webhooks/unblok"
             className="w-full px-3 py-1.5 text-xs font-mono bg-surface-base border border-border text-text-primary rounded-md focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>

@@ -31,7 +31,7 @@ import { AppProviders } from '../../app/providers/AppProviders';
 
 describe('UX-14 Teammate Invitation Submission Correctness', () => {
   beforeEach(() => {
-    clearStoredOnboardingState('ws_acme');
+    clearStoredOnboardingState('ws_nexus');
   });
 
   describe('1. Email validation', () => {
@@ -215,12 +215,12 @@ describe('UX-14 Teammate Invitation Submission Correctness', () => {
         { email: 'alice@company.com', role: 'OBSERVER' as const },
       ];
 
-      saveStoredOnboardingState('ws_acme', {
+      saveStoredOnboardingState('ws_nexus', {
         inviteCompletedOrSkipped: true,
         sentInvitations: partiallySucceeded,
       });
 
-      const state = getStoredOnboardingState('ws_acme');
+      const state = getStoredOnboardingState('ws_nexus');
       expect(state?.inviteCompletedOrSkipped).toBe(true);
       expect(state?.sentInvitations).toHaveLength(1);
       expect(state?.sentInvitations?.[0]).toEqual({
@@ -233,7 +233,7 @@ describe('UX-14 Teammate Invitation Submission Correctness', () => {
   describe('5. Component UI & Honest prototype notice', () => {
     it('renders honest prototype notice and skip button without claiming real emails are sent', () => {
       const html = renderToString(
-        <AppProviders initialAuthStatus="authenticated" initialActiveWorkspaceId="ws_acme">
+        <AppProviders initialAuthStatus="authenticated" initialActiveWorkspaceId="ws_nexus">
           <MemoryRouter>
             <InviteTeammatesOnboardingPage />
           </MemoryRouter>
@@ -247,17 +247,17 @@ describe('UX-14 Teammate Invitation Submission Correctness', () => {
     });
 
     it('records skipped state when user skips invitations with zero previous invites', () => {
-      saveStoredOnboardingState('ws_acme', {
+      saveStoredOnboardingState('ws_nexus', {
         inviteCompletedOrSkipped: true,
       });
 
-      const state = getStoredOnboardingState('ws_acme');
+      const state = getStoredOnboardingState('ws_nexus');
       expect(state?.inviteCompletedOrSkipped).toBe(true);
       expect(state?.sentInvitations).toBeUndefined();
     });
 
     it('records sent invitations in stored state when all invitations succeed preserving roles', () => {
-      saveStoredOnboardingState('ws_acme', {
+      saveStoredOnboardingState('ws_nexus', {
         inviteCompletedOrSkipped: true,
         sentInvitations: [
           { email: 'alice@company.com', role: 'MEMBER' },
@@ -265,7 +265,7 @@ describe('UX-14 Teammate Invitation Submission Correctness', () => {
         ],
       });
 
-      const state = getStoredOnboardingState('ws_acme');
+      const state = getStoredOnboardingState('ws_nexus');
       expect(state?.inviteCompletedOrSkipped).toBe(true);
       expect(state?.sentInvitations).toHaveLength(2);
       expect(state?.sentInvitations?.[0]).toEqual({

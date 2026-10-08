@@ -26,23 +26,33 @@ const STORAGE_ACTIVE_WORKSPACE_PREFIX = 'unblok_active_workspace_id_';
 export class MockWorkspaceAdapter implements WorkspaceAdapter {
   private workspaces: Workspace[];
   private memberships: WorkspaceMembership[];
+  private seedWorkspaces: Workspace[];
+  private seedMemberships: WorkspaceMembership[];
 
-  constructor() {
+  constructor(seeds: { workspaces: Workspace[]; memberships: WorkspaceMembership[] } = {
+    workspaces: SEED_WORKSPACES,
+    memberships: SEED_MEMBERSHIPS,
+  }) {
+    this.seedWorkspaces = seeds.workspaces.map(workspace => ({ ...workspace }));
+    this.seedMemberships = seeds.memberships.map(membership => ({
+      ...membership,
+      teamIds: membership.teamIds ? [...membership.teamIds] : undefined,
+    }));
     this.workspaces = this.loadWorkspaces();
     this.memberships = this.loadMemberships();
   }
 
   private loadWorkspaces(): Workspace[] {
     try {
-      if (typeof localStorage === 'undefined') return [...SEED_WORKSPACES];
+      if (typeof localStorage === 'undefined') return this.seedWorkspaces.map(workspace => ({ ...workspace }));
       const raw = localStorage.getItem(STORAGE_WORKSPACES_KEY);
       if (!raw) {
-        localStorage.setItem(STORAGE_WORKSPACES_KEY, JSON.stringify(SEED_WORKSPACES));
-        return [...SEED_WORKSPACES];
+        localStorage.setItem(STORAGE_WORKSPACES_KEY, JSON.stringify(this.seedWorkspaces));
+        return this.seedWorkspaces.map(workspace => ({ ...workspace }));
       }
       return JSON.parse(raw);
     } catch {
-      return [...SEED_WORKSPACES];
+      return this.seedWorkspaces.map(workspace => ({ ...workspace }));
     }
   }
 
@@ -58,15 +68,24 @@ export class MockWorkspaceAdapter implements WorkspaceAdapter {
 
   private loadMemberships(): WorkspaceMembership[] {
     try {
-      if (typeof localStorage === 'undefined') return [...SEED_MEMBERSHIPS];
+      if (typeof localStorage === 'undefined') return this.seedMemberships.map(membership => ({
+        ...membership,
+        teamIds: membership.teamIds ? [...membership.teamIds] : undefined,
+      }));
       const raw = localStorage.getItem(STORAGE_MEMBERSHIPS_KEY);
       if (!raw) {
-        localStorage.setItem(STORAGE_MEMBERSHIPS_KEY, JSON.stringify(SEED_MEMBERSHIPS));
-        return [...SEED_MEMBERSHIPS];
+        localStorage.setItem(STORAGE_MEMBERSHIPS_KEY, JSON.stringify(this.seedMemberships));
+        return this.seedMemberships.map(membership => ({
+          ...membership,
+          teamIds: membership.teamIds ? [...membership.teamIds] : undefined,
+        }));
       }
       return JSON.parse(raw);
     } catch {
-      return [...SEED_MEMBERSHIPS];
+      return this.seedMemberships.map(membership => ({
+        ...membership,
+        teamIds: membership.teamIds ? [...membership.teamIds] : undefined,
+      }));
     }
   }
 
@@ -233,8 +252,11 @@ export class MockWorkspaceAdapter implements WorkspaceAdapter {
    * Reset adapter storage for testing
    */
   resetToSeeds(): void {
-    this.workspaces = [...SEED_WORKSPACES];
-    this.memberships = [...SEED_MEMBERSHIPS];
+    this.workspaces = this.seedWorkspaces.map(workspace => ({ ...workspace }));
+    this.memberships = this.seedMemberships.map(membership => ({
+      ...membership,
+      teamIds: membership.teamIds ? [...membership.teamIds] : undefined,
+    }));
     this.saveWorkspaces();
     this.saveMemberships();
   }

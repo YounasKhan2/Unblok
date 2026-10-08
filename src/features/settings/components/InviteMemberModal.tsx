@@ -72,7 +72,7 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
             required
             value={email}
             onChange={e => setEmail(e.target.value)}
-            placeholder="colleague@acme.corp"
+            placeholder="colleague@nexus.example"
             className="w-full px-3 py-1.5 text-xs bg-surface-base border border-border text-text-primary rounded-md focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>

@@ -268,11 +268,11 @@ describe('UX-14 Teams Feature Tests', () => {
       const html = renderToString(
         <AppProviders
           initialAuthStatus="authenticated"
-          initialActiveWorkspaceId="ws_acme"
-          initialWorkspaces={[{ id: 'ws_acme', name: 'Acme Corp', slug: 'acme', status: 'ACTIVE', createdAt: '' }]}
-          initialMemberships={[{ id: 'm1', workspaceId: 'ws_acme', userId: 'usr_1', role: 'ADMIN', status: 'ACTIVE' }]}
+          initialActiveWorkspaceId="ws_nexus"
+          initialWorkspaces={[{ id: 'ws_nexus', name: 'NEXUS Commerce', slug: 'nexus-commerce', status: 'ACTIVE', createdAt: '' }]}
+          initialMemberships={[{ id: 'mem_sarah_nexus', workspaceId: 'ws_nexus', userId: 'usr_sarah', role: 'ADMIN', status: 'ACTIVE' }]}
         >
-          <MemoryRouter initialEntries={['/teams/ENG']}>
+          <MemoryRouter initialEntries={['/teams/CORE']}>
             <Routes>
               <Route path="/teams/:teamKey" element={<TeamHubPage />} />
             </Routes>

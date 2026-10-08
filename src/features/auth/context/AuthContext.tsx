@@ -100,7 +100,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
     }
 
     if (isTestEnvironment) {
-      return SEED_PROTOTYPE_USERS['alex@unblok.dev'].user;
+      return SEED_PROTOTYPE_USERS['alex.rivera@nexus.example'].user;
     }
 
     return null;
@@ -119,7 +119,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
     }
 
     if (isTestEnvironment) {
-      return SEED_PROTOTYPE_USERS['alex@unblok.dev'].membership;
+      return SEED_PROTOTYPE_USERS['alex.rivera@nexus.example'].membership;
     }
 
     return null;
@@ -203,8 +203,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
   const restoreSession = useCallback(() => {
     setStatus('authenticated');
     if (!user) {
-      setUser(SEED_PROTOTYPE_USERS['alex@unblok.dev'].user);
-      setMembership(SEED_PROTOTYPE_USERS['alex@unblok.dev'].membership);
+      setUser(SEED_PROTOTYPE_USERS['alex.rivera@nexus.example'].user);
+      setMembership(SEED_PROTOTYPE_USERS['alex.rivera@nexus.example'].membership);
     }
   }, [user]);
 

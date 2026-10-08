@@ -10,7 +10,7 @@
 
 import { AuthenticatedUser, WorkspaceMembership } from '../types';
 import { User } from '../../../types';
-import { INITIAL_USERS } from '../../../data/mockData';
+import { INITIAL_USERS, NEXUS_OWNER_TEAM_ID } from '../../../data/nexusEnterprise';
 
 export function bridgeToLegacyUser(
   authUser: AuthenticatedUser,
@@ -33,8 +33,8 @@ export function bridgeToLegacyUser(
     id: authUser.id,
     name: authUser.name,
     email: authUser.email,
-    avatar: authUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces',
+    avatar: authUser.avatar || '',
     role: membership?.role || 'MEMBER',
-    teamId: membership?.teamIds?.[0] || 'team_eng',
+    teamId: membership?.teamIds?.[0] || NEXUS_OWNER_TEAM_ID,
   };
 }

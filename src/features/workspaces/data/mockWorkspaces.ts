@@ -1,6 +1,39 @@
-import type {Workspace,WorkspaceMembership} from '../types';
-import {INITIAL_USERS} from '../../../data/nexusEnterprise';
-export const SEED_WORKSPACES:Workspace[]=[{id:'ws_acme',name:'NEXUS Commerce',slug:'nexus-commerce',avatar:'🛒',createdAt:'2026-05-01T09:00:00.000Z',status:'ACTIVE'}];
-export const SEED_MEMBERSHIPS:WorkspaceMembership[]=INITIAL_USERS.map((u,i)=>({id:'mem_nex_'+u.id,workspaceId:'ws_acme',workspaceName:'NEXUS Commerce',userId:u.id,role:i===0?'ADMIN':i===4?'OBSERVER':'MEMBER',status:'ACTIVE',joinedAt:'2026-05-01T09:00:00.000Z',teamIds:u.teamIds||[]}));
-export const SEED_USERS:Record<string,{id:string;name:string;email:string;avatar?:string}>=Object.fromEntries(INITIAL_USERS.map(u=>[u.id,{id:u.id,name:u.name,email:u.email,avatar:u.avatar}]));
-export const getMembershipsForUser=(userId:string):WorkspaceMembership[]=>SEED_MEMBERSHIPS.filter(m=>m.userId===userId);
+import type { Workspace, WorkspaceMembership } from '../types';
+import {
+  INITIAL_USERS,
+  NEXUS_REFERENCE_DATE,
+  NEXUS_WORKSPACE_ID,
+} from '../../../data/nexusEnterprise';
+
+const fixtureCreatedAt = `${NEXUS_REFERENCE_DATE}T09:00:00.000Z`;
+
+export const SEED_WORKSPACES: Workspace[] = [{
+  id: NEXUS_WORKSPACE_ID,
+  name: 'NEXUS Commerce',
+  slug: 'nexus-commerce',
+  avatar: '🛒',
+  createdAt: '2026-04-11T09:00:00.000Z',
+  status: 'ACTIVE',
+}];
+
+export const SEED_MEMBERSHIPS: WorkspaceMembership[] = INITIAL_USERS.map(user => ({
+  id: `mem_nex_${user.id}`,
+  workspaceId: NEXUS_WORKSPACE_ID,
+  workspaceName: 'NEXUS Commerce',
+  userId: user.id,
+  role: user.role,
+  status: 'ACTIVE',
+  joinedAt: fixtureCreatedAt,
+  teamIds: user.teamIds || [],
+}));
+
+export const SEED_USERS: Record<string, { id: string; name: string; email: string; avatar?: string }> =
+  Object.fromEntries(INITIAL_USERS.map(user => [user.id, {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    avatar: user.avatar,
+  }]));
+
+export const getMembershipsForUser = (userId: string): WorkspaceMembership[] =>
+  SEED_MEMBERSHIPS.filter(membership => membership.userId === userId);

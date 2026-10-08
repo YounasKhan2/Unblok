@@ -20,6 +20,7 @@ import {
   ChevronRight,
   HelpCircle,
   RotateCcw,
+  History,
   ShieldAlert,
   ChevronsUpDown,
   Check,
@@ -28,6 +29,10 @@ import { useProject } from '../../context/ProjectContext';
 import { useCollaboration } from '../../features/collaboration/context/CollaborationContext';
 import { useKeyboard } from '../../context/KeyboardContext';
 import { Avatar } from '../ui/Avatar';
+import {
+  getLatestNexusFixtureBackup,
+  restorePrototypeBackup,
+} from '../../context/nexusFixtureReset';
 
 export const NavigationRail: React.FC = () => {
   const location = useLocation();
@@ -43,10 +48,30 @@ export const NavigationRail: React.FC = () => {
   } = useProject();
 
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [recoveryError, setRecoveryError] = useState<string | null>(null);
   const { unreadCount } = useCollaboration();
   const { setIsHelpModalOpen } = useKeyboard();
 
   const totalBlockedCount = issues.filter(i => getIssueBlockerStatus(i.id).isBlocked).length;
+  const latestBackupKey = typeof window === 'undefined'
+    ? null
+    : getLatestNexusFixtureBackup(window.localStorage);
+
+  const restoreLastBackup = () => {
+    if (typeof window === 'undefined' || !latestBackupKey) return;
+    const confirmed = window.confirm(
+      `Restore the backed-up prototype state from ${latestBackupKey}? Current NEXUS changes will be backed up so they can be recovered.`
+    );
+    if (!confirmed) return;
+
+    try {
+      const undoBackupKey = restorePrototypeBackup(window.localStorage, latestBackupKey, true);
+      console.info(`Prototype state restored. Current NEXUS state backup: ${undoBackupKey}`);
+      window.location.reload();
+    } catch (error) {
+      setRecoveryError(error instanceof Error ? error.message : 'Could not restore the prototype backup.');
+    }
+  };
 
   const navItems = [
     {
@@ -245,11 +270,26 @@ export const NavigationRail: React.FC = () => {
         <button
           onClick={resetToDemoData}
           className="w-full flex items-center gap-2.5 px-2.5 py-1.5 text-text-muted hover:text-danger hover:bg-danger-subtle rounded-[5px] transition-colors cursor-pointer"
-          title="Reset to initial seed data"
+          title="Back up current state and reset to the NEXUS fixture"
         >
           <RotateCcw className="w-4 h-4 shrink-0" />
-          {!isNavCollapsed && <span>Reset Demo State</span>}
+          {!isNavCollapsed && <span>Reset to NEXUS</span>}
         </button>
+        {latestBackupKey && (
+          <button
+            onClick={restoreLastBackup}
+            className="w-full flex items-center gap-2.5 px-2.5 py-1.5 text-text-muted hover:text-text-primary hover:bg-surface-muted rounded-[5px] transition-colors cursor-pointer"
+            title="Restore the most recent pre-reset backup"
+          >
+            <History className="w-4 h-4 shrink-0" />
+            {!isNavCollapsed && <span>Restore previous state</span>}
+          </button>
+        )}
+        {recoveryError && (
+          <p className="px-2.5 py-1 text-[10px] text-danger" role="alert">
+            {recoveryError}
+          </p>
+        )}
 
         {/* Current User Card & Role Switcher Popover */}
         <div className="pt-1 border-t border-border mt-1 relative">

@@ -30,7 +30,7 @@ export const IntegrationCard: React.FC<IntegrationCardProps> = ({ config, icon }
     } else {
       updateRepoIntegration(config.provider, {
         status: 'CONNECTED',
-        repository: repoInput || (config.provider === 'GITHUB' ? 'acme-corp/unblok-core' : 'acme-group/infra-ops'),
+        repository: repoInput || (config.provider === 'GITHUB' ? 'nexus-commerce/unblok-core' : 'nexus-commerce/infra-ops'),
         lastSync: 'Just now',
         recognizeKeysInCommits: true,
       });

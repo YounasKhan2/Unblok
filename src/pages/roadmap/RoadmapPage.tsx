@@ -23,9 +23,9 @@ export const RoadmapPage: React.FC = () => {
   const isObserver = !canMutatePlanning(currentUser.role);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
 
-  // Default window starts on Monday of the current reference week (e.g. 2026-09-28)
+  // Keep the demo window aligned with the fixed NEXUS fixture week.
   const [windowStartDate, setWindowStartDate] = useState<Date>(
-    () => new Date('2026-09-28T00:00:00.000Z')
+    () => new Date('2026-10-05T00:00:00.000Z')
   );
 
   // Read URL filter state
@@ -101,7 +101,7 @@ export const RoadmapPage: React.FC = () => {
 
   // Window date manipulation
   const scheduleDays = useMemo(
-    () => generateScheduleDays(windowStartDate, 7, new Date('2026-10-04T00:00:00.000Z')),
+    () => generateScheduleDays(windowStartDate, 7, new Date('2026-10-08T00:00:00.000Z')),
     [windowStartDate]
   );
 
@@ -116,7 +116,7 @@ export const RoadmapPage: React.FC = () => {
   };
 
   const handleToday = () => {
-    setWindowStartDate(new Date('2026-09-28T00:00:00.000Z'));
+    setWindowStartDate(new Date('2026-10-05T00:00:00.000Z'));
   };
 
   // Select roadmap projection

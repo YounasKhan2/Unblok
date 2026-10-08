@@ -6,10 +6,10 @@
 import { WorkspaceSettings } from '../types';
 
 export const DEFAULT_WORKSPACE_SETTINGS: WorkspaceSettings = {
-  id: 'ws_acme_eng',
-  name: 'Acme Platform Engineering',
-  key: 'ACME',
-  description: 'Core platform services, client applications, and site reliability infrastructure.',
+  id: 'ws_nexus',
+  name: 'NEXUS Commerce',
+  key: 'NEX',
+  description: 'Omnichannel commerce platform spanning storefront, services, payments, and reliability.',
   defaultIssuePriority: 'MEDIUM',
   defaultInitialState: 'TODO',
   workflowRules: {

@@ -23,114 +23,117 @@ import {
  * Isolated in adapter infrastructure — never hardcoded into client form copy.
  */
 export const SEED_PROTOTYPE_USERS: Record<string, { user: AuthenticatedUser; membership: WorkspaceMembership }> = {
-  'alex@unblok.dev': {
+  'alex.rivera@nexus.example': {
     user: {
       id: 'usr_alex',
       name: 'Alex Rivera',
-      email: 'alex@unblok.dev',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=faces',
+      email: 'alex.rivera@nexus.example',
     },
     membership: {
-      workspaceId: 'ws_acme',
-      workspaceName: 'Acme Core Platform',
+      workspaceId: 'ws_nexus',
+      workspaceName: 'NEXUS Commerce',
       userId: 'usr_alex',
       role: 'MEMBER',
       membershipStatus: 'ACTIVE',
       teamIds: ['team_eng'],
     },
   },
-  'sarah@unblok.dev': {
+  'sarah.chen@nexus.example': {
     user: {
       id: 'usr_sarah',
       name: 'Sarah Chen',
-      email: 'sarah@unblok.dev',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=faces',
+      email: 'sarah.chen@nexus.example',
     },
     membership: {
-      workspaceId: 'ws_acme',
-      workspaceName: 'Acme Core Platform',
+      workspaceId: 'ws_nexus',
+      workspaceName: 'NEXUS Commerce',
       userId: 'usr_sarah',
       role: 'ADMIN',
       membershipStatus: 'ACTIVE',
       teamIds: ['team_eng', 'team_web'],
     },
   },
-  'marcus@unblok.dev': {
+  'marcus.vance@nexus.example': {
     user: {
       id: 'usr_marcus',
       name: 'Marcus Vance',
-      email: 'marcus@unblok.dev',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=faces',
+      email: 'marcus.vance@nexus.example',
     },
     membership: {
-      workspaceId: 'ws_acme',
-      workspaceName: 'Acme Core Platform',
+      workspaceId: 'ws_nexus',
+      workspaceName: 'NEXUS Commerce',
       userId: 'usr_marcus',
       role: 'MEMBER',
       membershipStatus: 'ACTIVE',
-      teamIds: ['team_eng'],
+      teamIds: ['team_web'],
     },
   },
-  'elena@unblok.dev': {
+  'elena.rostova@nexus.example': {
     user: {
       id: 'usr_elena',
       name: 'Elena Rostova',
-      email: 'elena@unblok.dev',
-      avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop&crop=faces',
+      email: 'elena.rostova@nexus.example',
     },
     membership: {
-      workspaceId: 'ws_acme',
-      workspaceName: 'Acme Core Platform',
+      workspaceId: 'ws_nexus',
+      workspaceName: 'NEXUS Commerce',
       userId: 'usr_elena',
-      role: 'OBSERVER',
+      role: 'MEMBER',
       membershipStatus: 'ACTIVE',
       teamIds: ['team_inf', 'team_eng'],
     },
   },
 };
 
+const legacyPrototypeEmailAliases: Record<string, string> = {
+  'alex@unblok.dev': 'alex.rivera@nexus.example',
+  'sarah@unblok.dev': 'sarah.chen@nexus.example',
+  'marcus@unblok.dev': 'marcus.vance@nexus.example',
+  'elena@unblok.dev': 'elena.rostova@nexus.example',
+};
+
 export const DETERMINISTIC_INVITATIONS: Record<string, InvitationDetails> = {
   'inv_existing_user': {
     token: 'inv_existing_user',
     status: 'VALID',
-    workspaceName: 'Acme Core Platform',
-    workspaceId: 'ws_acme',
-    invitedEmail: 'alex@unblok.dev',
+    workspaceName: 'NEXUS Commerce',
+    workspaceId: 'ws_nexus',
+    invitedEmail: 'alex.rivera@nexus.example',
     intendedRole: 'MEMBER',
-    teamName: 'Core Architecture',
+    teamName: 'Commerce Platform',
     inviterName: 'Sarah Chen',
     isExistingUser: true,
   },
   'invite-existing-member': {
     token: 'invite-existing-member',
     status: 'VALID',
-    workspaceName: 'Acme Core Platform',
-    workspaceId: 'ws_acme',
-    invitedEmail: 'alex@unblok.dev',
+    workspaceName: 'NEXUS Commerce',
+    workspaceId: 'ws_nexus',
+    invitedEmail: 'alex.rivera@nexus.example',
     intendedRole: 'MEMBER',
-    teamName: 'Core Architecture',
+    teamName: 'Commerce Platform',
     inviterName: 'Sarah Chen',
     isExistingUser: true,
   },
   'inv_new_user': {
     token: 'inv_new_user',
     status: 'VALID',
-    workspaceName: 'Apex Robotics',
-    workspaceId: 'ws_apex',
-    invitedEmail: 'jordan.taylor@techcorp.io',
+    workspaceName: 'NEXUS Commerce',
+    workspaceId: 'ws_nexus',
+    invitedEmail: 'jordan.taylor@nexus.example',
     intendedRole: 'MEMBER',
-    teamName: 'Platform Core',
+    teamName: 'Commerce Services',
     inviterName: 'Marcus Vance',
     isExistingUser: false,
   },
   'invite-new-member': {
     token: 'invite-new-member',
     status: 'VALID',
-    workspaceName: 'Apex Robotics',
-    workspaceId: 'ws_apex',
-    invitedEmail: 'jordan.taylor@techcorp.io',
+    workspaceName: 'NEXUS Commerce',
+    workspaceId: 'ws_nexus',
+    invitedEmail: 'jordan.taylor@nexus.example',
     intendedRole: 'MEMBER',
-    teamName: 'Platform Core',
+    teamName: 'Commerce Services',
     inviterName: 'Marcus Vance',
     isExistingUser: false,
   },
@@ -153,12 +156,12 @@ export const DETERMINISTIC_INVITATIONS: Record<string, InvitationDetails> = {
   'inv_accepted': {
     token: 'inv_accepted',
     status: 'ACCEPTED',
-    workspaceName: 'Acme Core Platform',
+    workspaceName: 'NEXUS Commerce',
   },
   'invite-accepted': {
     token: 'invite-accepted',
     status: 'ACCEPTED',
-    workspaceName: 'Acme Core Platform',
+    workspaceName: 'NEXUS Commerce',
   },
 };
 
@@ -180,8 +183,9 @@ export class MockAuthAdapter implements AuthAdapter {
     }
 
     // Check if known prototype seed account
-    if (SEED_PROTOTYPE_USERS[normalizedEmail]) {
-      const { user, membership } = SEED_PROTOTYPE_USERS[normalizedEmail];
+    const prototypeEmail = legacyPrototypeEmailAliases[normalizedEmail] ?? normalizedEmail;
+    if (SEED_PROTOTYPE_USERS[prototypeEmail]) {
+      const { user, membership } = SEED_PROTOTYPE_USERS[prototypeEmail];
       return {
         success: true,
         user,
@@ -201,8 +205,8 @@ export class MockAuthAdapter implements AuthAdapter {
     };
 
     const membership: WorkspaceMembership = {
-      workspaceId: 'ws_acme',
-      workspaceName: 'Acme Core Platform',
+      workspaceId: 'ws_nexus',
+      workspaceName: 'NEXUS Commerce',
       userId: generatedId,
       role: 'MEMBER',
       membershipStatus: 'ACTIVE',
@@ -309,8 +313,8 @@ export class MockAuthAdapter implements AuthAdapter {
 
     return {
       success: true,
-      workspaceId: invitation.workspaceId || 'ws_acme',
-      workspaceName: invitation.workspaceName || 'Acme Core Platform',
+      workspaceId: invitation.workspaceId || 'ws_nexus',
+      workspaceName: invitation.workspaceName || 'NEXUS Commerce',
     };
   }
 }

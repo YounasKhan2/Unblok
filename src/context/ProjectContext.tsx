@@ -27,17 +27,8 @@ import {
   INITIAL_CYCLES,
   INITIAL_MILESTONES,
   INITIAL_COMMENTS,
+  NEXUS_WORKSPACE_ID,
 } from '../data/nexusEnterprise';
-import {
-  MULTI_WORKSPACE_INITIAL_ISSUES,
-  MULTI_WORKSPACE_INITIAL_DEPENDENCIES,
-  MULTI_WORKSPACE_INITIAL_TEAMS,
-  MULTI_WORKSPACE_INITIAL_PROJECTS,
-  MULTI_WORKSPACE_INITIAL_ACTIVITIES,
-  MULTI_WORKSPACE_INITIAL_CYCLES,
-  MULTI_WORKSPACE_INITIAL_MILESTONES,
-  MULTI_WORKSPACE_INITIAL_COMMENTS,
-} from '../features/workspaces/data/multiWorkspaceMockData';
 import { useWorkspace } from '../features/workspaces/context/WorkspaceContext';
 import { canTransition } from '../domain/lifecycle';
 import {
@@ -65,8 +56,8 @@ import {
 import {
   UNBLOK_STORAGE_NAMESPACE,
   migrateStorageNamespace,
-  clearAllStoredEntities,
 } from './storageMigration';
+import { resetPrototypeToNexus } from './nexusFixtureReset';
 import {
   executeAddComment,
   executeDeleteComment,
@@ -300,7 +291,7 @@ function migrateLegacyStorageRecords<T extends { id: string; workspaceId?: strin
   seeds: T[]
 ): T[] {
   if (!stored) return seeds;
-  const migrated = stored.map((item) => (item.workspaceId ? item : { ...item, workspaceId: 'ws_acme' }));
+  const migrated = stored.map((item) => (item.workspaceId ? item : { ...item, workspaceId: NEXUS_WORKSPACE_ID }));
   const storedIds = new Set(migrated.map((item) => item.id));
   const missingSeeds = seeds.filter((item) => !storedIds.has(item.id));
   return missingSeeds.length > 0 ? [...migrated, ...missingSeeds] : migrated;
@@ -318,7 +309,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }
 
   const activeWorkspaceId = isStandaloneLegacyTest
-    ? 'ws_acme'
+    ? NEXUS_WORKSPACE_ID
     : (workspaceContext?.activeWorkspaceId ?? null);
   const activeMembershipRole = isStandaloneLegacyTest
     ? undefined
@@ -327,14 +318,14 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     ? null
     : (workspaceContext?.activeWorkspace ?? null);
 
-  // Load master states from localStorage or initialize with multi-workspace seeds
+  // Load persisted state or initialize with the canonical NEXUS fixture.
   const [masterIssues, setMasterIssues] = useState<Issue[]>(() => {
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_issues`);
       const parsed = stored ? JSON.parse(stored) : null;
-      return migrateLegacyStorageRecords(parsed, MULTI_WORKSPACE_INITIAL_ISSUES);
+      return migrateLegacyStorageRecords(parsed, INITIAL_ISSUES);
     } catch {
-      return MULTI_WORKSPACE_INITIAL_ISSUES;
+      return INITIAL_ISSUES;
     }
   });
 
@@ -342,9 +333,9 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_dependencies`);
       const parsed = stored ? JSON.parse(stored) : null;
-      return migrateLegacyStorageRecords(parsed, MULTI_WORKSPACE_INITIAL_DEPENDENCIES);
+      return migrateLegacyStorageRecords(parsed, INITIAL_DEPENDENCIES);
     } catch {
-      return MULTI_WORKSPACE_INITIAL_DEPENDENCIES;
+      return INITIAL_DEPENDENCIES;
     }
   });
 
@@ -352,9 +343,9 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_projects`);
       const parsed = stored ? JSON.parse(stored) : null;
-      return migrateLegacyStorageRecords(parsed, MULTI_WORKSPACE_INITIAL_PROJECTS);
+      return migrateLegacyStorageRecords(parsed, INITIAL_PROJECTS);
     } catch {
-      return MULTI_WORKSPACE_INITIAL_PROJECTS;
+      return INITIAL_PROJECTS;
     }
   });
 
@@ -362,9 +353,9 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_activities`);
       const parsed = stored ? JSON.parse(stored) : null;
-      return migrateLegacyStorageRecords(parsed, MULTI_WORKSPACE_INITIAL_ACTIVITIES);
+      return migrateLegacyStorageRecords(parsed, INITIAL_ACTIVITIES);
     } catch {
-      return MULTI_WORKSPACE_INITIAL_ACTIVITIES;
+      return INITIAL_ACTIVITIES;
     }
   });
 
@@ -372,9 +363,9 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_teams`);
       const parsed = stored ? JSON.parse(stored) : null;
-      return migrateLegacyStorageRecords(parsed, MULTI_WORKSPACE_INITIAL_TEAMS);
+      return migrateLegacyStorageRecords(parsed, INITIAL_TEAMS);
     } catch {
-      return MULTI_WORKSPACE_INITIAL_TEAMS;
+      return INITIAL_TEAMS;
     }
   });
 
@@ -464,9 +455,9 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_cycles`);
       const parsed = stored ? JSON.parse(stored) : null;
-      return migrateLegacyStorageRecords(parsed, MULTI_WORKSPACE_INITIAL_CYCLES);
+      return migrateLegacyStorageRecords(parsed, INITIAL_CYCLES);
     } catch {
-      return MULTI_WORKSPACE_INITIAL_CYCLES;
+      return INITIAL_CYCLES;
     }
   });
 
@@ -475,9 +466,9 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_milestones`);
       const parsed = stored ? JSON.parse(stored) : null;
-      return migrateLegacyStorageRecords(parsed, MULTI_WORKSPACE_INITIAL_MILESTONES);
+      return migrateLegacyStorageRecords(parsed, INITIAL_MILESTONES);
     } catch {
-      return MULTI_WORKSPACE_INITIAL_MILESTONES;
+      return INITIAL_MILESTONES;
     }
   });
 
@@ -486,9 +477,9 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       const stored = localStorage.getItem(`${STORAGE_KEY}_comments`);
       const parsed = stored ? JSON.parse(stored) : null;
-      return migrateLegacyStorageRecords(parsed, MULTI_WORKSPACE_INITIAL_COMMENTS);
+      return migrateLegacyStorageRecords(parsed, INITIAL_COMMENTS);
     } catch {
-      return MULTI_WORKSPACE_INITIAL_COMMENTS;
+      return INITIAL_COMMENTS;
     }
   });
 
@@ -503,7 +494,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const setComments = setMasterComments;
 
   // Section 10 & 11: Active Workspace Scoped Projections
-  // When activeWorkspaceId is null/invalid: projections must be strictly empty (no Acme leakage)
+  // When activeWorkspaceId is null/invalid: projections must be strictly empty (no NEXUS leakage).
   const issues = useMemo(
     () => (!activeWorkspaceId ? [] : masterIssues.filter((i) => Boolean(i.workspaceId) && i.workspaceId === activeWorkspaceId)),
     [masterIssues, activeWorkspaceId]
@@ -1545,7 +1536,7 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (!upstream || !downstream) return false;
 
       // Section 12: Invariant Check - Cross-workspace dependencies are strictly forbidden
-      // Missing or malformed workspaceIds must NOT silently default to Acme
+      // Missing or malformed workspaceIds must not silently default to NEXUS.
       if (!upstream.workspaceId || !downstream.workspaceId) {
         console.warn('Cross-workspace dependency forbidden: missing workspaceId on entity');
         return false;
@@ -1788,29 +1779,21 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     [canMutate, activeWorkspaceId, effectiveCurrentUser.role, projects, teams, masterProjects]
   );
 
-  // Reset demo data
+  // Reset only after explicit confirmation; the helper snapshots all app-owned browser state.
   const resetToDemoData = useCallback(() => {
-    clearAllStoredEntities();
+    if (typeof window === 'undefined') return;
+    const confirmed = window.confirm(
+      'Replace the current prototype state with the NEXUS fixture? A recoverable backup will be created first, and you may need to log in again after reload.'
+    );
+    if (!confirmed) return;
 
-    setIssues(MULTI_WORKSPACE_INITIAL_ISSUES);
-    setDependencies(MULTI_WORKSPACE_INITIAL_DEPENDENCIES);
-    setProjects(MULTI_WORKSPACE_INITIAL_PROJECTS);
-    setActivities(MULTI_WORKSPACE_INITIAL_ACTIVITIES);
-    setSavedViews(DEFAULT_SAVED_VIEWS);
-    setCycles(MULTI_WORKSPACE_INITIAL_CYCLES);
-    setMilestones(MULTI_WORKSPACE_INITIAL_MILESTONES);
-    setComments(MULTI_WORKSPACE_INITIAL_COMMENTS);
-    setTeams(MULTI_WORKSPACE_INITIAL_TEAMS);
-    setUsers(normalizeUsersList(INITIAL_USERS));
-    setCurrentUser(normalizeUserMemberships(INITIAL_USERS[0]));
-    setSelectedIssueId(MULTI_WORKSPACE_INITIAL_ISSUES[1]?.id || null);
-    setFilters(initialFilters);
-
-    // CollaborationProvider owns user-scoped receipt state outside this
-    // context. Notify it after storage is cleared so reset restores the
-    // canonical demo Inbox instead of retaining stale in-memory receipts.
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('unblok:demo-reset'));
+    try {
+      const { backedUpKey } = resetPrototypeToNexus(window.localStorage, true);
+      console.info(`NEXUS fixture reset complete. Previous state backup: ${backedUpKey}`);
+      window.location.reload();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown storage error';
+      window.alert(`NEXUS reset failed. Your previous state may still be available in a backup. ${message}`);
     }
   }, []);
 

@@ -52,18 +52,18 @@ import {
 } from '../domain/workspaceIsolation';
 
 import {
-  SEED_WORKSPACES,
-  SEED_MEMBERSHIPS,
-  SEED_USERS,
-  getMembershipsForUser,
-} from '../data/mockWorkspaces';
+  CONTRACT_SEED_WORKSPACES as SEED_WORKSPACES,
+  CONTRACT_SEED_MEMBERSHIPS as SEED_MEMBERSHIPS,
+  CONTRACT_SEED_USERS as SEED_USERS,
+  getContractMembershipsForUser as getMembershipsForUser,
+} from './fixtures/workspaceContractFixtures';
 
 import {
   MULTI_WORKSPACE_INITIAL_PROJECTS,
   MULTI_WORKSPACE_INITIAL_TEAMS,
   MULTI_WORKSPACE_INITIAL_ISSUES,
   MULTI_WORKSPACE_INITIAL_DEPENDENCIES,
-} from '../data/multiWorkspaceMockData';
+} from './fixtures/multiWorkspaceContractFixtures';
 
 import { MockWorkspaceAdapter } from '../adapters/mockWorkspaceAdapter';
 import { WorkspaceUnavailable } from '../components/WorkspaceUnavailable';
@@ -399,7 +399,10 @@ describe('UX-13: Workspace Lifecycle & Multi-Workspace Architecture', () => {
     });
 
     it('prevents transitioning the final ACTIVE ADMIN to non-ACTIVE status while allowing non-final admin', async () => {
-      const adapter = new MockWorkspaceAdapter();
+      const adapter = new MockWorkspaceAdapter({
+        workspaces: SEED_WORKSPACES,
+        memberships: SEED_MEMBERSHIPS,
+      });
       // Sarah is the sole active admin on ws_acme
       await expect(
         adapter.updateMembershipStatus('mem_sarah_acme', 'SUSPENDED')
@@ -418,7 +421,10 @@ describe('UX-13: Workspace Lifecycle & Multi-Workspace Architecture', () => {
     });
 
     it('preserves existing last-admin removal protection', async () => {
-      const adapter = new MockWorkspaceAdapter();
+      const adapter = new MockWorkspaceAdapter({
+        workspaces: SEED_WORKSPACES,
+        memberships: SEED_MEMBERSHIPS,
+      });
       // Sole admin on apex cannot be removed
       await expect(
         adapter.removeMembership('mem_alex_apex')

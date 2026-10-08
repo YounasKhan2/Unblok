@@ -1,17 +1,24 @@
-# NEXUS replacement review guide
+# NEXUS fixture replacement
 
-The NEXUS fixture is now wired to the application's canonical ProjectContext, workspace and settings fixture entry points. 300 issues, 180 dependencies, 12 cycles, 10 milestones and 35 fictional users are generated deterministically.
+The prototype now starts from the deterministic NEXUS Commerce fixture in `src/data/nexusEnterprise.ts`: 35 users, 6 teams, 1 workspace, 1 project, 300 issues, 12 cycles, 10 milestones, 180 dependencies, 420 comments, and 860 activities. Work is distributed across all six functional teams, so cross-team dependency pressure and the team matrix have real linked data. Each milestone has a connected, branching issue dependency graph. Inbox items are derived from fixture activity and comments rather than maintained as a separate notification seed.
 
-**Safe local reset**: Existing browser localStorage is never automatically destroyed. In a local development console run:
+The roadmap and timeline demo open on the NEXUS reference week (October 5–11, 2026) with a staggered schedule across teams; activity history is ordered newest-first. Milestones remain ordered as a delivery sequence with fixed, repeatable target dates.
 
-```js
-// The app must expose/import the reset helper through a local dev harness.
-// resetPrototypeToNexus(window.localStorage, true);
-// Then fully reload to reinitialize prototype adapters.
-```
+The four fast-sign-in accounts use the matching NEXUS identities. Previous `@unblok.dev` sign-in addresses remain accepted as compatibility aliases; newly authenticated records use the canonical `@nexus.example` address. Legacy multi-workspace organizations and records remain only in contract-test fixtures so isolation and membership edge cases can still be tested without seeding them into the app.
 
-The helper is exported from `src/context/nexusFixtureReset.ts`; it backs up all application-prefixed keys and supplies a reversible restore helper. It is **not** currently wired to an interactive reset button.
+## Reset and recovery
 
-**Known limitations**: Authentication accounts remain separately seeded for login compatibility; Inbox/notifications may still use separate fixtures; legacy isolated tests still import `mockData.ts`. Workspaces remain designed for multi-tenancy but only one organization is seeded. Existing session storage still takes precedence until an explicit reset.
+In the app's navigation rail, choose **Reset to NEXUS** and confirm the prompt. The app backs up all `unblok_` and `kite_` local-storage entries, clears those entries, and reloads into the canonical fixture. A login may be required after reload. If a backup exists, choose **Restore previous state** and confirm to restore the latest snapshot; the state being replaced is backed up as an undo point. Backups remain in local storage until the browser data is cleared.
 
-**Human review gate**: Run `npm run lint`, `npm test -- --run`, `npm run build` and browser QA. These have not been independently run in the connector-only environment. Do not merge without passing gates.
+Reset and restore are local prototype tools, not a server-side migration. They do not touch unrelated local-storage keys. A reset that cannot create or apply its backup reports an error in the UI.
+
+## Validation
+
+The fixture module validates reference integrity, team/cycle ownership, issue lifecycle, and dependency acyclicity. Fixture tests also verify populated milestone graphs, cross-team matrix edges, and the current-week schedule. Validation performed:
+
+- `npm run lint` — passed.
+- `npm test -- --run` — passed (48 test files, 698 tests).
+- `npm run build` — passed. Vite reports its existing large-chunk advisory (>500 kB).
+- Local HTTP smoke check — returned 200.
+
+Interactive browser QA, screenshots, and performance measurements were not completed, so no visual or performance claims are made.

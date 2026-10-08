@@ -50,11 +50,11 @@ export const TimelineRoadmapView: React.FC = () => {
   const [publishedToast, setPublishedToast] = useState(false);
 
   // Date Range state: Current 7-day or 14-day schedule window
-  // Default window starts on Sep 28, 2026 (two weeks: Sep 28 - Oct 11, 2026)
-  const [windowStartDate, setWindowStartDate] = useState<Date>(() => new Date('2026-09-28T00:00:00.000Z'));
+  // Keep the demo window aligned with the fixed NEXUS fixture week.
+  const [windowStartDate, setWindowStartDate] = useState<Date>(() => new Date('2026-10-05T00:00:00.000Z'));
   const daysToShow = 7; // 7 days per view (matching the reference image's Mon - Sun layout)
 
-  const todayStr = '2026-10-04'; // October 4, 2026
+  const todayStr = '2026-10-08'; // October 8, 2026
 
   // Generate the 7 days in the current window
   const scheduleDays = useMemo(() => {
@@ -95,8 +95,7 @@ export const TimelineRoadmapView: React.FC = () => {
   };
 
   const handleJumpToToday = () => {
-    // Sep 28 was Monday of the week of Oct 4
-    setWindowStartDate(new Date('2026-09-28T00:00:00.000Z'));
+    setWindowStartDate(new Date('2026-10-05T00:00:00.000Z'));
   };
 
   const toggleGroupCollapse = (groupId: string) => {

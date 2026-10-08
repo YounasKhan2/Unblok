@@ -194,10 +194,10 @@ const AuthDevHarnessContent: React.FC = () => {
               </h3>
               <div className="space-y-1.5">
                 {[
-                  { name: 'Alex Rivera', role: 'MEMBER', email: 'alex@unblok.dev' },
-                  { name: 'Sarah Chen', role: 'ADMIN', email: 'sarah@unblok.dev' },
-                  { name: 'Marcus Vance', role: 'MEMBER', email: 'marcus@unblok.dev' },
-                  { name: 'Elena Rostova', role: 'OBSERVER', email: 'elena@unblok.dev' },
+                  { name: 'Alex Rivera', role: 'MEMBER', email: 'alex.rivera@nexus.example' },
+                  { name: 'Sarah Chen', role: 'ADMIN', email: 'sarah.chen@nexus.example' },
+                  { name: 'Marcus Vance', role: 'MEMBER', email: 'marcus.vance@nexus.example' },
+                  { name: 'Elena Rostova', role: 'MEMBER', email: 'elena.rostova@nexus.example' },
                 ].map((account) => (
                   <button
                     key={account.email}

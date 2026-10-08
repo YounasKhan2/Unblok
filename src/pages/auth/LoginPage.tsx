@@ -88,7 +88,7 @@ export const LoginPage: React.FC = () => {
   };
 
   const handleQuickFill = () => {
-    setEmail('alex@unblok.dev');
+    setEmail('alex.rivera@nexus.example');
     setPassword('Password123!');
     setEmailError('');
     setPasswordError('');

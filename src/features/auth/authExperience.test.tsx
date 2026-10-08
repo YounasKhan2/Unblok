@@ -106,7 +106,7 @@ describe('UX-12 Authentication & Account Lifecycle Contract Suite', () => {
           </MemoryRouter>
         </AppProviders>
       );
-      expect(html).toContain('Join Acme Core Platform');
+      expect(html).toContain('Join NEXUS Commerce');
       expect(html).toContain('Sign in to accept');
     });
   });
@@ -120,9 +120,9 @@ describe('UX-12 Authentication & Account Lifecycle Contract Suite', () => {
       const result = await adapter.login({ email: 'alex@unblok.dev', password: 'Password123!' });
       expect(result.success).toBe(true);
       expect(result.user?.id).toBe('usr_alex');
-      expect(result.user?.email).toBe('alex@unblok.dev');
+      expect(result.user?.email).toBe('alex.rivera@nexus.example');
       expect(result.membership?.role).toBe('MEMBER');
-      expect(result.membership?.workspaceName).toBe('Acme Core Platform');
+      expect(result.membership?.workspaceName).toBe('NEXUS Commerce');
     });
 
     it('rejects invalid credentials with safe, non-enumerating error message', async () => {
@@ -209,7 +209,7 @@ describe('UX-12 Authentication & Account Lifecycle Contract Suite', () => {
     it('shows invitation context in SignupPage when inviteToken is provided', () => {
       const html = renderToString(
         <AppProviders initialAuthStatus="guest">
-          <MemoryRouter initialEntries={['/signup?inviteToken=inv_new_user&email=jordan%40techcorp.io']}>
+          <MemoryRouter initialEntries={['/signup?inviteToken=inv_new_user&email=jordan%40nexus.example']}>
             <SignupPage />
           </MemoryRouter>
         </AppProviders>
@@ -315,9 +315,9 @@ describe('UX-12 Authentication & Account Lifecycle Contract Suite', () => {
           </MemoryRouter>
         </AppProviders>
       );
-      expect(html).toContain('Join Acme Core Platform');
-      expect(html).toContain('alex@unblok.dev');
-      expect(html).toContain('Core Architecture');
+      expect(html).toContain('Join NEXUS Commerce');
+      expect(html).toContain('alex.rivera@nexus.example');
+      expect(html).toContain('Commerce Platform');
       expect(html).toContain('Sign in to accept');
     });
 
@@ -331,9 +331,9 @@ describe('UX-12 Authentication & Account Lifecycle Contract Suite', () => {
           </MemoryRouter>
         </AppProviders>
       );
-      expect(html).toContain('Join Apex Robotics');
-      expect(html).toContain('jordan.taylor@techcorp.io');
-      expect(html).toContain('Platform Core');
+      expect(html).toContain('Join NEXUS Commerce');
+      expect(html).toContain('jordan.taylor@nexus.example');
+      expect(html).toContain('Commerce Services');
       expect(html).toContain('Create account to join');
     });
 
@@ -571,4 +571,3 @@ describe('UX-12 Authentication & Account Lifecycle Contract Suite', () => {
     });
   });
 });
-

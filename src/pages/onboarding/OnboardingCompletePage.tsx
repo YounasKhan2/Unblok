@@ -112,7 +112,7 @@ export const OnboardingCompletePage: React.FC = () => {
             <div className="flex-1">
               <span className="text-[var(--color-pub-text-secondary)]">Initial Project: </span>
               <span className="font-semibold text-[var(--color-pub-text-primary)]">
-                {firstProject ? firstProject.name : 'Platform Core'}
+                {firstProject ? firstProject.name : 'NEXUS — Omnichannel Commerce Platform'}
               </span>
             </div>
             {firstProject && (

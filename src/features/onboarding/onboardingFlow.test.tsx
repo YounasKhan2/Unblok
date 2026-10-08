@@ -175,7 +175,7 @@ describe('UX-14 Onboarding State & Progression Tests', () => {
   describe('4. Component Rendering & Honest Prototype Claims', () => {
     it('renders InviteTeammatesOnboardingPage with honest delivery notice', () => {
       const html = renderToString(
-        <AppProviders initialAuthStatus="authenticated" initialActiveWorkspaceId="ws_acme">
+        <AppProviders initialAuthStatus="authenticated" initialActiveWorkspaceId="ws_nexus">
           <MemoryRouter>
             <InviteTeammatesOnboardingPage />
           </MemoryRouter>
@@ -189,7 +189,7 @@ describe('UX-14 Onboarding State & Progression Tests', () => {
 
     it('renders OnboardingCompletePage with workspace readiness review', () => {
       const html = renderToString(
-        <AppProviders initialAuthStatus="authenticated" initialActiveWorkspaceId="ws_acme">
+        <AppProviders initialAuthStatus="authenticated" initialActiveWorkspaceId="ws_nexus">
           <MemoryRouter>
             <OnboardingCompletePage />
           </MemoryRouter>
