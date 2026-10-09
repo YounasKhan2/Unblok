@@ -6,7 +6,7 @@ Full NEXUS Enterprise Dataset Generator
 import os
 import json
 
-OUT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../src/data/nexus'))
+OUT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../apps/web/src/data/nexus'))
 os.makedirs(OUT_DIR, exist_ok=True)
 
 from build_nexus_fixtures import TEAMS, PROJECT, USERS, CYCLES, MILESTONES

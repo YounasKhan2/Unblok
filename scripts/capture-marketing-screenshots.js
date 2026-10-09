@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-const outputDir = path.join(process.cwd(), 'public', 'marketing');
+const outputDir = path.join(process.cwd(), 'apps', 'web', 'public', 'marketing');
 
 if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir, { recursive: true });

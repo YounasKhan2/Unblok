@@ -7,7 +7,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-const OUT_DIR = path.resolve(process.cwd(), 'src/data/nexus');
+const OUT_DIR = path.resolve(process.cwd(), 'apps/web/src/data/nexus');
 if (!fs.existsSync(OUT_DIR)) {
   fs.mkdirSync(OUT_DIR, { recursive: true });
 }

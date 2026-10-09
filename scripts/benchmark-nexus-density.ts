@@ -16,11 +16,11 @@ import {
   NEXUS_TEAMS,
   NEXUS_ACTIVITIES,
   NEXUS_COMMENTS,
-} from '../src/data/nexus';
-import { deriveInboxItems } from '../src/features/collaboration/domain/inboxProjection';
-import { deriveMilestoneHealth } from '../src/features/planning/domain/milestoneInvariants';
-import { getBlockerStatus, validateHardCompletionGuard } from '../src/domain/dependency';
-import { filterEntitiesByWorkspace } from '../src/features/workspaces/domain/workspaceIsolation';
+} from '../apps/web/src/data/nexus';
+import { deriveInboxItems } from '../apps/web/src/features/collaboration/domain/inboxProjection';
+import { deriveMilestoneHealth } from '../apps/web/src/features/planning/domain/milestoneInvariants';
+import { getBlockerStatus, validateHardCompletionGuard } from '../apps/web/src/domain/dependency';
+import { filterEntitiesByWorkspace } from '../apps/web/src/features/workspaces/domain/workspaceIsolation';
 
 console.log('================================================================');
 console.log('  NEXUS ENTERPRISE DATASET — LOCAL BENCHMARK & DENSITY REPORT   ');

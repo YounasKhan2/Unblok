@@ -9,7 +9,7 @@ import json
 import os
 import sys
 
-OUTPUT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../src/data/nexus'))
+OUTPUT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../apps/web/src/data/nexus'))
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # Import base data from previous file
