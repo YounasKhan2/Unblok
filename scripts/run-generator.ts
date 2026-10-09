@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-const OUT_DIR = path.resolve(process.cwd(), 'src/data/nexus');
+const OUT_DIR = path.resolve(process.cwd(), 'apps/web/src/data/nexus');
 
 // We will construct the entire dataset programmatically and write it out.
 import { TEAMS, PROJECT, USERS, CYCLES, MILESTONES } from './build-nexus-dataset';

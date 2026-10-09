@@ -1,5 +1,5 @@
 /**
- * NEXUS Enterprise Fixtures: NEXUS_USERS
+ * NEXUS Seeded Users (35)
  */
 import { User } from '../../types';
 

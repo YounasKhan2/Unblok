@@ -7,7 +7,7 @@ Generates full TypeScript modules into src/data/nexus/
 import os
 import json
 
-OUT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../src/data/nexus'))
+OUT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../apps/web/src/data/nexus'))
 os.makedirs(OUT_DIR, exist_ok=True)
 
 # 1. TEAMS (6)

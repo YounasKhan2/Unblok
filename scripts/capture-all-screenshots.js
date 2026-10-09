@@ -3,7 +3,9 @@ import fs from 'fs';
 import path from 'path';
 
 const chromePath = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-const screenshotsDir = path.join(process.cwd(), 'screenshots');
+const screenshotsDir = fs.existsSync(path.join(process.cwd(), 'screenshots'))
+  ? path.join(process.cwd(), 'screenshots')
+  : path.resolve(__dirname, '..', 'screenshots');
 
 if (!fs.existsSync(screenshotsDir)) {
   fs.mkdirSync(screenshotsDir, { recursive: true });
