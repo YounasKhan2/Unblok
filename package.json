@@ -28,7 +28,8 @@
     "infra:down": "docker compose --env-file infra/docker/.env -f infra/docker/compose.yaml down",
     "test:backend:infra": "bun --env-file=apps/api/.env test scripts/backend/infra.test.ts",
     "init:local": "bun scripts/backend/init-local.ts",
-    "test:backend:lifecycle": "bun --env-file=apps/api/.env test scripts/backend/lifecycle.test.ts"
+    "test:backend:lifecycle": "bun --env-file=apps/api/.env test scripts/backend/lifecycle.test.ts",
+    "test:backend:tenancy": "bun --env-file=apps/api/.env test scripts/backend/tenancy.test.ts"
   },
   "packageManager": "bun@1.4.2",
   "devDependencies": {

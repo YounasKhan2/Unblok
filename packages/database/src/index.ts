@@ -13,3 +13,5 @@ export class Database {
     return this.client.$transaction(run, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable, maxWait: 2000, timeout: 5000 });
   }
 }
+
+export * from './tenancy';
