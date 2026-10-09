@@ -1,4 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
+import { cp, mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
 import { Database, Tenancy, TenantAccessError, TenantConflictError, type AuthorizationPolicy, type TenantQueries, type VerifiedPrincipal } from '@unblok/database';
@@ -11,8 +13,8 @@ const databaseName = `unblok_be00c_test_${randomUUID().replaceAll('-', '')}`;
 const url = new URL(originalUrl); url.pathname = `/${databaseName}`;
 const database = new Database(url.toString());
 let created = false;
-async function prisma(args: string[]) {
-  const child = Bun.spawn([process.execPath, 'packages/database/node_modules/prisma/build/index.js', ...args], { cwd: root, env: { ...process.env, DATABASE_URL: url.toString() }, stdout: 'pipe', stderr: 'pipe' });
+async function prisma(args: string[], targetUrl = url.toString()) {
+  const child = Bun.spawn([process.execPath, 'packages/database/node_modules/prisma/build/index.js', ...args], { cwd: root, env: { ...process.env, DATABASE_URL: targetUrl }, stdout: 'pipe', stderr: 'pipe' });
   const output = await new Response(child.stdout).text(); const error = await new Response(child.stderr).text();
   if (await child.exited !== 0) throw new Error('Prisma verification command failed (output withheld to protect configuration)');
   return output + error;
@@ -33,10 +35,10 @@ afterAll(async () => {
 }, 10000);
 
 const allow: AuthorizationPolicy = { allows: () => true }; // Explicit TEST policy, never application default.
-async function fixture() {
+async function fixture(target = database) {
   const a = randomUUID(), b = randomUUID(), actor = randomUUID(), adminA = randomUUID(), userB = randomUUID();
   const member = randomUUID(), owner = randomUUID(), team = randomUUID(), project = randomUUID(), issue = randomUUID(), foreign = randomUUID();
-  await database.transaction(async tx => {
+  await target.transaction(async tx => {
     for (const id of [actor, adminA, userB]) await tx.user.create({ data: { id, name: 'Test user', email: 'shared-contact@example.test' } });
     await tx.identity.create({ data: { provider: 'test-verifier', subject: actor, userId: actor } });
     for (const [id, suffix] of [[a, 'a'], [b, 'b']] as const) await tx.workspace.create({ data: { id, slug: `test-${id}-${suffix}`, name: 'Test workspace' } });
@@ -53,7 +55,7 @@ async function fixture() {
   });
   const assertion = Symbol('test verified assertion');
   const verifier = { verify: async (input: unknown) => input === assertion ? { provider: 'test-verifier', subject: actor } : null };
-  const tenancy = new Tenancy(database, verifier, allow);
+  const tenancy = new Tenancy(target, verifier, allow);
   const principal = await tenancy.authenticate(assertion);
   return { a, b, actor, adminA, userB, member, owner, team, project, issue, foreign, assertion, verifier, tenancy, principal };
 }
@@ -65,7 +67,7 @@ describe('fresh additive migrations and canonical constraints', () => {
     expect(diff).toContain('No difference');
     expect(await database.ready()).toBe(true);
     const applied = await database.client.$queryRaw<{ migration_name: string }[]>`SELECT migration_name FROM _prisma_migrations WHERE finished_at IS NOT NULL ORDER BY migration_name`;
-    expect(applied.map(row => row.migration_name)).toEqual(['20261010000000_foundation', '20261010010000_domain_tenancy']);
+    expect(applied.map(row => row.migration_name)).toEqual(['20261010000000_foundation', '20261010010000_domain_tenancy', '20261010020000_guard_corrections']);
   });
   test('identity keys are unique; users have no global role and email is not an authentication key', async () => {
     const f = await fixture();
@@ -295,4 +297,96 @@ test('inactive membership cannot become an assignee or create new issue history'
   await expect(Promise.resolve(database.client.issue.update({ where: { workspaceId_id: { workspaceId: f.a, id: f.issue } }, data: { assigneeMembershipId: f.member } }))).rejects.toThrow();
   await expect(Promise.resolve(database.client.issue.create({ data: { workspaceId: f.a, projectId: f.project, sequence: 2, title: 'Inactive creator', creatorMembershipId: f.member } }))).rejects.toThrow();
   expect((await database.client.issue.findUniqueOrThrow({ where: { workspaceId_id: { workspaceId: f.a, id: f.issue } } })).creatorMembershipId).toBe(f.member);
+});
+
+describe('PR24 PostgreSQL guard regressions', () => {
+  test('already-migrated upgrade preserves rows and original history and repairs suspended assignee updates', async () => {
+    const name = databaseName + '_upgrade';
+    const upgradeUrl = new URL(originalUrl!); upgradeUrl.pathname = '/' + name;
+    const upgrade = new Database(upgradeUrl.toString());
+    const directory = await mkdtemp(resolve(tmpdir(), 'unblok-upgrade-'));
+    let exists = false;
+    try {
+      await cp(resolve(root, 'packages/database/prisma/schema.prisma'), resolve(directory, 'schema.prisma'));
+      for (const migration of ['migration_lock.toml', '20261010000000_foundation', '20261010010000_domain_tenancy']) {
+        await cp(resolve(root, 'packages/database/prisma/migrations', migration), resolve(directory, 'migrations', migration), { recursive: true });
+      }
+      await admin.client.$executeRawUnsafe(`CREATE DATABASE "${name}"`); exists = true;
+      await prisma(['migrate', 'deploy', '--schema', resolve(directory, 'schema.prisma')], upgradeUrl.toString());
+      await upgrade.connect();
+      const f = await fixture(upgrade);
+      const where = { workspaceId_id: { workspaceId: f.a, id: f.issue } };
+      await upgrade.client.issue.update({ where, data: { assigneeMembershipId: f.member } });
+      await upgrade.client.workspaceMembership.update({ where: { workspaceId_id: { workspaceId: f.a, id: f.member } }, data: { status: 'SUSPENDED' } });
+      await expect(Promise.resolve(upgrade.client.issue.update({ where, data: { title: 'Before repair' } }))).rejects.toThrow('Assignee requires active');
+      const history = await upgrade.client.$queryRaw<{ migration_name: string; checksum: string; finished_at: Date }[]>`SELECT migration_name, checksum, finished_at FROM _prisma_migrations ORDER BY migration_name`;
+      await prisma(['migrate', 'deploy', '--schema', 'packages/database/prisma/schema.prisma'], upgradeUrl.toString());
+      const after = await upgrade.client.$queryRaw<typeof history>`SELECT migration_name, checksum, finished_at FROM _prisma_migrations ORDER BY migration_name`;
+      expect(after.slice(0, 2)).toEqual(history);
+      expect(after).toHaveLength(3);
+      const row = await upgrade.client.issue.update({ where, data: { title: 'After repair' } });
+      expect(row.title).toBe('After repair'); expect(row.assigneeMembershipId).toBe(f.member);
+      expect(await upgrade.client.issue.count()).toBe(3);
+      expect(await prisma(['migrate', 'deploy', '--schema', 'packages/database/prisma/schema.prisma'], upgradeUrl.toString())).toContain('No pending migrations');
+      expect(await prisma(['migrate', 'diff', '--from-schema-datasource', 'packages/database/prisma/schema.prisma', '--to-schema-datamodel', 'packages/database/prisma/schema.prisma', '--exit-code'], upgradeUrl.toString())).toContain('No difference');
+    } finally {
+      await upgrade.close();
+      if (exists) await admin.client.$executeRawUnsafe(`DROP DATABASE "${name}" WITH (FORCE)`);
+      await rm(directory, { recursive: true, force: true });
+    }
+  }, 60000);
+
+  for (const archived of [false, true]) {
+    test(`all five tenant-guarded DELETE operations ${archived ? 'reject archived workspaces' : 'permit unreferenced records in active workspaces'}`, async () => {
+      const f = await fixture();
+      const user = await database.client.user.create({ data: { name: 'Deletable member' } });
+      const membership = await database.client.workspaceMembership.create({ data: { workspaceId: f.a, userId: user.id, role: 'MEMBER' } });
+      const team = await database.client.team.create({ data: { workspaceId: f.a, key: 'OPS', name: 'Operations' } });
+      const project = await database.client.project.create({ data: { workspaceId: f.a, teamId: f.team, key: 'OPS', name: 'Empty project' } });
+      if (archived) await database.client.workspace.update({ where: { id: f.a }, data: { status: 'ARCHIVED' } });
+      const deletes = [
+        () => database.client.issue.delete({ where: { workspaceId_id: { workspaceId: f.a, id: f.issue } } }),
+        () => database.client.teamMembership.delete({ where: { workspaceId_teamId_membershipId: { workspaceId: f.a, teamId: f.team, membershipId: f.member } } }),
+        () => database.client.project.delete({ where: { workspaceId_id: { workspaceId: f.a, id: project.id } } }),
+        () => database.client.team.delete({ where: { workspaceId_id: { workspaceId: f.a, id: team.id } } }),
+        () => database.client.workspaceMembership.delete({ where: { workspaceId_id: { workspaceId: f.a, id: membership.id } } }),
+      ];
+      for (const remove of deletes) {
+        if (archived) await expect(Promise.resolve(remove())).rejects.toThrow('Workspace unavailable for mutation');
+        else expect((await remove()).workspaceId).toBe(f.a);
+      }
+      expect(await database.client.issue.count({ where: { workspaceId: f.a } })).toBe(archived ? 1 : 0);
+      expect(await database.client.workspaceMembership.count({ where: { workspaceId: f.a, id: membership.id } })).toBe(archived ? 1 : 0);
+    });
+  }
+
+  for (const status of ['SUSPENDED', 'INVITED'] as const) {
+    test(`unchanged ${status} assignees retain history; new assignments on INSERT and UPDATE are denied`, async () => {
+      const f = await fixture();
+      const user = await database.client.user.create({ data: { name: 'Historical assignee' } });
+      const assignee = await database.client.workspaceMembership.create({ data: { workspaceId: f.a, userId: user.id, role: 'MEMBER', status: 'ACTIVE' } });
+      const where = { workspaceId_id: { workspaceId: f.a, id: f.issue } };
+      await database.client.issue.update({ where, data: { assigneeMembershipId: assignee.id } });
+      await database.client.workspaceMembership.update({ where: { workspaceId_id: { workspaceId: f.a, id: assignee.id } }, data: { status } });
+      await f.tenancy.write(f.principal, f.a, queries => queries.compareAndSetIssueTitle(f.issue, 1, 'Historical assignment retained'));
+      expect((await database.client.issue.findUniqueOrThrow({ where })).assigneeMembershipId).toBe(assignee.id);
+      await database.client.issue.update({ where, data: { assigneeMembershipId: null } });
+      await expect(Promise.resolve(database.client.issue.update({ where, data: { assigneeMembershipId: assignee.id } }))).rejects.toThrow('Assignee requires active');
+      await expect(Promise.resolve(database.client.issue.create({ data: { workspaceId: f.a, projectId: f.project, sequence: 2, title: 'Inactive new assignment', creatorMembershipId: f.member, assigneeMembershipId: assignee.id } }))).rejects.toThrow('Assignee requires active');
+      expect((await database.client.issue.findUniqueOrThrow({ where })).assigneeMembershipId).toBeNull();
+    });
+  }
+
+  test('issue restoration requires both active project and active team', async () => {
+    const f = await fixture();
+    const where = { workspaceId_id: { workspaceId: f.a, id: f.issue } };
+    await database.client.issue.update({ where, data: { status: 'ARCHIVED' } });
+    expect((await database.client.issue.update({ where, data: { status: 'ACTIVE' } })).status).toBe('ACTIVE');
+    await database.client.issue.update({ where, data: { status: 'ARCHIVED' } });
+    await database.client.project.update({ where: { workspaceId_id: { workspaceId: f.a, id: f.project } }, data: { status: 'ARCHIVED' } });
+    await expect(Promise.resolve(database.client.issue.update({ where, data: { status: 'ACTIVE' } }))).rejects.toThrow('Issue requires active owning project and team');
+    await database.client.team.update({ where: { workspaceId_id: { workspaceId: f.a, id: f.team } }, data: { status: 'ARCHIVED' } });
+    await expect(Promise.resolve(database.client.issue.update({ where, data: { status: 'ACTIVE' } }))).rejects.toThrow('Issue requires active owning project and team');
+    expect((await database.client.issue.findUniqueOrThrow({ where })).status).toBe('ARCHIVED');
+  });
 });
