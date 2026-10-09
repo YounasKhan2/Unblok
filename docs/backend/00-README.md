@@ -23,3 +23,7 @@ Status: **DRAFT / human review required**. Baseline: `main` at `2e38ac0e9a50cac4
 
 ## BE-00A review boundary
 This is an **initial repository-grounded audit**, not an exhaustive dependency graph. Evidence inspected so far: `package.json`, `src/App.tsx`, `src/app/router/AppRouter.tsx`, `src/app/providers/AppProviders.tsx`, and `src/data/mockData.ts`. Anything not inspected is marked **verification pending** rather than invented. Before approving BE-00A, an implementation agent must trace every consumer/store/adapter/mutation and reconcile this document with the complete repository.
+
+## Implemented foundation
+
+[BE-00B foundation setup, boundaries, and security](13-BE-00B-FOUNDATION.md) records the explicitly authorized implementation phase. Earlier draft domain decisions remain review topics.

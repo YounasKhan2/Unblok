@@ -1,0 +1,16 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Infrastructure marker only. No product or tenant schema is introduced here.
+model BackendFoundation {
+  id          Int      @id
+  installedAt DateTime @default(now()) @map("installed_at") @db.Timestamptz(3)
+
+  @@map("backend_foundation")
+}
