@@ -10,7 +10,7 @@ import type {
   User,
 } from '../types';
 
-export const NEXUS_FIXTURE_VERSION = 'nexus-enterprise-v3';
+export const NEXUS_FIXTURE_VERSION = 'nexus-enterprise-v4-sparse-marketing';
 export const NEXUS_WORKSPACE_ID = 'ws_nexus';
 export const NEXUS_PROJECT_ID = 'proj_nexus';
 export const NEXUS_OWNER_TEAM_ID = 'team_eng';
@@ -270,24 +270,15 @@ function issueAt(index: number): Issue {
   return INITIAL_ISSUES[index];
 }
 
-const dependencyPairs: [number, number][] = [];
-for (const milestone of INITIAL_MILESTONES) {
-  const milestoneIssueIndices = INITIAL_ISSUES
-    .filter(issue => issue.milestoneId === milestone.id)
-    .slice(0, 18)
-    .map(issue => Number(issue.key.slice('NEX-'.length)) - 1);
-  for (let index = 0; index < 12; index += 1) {
-    dependencyPairs.push([milestoneIssueIndices[index], milestoneIssueIndices[index + 1]]);
-  }
-  dependencyPairs.push(
-    [milestoneIssueIndices[0], milestoneIssueIndices[3]],
-    [milestoneIssueIndices[2], milestoneIssueIndices[5]],
-    [milestoneIssueIndices[5], milestoneIssueIndices[8]],
-    [milestoneIssueIndices[8], milestoneIssueIndices[11]],
-    [milestoneIssueIndices[3], milestoneIssueIndices[7]],
-    [milestoneIssueIndices[7], milestoneIssueIndices[11]],
-  );
-}
+// Active runtime fixture: 15 readable links across a handful of focused chains.
+// Include one branch and one merge while preventing a dense all-milestone graph.
+const dependencyPairs: [number, number][] = [
+  [130, 131], [131, 132], [130, 133], [132, 134], [133, 134],
+  [155, 156], [156, 157], [155, 158],
+  [181, 182], [182, 183],
+  [212, 213], [213, 214], [212, 215],
+  [245, 246], [246, 247],
+];
 
 export const INITIAL_DEPENDENCIES: Dependency[] = dependencyPairs.map(([upstreamIndex, downstreamIndex], index) => ({
   id: `dep_nex_${index + 1}`,
@@ -500,7 +491,7 @@ export function validateNexusFixture(): string[] {
   addIf(INITIAL_PROJECTS.length !== 1, 'Expected one flagship project');
   addIf(INITIAL_CYCLES.length !== 12, 'Expected 12 cycles');
   addIf(INITIAL_MILESTONES.length !== 10, 'Expected 10 milestones');
-  addIf(INITIAL_DEPENDENCIES.length !== 180, 'Expected 180 dependencies');
+  addIf(INITIAL_DEPENDENCIES.length !== 15, 'Expected 15 dependencies');
   addIf(INITIAL_COMMENTS.length < 400, 'Expected at least 400 comments');
   addIf(INITIAL_ACTIVITIES.length < 600, 'Expected at least 600 activity events');
 

@@ -26,14 +26,14 @@ import {
 
 describe('NEXUS enterprise reference data', () => {
   it('contains the requested high-density entity volumes', () => {
-    expect(NEXUS_FIXTURE_VERSION).toBe('nexus-enterprise-v3');
+    expect(NEXUS_FIXTURE_VERSION).toBe('nexus-enterprise-v4-sparse-marketing');
     expect(INITIAL_ISSUES).toHaveLength(300);
     expect(INITIAL_TEAMS).toHaveLength(6);
     expect(INITIAL_USERS).toHaveLength(35);
     expect(INITIAL_PROJECTS).toHaveLength(1);
     expect(INITIAL_CYCLES).toHaveLength(12);
     expect(INITIAL_MILESTONES).toHaveLength(10);
-    expect(INITIAL_DEPENDENCIES).toHaveLength(180);
+    expect(INITIAL_DEPENDENCIES).toHaveLength(15);
     expect(INITIAL_COMMENTS).toHaveLength(420);
     expect(INITIAL_ACTIVITIES.length).toBeGreaterThanOrEqual(600);
   });
@@ -150,7 +150,7 @@ describe('NEXUS enterprise reference data', () => {
         new Date(`${NEXUS_REFERENCE_DATE}T00:00:00.000Z`)
       );
       expect(detail?.graphLayout.nodes.length).toBeGreaterThanOrEqual(12);
-      expect(detail?.graphLayout.edges.length).toBeGreaterThanOrEqual(18);
+      expect(detail?.graphLayout.edges.length).toBeLessThanOrEqual(15);
     }
 
     const edges = resolveEdges(INITIAL_DEPENDENCIES, INITIAL_ISSUES, INITIAL_PROJECTS, INITIAL_TEAMS);

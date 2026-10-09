@@ -103,10 +103,10 @@ describe('NEXUS Enterprise Dataset Validation (UX-15.5)', () => {
       expect(milestoneIds.size).toBe(10);
     });
 
-    it('dependency edges target: approximately 180 edges (182 directed edges)', () => {
-      expect(NEXUS_DEPENDENCIES.length).toBeGreaterThanOrEqual(170);
-      expect(NEXUS_DEPENDENCIES.length).toBeLessThanOrEqual(200);
-      expect(NEXUS_DEPENDENCIES.length).toBe(182);
+    it('marketing graph target: 15 narrative-led directed dependency edges', () => {
+      expect(NEXUS_DEPENDENCIES.length).toBeGreaterThanOrEqual(12);
+      expect(NEXUS_DEPENDENCIES.length).toBeLessThanOrEqual(20);
+      expect(NEXUS_DEPENDENCIES.length).toBe(15);
     });
 
     it('comments target: 400+ technical comments', () => {
@@ -283,6 +283,24 @@ describe('NEXUS Enterprise Dataset Validation (UX-15.5)', () => {
   /* 5. DEPENDENCY GRAPH INTEGRITY & COMPLETION GUARDS                        */
   /* ======================================================================== */
   describe('5. Dependency Graph Integrity & Completion Guards', () => {
+    it('preserves five active blocked-work examples while limiting graph fan-in and fan-out', () => {
+      const issues = new Map(NEXUS_ISSUES.map((issue) => [issue.id, issue]));
+      const incoming = new Map<string, number>();
+      const outgoing = new Map<string, number>();
+      const active = NEXUS_DEPENDENCIES.filter((dep) => {
+        incoming.set(dep.downstreamIssueId, (incoming.get(dep.downstreamIssueId) || 0) + 1);
+        outgoing.set(dep.upstreamIssueId, (outgoing.get(dep.upstreamIssueId) || 0) + 1);
+        const upstream = issues.get(dep.upstreamIssueId);
+        const downstream = issues.get(dep.downstreamIssueId);
+        return upstream && downstream &&
+          upstream.state !== 'DONE' && upstream.state !== 'CANCELLED' &&
+          downstream.state !== 'DONE' && downstream.state !== 'CANCELLED';
+      });
+      expect(active.length).toBe(5);
+      expect(Math.max(...incoming.values())).toBeLessThanOrEqual(2);
+      expect(Math.max(...outgoing.values())).toBeLessThanOrEqual(2);
+    });
+
     it('has zero self-dependencies and zero duplicate directed edges', () => {
       const edgeSignatures = new Set<string>();
 
