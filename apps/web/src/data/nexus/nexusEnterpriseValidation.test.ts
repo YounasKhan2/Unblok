@@ -103,10 +103,10 @@ describe('NEXUS Enterprise Dataset Validation (UX-15.5)', () => {
       expect(milestoneIds.size).toBe(10);
     });
 
-    it('dependency edges target: approximately 180 edges (182 directed edges)', () => {
-      expect(NEXUS_DEPENDENCIES.length).toBeGreaterThanOrEqual(170);
-      expect(NEXUS_DEPENDENCIES.length).toBeLessThanOrEqual(200);
-      expect(NEXUS_DEPENDENCIES.length).toBe(182);
+    it('marketing graph target: 42 selected directed dependency edges', () => {
+      expect(NEXUS_DEPENDENCIES.length).toBeGreaterThanOrEqual(35);
+      expect(NEXUS_DEPENDENCIES.length).toBeLessThanOrEqual(50);
+      expect(NEXUS_DEPENDENCIES.length).toBe(42);
     });
 
     it('comments target: 400+ technical comments', () => {
