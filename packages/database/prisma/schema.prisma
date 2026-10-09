@@ -7,10 +7,198 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Infrastructure marker only. No product or tenant schema is introduced here.
+// BE-00B infrastructure marker, retained by the additive domain migrations.
 model BackendFoundation {
   id          Int      @id
   installedAt DateTime @default(now()) @map("installed_at") @db.Timestamptz(3)
 
   @@map("backend_foundation")
+}
+
+// Roles belong to workspace membership, never to the global user.
+enum WorkspaceRole {
+  ADMIN
+  MEMBER
+  OBSERVER
+}
+
+enum MembershipStatus {
+  ACTIVE
+  INVITED
+  SUSPENDED
+}
+
+enum RecordStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum IssueState {
+  BACKLOG
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+  CANCELLED
+}
+
+enum IssuePriority {
+  URGENT
+  HIGH
+  MEDIUM
+  LOW
+}
+
+model User {
+  id          String                @id @default(uuid()) @db.Uuid
+  name        String                @db.VarChar(120)
+  email       String?               @db.VarChar(320)
+  createdAt   DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  identities  Identity[]
+  memberships WorkspaceMembership[]
+
+  @@map("users")
+}
+
+// Provider subjects are opaque verified identifiers. No passwords or tokens.
+model Identity {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  provider  String   @db.VarChar(200)
+  subject   String   @db.VarChar(512)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([provider, subject])
+  @@index([userId])
+  @@map("identities")
+}
+
+model Workspace {
+  id          String                @id @default(uuid()) @db.Uuid
+  slug        String                @unique @db.VarChar(63)
+  name        String                @db.VarChar(120)
+  status      RecordStatus          @default(ACTIVE)
+  createdAt   DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  memberships WorkspaceMembership[]
+  teams       Team[]
+
+  @@map("workspaces")
+}
+
+model WorkspaceMembership {
+  workspaceId    String           @map("workspace_id") @db.Uuid
+  id             String           @default(uuid()) @db.Uuid
+  userId         String           @map("user_id") @db.Uuid
+  role           WorkspaceRole
+  status         MembershipStatus @default(INVITED)
+  joinedAt       DateTime?        @map("joined_at") @db.Timestamptz(3)
+  workspace      Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  user           User             @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  teams          TeamMembership[]
+  createdIssues  Issue[]          @relation("IssueCreator")
+  assignedIssues Issue[]          @relation("IssueAssignee")
+  dependencies   DependencyEdge[]
+
+  @@id([workspaceId, id])
+  @@unique([workspaceId, userId])
+  @@index([userId, status, workspaceId])
+  @@index([workspaceId, role, status])
+  @@map("workspace_memberships")
+}
+
+model Team {
+  workspaceId String           @map("workspace_id") @db.Uuid
+  id          String           @default(uuid()) @db.Uuid
+  key         String           @db.VarChar(6)
+  name        String           @db.VarChar(120)
+  status      RecordStatus     @default(ACTIVE)
+  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  memberships TeamMembership[]
+  projects    Project[]
+
+  @@id([workspaceId, id])
+  @@unique([workspaceId, key])
+  @@index([workspaceId, status, id])
+  @@map("teams")
+}
+
+model TeamMembership {
+  workspaceId  String              @map("workspace_id") @db.Uuid
+  teamId       String              @map("team_id") @db.Uuid
+  membershipId String              @map("membership_id") @db.Uuid
+  team         Team                @relation(fields: [workspaceId, teamId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  membership   WorkspaceMembership @relation(fields: [workspaceId, membershipId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@id([workspaceId, teamId, membershipId])
+  @@index([workspaceId, membershipId, teamId])
+  @@map("team_memberships")
+}
+
+model Project {
+  workspaceId     String       @map("workspace_id") @db.Uuid
+  id              String       @default(uuid()) @db.Uuid
+  teamId          String       @map("team_id") @db.Uuid
+  key             String       @db.VarChar(6)
+  name            String       @db.VarChar(120)
+  description     String       @default("")
+  status          RecordStatus @default(ACTIVE)
+  currentSequence Int          @default(0) @map("current_sequence")
+  createdAt       DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  team            Team         @relation(fields: [workspaceId, teamId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  issues          Issue[]
+
+  @@id([workspaceId, id])
+  @@unique([workspaceId, key])
+  @@index([workspaceId, teamId, status, id])
+  @@map("projects")
+}
+
+model Issue {
+  workspaceId          String               @map("workspace_id") @db.Uuid
+  id                   String               @default(uuid()) @db.Uuid
+  projectId            String               @map("project_id") @db.Uuid
+  sequence             Int
+  title                String               @db.VarChar(300)
+  description          String               @default("")
+  state                IssueState           @default(BACKLOG)
+  priority             IssuePriority        @default(MEDIUM)
+  status               RecordStatus         @default(ACTIVE)
+  version              Int                  @default(1)
+  creatorMembershipId  String               @map("creator_membership_id") @db.Uuid
+  assigneeMembershipId String?              @map("assignee_membership_id") @db.Uuid
+  createdAt            DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
+  project              Project              @relation(fields: [workspaceId, projectId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  creator              WorkspaceMembership  @relation("IssueCreator", fields: [workspaceId, creatorMembershipId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  assignee             WorkspaceMembership? @relation("IssueAssignee", fields: [workspaceId, assigneeMembershipId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  outgoing             DependencyEdge[]     @relation("UpstreamIssue")
+  incoming             DependencyEdge[]     @relation("DownstreamIssue")
+
+  @@id([workspaceId, id])
+  @@unique([workspaceId, projectId, sequence])
+  @@index([workspaceId, projectId, status, createdAt, id])
+  @@index([workspaceId, assigneeMembershipId, status, id])
+  @@index([workspaceId, creatorMembershipId])
+  @@map("issues")
+}
+
+// Writes are guarded by SQL until transactional DAG enforcement is installed.
+model DependencyEdge {
+  workspaceId         String              @map("workspace_id") @db.Uuid
+  id                  String              @default(uuid()) @db.Uuid
+  upstreamIssueId     String              @map("upstream_issue_id") @db.Uuid
+  downstreamIssueId   String              @map("downstream_issue_id") @db.Uuid
+  creatorMembershipId String              @map("creator_membership_id") @db.Uuid
+  createdAt           DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  upstream            Issue               @relation("UpstreamIssue", fields: [workspaceId, upstreamIssueId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  downstream          Issue               @relation("DownstreamIssue", fields: [workspaceId, downstreamIssueId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+  creator             WorkspaceMembership @relation(fields: [workspaceId, creatorMembershipId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@id([workspaceId, id])
+  @@unique([workspaceId, upstreamIssueId, downstreamIssueId])
+  @@index([workspaceId, downstreamIssueId])
+  @@index([workspaceId, creatorMembershipId])
+  @@map("dependency_edges")
 }
