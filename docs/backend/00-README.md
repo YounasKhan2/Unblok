@@ -31,3 +31,7 @@ This is an **initial repository-grounded audit**, not an exhaustive dependency g
 [BE-00C canonical domain and tenant foundation](14-BE-00C-DOMAIN-TENANCY.md) includes the pre-implementation requirements checklist, schema decisions, isolation boundary, and documentation compliance matrix.
 
 [BE-00D backend module architecture and enforcement](15-BE-00D-MODULE-ARCHITECTURE.md) audits the implemented foundation, retains approved package responsibilities, defines feature-first conventions and reusable scoped patterns, and records automated boundary checks, verification, deferred decisions and review limits. Proposed feature trees do not imply implemented business APIs or authentication.
+
+## Living delivery status
+
+[Backend status and delivery roadmap](16-BACKEND-STATUS-AND-ROADMAP.md) tracks merged phases, outstanding business capabilities, known verification failures and future delivery order. **Update this tracker whenever merging an Unblok branch that changes backend progress**, including a dated change-log entry and the merge SHA when available. This is a status document and does not supersede the architecture/security contracts above.
