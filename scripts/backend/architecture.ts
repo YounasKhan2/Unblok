@@ -60,6 +60,59 @@ export function auditArchitecture(directory: string) {
   };
   const configs = new Map<string, ts.CompilerOptions>();
   const canonical = (path: string) => slash(relative(root, realpathSync(path)));
+  // Resolve source symbols as well as spelling: namespace/member aliases and
+  // named re-export chains must not launder privileged foundation capabilities.
+  const options = config('scripts/backend/check-architecture.ts'), webOptions = config('apps/web/src/index.ts');
+  const resolutionCache = ts.createModuleResolutionCache(root, path => path, options);
+  const host = ts.createCompilerHost(options);
+  host.resolveModuleNames = (names, containingFile) => names.map(name => {
+    const workspace = workspaceNames.get(name), entry = workspace ? manifests.get(workspace)?.exports : undefined;
+    if (workspace && typeof entry === 'string') {
+      const path = resolve(root, workspace, entry);
+      if (existsSync(path)) return { resolvedFileName: path, extension: ts.Extension.Ts };
+    }
+    const result = ts.resolveModuleName(name, containingFile, slash(relative(root, containingFile)).startsWith('apps/web/') ? webOptions : options, ts.sys, resolutionCache).resolvedModule;
+    // Dependency internals are outside the repository graph. Nest declarations
+    // remain available for decorator provenance; ORM/SDK/type libraries aren't
+    // needed to establish source symbol ownership and would dominate this audit.
+    if (result?.isExternalLibraryImport && !name.startsWith('@nestjs/')) return undefined;
+    return result;
+  });
+  const provenanceFiles = files.filter(path => {
+    const file = slash(relative(root, path));
+    return !file.startsWith('apps/web/') && !file.startsWith('scripts/') && !testFile(file);
+  });
+  const program = ts.createProgram(provenanceFiles, { ...options, noLib: true, types: [] }, host), checker = program.getTypeChecker();
+  function origin(node: ts.Node, seen = new Set<ts.Symbol>()): ts.Symbol | undefined {
+    if (program.getSourceFile(node.getSourceFile().fileName) !== node.getSourceFile()) return undefined;
+    let symbol = checker.getSymbolAtLocation(node);
+    if (!symbol && ts.isParenthesizedExpression(node)) return origin(node.expression, seen);
+    if (!symbol || seen.has(symbol)) return undefined;
+    seen.add(symbol);
+    if (symbol.flags & ts.SymbolFlags.Alias) symbol = checker.getAliasedSymbol(symbol);
+    const declaration = symbol.valueDeclaration;
+    if (declaration && ts.isVariableDeclaration(declaration) && declaration.initializer) return origin(declaration.initializer, seen) ?? symbol;
+    if (declaration && ts.isBindingElement(declaration) && ts.isObjectBindingPattern(declaration.parent)) {
+      const variable = declaration.parent.parent;
+      if (ts.isVariableDeclaration(variable) && variable.initializer) {
+        const type = checker.getTypeAtLocation(variable.initializer);
+        const member = checker.getPropertyOfType(type, (declaration.propertyName ?? declaration.name).getText());
+        if (member) return member.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(member) : member;
+      }
+    }
+    return symbol;
+  }
+  function capability(node: ts.Node) {
+    const symbol = origin(node);
+    const declaration = symbol?.declarations?.[0];
+    const file = declaration ? slash(relative(root, declaration.getSourceFile().fileName)) : '';
+    if (file === 'apps/api/src/access.ts') {
+      if (symbol?.name === 'PublicHealth') return 'PublicHealth';
+      if (declaration && ts.isVariableDeclaration(declaration) && declaration.initializer && ts.isStringLiteralLike(declaration.initializer) && declaration.initializer.text === 'foundation:public-health') return 'HEALTH_PUBLIC';
+    }
+    if (file === 'packages/database/src/index.ts' && symbol?.name === 'Database') return 'Database';
+    return undefined;
+  }
   const graph = new Map<string, Edge[]>();
   for (const [owner, manifest] of manifests) {
     for (const dependency of Object.keys({ ...manifest.dependencies, ...manifest.devDependencies, ...manifest.optionalDependencies })) {
@@ -72,7 +125,7 @@ export function auditArchitecture(directory: string) {
   }
   for (const absolute of files.sort()) {
     const file = slash(relative(root, absolute)), owner = ownerOf(file), production = !!owner && !testFile(file);
-    const source = ts.createSourceFile(absolute, readFileSync(absolute, 'utf8'), ts.ScriptTarget.Latest, true);
+    const source = program.getSourceFile(absolute) ?? ts.createSourceFile(absolute, readFileSync(absolute, 'utf8'), ts.ScriptTarget.Latest, true);
     graph.set(file, []);
     const feature = featureOf(file), layer = feature?.[2]?.split('/')[0];
     if (production && foundationFiles[owner!] && !foundationFiles[owner!]!.includes(file.slice(`${owner}/src/`.length)) && file.startsWith(owner + '/src/')) {
@@ -131,6 +184,12 @@ export function auditArchitecture(directory: string) {
       if (production && target && graph.has(file)) graph.get(file)!.push({ target, specifier, names, typeOnly, line });
     }
     function visit(node: ts.Node) {
+      if (production && (ts.isIdentifier(node) || ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node))) {
+        const privileged = capability(node);
+        const line = source.getLineAndCharacterOfPosition(node.getStart()).line + 1;
+        if ((privileged === 'HEALTH_PUBLIC' || privileged === 'PublicHealth') && file !== 'apps/api/src/access.ts' && file !== 'apps/api/src/health.ts') note('health-public', file, line, 'Public health capability/metadata cannot be imported, aliased or re-exported into business code');
+        if (privileged === 'Database' && owner !== 'packages/database' && file !== 'apps/api/src/main.ts') note('raw-persistence', file, line, 'Indirect raw Database capability remains infrastructure-only');
+      }
       if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
         const clause = node.importClause, bindings = clause?.namedBindings;
         const named = bindings && ts.isNamedImports(bindings) ? bindings.elements : [];
@@ -152,13 +211,14 @@ export function auditArchitecture(directory: string) {
       if (production && owner !== 'packages/database' && (ts.isPropertyAccessExpression(node) && /^\$(?:queryRaw|executeRaw|transaction)/.test(node.name.text) || ts.isElementAccessExpression(node) && node.argumentExpression && ts.isStringLiteralLike(node.argumentExpression) && /^\$(?:queryRaw|executeRaw|transaction)/.test(node.argumentExpression.text))) note('raw-persistence', file, source.getLineAndCharacterOfPosition(node.getStart()).line + 1, 'Raw SQL/transactions stay inside the database infrastructure');
       if (production && ts.isDecorator(node)) {
         const call = node.expression, expression = ts.isCallExpression(call) ? call.expression : call;
-        const name = ts.isIdentifier(expression) ? localNames.get(expression.text) ?? expression.text : ts.isPropertyAccessExpression(expression) ? expression.name.text : '';
+        const resolved = origin(expression)?.name;
+        const name = capability(expression) ?? (resolved && resolved !== 'unknown' ? resolved : ts.isIdentifier(expression) ? localNames.get(expression.text) ?? expression.text : ts.isPropertyAccessExpression(expression) ? expression.name.text : '');
         if (name === 'Controller' && feature && layer !== 'transport') note('controller-layer', file, source.getLineAndCharacterOfPosition(node.getStart()).line + 1, 'HTTP controllers belong to API feature transport, never application/domain/job layers');
         if (name === 'Controller' && owner === 'apps/worker') note('controller-layer', file, source.getLineAndCharacterOfPosition(node.getStart()).line + 1, 'Worker is an independent job process, not an HTTP application');
         if (name === 'PublicHealth') {
           const method = ts.isMethodDeclaration(node.parent) ? node.parent : null;
           const decorators = method ? ts.getDecorators(method) ?? [] : [];
-          const healthRoute = decorators.some(d => ts.isCallExpression(d.expression) && ts.isIdentifier(d.expression.expression) && (localNames.get(d.expression.expression.text) ?? d.expression.expression.text) === 'Get' && d.expression.arguments.length === 1 && ts.isStringLiteral(d.expression.arguments[0]!) && ['live', 'ready'].includes((d.expression.arguments[0] as ts.StringLiteral).text));
+          const healthRoute = decorators.some(d => ts.isCallExpression(d.expression) && (origin(d.expression.expression)?.name === 'Get' || ts.isIdentifier(d.expression.expression) && (localNames.get(d.expression.expression.text) ?? d.expression.expression.text) === 'Get') && d.expression.arguments.length === 1 && ts.isStringLiteral(d.expression.arguments[0]!) && ['live', 'ready'].includes((d.expression.arguments[0] as ts.StringLiteral).text));
           if (file !== 'apps/api/src/health.ts' || !healthRoute) note('health-public', file, source.getLineAndCharacterOfPosition(node.getStart()).line + 1, 'PublicHealth is reserved for the existing live/ready foundation methods');
         }
       }

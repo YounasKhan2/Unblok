@@ -151,11 +151,11 @@ Currently step A is absent and FoundationAccessGuard denies business handlers. T
 
 `scripts/backend/architecture.ts` performs read-only TypeScript AST import/export analysis, actual tsconfig alias/relative resolution and declared Bun workspace export resolution. It inspects source under apps/packages and backend tooling (excluding generated/dependency/build files), including static imports/reexports, type references, literal dynamic imports and CommonJS loads. It checks manifest workspace directions as well as source paths, so aliased/relative imports cannot hide the dependency.
 
-Enforced rules: package/transport isolation; root package entries; bounded shared-runtime ownership; feature-first layers and named facades; private cross-feature imports; controller/persistence separation; named scoped database exports; Prisma/raw SQL isolation; process/test/fixture/computed/absolute-load exclusions; backend production cycles; and PublicHealth restricted to existing live/ready method patterns and access-owned metadata. The exact BE-00C type backlink is reported, not silently waived. Existing API readiness's Resources port, raw bootstrap Database and disposable test administration remain legal.
+Enforced rules: package/transport isolation; root package entries; bounded shared-runtime ownership; feature-first layers and named facades; private cross-feature imports; controller/persistence separation; named scoped database exports; Prisma/raw SQL isolation; process/test/fixture/computed/absolute-load exclusions; backend production cycles; and PublicHealth restricted to existing live/ready method patterns and access-owned metadata. The correction additionally resolves backend source symbol origins: namespace/member and const decorator aliases, named re-export chains, imported/re-exported public-health capabilities/metadata, and renamed raw Database imports through the exempt bootstrap. Nest declarations establish decorator origins; external ORM/SDK/type-library internals are not part of this provenance pass. The exact BE-00C type backlink is reported, not silently waived. Existing API readiness's Resources port, raw bootstrap Database and disposable test administration remain legal.
 
 Commands: `bun run check:architecture` and `bun run test:backend:architecture`. Architecture runs before every existing backend typecheck; its negative fixtures join `bun run test:backend`. No new dependency, package framework, production module or CI/deployment system is added.
 
-These are structural guardrails, **not a security verifier**. They cannot prove a cryptographic verifier, policy matrix, callback purity, transaction correctness, permission revocation or worker side-effect idempotency. Dynamic code/eval, computed property aliases, dependency behavior and semantic business logic need runtime tests/review. External dependency internals and existing frontend internal cycles are outside this backend graph; browser/package boundary violations remain checked. New unknown packages/shared responsibilities require reviewed rule updates, never ad-hoc bypass comments.
+These are structural guardrails, **not a security verifier**. The allowed scoped names are an import-surface rule, never an authorization grant: a malicious `AuthorizationPolicy` returning true, wrapper function exporting a privileged object, indirect runtime mutation, synthesized metadata key or fake verifier is not made safe by an allowed import. They cannot prove a cryptographic verifier, policy matrix, callback purity, transaction correctness, permission revocation or worker side-effect idempotency. Dynamic code/eval, computed property aliases, getters/function-return data flow, declaration-only wrappers, dependency behavior and semantic business logic need runtime tests/review. External dependency internals and existing frontend internal cycles are outside this backend graph; browser/package boundary violations remain checked. Existing runtime deny-default HTTP tests and real PostgreSQL forgery/membership/team/policy tests remain required. New unknown packages/shared responsibilities require reviewed rule updates, never ad-hoc bypass comments.
 
 ## 9. Testing strategy and verification
 
@@ -163,7 +163,7 @@ Architecture mutation fixtures are isolated temporary source repositories, not r
 
 For future features: pure-rule unit tests; application tests with explicit narrow ports; DTO/HTTP contract tests that retain deny-default and generic error behavior; real PostgreSQL two-tenant collisions, revocation/archival/forgery and transactional concurrency tests; independently authorized/idempotent worker tests when jobs exist. Never replace real tenancy tests with mocks or zero-test skips.
 
-Verification on Windows with Bun 1.4.2 and the fetched BE-00C base:
+Correction verification on Windows with Bun 1.4.2; exact base/head comparison follows this matrix:
 
 | Command | Actual final result |
 |---|---|
@@ -171,15 +171,15 @@ Verification on Windows with Bun 1.4.2 and the fetched BE-00C base:
 | `bun run db:generate` | Passed, Prisma 6.19.3 client |
 | `bun run infra:config`, `bun run infra:up` | Passed; four local services healthy |
 | `bun run db:migrate` | Passed; all three existing committed migrations applied to fresh local development storage |
-| `bun run typecheck:backend` | Passed, including architecture: 316 source files, 909 resolved internal edges, zero violations; explicit BE-00C type-only backlink reported |
+| `bun run typecheck:backend` | Passed, including architecture: 318 source files, 909 resolved internal edges, zero violations; explicit BE-00C type-only backlink reported |
 | `bun run lint:backend` | Passed |
 | `bun run build:backend` | Passed for API and worker |
-| `bun run test:backend` | 72 passed, zero failed, 143 assertions; 36 existing foundation tests plus 36 architecture tests |
-| `bun run test:backend:architecture` | 36 passed, zero failed, 42 assertions |
+| `bun run test:backend` | 81 passed, zero failed, 152 assertions; 36 existing foundation tests plus 45 architecture tests |
+| `bun run test:backend:architecture` | 45 passed, zero failed, 51 assertions; original five-second test budgets retained |
 | `bun run test:backend:integration` | 2 passed, zero failed, 5 assertions, real PostgreSQL/Valkey |
-| `bun run test:backend:tenancy` | 34 passed, zero failed, 129 assertions, real PostgreSQL including concurrency/migration regressions |
-| `bun run test:backend:infra` | **4 passed, 1 failed**, plus one reported between-test error; identical result on repeat. Unsupported-job finish notification exceeds the existing 5-second deadline. PostgreSQL, Valkey/throttle, diagnostic deduplication, RustFS/Mailpit checks pass |
-| `bun run test:backend:lifecycle` | **1 passed, 2 failed**, identical result on repeat. Built API/worker reach readiness, but `child.kill('SIGTERM')` yields 143 rather than expected 0 on this Windows host. Credential-failure/redaction check passes |
+| `bun run test:backend:tenancy` | Final serial rerun: 34 passed, zero failed, 129 assertions, 17.56s, real PostgreSQL including concurrency/migration regressions. Earlier run: 33 pass / 1 fail / 1 late error, 126 assertions, 33.35s; existing Prisma replay/schema-diff test reached its five-second budget while web gates were running. No budget/assertion changed; scheduling causation is not proven |
+| `bun run test:backend:infra` | Final run: **4 passed, 1 failed**, one between-test error, 14 assertions, 6.32s, exit 1. Comparison includes both pass and fail on base/head; see below. PostgreSQL, Valkey/throttle, diagnostic deduplication, RustFS/Mailpit checks pass |
+| `bun run test:backend:lifecycle` | Final run: **1 passed, 2 failed**, 7 assertions, 2.94s, exit 1. Built API/worker reach readiness, but `child.kill('SIGTERM')` yields 143 rather than expected 0. Credential-failure/redaction check passes |
 | `bun run lint:web` | Passed |
 | `bun run test:web` | **733 passed, 3 failed**, 50 files; unchanged documented NEXUS fixture assertions below |
 | `bun run build:web` | Passed; existing Vite configuration/chunk-size warnings remain |
@@ -187,7 +187,33 @@ Verification on Windows with Bun 1.4.2 and the fetched BE-00C base:
 
 The three unchanged frontend failures are `nexusEnterprise.test.ts` / “has valid entity references, unique IDs, and a directed acyclic dependency graph” (missing resolved blocker), the same file / “populates milestone dependency graphs and cross-team matrix data” (zero nodes vs at least 12), and `nexus/nexusEnterpriseValidation.test.ts` / “preserves five active blocked-work examples while limiting graph fan-in and fan-out” (fan-out 3 vs maximum 2). They match the tracked BE-00B/BE-00C baseline record; no frontend source or expectations changed.
 
-The additional infra/lifecycle failures are **not certified as harmless** and are not reported as passing. Their tests, API/worker/runtime source, dependency lock and infrastructure configuration are byte-for-byte unchanged relative to base. BE-00C's prior record reports these suites passing; this run therefore records a reproducible host/run limitation requiring review, rather than overwriting that history or claiming its cause is proven. No Windows signal workaround, timeout relaxation, fixture change or unrelated production correction is introduced in BE-00D.
+### PR #25 correction: established base versus reviewed head
+
+Read [the latest review](https://github.com/YounasKhan2/Unblok/pull/25#issuecomment-6091269711). Checked out exact base `66d419e6c058208605f895b74da77ab37995df21` in an independent detached worktree, installed its frozen lock, generated its Prisma client and built its own API/worker. The primary checkout remained at reviewed head `443e5a68b520ba37f1fd9cfb2f0a689313d33a0e` during comparison. Both used Windows, Bun 1.4.2, the same local services, unchanged configuration, and byte-identical ignored API/infrastructure environment files. Base production/test inputs and head production/test inputs are unchanged; no junction to head dependencies or copied build output was used. Diagnostic-only untracked tools were copied to base **after** its unmodified-suite run. The initial head suite completed before base installation/build finished; repeated comparison suites ran serially in base→head order.
+
+| Unmodified suite/run | Exact base | Reviewed head |
+|---|---|---|
+| Initial infra | Exit 0; 5 pass / 0 fail, 18 assertions; 7.26s | Exit 1; 4 pass / 1 fail / 1 between-test error, 14 assertions; 7.95s |
+| Alternating infra round 1 | Exit 1; same timeout/error; 6.39s (wall 6684ms) | Exit 1; same timeout/error; 6.34s (wall 6445ms) |
+| Alternating infra round 2 | Exit 1; same timeout/error; 6.49s (wall 6626ms) | Exit 1; same timeout/error; 6.11s (wall 6199ms) |
+| Alternating infra round 3 | Exit 1; same timeout/error; 6.06s (wall 6189ms) | Exit 0; 5 pass / 0 fail; 1.116s (wall 1236ms) |
+| Built-process lifecycle | Exit 1; 1 pass / 2 fail, 7 assertions; 8.45s | Exit 1; 1 pass / 2 fail, 7 assertions; 4.86s |
+
+This establishes that the failing assertions predate BE-00D **on this host**; it does not establish that failures are harmless or inevitable on all Windows/Bun setups. Earlier BE-00C passing evidence is retained as history. No production correction is warranted by a head-only regression in these comparisons.
+
+Sanitized observations are reproducible with opt-in tools, separate from unchanged gates:
+
+```powershell
+bun --env-file=apps/api/.env scripts/backend/verification-diagnostics.ts
+bun test --env-file=apps/api/.env --preload ./scripts/backend/queue-diagnostics-preload.ts scripts/backend/infra.test.ts
+```
+
+- **SIGTERM mechanism:** base and head probes both report `exitCode:143`, `signalCode:SIGTERM`; only readiness events occur, without `shutdown_started` or `shutdown_complete`. Base API/worker exit latencies were 220/54ms; head 21/12ms. A minimal Bun child with a registered SIGTERM handler likewise exits 143 with no handler output. This isolates the observed failure to the host's Bun parent→child kill/delivery path rather than proving an application close callback defect. The API listener is gone after exit, but forced termination is **not evidence of graceful resource disposal**. Signal-driven cleanup remains unverified on this host; successful direct queue-close probes do not substitute for it.
+- **Queue timeout mechanism:** instrumented unchanged-suite runs on both commits capture worker/QueueEvents completion/failure events and fresh stored state without payloads/IDs/credentials. Head timeout observation 1: 5005ms, job still `waiting`, attempts 0; worker and QueueEvents failure events follow. Head timeout observation 2: 5003ms, job `failed`, attempts 1, exact expected failure reason; failure notification follows the waiter deadline. Base timeout observation: 5006ms, job already `failed`, attempts 1, expected reason; QueueEvents notification follows. Passing observed runs reject with the expected reason in 11–33ms. Thus this is intermittent dispatch/notification scheduling at the five-second boundary, not proof of an unsupported job being accepted or retries exhausted. BullMQ's existing default blocking poll is five seconds, but the causal link to its marker wakeup/this Bun+ioredis runtime is **not proven**; no timeout/poll setting is changed.
+- **Between-test error:** Bun's default test deadline and `waitUntilFinished(...,5000)` are both five seconds. Once the test times out, the still-pending expectation later rejects with the queue-wait timeout message instead of the expected unsupported-job reason; Bun reports that late assertion as an additional between-test error. It is a secondary manifestation of the same unsettled waiter, not independently established database corruption. Neither assertion nor deadline is weakened.
+- **Cleanup:** normal queue probes on both builds observe `failed`, attempts 1, notification received, no worker errors, successful direct worker close, both Redis connections reaching `end`, and removal of the probe-owned job. Failed unchanged tests do not reach their final `job.remove()` assertion; their failed job can remain under the configured retention policy even though `afterAll` closes worker/queue/events/connections. No blanket queue purge, retained-data deletion or infrastructure reset was used. All child processes were awaited; containers are stopped afterward with volumes retained.
+
+Raw local logs under `.git/be-00d` include the comparison runs and sanitized observations; the [sanitized comparison evidence](evidence/BE-00D-verification-correction.json) records exact SHAs, outcomes, durations and event/state observations without personal paths, credentials or job IDs. Diagnostic output deliberately excludes arbitrary exception text, stacks, URLs and payloads. The opt-in preload forwards original methods without replacing deadlines, assertions or normal commands; its observations are auxiliary evidence, not certified gate passes. No signal workaround, timeout relaxation, dependency change or unrelated production correction is introduced. Underlying queue scheduling cause and graceful shutdown portability remain review risks.
 
 A fresh checkout requires Prisma client generation before backend typechecking; an initial pre-generation check reported missing generated enum/Prisma definitions, and the final post-generation check passes. Local ignored environment generation preserves existing files and does not print credentials. PostgreSQL verification uses committed migrations and disposable test databases, never resets a configured existing database. Local test infrastructure is stopped after verification with its volumes retained. Raw logs remain local under `.git/be-00d`; the table records results for review without committing credentials or generated artifacts.
 

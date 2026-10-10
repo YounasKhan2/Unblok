@@ -152,6 +152,52 @@ describe('feature privacy, layer direction and cycles', () => {
 });
 
 describe('deny-default foundation cannot become a public business fixture', () => {
+  for (const expression of ['N.Controller', 'C']) test(`namespace/local Nest decorator ${expression} cannot hide in application`, () => {
+    const f = fixture();
+    f.put('node_modules/@nestjs/common/index.d.ts', 'export declare function Controller(): ClassDecorator;');
+    f.put('node_modules/@nestjs/common/package.json', '{"name":"@nestjs/common","types":"index.d.ts"}');
+    f.put('apps/api/src/modules/issues/application/read.ts', `import * as N from "@nestjs/common"; const C = N.Controller; @${expression}() class Issues {}`);
+    expect(f.rules()).toContain('controller-layer');
+  });
+  test('named re-exported Nest decorator cannot hide its origin', () => {
+    const f = fixture();
+    f.put('node_modules/@nestjs/common/index.d.ts', 'export declare function Controller(): ClassDecorator;');
+    f.put('node_modules/@nestjs/common/package.json', '{"name":"@nestjs/common","types":"index.d.ts"}');
+    f.put('apps/api/src/modules/issues/application/decorators.ts', 'export { Controller as Route } from "@nestjs/common";');
+    f.put('apps/api/src/modules/issues/application/read.ts', 'import { Route as R } from "./decorators"; @R() class Issues {}');
+    expect(f.rules()).toContain('controller-layer');
+  });
+  for (const expression of ['A.PublicHealth', 'Open']) test(`namespace/local public health capability ${expression} is rejected`, () => {
+    const f = fixture();
+    f.put('apps/api/src/modules/issues/transport/controller.ts', `import * as A from "../../../access"; const Open = A.PublicHealth; class Issues { @${expression}() list() {} }`);
+    expect(f.rules()).toContain('health-public');
+  });
+  test('renamed public health re-export and imported metadata cannot launder access', () => {
+    const f = fixture();
+    f.put('apps/api/src/access.ts', 'export const HEALTH_PUBLIC = "foundation:public-health"; export const PublicHealth = () => () => {};');
+    f.put('apps/api/src/modules/issues/transport/public.ts', 'export { PublicHealth as Open, HEALTH_PUBLIC as KEY } from "../../../access";');
+    f.put('apps/api/src/modules/issues/transport/controller.ts', 'import { Open as O, KEY } from "./public"; const K = KEY; @O() class Issues {} SetMetadata(K, true);');
+    expect(f.rules()).toContain('health-public');
+  });
+  test('renamed raw Database from exempt composition root remains forbidden', () => {
+    const f = fixture();
+    f.put('apps/api/src/main.ts', 'export { Database as Tenancy } from "@unblok/database";');
+    f.put('apps/api/src/modules/issues/application/read.ts', 'import { Tenancy as Scope } from "../../../main"; const Store = Scope;');
+    expect(f.rules()).toContain('raw-persistence');
+  });
+  test('an allowed scoped export name cannot disguise the raw Database class', () => {
+    const f = fixture();
+    f.put('packages/database/src/index.ts', 'class Database {} export { Database as Tenancy };');
+    f.put('apps/api/src/modules/issues/application/read.ts', 'import { Tenancy } from "@unblok/database"; const raw = new Tenancy();');
+    expect(f.rules()).toContain('raw-persistence');
+  });
+  test('destructured namespace decorator alias remains a transport controller', () => {
+    const f = fixture();
+    f.put('node_modules/@nestjs/common/index.d.ts', 'export declare function Controller(): ClassDecorator;');
+    f.put('node_modules/@nestjs/common/package.json', '{"name":"@nestjs/common","types":"index.d.ts"}');
+    f.put('apps/api/src/modules/issues/application/read.ts', 'import * as N from "@nestjs/common"; const { Controller: C } = N; @C() class Issues {}');
+    expect(f.rules()).toContain('controller-layer');
+  });
   test('aliased PublicHealth cannot grant a business route', () => {
     const f = fixture(); f.put('apps/api/src/modules/issues/transport/issues.controller.ts', 'import { PublicHealth as Open } from "../../../access"; class Issues { @Open() @Get("issues") list() {} }');
     expect(f.rules()).toContain('health-public');
