@@ -34,4 +34,6 @@ This is an **initial repository-grounded audit**, not an exhaustive dependency g
 
 ## Living delivery status
 
+[BE-00E authentication, session and authorization architecture](17-BE-00E-AUTH-SESSION-AUTHORIZATION.md) is a planning proposal for human review: stateful Valkey cookie sessions, dependency compatibility findings, CSRF/lifecycle/security and action/resource policy decisions, frontend parity and implementation approval gates. Authentication remains **not implemented**; no production package or behavior change is authorized by the document.
+
 [Backend status and delivery roadmap](16-BACKEND-STATUS-AND-ROADMAP.md) tracks merged phases, outstanding business capabilities, known verification failures and future delivery order. **Update this tracker whenever merging an Unblok branch that changes backend progress**, including a dated change-log entry and the merge SHA when available. This is a status document and does not supersede the architecture/security contracts above.
