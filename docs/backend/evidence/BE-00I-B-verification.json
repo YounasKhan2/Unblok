@@ -1,0 +1,374 @@
+{
+  "phase": "BE-00I-B",
+  "base": "b41b6cc4670cd3ecf8bd14d1019311771baadb8b",
+  "branch": "feat/be-00i-b-email-verification",
+  "headLocation": "PR metadata",
+  "status": "implemented and locally verified; awaiting human review; not merged/deployed/production-certified",
+  "environment": {
+    "os": "Windows",
+    "bun": "1.4.2",
+    "nest": "11.2.7",
+    "postgresql": "17.6",
+    "valkey": "8.1.3",
+    "mailpit": "pinned v1.27.8 local loopback only"
+  },
+  "migration": {
+    "new": "20261010060000_email_verification",
+    "additive": true,
+    "priorFilesUnchanged": [
+      "packages/database/prisma/migrations/20261010000000_foundation/migration.sql",
+      "packages/database/prisma/migrations/20261010010000_domain_tenancy/migration.sql",
+      "packages/database/prisma/migrations/20261010020000_guard_corrections/migration.sql",
+      "packages/database/prisma/migrations/20261010030000_auth_revocation_fences/migration.sql",
+      "packages/database/prisma/migrations/20261010040000_password_credentials/migration.sql",
+      "packages/database/prisma/migrations/20261010050000_credential_email_ownership/migration.sql",
+      "packages/database/prisma/migrations/migration_lock.toml"
+    ],
+    "migrations": 7,
+    "freshDeployReplaySchemaEquality": "pass",
+    "upgradeHistoryAndRows": "pass",
+    "localSixToSevenDeploy": "pass; no seed/reset",
+    "tables": [
+      "email_verification_challenges",
+      "email_verification_outbox"
+    ],
+    "constraints": [
+      "immutable credential composite FK",
+      "bounded15minute expiry",
+      "durable10attempt cap",
+      "monotonic immutable consumed/canceled evidence",
+      "single challenge outbox",
+      "no runtime DDL"
+    ]
+  },
+  "contracts": {
+    "request": "POST /api/v1/auth/email-verification/request; strict{}; authenticated;202accepted; no token/address/id in result",
+    "confirm": "POST /api/v1/auth/email-verification/confirm; strict{token}; authenticated same credential;200accepted for valid/invalid/expired/replay/already verified; status separately reveals only owner state",
+    "status": "GET /api/v1/auth/email-verification/status; authenticated;{emailVerified:boolean}",
+    "me": "primary immutable credential email and verification state",
+    "mutations": "strict allowed Origin/cookie-bound CSRF/JSON",
+    "privacy": "no public email lookup; generic401 for absent/nonexistent/disabled session authority; no perfect timing indistinguishability claim"
+  },
+  "cryptography": {
+    "primitive": "domain-separated HMAC-SHA256",
+    "independentKeyBits": 256,
+    "challengeId": "server cryptographic UUID",
+    "proof": "uuid plus256bit keyed PRF bound to key id,credential identity,email,epoch",
+    "persisted": "keyed digest only; no plaintext proof in application database/outbox/queue/logs/evidence/URL",
+    "mailboxException": "proof necessarily delivered in recipient email; local Mailpit message persistence intentionally test-only; owned messages deleted, no forensic erasure claim",
+    "sameVersionMismatchedWorkerKey": "digest consistency checked before send; fail closed",
+    "rotation": "new id and key together; old id rejected; no permissive fallback"
+  },
+  "authority": {
+    "principal": "existing same-instance private request-bound VerifiedPrincipal",
+    "ordering": "user/family then credential/challenge; preserved PostgreSQL revocation locks",
+    "redemption": "atomic primary-clock expiry/unused/canceled/attempt predicates and consumption plus stamp in one transaction",
+    "currentEpochEnabledIdentityBindingRechecked": true,
+    "workspaceGrants": false,
+    "linking": false,
+    "unknownCommit": "503; later request/status safely resolves; no guaranteed cancellation"
+  },
+  "delivery": {
+    "durableOutbox": true,
+    "networkInsideTransaction": false,
+    "queueContainsToken": false,
+    "workerPollMs": 1000,
+    "leaseMs": 30000,
+    "maxClaims": 5,
+    "retryMs": 30000,
+    "transportAckMs": 2000,
+    "timeoutMeansCancellation": false,
+    "duplicateDelivery": "possible after lost acknowledgement; identical proof cannot renew authority",
+    "oldLeaseAck": "compare-and-set lease id",
+    "mailpitHttpActualDelivery": true,
+    "productionTransport": "authenticated HTTPS Mailpit-compatible relay/gateway; fixedpath, no redirect, no URL credentials; not production-delivery certified"
+  },
+  "limits": {
+    "requestAccount": 5,
+    "requestIP": 10,
+    "requestWindowMs": 3600000,
+    "confirmAccount": 10,
+    "confirmIP": 30,
+    "confirmWindowMs": 900000,
+    "durableChallengeAttempts": 10,
+    "refunds": false,
+    "cacheLossCannotResetDurableAttempts": true,
+    "coarseIPAppliesToMalformedInputsAndStatus": true
+  },
+  "gates": {
+    "email-verification": {
+      "exit": 0,
+      "pass": 12,
+      "fail": 0,
+      "assertions": 303,
+      "seconds": 16.28
+    },
+    "authentication": {
+      "exit": 0,
+      "pass": 26,
+      "fail": 0,
+      "assertions": 812,
+      "seconds": 17.75
+    },
+    "sessions": {
+      "exit": 0,
+      "pass": 25,
+      "fail": 0,
+      "assertions": 254,
+      "seconds": 16.53
+    },
+    "auth-fences": {
+      "exit": 0,
+      "pass": 24,
+      "fail": 0,
+      "assertions": 134,
+      "seconds": 9.88
+    },
+    "tenancy": {
+      "exit": 0,
+      "pass": 34,
+      "fail": 0,
+      "assertions": 132,
+      "seconds": 15.03
+    },
+    "backend": {
+      "exit": 0,
+      "pass": 97,
+      "fail": 0,
+      "assertions": 247,
+      "seconds": 10.41
+    },
+    "integration": {
+      "exit": 0,
+      "pass": 2,
+      "fail": 0,
+      "assertions": 5,
+      "seconds": 1.192
+    },
+    "architecture": {
+      "exit": 0,
+      "files": 346,
+      "edges": 958,
+      "violations": 0
+    },
+    "typecheck": {
+      "exit": 0
+    },
+    "lint": {
+      "exit": 0
+    },
+    "build": {
+      "exit": 0,
+      "apiKB": 49.92,
+      "workerKB": 4.29
+    },
+    "prismaFormatValidateGenerate": {
+      "exit": 0
+    },
+    "migration": {
+      "exit": 0,
+      "pending": 0,
+      "migrations": 7
+    },
+    "frozenInstall": {
+      "exit": 0,
+      "externalPackageChanges": 0,
+      "checkedInstalls": 385,
+      "packages": 506
+    },
+    "docsLinks": {
+      "exit": 0
+    },
+    "diffCheck": {
+      "exit": 0
+    },
+    "infrastructure": {
+      "exit": 1,
+      "pass": 4,
+      "fail": 1,
+      "betweenTestErrors": 1,
+      "assertions": 14,
+      "seconds": 5.67,
+      "finding": "existing unsupported-job5s finish notification timeout and late error; RustFS/Mailpit ready checks passed; infra.test and startWorker diagnostic implementation unchanged"
+    },
+    "lifecycle": {
+      "exit": 1,
+      "pass": 1,
+      "fail": 2,
+      "assertions": 7,
+      "seconds": 3.51,
+      "finding": "API/worker SIGTERM143 expected0; unchanged historical failure not certified harmless"
+    },
+    "audit": {
+      "exit": 1,
+      "finding": "existing high deepmerge-ts advisory GHSA-ggr8-5vv4-36mx under unchanged Prisma tooling; no external dependency upgrade"
+    }
+  },
+  "securityTests": [
+    "actual Mailpit receipt and primary stamp; no persistence/log plaintext",
+    "issuance concurrency one outbox",
+    "redemption concurrency one stamp and no replay mutation",
+    "transport refusal and acknowledgement loss after real mail",
+    "durable challenge attempts across cache namespaces",
+    "credential/account binding; forged proofs",
+    "expired/canceled/epoch-stale/disabled messages",
+    "SQL expiry/digest rewrite rejection",
+    "strict body/CSRF/Origin and cookie authority",
+    "real PG connection outage and closed real Valkey session client",
+    "crash lease recovery and late acknowledgement CAS",
+    "key rotation and same-id mismatch pre-send rejection",
+    "request account/IP budgets",
+    "already-minted principal rejected after concurrent logout-all"
+  ],
+  "developmentFailedObservations": [
+    {
+      "suite": "initial email verification",
+      "pass": 6,
+      "fail": 2,
+      "assertions": 190,
+      "seconds": 15.95,
+      "finding": "fixture BigInt JSON serialization and Prisma thenable assertion errors; corrected without changing assertions/timeouts;8/207 then10/271 then12/303 passed"
+    },
+    {
+      "gate": "architecture",
+      "finding": "initial worker bootstrap privileges not yet modeled; narrowly scoped named Database/VerificationDelivery exemption plus negative fixtures added; no business capability exemption"
+    },
+    {
+      "gate": "architecture",
+      "finding": "API-owned test imported worker workspace; moved to established scripts/backend integration location instead of loosening package boundaries"
+    },
+    {
+      "gate": "test load",
+      "exit": 1,
+      "finding": "root reflect-metadata bare import not installed there; removed redundant test import because production app owns it"
+    },
+    {
+      "gate": "lint",
+      "exit": 1,
+      "finding": "copied unused test imports, then final unused prepared fixture binding; corrected; final lint passed"
+    }
+  ],
+  "freeze": {
+    "frontendMarketingNexus": true,
+    "allSixPriorMigrations": true,
+    "externalVersionsAndIntegrityEntries": true,
+    "dependencyChange": "one existing database workspace dependency edge added to worker manifest/lock",
+    "existingSessionAndFenceSecurityContracts": true,
+    "noWorkspaceGrantOrLink": true,
+    "noRecoveryOauthMfaFrontendWiring": true
+  },
+  "cleanup": {
+    "ownedVerificationDatabases": 0,
+    "ownedVerificationCacheKeys": 0,
+    "remainingMailpitMessages": 0,
+    "sharedQueuePurged": false,
+    "devVolumesPreserved": true
+  },
+  "remainingDeploymentRequirements": [
+    "human review SQL/cryptography/worker boundary/runtime stamp grants",
+    "HTTPS mail gateway and actual downstream delivery, sender reputation and mailbox/log retention",
+    "browserTLS/proxy/CORS/CSRF deployment review",
+    "matching independent API/worker keys, rotation/restoration/PITR with auth epoch/session namespace resets",
+    "primary clock synchronization",
+    "outbox monitoring, five-attempt exhaustion and reconciliation/retention",
+    "cache eviction/flush and distributed abuse/load/HA calibration",
+    "historical SIGTERM/queue/audit and BE-00F/NEXUS risks remain; no production certification"
+  ],
+  "pr31Correction": {
+    "date": "2026-10-11",
+    "reviewedHead": "d535ab56f91c15a03b1b41434e0929f6838cdb9f",
+    "headLocation": "PR metadata",
+    "F1": {
+      "productionChanged": false,
+      "sequentialWrongProofs": 10,
+      "committedAttempts": 10,
+      "httpBody": "status accepted only; no existence/remaining count",
+      "concurrent": "accepted HTTP responses equal committed attempts; SERIALIZABLE conflicts return503 and roll back",
+      "exhaustion": "correct proof denied after10; fresh API/cache namespace and worker instance cannot reset primary cap"
+    },
+    "F2": {
+      "productionChange": "credential-locked transactional cancellation/replacement for undelivered five-claim outbox with no live final lease",
+      "inFlight": "reuse until unchanged30s final lease expires",
+      "abuse": "unchanged account5/hour IP10/hour; every request consumes budget",
+      "lateSuccess": "actual Mailpit delivery and successful old acknowledgement after replacement cannot revive canceled proof",
+      "expiry": "replacement15min maximum; old lifetime never extended",
+      "concurrent": "exactly one replacement commits; conflicts fail closed"
+    },
+    "gates": {
+      "emailSecurity": {
+        "exit": 0,
+        "pass": 16,
+        "fail": 0,
+        "assertions": 468,
+        "seconds": 27.21
+      },
+      "authentication": {
+        "exit": 0,
+        "pass": 26,
+        "fail": 0,
+        "assertions": 812,
+        "seconds": 24.89
+      },
+      "sessions": {
+        "exit": 0,
+        "pass": 25,
+        "fail": 0,
+        "assertions": 254,
+        "seconds": 21.07
+      },
+      "authFences": {
+        "exit": 0,
+        "pass": 24,
+        "fail": 0,
+        "assertions": 134,
+        "seconds": 16.69
+      },
+      "tenancy": {
+        "exit": 0,
+        "pass": 34,
+        "fail": 0,
+        "assertions": 132,
+        "seconds": 24.47
+      },
+      "backend": {
+        "exit": 0,
+        "pass": 97,
+        "fail": 0,
+        "assertions": 247,
+        "seconds": 15.2
+      },
+      "databaseIntegration": {
+        "exit": 0,
+        "pass": 2,
+        "fail": 0,
+        "assertions": 5,
+        "seconds": 2.34
+      },
+      "migrationReplaySchemaEquality": "pass in email suite; upgrade history in tenancy",
+      "architecture": "346 files958 edges0 violations",
+      "typecheck": "pass",
+      "lint": "pass",
+      "build": "pass API49.92KB worker4.29KB",
+      "diff": "pass"
+    },
+    "failedObservations": [
+      {
+        "pass": 15,
+        "fail": 1,
+        "assertions": 467,
+        "seconds": 35.2,
+        "finding": "Existing migration/schema test hit unchanged5s deadline while static checks overlapped; retained observation, no proven root cause or harmlessness claim"
+      }
+    ],
+    "intermediateRepeat": {
+      "pass": 16,
+      "fail": 0,
+      "assertions": 467,
+      "seconds": 26.02
+    },
+    "historicalFailures": "Original infrastructure/lifecycle/audit observations above retained; not rerun or declared fixed by this correction",
+    "freeze": "frontend, all migrations/schema, packages/lock, API/worker/session/fence code unchanged; only database challenge-reuse leaf, tests, report/evidence/tracker changed",
+    "deployment": "all original operational/TLS/mail/key/runtime-grant requirements remain; exhausted deliveries recover by explicit rate-admitted request, not automatic endless retry",
+    "status": "awaiting human review; do not merge or begin BE-00I-C"
+  }
+}

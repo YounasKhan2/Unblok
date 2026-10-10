@@ -22,7 +22,10 @@ export const loginSchema = z.object({ email: credentialEmailSchema, password: pa
 export const emptyAuthSchema = z.object({}).strict();
 export const csrfResponseSchema = z.object({ csrf: z.string().regex(/^[A-Za-z0-9_-]{43}$/) }).strict();
 export const signupResponseSchema = z.object({ status: z.literal('accepted') }).strict();
-export const meResponseSchema = z.object({ user: z.object({ id: z.uuid(), name: z.string().max(120), email: z.string().max(320).nullable(), emailVerified: z.literal(false) }).strict() }).strict();
+export const meResponseSchema = z.object({ user: z.object({ id: z.uuid(), name: z.string().max(120), email: z.string().max(320).nullable(), emailVerified: z.boolean() }).strict() }).strict();
 export const logoutResponseSchema = z.object({ revocation: z.literal('confirmed'), cleanup: z.enum(['confirmed', 'unconfirmed']) }).strict();
 export type SignupInput = z.infer<typeof signupSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+
+export const emailVerificationConfirmSchema = z.object({ token: z.string().regex(/^[0-9a-f-]{36}\.[A-Za-z0-9_-]{43}$/) }).strict();
+export const emailVerificationStatusSchema = z.object({ emailVerified: z.boolean() }).strict();

@@ -321,7 +321,7 @@ test('unverified ownership stays separate from unrelated contact identities, gra
   expect((await f.http('/api/v1/auth/csrf', 'GET', auth)).status).toBe(401);
 });
 
-test('durable email ownership has immutable binding and ordered nullable verification without an email-verification API', async () => {
+test('durable email ownership has immutable binding and ordered nullable verification without inferred grants', async () => {
   const f = await fixture(), { email } = await f.signup();
   const row = await database.client.passwordCredential.findUniqueOrThrow({ where: { email } });
   expect(row.emailVerifiedAt).toBeNull();
@@ -335,7 +335,7 @@ test('durable email ownership has immutable binding and ordered nullable verific
   await database.client.passwordCredential.update({ where: { identityId: row.identityId }, data: { emailVerifiedAt: row.createdAt } });
   expect((await database.client.passwordCredential.findUniqueOrThrow({ where: { email } })).emailVerifiedAt).toEqual(row.createdAt);
   const auth = await f.login(email), response = await f.http('/api/v1/auth/me', 'GET', auth);
-  expect((await response.json()).user.emailVerified).toBe(false);
+  expect((await response.json()).user.emailVerified).toBe(true);
   const identity = await database.client.identity.findUniqueOrThrow({ where: { id: row.identityId } });
   expect(await database.client.workspaceMembership.count({ where: { userId: identity.userId } })).toBe(0);
 });

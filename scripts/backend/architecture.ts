@@ -112,6 +112,7 @@ export function auditArchitecture(directory: string) {
     }
     if (file === 'packages/database/src/index.ts' && symbol?.name === 'Database') return 'Database';
     if (file === 'packages/database/src/auth-fences.ts' && symbol?.name === 'AuthFences') return 'AuthFences';
+    if (file === 'packages/database/src/email-verification.ts' && symbol?.name === 'VerificationDelivery') return 'VerificationDelivery';
     if (file === 'packages/database/src/credentials.ts' && symbol?.name === 'AccountCredentials') return 'AccountCredentials';
     return undefined;
   }
@@ -167,7 +168,7 @@ export function auditArchitecture(directory: string) {
       if (production && (owner === 'packages/contracts' || file.startsWith('apps/web/src/')) && (builtin || /^(?:@nestjs\/|@prisma\/|prisma$|bullmq$|ioredis$|pino$)/.test(specifier))) note('transport-safe', file, line, 'Browser/contracts cannot import server infrastructure, including types');
       if (production && owner === 'packages/contracts' && !target && !builtin && packageName(specifier) !== 'zod') note('transport-safe', file, line, 'Contracts depend only on themselves and approved neutral Zod schemas');
       if (production && /^(?:@prisma\/|\.prisma\/)/.test(specifier) && owner !== 'packages/database') note('raw-persistence', file, line, 'Prisma stays inside packages/database');
-      if (production && destination === 'packages/database' && owner !== destination && file !== 'apps/api/src/main.ts') {
+      if (production && destination === 'packages/database' && owner !== destination && file !== 'apps/api/src/main.ts' && !(file === 'apps/worker/src/main.ts' && names.length > 0 && names.every(name => ['Database', 'VerificationDelivery'].includes(name)))) {
         if (!names.length || names.some(name => !databaseNames.has(name))) note('raw-persistence', file, line, 'Use named scoped Tenancy exports; raw Database/namespace/dynamic imports are infrastructure-only');
         if (layer === 'transport') note('controller-persistence', file, line, 'Controllers use application services, not persistence');
       }
@@ -190,7 +191,7 @@ export function auditArchitecture(directory: string) {
         const privileged = capability(node);
         const line = source.getLineAndCharacterOfPosition(node.getStart()).line + 1;
         if ((privileged === 'HEALTH_PUBLIC' || privileged === 'PublicHealth') && file !== 'apps/api/src/access.ts' && file !== 'apps/api/src/health.ts') note('health-public', file, line, 'Public health capability/metadata cannot be imported, aliased or re-exported into business code');
-        if ((privileged === 'Database' || privileged === 'AuthFences' || privileged === 'AccountCredentials') && owner !== 'packages/database' && file !== 'apps/api/src/main.ts') note('raw-persistence', file, line, 'Indirect privileged persistence capability remains infrastructure-only');
+        if ((['Database', 'AuthFences', 'AccountCredentials', 'VerificationDelivery'].includes(privileged ?? '')) && owner !== 'packages/database' && file !== 'apps/api/src/main.ts' && !(file === 'apps/worker/src/main.ts' && ['Database', 'VerificationDelivery'].includes(privileged ?? ''))) note('raw-persistence', file, line, 'Indirect privileged persistence capability remains infrastructure-only');
       }
       if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
         const clause = node.importClause, bindings = clause?.namedBindings;
