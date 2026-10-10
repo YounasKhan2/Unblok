@@ -251,3 +251,7 @@ test('outbox delivery is private to worker bootstrap; direct and disguised busin
     f.put('apps/worker/src/jobs/other/application/send.ts', source); expect(f.rules()).toContain('raw-persistence');
   }
 });
+
+test('recovery capabilities cannot escape composition through direct or aliased imports',()=>{
+ for(const name of ['PasswordRecovery','RecoveryDelivery']) {const f=fixture();f.put('packages/database/src/password-recovery.ts', 'export class '+name+' {}');f.put('packages/database/src/index.ts','export { '+name+', '+name+' as Tenancy } from "./password-recovery";');f.put('apps/api/src/modules/issues/application/read.ts','import { Tenancy } from "@unblok/database"; const x=new Tenancy();');expect(f.rules()).toContain('raw-persistence');}
+});

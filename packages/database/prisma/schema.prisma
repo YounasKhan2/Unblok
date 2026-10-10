@@ -89,7 +89,8 @@ model PasswordCredential {
   emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamptz(3)
   identity        Identity  @relation(fields: [identityId], references: [id], onDelete: Restrict, onUpdate: Restrict)
 
-  challenges EmailVerificationChallenge[]
+  challenges         EmailVerificationChallenge[]
+  recoveryChallenges PasswordRecoveryChallenge[]
 
   @@unique([identityId, email])
   @@map("password_credentials")
@@ -271,4 +272,35 @@ model EmailVerificationOutbox {
   challenge     EmailVerificationChallenge @relation(fields: [challengeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
 
   @@map("email_verification_outbox")
+}
+
+model PasswordRecoveryChallenge {
+  id          String                  @id @db.Uuid
+  identityId  String                  @map("identity_id") @db.Uuid
+  email       String                  @db.VarChar(320)
+  authEpoch   BigInt                  @map("auth_epoch")
+  keyId       String                  @map("key_id") @db.VarChar(40)
+  tokenDigest String                  @map("token_digest") @db.VarChar(64)
+  issuedAt    DateTime                @map("issued_at") @db.Timestamptz(3)
+  expiresAt   DateTime                @map("expires_at") @db.Timestamptz(3)
+  consumedAt  DateTime?               @map("consumed_at") @db.Timestamptz(3)
+  canceledAt  DateTime?               @map("canceled_at") @db.Timestamptz(3)
+  attempts    Int                     @default(0)
+  credential  PasswordCredential      @relation(fields: [identityId, email], references: [identityId, email], onDelete: Restrict, onUpdate: Restrict)
+  delivery    PasswordRecoveryOutbox?
+
+  @@index([identityId, expiresAt])
+  @@map("password_recovery_challenges")
+}
+
+model PasswordRecoveryOutbox {
+  challengeId   String                    @id @map("challenge_id") @db.Uuid
+  attempts      Int                       @default(0)
+  nextAttemptAt DateTime                  @default(now()) @map("next_attempt_at") @db.Timestamptz(3)
+  leaseId       String?                   @map("lease_id") @db.Uuid
+  leaseUntil    DateTime?                 @map("lease_until") @db.Timestamptz(3)
+  deliveredAt   DateTime?                 @map("delivered_at") @db.Timestamptz(3)
+  challenge     PasswordRecoveryChallenge @relation(fields: [challengeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@map("password_recovery_outbox")
 }

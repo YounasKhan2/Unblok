@@ -13,7 +13,7 @@ export interface Credentials {
   lookup(email: string): Promise<StoredCredential | null>;
   confirm(snapshot: StoredCredential): Promise<boolean>;
 }
-export type AuthAction = 'signup' | 'login' | 'csrf' | 'logout' | 'logout-all' | 'email-request' | 'email-confirm';
+export type AuthAction = 'signup' | 'login' | 'csrf' | 'logout' | 'logout-all' | 'email-request' | 'email-confirm' | 'recovery-request' | 'recovery-confirm';
 export interface AuthLimits { consume(action: AuthAction, ip: string, email?: string): Promise<{ allowed: boolean; retryAfter: number }> }
 export class AuthRateError extends Error { constructor(readonly retryAfter: number) { super('Authentication rate exceeded'); } }
 
@@ -21,7 +21,7 @@ export class Authentication {
   #proofs = new WeakMap<object, StoredCredential>();
   #sessions?: Sessions;
   #tenancy?: Tenancy;
-  constructor(private readonly credentials: Credentials, private readonly passwords: Passwords, private readonly limits: AuthLimits) {}
+  constructor(private readonly credentials: Credentials, private readonly passwords: Passwords, private readonly limits: AuthLimits, private readonly recovery?: { request(email:string):Promise<void>; confirm(email:string,token:string,passwordHash:string):Promise<void> }) {}
   bind(sessions: Sessions, tenancy: Tenancy) {
     if (this.#sessions) throw new Error('Authentication already bound'); this.#sessions = sessions; this.#tenancy = tenancy;
   }
@@ -65,6 +65,22 @@ export class Authentication {
       return tenancy.emailVerification(principal, action, token);
     });
     return action === 'status' ? { emailVerified: verified } : { status: 'accepted' as const };
+  }
+  async passwordRecovery(req: Request, input: {email:string;token?:string;password?:string}) {
+    const started=performance.now();
+    await this.budget(req,input.token===undefined?'recovery-request':'recovery-confirm',input.email);
+    if(!this.recovery) throw new AuthUnavailableError();
+    if(input.token===undefined) await this.recovery.request(input.email);
+    else {
+      // Every syntactically valid confirm pays identical bounded Argon2 work,
+      // before looking up account/proof. Timeout does not release native slots.
+      const hash=await this.passwords.hash(input.password!);
+      await this.recovery.confirm(input.email,input.token,hash);
+    }
+    // Uniform floor reduces the avoidable absent-row shortcut; not perfect
+    // timing indistinguishability under contention/dependency failure.
+    await new Promise<void>(ok=>setTimeout(ok,Math.max(0,150-(performance.now()-started)+Math.floor(Math.random()*51))));
+    return {status:'accepted' as const};
   }
   async me(req: Request) {
     const tenancy = this.#tenancy; if (!tenancy) throw new AuthUnavailableError();

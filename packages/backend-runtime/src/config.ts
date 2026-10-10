@@ -68,3 +68,9 @@ export function loadVerificationMail(env: Record<string, string | undefined>) {
   } else if (url.protocol !== 'http:' || url.hostname !== '127.0.0.1') throw new Error('Development mail requires loopback HTTP');
   return result;
 }
+
+export function loadRecoveryKey(env: Record<string,string|undefined>) {
+  const key = loadVerificationKey({ EMAIL_VERIFICATION_KEY_ID: env.PASSWORD_RECOVERY_KEY_ID, EMAIL_VERIFICATION_KEY: env.PASSWORD_RECOVERY_KEY });
+  if (key.secret === env.EMAIL_VERIFICATION_KEY || env.SESSION_SECRETS?.split(',').some(value=>value.trim()===key.secret)) throw new Error("Recovery requires an independent key");
+  return key;
+}

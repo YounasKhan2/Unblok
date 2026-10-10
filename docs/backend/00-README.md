@@ -47,3 +47,5 @@ This is an **initial repository-grounded audit**, not an exhaustive dependency g
 [BE-00I-A core authentication APIs](21-BE-00I-A-CORE-AUTHENTICATION.md) records real local credentials, six versioned auth handlers, strict CSRF/rate limits, additive credential migration and real HTTP/database/cache evidence. Implemented on the review branch; not merged, frontend-integrated or production-certified.
 
 BE-00I-B review implementation: [secure email verification](22-BE-00I-B-EMAIL-VERIFICATION.md), pending human review; not merged/deployed.
+
+BE-00I-C review implementation: [secure password recovery](23-BE-00I-C-PASSWORD-RECOVERY.md), anonymous proof authority and atomic password/epoch/session revocation; not merged/deployed.
