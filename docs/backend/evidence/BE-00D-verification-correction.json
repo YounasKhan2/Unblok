@@ -1,0 +1,59 @@
+{
+  "base": "66d419e6c058208605f895b74da77ab37995df21",
+  "reviewedHead": "443e5a68b520ba37f1fd9cfb2f0a689313d33a0e",
+  "host": { "platform": "win32", "bun": "1.4.2", "bunRevision": "744846f84" },
+  "setup": {
+    "independentBaseFrozenInstall": true,
+    "independentBasePrismaGenerationAndBuild": true,
+    "sameInfrastructure": true,
+    "identicalApiAndInfrastructureEnvBytes": true,
+    "productionSourceLockInfrastructureAndSuiteInputsUnchanged": true,
+    "alternatingRoundsSerialBaseThenHead": true
+  },
+  "unmodifiedInfra": {
+    "initialBase": { "exit": 0, "passed": 5, "failed": 0, "assertions": 18, "suiteSeconds": 7.26 },
+    "initialHead": { "exit": 1, "passed": 4, "failed": 1, "lateErrors": 1, "assertions": 14, "suiteSeconds": 7.95 },
+    "rounds": [
+      { "round": 1, "base": { "exit": 1, "suiteSeconds": 6.39, "wallMs": 6684 }, "head": { "exit": 1, "suiteSeconds": 6.34, "wallMs": 6445 } },
+      { "round": 2, "base": { "exit": 1, "suiteSeconds": 6.49, "wallMs": 6626 }, "head": { "exit": 1, "suiteSeconds": 6.11, "wallMs": 6199 } },
+      { "round": 3, "base": { "exit": 1, "suiteSeconds": 6.06, "wallMs": 6189 }, "head": { "exit": 0, "suiteSeconds": 1.116, "wallMs": 1236 } }
+    ],
+    "failure": { "passed": 4, "failed": 1, "lateErrors": 1, "assertions": 14, "testDeadlineMs": 5000, "waiterDeadlineMs": 5000 }
+  },
+  "unmodifiedLifecycle": {
+    "base": { "exit": 1, "passed": 1, "failed": 2, "assertions": 7, "suiteSeconds": 8.45 },
+    "head": { "exit": 1, "passed": 1, "failed": 2, "assertions": 7, "suiteSeconds": 4.86 }
+  },
+  "signalProbes": {
+    "base": { "apiMs": 220, "workerMs": 54 },
+    "head": { "apiMs": 21, "workerMs": 12 },
+    "both": {
+      "requestedSignal": "SIGTERM", "signalCode": "SIGTERM", "exitCode": 143,
+      "apiListenerClosed": true, "shutdownStartedObserved": false, "shutdownCompleteObserved": false,
+      "minimalRuntimeControlExitCode": 143, "minimalRuntimeHandlerObserved": false,
+      "gracefulApplicationCleanupCertified": false
+    }
+  },
+  "observedInfraTimeouts": [
+    { "side": "head", "waitMs": 5005, "state": "waiting", "attempts": 0, "expectedFailureReason": false, "subsequentWorkerAndQueueFailureEvents": true },
+    { "side": "head", "waitMs": 5003, "state": "failed", "attempts": 1, "expectedFailureReason": true, "subsequentQueueFailureEvent": true },
+    { "side": "base", "waitMs": 5006, "state": "failed", "attempts": 1, "expectedFailureReason": true, "subsequentQueueFailureEvent": true }
+  ],
+  "directQueueProbes": {
+    "baseDurationMs": 1934, "headDurationMs": 148,
+    "both": { "state": "failed", "attempts": 1, "expectedFailureReason": true, "notified": true, "workerErrors": 0, "workerCloseCompleted": true, "redisStatusAfterClose": "end", "eventsRedisStatusAfterClose": "end", "ownedJobRemoved": true }
+  },
+  "cleanup": {
+    "failedSuiteMayRetainFailedJob": true,
+    "noQueuePurgeOrDatabaseReset": true,
+    "probeChildProcessesAwaited": true,
+    "developmentVolumesRetained": true
+  },
+  "limitations": [
+    "Runtime kill/delivery failure is isolated by a minimal control; application close callbacks are not proven defective or graceful.",
+    "Five-second dispatch/notification boundary is observed; underlying Bun/ioredis/BullMQ scheduling or marker wakeup cause remains unproven.",
+    "The between-test error is the timed-out test's pending waiter expectation rejecting later.",
+    "Auxiliary observation hooks are separate from unmodified gate results and can affect scheduling.",
+    "No timeout, assertion, signal handling or production behavior was changed to obtain passes."
+  ]
+}

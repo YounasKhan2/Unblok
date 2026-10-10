@@ -29,3 +29,5 @@ This is an **initial repository-grounded audit**, not an exhaustive dependency g
 [BE-00B foundation setup, boundaries, and security](13-BE-00B-FOUNDATION.md) records the explicitly authorized implementation phase. Earlier draft domain decisions remain review topics.
 
 [BE-00C canonical domain and tenant foundation](14-BE-00C-DOMAIN-TENANCY.md) includes the pre-implementation requirements checklist, schema decisions, isolation boundary, and documentation compliance matrix.
+
+[BE-00D backend module architecture and enforcement](15-BE-00D-MODULE-ARCHITECTURE.md) audits the implemented foundation, retains approved package responsibilities, defines feature-first conventions and reusable scoped patterns, and records automated boundary checks, verification, deferred decisions and review limits. Proposed feature trees do not imply implemented business APIs or authentication.
