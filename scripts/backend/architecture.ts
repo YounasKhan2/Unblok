@@ -17,7 +17,7 @@ const foundationFiles: Record<string, readonly string[]> = {
   'apps/api': ['access.ts', 'app.ts', 'errors.ts', 'health.ts', 'main.ts', 'security.ts', 'validation.ts'],
   'apps/worker': ['main.ts', 'worker.ts'],
 };
-const databaseNames = new Set(['Tenancy', 'TenantAccessError', 'TenantConflictError', 'denyAll', 'VerifiedIdentity', 'VerifiedPrincipal', 'IdentityVerifier', 'AuthorizationPolicy', 'WorkspaceContext', 'ResourceScope', 'TenantAction', 'TenantQueries', 'IssueProjection']);
+const databaseNames = new Set(['Tenancy', 'TenantAccessError', 'TenantConflictError', 'AuthUnavailableError', 'SessionEvidence', 'SessionVerifier', 'denyAll', 'VerifiedIdentity', 'VerifiedPrincipal', 'IdentityVerifier', 'AuthorizationPolicy', 'WorkspaceContext', 'ResourceScope', 'TenantAction', 'TenantQueries', 'IssueProjection']);
 const code = /\.[cm]?[jt]sx?$/;
 const testFile = (file: string) => /(?:^|\/)(?:test|tests|__tests__|fixtures)\/|\.(?:test|spec)\.[cm]?[jt]sx?$/.test(file);
 const ownerOf = (file: string) => owners.find(owner => file.startsWith(owner + '/'));
@@ -111,6 +111,7 @@ export function auditArchitecture(directory: string) {
       if (declaration && ts.isVariableDeclaration(declaration) && declaration.initializer && ts.isStringLiteralLike(declaration.initializer) && declaration.initializer.text === 'foundation:public-health') return 'HEALTH_PUBLIC';
     }
     if (file === 'packages/database/src/index.ts' && symbol?.name === 'Database') return 'Database';
+    if (file === 'packages/database/src/auth-fences.ts' && symbol?.name === 'AuthFences') return 'AuthFences';
     return undefined;
   }
   const graph = new Map<string, Edge[]>();
@@ -188,7 +189,7 @@ export function auditArchitecture(directory: string) {
         const privileged = capability(node);
         const line = source.getLineAndCharacterOfPosition(node.getStart()).line + 1;
         if ((privileged === 'HEALTH_PUBLIC' || privileged === 'PublicHealth') && file !== 'apps/api/src/access.ts' && file !== 'apps/api/src/health.ts') note('health-public', file, line, 'Public health capability/metadata cannot be imported, aliased or re-exported into business code');
-        if (privileged === 'Database' && owner !== 'packages/database' && file !== 'apps/api/src/main.ts') note('raw-persistence', file, line, 'Indirect raw Database capability remains infrastructure-only');
+        if ((privileged === 'Database' || privileged === 'AuthFences') && owner !== 'packages/database' && file !== 'apps/api/src/main.ts') note('raw-persistence', file, line, 'Indirect privileged persistence capability remains infrastructure-only');
       }
       if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
         const clause = node.importClause, bindings = clause?.namedBindings;

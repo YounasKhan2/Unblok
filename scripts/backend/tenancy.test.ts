@@ -35,11 +35,14 @@ afterAll(async () => {
 }, 10000);
 
 const allow: AuthorizationPolicy = { allows: () => true }; // Explicit TEST policy, never application default.
-async function fixture(target = database) {
+async function fixture(target = database, authenticate = true) {
   const a = randomUUID(), b = randomUUID(), actor = randomUUID(), adminA = randomUUID(), userB = randomUUID();
   const member = randomUUID(), owner = randomUUID(), team = randomUUID(), project = randomUUID(), issue = randomUUID(), foreign = randomUUID();
   await target.transaction(async tx => {
-    for (const id of [actor, adminA, userB]) await tx.user.create({ data: { id, name: 'Test user', email: 'shared-contact@example.test' } });
+    for (const id of [actor, adminA, userB]) {
+      if (authenticate) await tx.user.create({ data: { id, name: 'Test user', email: 'shared-contact@example.test' }, select: { id: true } });
+      else await tx.$executeRaw`INSERT INTO users(id, name, email) VALUES (${id}::uuid, 'Test user', 'shared-contact@example.test')`;
+    }
     await tx.identity.create({ data: { provider: 'test-verifier', subject: actor, userId: actor } });
     for (const [id, suffix] of [[a, 'a'], [b, 'b']] as const) await tx.workspace.create({ data: { id, slug: `test-${id}-${suffix}`, name: 'Test workspace' } });
     await tx.workspaceMembership.create({ data: { workspaceId: a, id: owner, userId: adminA, role: 'ADMIN', status: 'ACTIVE' } });
@@ -56,7 +59,7 @@ async function fixture(target = database) {
   const assertion = Symbol('test verified assertion');
   const verifier = { verify: async (input: unknown) => input === assertion ? { provider: 'test-verifier', subject: actor } : null };
   const tenancy = new Tenancy(target, verifier, allow);
-  const principal = await tenancy.authenticate(assertion);
+  const principal = authenticate ? await tenancy.authenticate(assertion) : Object.freeze({}) as VerifiedPrincipal;
   return { a, b, actor, adminA, userB, member, owner, team, project, issue, foreign, assertion, verifier, tenancy, principal };
 }
 
@@ -67,7 +70,7 @@ describe('fresh additive migrations and canonical constraints', () => {
     expect(diff).toContain('No difference');
     expect(await database.ready()).toBe(true);
     const applied = await database.client.$queryRaw<{ migration_name: string }[]>`SELECT migration_name FROM _prisma_migrations WHERE finished_at IS NOT NULL ORDER BY migration_name`;
-    expect(applied.map(row => row.migration_name)).toEqual(['20261010000000_foundation', '20261010010000_domain_tenancy', '20261010020000_guard_corrections']);
+    expect(applied.map(row => row.migration_name)).toEqual(['20261010000000_foundation', '20261010010000_domain_tenancy', '20261010020000_guard_corrections', '20261010030000_auth_revocation_fences']);
   });
   test('identity keys are unique; users have no global role and email is not an authentication key', async () => {
     const f = await fixture();
@@ -314,7 +317,9 @@ describe('PR24 PostgreSQL guard regressions', () => {
       await admin.client.$executeRawUnsafe(`CREATE DATABASE "${name}"`); exists = true;
       await prisma(['migrate', 'deploy', '--schema', resolve(directory, 'schema.prisma')], upgradeUrl.toString());
       await upgrade.connect();
-      const f = await fixture(upgrade);
+      // The old schema intentionally predates auth epochs; seed without minting
+      // a principal until the additive migration has been deployed.
+      const f = await fixture(upgrade, false);
       const where = { workspaceId_id: { workspaceId: f.a, id: f.issue } };
       await upgrade.client.issue.update({ where, data: { assigneeMembershipId: f.member } });
       await upgrade.client.workspaceMembership.update({ where: { workspaceId_id: { workspaceId: f.a, id: f.member } }, data: { status: 'SUSPENDED' } });
@@ -323,7 +328,9 @@ describe('PR24 PostgreSQL guard regressions', () => {
       await prisma(['migrate', 'deploy', '--schema', 'packages/database/prisma/schema.prisma'], upgradeUrl.toString());
       const after = await upgrade.client.$queryRaw<typeof history>`SELECT migration_name, checksum, finished_at FROM _prisma_migrations ORDER BY migration_name`;
       expect(after.slice(0, 2)).toEqual(history);
-      expect(after).toHaveLength(3);
+      expect(after).toHaveLength(4);
+      expect((await upgrade.client.user.findUniqueOrThrow({ where: { id: f.actor } })).authEpoch).toBe(1n);
+      expect(await upgrade.client.authSessionFamily.count()).toBe(0);
       const row = await upgrade.client.issue.update({ where, data: { title: 'After repair' } });
       expect(row.title).toBe('After repair'); expect(row.assigneeMembershipId).toBe(f.member);
       expect(await upgrade.client.issue.count()).toBe(3);

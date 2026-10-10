@@ -19,6 +19,7 @@
 | BE-00D | Reusable module conventions, static architecture enforcement and verification investigation | **Merged** | [PR #25](https://github.com/YounasKhan2/Unblok/pull/25), merge `e70d295c19e85161f2601fcf5fc3527ec2d56820`; `15-BE-00D-MODULE-ARCHITECTURE.md` |
 | BE-00E | Authentication, Valkey session and authorization architecture **planning only** | **Merged — implementation not started** | [PR #26](https://github.com/YounasKhan2/Unblok/pull/26), merge `83a52e3d230659dc612ebb9591985649c7f79ef4`; `17-BE-00E-AUTH-SESSION-AUTHORIZATION.md` |
 | BE-00F | Isolated NestJS/Bun/Valkey session compatibility harness and security characterization | **Merged — research only; not production-certified** | [PR #27](https://github.com/YounasKhan2/Unblok/pull/27), merge `f4fc4e1ef1ae18a5dfc7dab94645bccde1d937bf`; `18-BE-00F-SESSION-COMPATIBILITY.md` |
+| BE-00G | Durable PostgreSQL auth epochs/session-family fences and private principal revalidation | **Implemented on review branch; not merged or deployed** | `feat/be-00g-auth-revocation-fences`; [implementation and evidence](19-BE-00G-AUTH-REVOCATION-FENCES.md) |
 
 **Implemented foundation:** Bun monorepo; NestJS API and separate BullMQ worker; Prisma/PostgreSQL domain and tenant constraints; Valkey queue infrastructure; RustFS development storage; Mailpit development email capture; fail-closed foundation authorization; tenant-scoped database access; reusable backend architecture guardrails. These are foundations, not operational business APIs.
 
@@ -31,13 +32,15 @@
 - **BE-00F session research:** Both stock session stores permit late-write resurrection; candidate B (`express-session` 1.19.0 + `connect-redis` 10.0.0 + `redis` 6.3.0) is preferred **conditionally** but its blocked-read deadline needs a reviewed wrapper and durable PostgreSQL user epochs/session-family fences. Comparison finished 53 passed observations / 1 failed A shutdown acknowledgement; separate candidate B run 29 passed. Passing characterization observations include demonstrated insecure behavior, not certification. Three A reconnecting child probes reproduced missing shutdown acknowledgement, despite no observed live socket or retry timer; do not erase this risk. An intermediate comparison had unexplained fixture failures and concurrent lint exit 9; later serial reruns passed without proving causes. Disposable Docker credential delivery is test-only, with environment/startup argument exposure; production TLS/ACL, cookie-browser, CSRF and signal shutdown remain unverified. See `18-BE-00F-SESSION-COMPATIBILITY.md` and associated evidence.
 - **Verification distinction:** Architecture tests (45) and unit tests (81), integration (2), and PostgreSQL tenancy (34) were **reported** passing in the BE-00D correction; the infrastructure and lifecycle suites did not pass reliably. No GitHub CI was available for independent confirmation. Detailed base/head evidence: `docs/backend/evidence/BE-00D-verification-correction.json`.
 
-**Next action:** Design/implement **additive PostgreSQL auth epochs and session-family revocation fences plus approved narrow trusted-principal boundary adaptation**, verified with real DB concurrency tests, before production session integration. BE-00F compatibility research selected only a conditional adapter direction; no session or auth endpoint exists. Obtain explicit approval for remaining identity, deployment and resource-policy decisions before auth feature slices. Maintain a separate tracked reliability follow-up for the queue/SIGTERM failures; do not silently weaken tests or certify production readiness.
+**BE-00G review-branch distinction:** Implemented additive user epochs/disable barrier, durable session-family generation/digest/revocation/deadlines, request-bound same-instance session principals and primary revalidation inside scoped transactions. Focused F1/F2 corrections enforce request lifetime/fresh cache lookup and atomic generation+SID-digest transitions/frozen revoked rows. Verified locally: 24 real DB/cache security tests (134 assertions), 34 tenant/upgrade tests, 83 backend tests (47 architecture), typecheck/lint/build and 2 integration tests. The earlier implementation run had migration/logout timeouts and a late CLI error; correction checks passed without raising deadlines, but that earlier cause remains unresolved. This is not merged reality or production authentication certification; full findings are in [19](19-BE-00G-AUTH-REVOCATION-FENCES.md).
+
+**Next action:** Human review of BE-00G's additive migration, private trust-boundary adaptation and real concurrency evidence before merge/deployment. Production session integration, identity lifecycle, CSRF, cookie deployment and resource-policy decisions remain planned and need separate authorization. Candidate B remains conditional; no session middleware or auth endpoint exists. Maintain the separate queue/SIGTERM reliability follow-up and new CLI/host timing observation; do not silently weaken tests or certify production readiness.
 
 ## 3. Remaining production backend capabilities
 
 | Capability | Current state | Priority |
 | --- | --- | --- |
-| Authentication and sessions | Not implemented | Critical |
+| Authentication and sessions | Login/signup/session middleware not implemented; durable revocation foundation implemented and locally verified on BE-00G review branch, not merged/deployed | Critical |
 | Workspace membership and invitation APIs | Schema exists; business APIs missing | Critical |
 | Team and project APIs | Schema exists; business APIs missing | Critical |
 | Issues CRUD/search/filtering | Bounded scoped persistence primitives exist; business APIs missing | Critical |
@@ -55,7 +58,7 @@
 ## 4. Recommended delivery sequence (subject to phase-specific review)
 
 1. **BE-00D module standards — completed and merged.** Preserve architecture tests as backend features grow.
-2. **BE-00E planning and BE-00F compatibility research — merged.** Implement additive PostgreSQL epoch/session-family fences and validate tenant principal reuse/revocation races using real transactions first. Then obtain remaining human security decisions and deliver bounded sessions, identity lifecycle and CSRF in narrow reviewed slices. Candidate B remains conditional; no permissive placeholder auth.
+2. **BE-00E planning and BE-00F compatibility research — merged; BE-00G fences in review.** Review the implemented additive fence/principal adaptation and locally verified revocation races first. After its separately approved merge/deployment, obtain remaining human security decisions before bounded sessions, identity lifecycle and CSRF slices. Candidate B remains conditional; no permissive placeholder auth.
 3. **Core business APIs.** Deliver workspaces/memberships, teams, projects and issues in narrowly reviewed, tenant-safe vertical slices.
 4. **Dependency engine.** Replace the SQL write gate only after transactionally safe DAG/reachability, blocker and completion rules pass concurrency tests.
 5. **Frontend API integration, incrementally.** Replace mock-backed adapters **within each approved vertical slice**, not as one late big-bang migration. Verify UX/error/optimistic parity and remove silent fallback.
@@ -76,6 +79,8 @@ When reviewing and merging **any future Unblok PR that affects backend progress*
 6. Do not mark a failed or skipped check as passed, rewrite earlier migration/phase history, or erase known risks without evidence.
 
 ### Change log
+
+2026-10-10 review-branch update: BE-00G revocation foundation implemented and locally verified from `1f01372f09a59ed82b4cd58a5247b185be3e591c`; not merged or deployed. The repository milestone above remains BE-00F. No login/signup, session middleware or frontend authentication is claimed.
 
 | Date | Repository milestone | Effect |
 | --- | --- | --- |

@@ -15,3 +15,4 @@ export class Database {
 }
 
 export * from './tenancy';
+export { AuthFences, AuthDeniedError, AuthUnavailableError, type SessionEvidence, type SessionVerifier } from './auth-fences';
