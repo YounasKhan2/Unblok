@@ -2,9 +2,9 @@
 import { mkdir, copyFile } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { scratch } from './paths.mjs';
 const source = dirname(fileURLToPath(import.meta.url));
-const root = resolve(source, '../../..');
-const destination = resolve(root, '.git/be-00f/candidates');
+const destination = resolve(scratch, 'candidates');
 await mkdir(destination, { recursive: true });
 await copyFile(resolve(source, 'candidates.json'), resolve(destination, 'package.json'));
 const frozen = Bun.file(resolve(source, 'candidates.lock'));

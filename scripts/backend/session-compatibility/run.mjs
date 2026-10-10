@@ -27,6 +27,12 @@ const state = () => ({ cookie: { expires: new Date(Date.now() + 2000).toISOStrin
 let fixture;
 try {
   fixture = await valkeyFixture();
+  await check('fixture', 'Docker environment exposes disposable password; startup argument expands it', async () => {
+    const exposure = await fixture.credentialExposure();
+    assert.equal(exposure.containerEnvironmentContainsPassword, true);
+    assert.equal(exposure.startupArgumentExpandsPassword, true);
+    return exposure;
+  });
   for (const kind of selected) {
     let adapter, app;
     try {
@@ -122,6 +128,33 @@ try {
         }
         return { oldCookieAuthorityRestoredByStockStore: true, scenarios: ['rotation', 'destruction'],
           scope: 'synthetic identity only; production revocation needs PostgreSQL fences' };
+      });
+      await check(kind, 'HTTP 503 callback deadline does not cancel late persistence or prevent resurrection', async () => {
+        const boundedApp = await appFixture(adapter, { secrets, bounded: true });
+        const original = adapter.store.set;
+        let release, callbacks = 0;
+        try {
+          const cookie = cookieOf(await http(boundedApp.port, '/simulate')), sid = sidOf(cookie);
+          adapter.store.set = function (...args) {
+            if (args[0] === sid && !release) {
+              const callback = args.at(-1);
+              args[args.length - 1] = (...values) => { callbacks++; callback(...values); };
+              release = () => original.apply(this, args); return;
+            }
+            return original.apply(this, args);
+          };
+          const response = await http(boundedApp.port, '/renew', cookie);
+          assert.equal(response.status, 503); assert.equal(callbacks, 0);
+          assert.equal((await http(boundedApp.port, '/destroy', cookie)).status, 200);
+          assert.equal(await adapter.call('get', sid), null);
+          adapter.store.set = original;
+          await deadline(release());
+          assert.equal(callbacks, 1); assert.ok(await adapter.call('get', sid));
+          assert.equal((await http(boundedApp.port, '/read', cookie)).status, 200);
+          await adapter.call('destroy', sid);
+          return { initialHttpStatus: 503, lateUnderlyingCallbacks: callbacks, persistedAfter503: true,
+            oldCookieAuthorityAfterDestroyAndLateSave: true, cancellationProven: false, durableFenceImplemented: false };
+        } finally { adapter.store.set = original; await boundedApp.close(); }
       });
       await check(kind, 'touch missing key does not recreate it; multiple sessions and destroy isolation', async () => {
         const one = randomUUID(), two = randomUUID();

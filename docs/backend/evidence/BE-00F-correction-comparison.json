@@ -1,0 +1,417 @@
+{
+  "environment": {
+    "bun": "1.4.2",
+    "nest": "11.2.7",
+    "platformExpress": "11.2.7",
+    "adapterExpress": "5.2.1",
+    "directExpress": "5.3.0",
+    "ioredis": "5.11.1",
+    "session": "1.19.0",
+    "redis": "6.3.0",
+    "platform": "win32"
+  },
+  "valkey": "8.1.3",
+  "candidates": {
+    "A": "connect-redis 8.1.0 + existing ioredis 5.11.1",
+    "B": "connect-redis 10.0.0 + redis 6.3.0"
+  },
+  "executedCandidates": [
+    "A",
+    "B"
+  ],
+  "passed": 53,
+  "failed": 1,
+  "results": [
+    {
+      "candidate": "fixture",
+      "name": "Docker environment exposes disposable password; startup argument expands it",
+      "passed": true,
+      "milliseconds": 610,
+      "containerEnvironmentContainsPassword": true,
+      "startupArgumentExpandsPassword": true,
+      "runtimeProcessTitleContainsPassword": false,
+      "productionDeliveryCertified": false
+    },
+    {
+      "candidate": "A",
+      "name": "actual Valkey version and adapter connection",
+      "passed": true,
+      "milliseconds": 2
+    },
+    {
+      "candidate": "A",
+      "name": "saveUninitialized false creates neither cookie nor key",
+      "passed": true,
+      "milliseconds": 15
+    },
+    {
+      "candidate": "A",
+      "name": "anonymous bootstrap, development flags, regeneration, retrieval and old SID invalidation",
+      "passed": true,
+      "milliseconds": 24
+    },
+    {
+      "candidate": "A",
+      "name": "missing malformed and tampered cookies never grant synthetic authority",
+      "passed": true,
+      "milliseconds": 13
+    },
+    {
+      "candidate": "A",
+      "name": "resave false leaves unmodified session set count unchanged",
+      "passed": true,
+      "milliseconds": 12
+    },
+    {
+      "candidate": "A",
+      "name": "HTTP success waits for explicit store save acknowledgement",
+      "passed": true,
+      "milliseconds": 7
+    },
+    {
+      "candidate": "A",
+      "name": "set TTL, touch renewal and concurrent get/set/touch",
+      "passed": true,
+      "milliseconds": 273,
+      "initialTtlMilliseconds": 1999
+    },
+    {
+      "candidate": "A",
+      "name": "idle expiry during a concurrent delayed save can resurrect stock state",
+      "passed": true,
+      "milliseconds": 2111,
+      "stockResurrectionObserved": true
+    },
+    {
+      "candidate": "A",
+      "name": "destroy then delayed stale set resurrects stock state",
+      "passed": true,
+      "milliseconds": 12,
+      "stockResurrectionObserved": true
+    },
+    {
+      "candidate": "A",
+      "name": "HTTP rotation and destruction race with delayed renewal resurrect stock authority",
+      "passed": true,
+      "milliseconds": 57,
+      "oldCookieAuthorityRestoredByStockStore": true,
+      "scenarios": [
+        "rotation",
+        "destruction"
+      ],
+      "scope": "synthetic identity only; production revocation needs PostgreSQL fences"
+    },
+    {
+      "candidate": "A",
+      "name": "HTTP 503 callback deadline does not cancel late persistence or prevent resurrection",
+      "passed": true,
+      "milliseconds": 793,
+      "initialHttpStatus": 503,
+      "lateUnderlyingCallbacks": 1,
+      "persistedAfter503": true,
+      "oldCookieAuthorityAfterDestroyAndLateSave": true,
+      "cancellationProven": false,
+      "durableFenceImplemented": false
+    },
+    {
+      "candidate": "A",
+      "name": "touch missing key does not recreate it; multiple sessions and destroy isolation",
+      "passed": true,
+      "milliseconds": 10
+    },
+    {
+      "candidate": "A",
+      "name": "absolute deadline rejects still-live session; renewal clamps lifetime",
+      "passed": true,
+      "milliseconds": 18,
+      "clock": "fixture-only injected application clock; stock adapter has no absolute deadline"
+    },
+    {
+      "candidate": "A",
+      "name": "real idle TTL expiry invalidates HTTP cookie",
+      "passed": true,
+      "milliseconds": 2110
+    },
+    {
+      "candidate": "A",
+      "name": "HTTP destroy invalidates subsequent request",
+      "passed": true,
+      "milliseconds": 14
+    },
+    {
+      "candidate": "A",
+      "name": "read write regeneration and save callback errors fail closed",
+      "passed": true,
+      "milliseconds": 24
+    },
+    {
+      "candidate": "A",
+      "name": "HTTPS trusted proxy emits host cookie; untrusted spoof and disabled trust rejected",
+      "passed": true,
+      "milliseconds": 900
+    },
+    {
+      "candidate": "A",
+      "name": "signing secret rotation accepts bounded previous key; removal rejects old cookie",
+      "passed": true,
+      "milliseconds": 45
+    },
+    {
+      "candidate": "A",
+      "name": "Valkey disconnect during request returns 503; restart reconnects without memory authority",
+      "passed": true,
+      "milliseconds": 1216,
+      "clientErrorEvents": 3
+    },
+    {
+      "candidate": "A",
+      "name": "blocked store operation reaches harness deadline without success",
+      "passed": true,
+      "milliseconds": 101,
+      "deadlineMilliseconds": 100,
+      "observedMilliseconds": 101,
+      "scope": "deadline primitive only; not cancellation of middleware/store work"
+    },
+    {
+      "candidate": "A",
+      "name": "stock blocked-read deadline behavior is measured",
+      "passed": true,
+      "milliseconds": 2074,
+      "status": 503,
+      "observedMilliseconds": 754,
+      "securityDeadlinePassed": true,
+      "commandDeadlineMilliseconds": 750,
+      "serverPauseMilliseconds": 1200
+    },
+    {
+      "candidate": "A",
+      "name": "test-only bounded Store returns 503 for real blocked read",
+      "passed": true,
+      "milliseconds": 2087,
+      "callbackDeadlineMilliseconds": 750,
+      "cancellationProven": false
+    },
+    {
+      "candidate": "A",
+      "name": "unavailable startup rejects bounded client connection",
+      "passed": true,
+      "milliseconds": 961
+    },
+    {
+      "candidate": "A",
+      "name": "direct application cleanup closes listener",
+      "passed": true,
+      "milliseconds": 2
+    },
+    {
+      "candidate": "A",
+      "name": "direct client cleanup closes connection",
+      "passed": false,
+      "milliseconds": 2502,
+      "code": "ASSERTION_OR_FIXTURE_FAILURE",
+      "stateBefore": "reconnecting",
+      "stateAfter": "reconnecting",
+      "cleanupConfirmed": false,
+      "deadlineMilliseconds": 2500,
+      "socketDestroyed": true,
+      "reconnectTimerPresent": false
+    },
+    {
+      "candidate": "B",
+      "name": "actual Valkey version and adapter connection",
+      "passed": true,
+      "milliseconds": 3
+    },
+    {
+      "candidate": "B",
+      "name": "saveUninitialized false creates neither cookie nor key",
+      "passed": true,
+      "milliseconds": 5
+    },
+    {
+      "candidate": "B",
+      "name": "anonymous bootstrap, development flags, regeneration, retrieval and old SID invalidation",
+      "passed": true,
+      "milliseconds": 22
+    },
+    {
+      "candidate": "B",
+      "name": "missing malformed and tampered cookies never grant synthetic authority",
+      "passed": true,
+      "milliseconds": 11
+    },
+    {
+      "candidate": "B",
+      "name": "resave false leaves unmodified session set count unchanged",
+      "passed": true,
+      "milliseconds": 11
+    },
+    {
+      "candidate": "B",
+      "name": "HTTP success waits for explicit store save acknowledgement",
+      "passed": true,
+      "milliseconds": 7
+    },
+    {
+      "candidate": "B",
+      "name": "set TTL, touch renewal and concurrent get/set/touch",
+      "passed": true,
+      "milliseconds": 266,
+      "initialTtlMilliseconds": 1998
+    },
+    {
+      "candidate": "B",
+      "name": "idle expiry during a concurrent delayed save can resurrect stock state",
+      "passed": true,
+      "milliseconds": 2111,
+      "stockResurrectionObserved": true
+    },
+    {
+      "candidate": "B",
+      "name": "destroy then delayed stale set resurrects stock state",
+      "passed": true,
+      "milliseconds": 10,
+      "stockResurrectionObserved": true
+    },
+    {
+      "candidate": "B",
+      "name": "HTTP rotation and destruction race with delayed renewal resurrect stock authority",
+      "passed": true,
+      "milliseconds": 50,
+      "oldCookieAuthorityRestoredByStockStore": true,
+      "scenarios": [
+        "rotation",
+        "destruction"
+      ],
+      "scope": "synthetic identity only; production revocation needs PostgreSQL fences"
+    },
+    {
+      "candidate": "B",
+      "name": "HTTP 503 callback deadline does not cancel late persistence or prevent resurrection",
+      "passed": true,
+      "milliseconds": 789,
+      "initialHttpStatus": 503,
+      "lateUnderlyingCallbacks": 1,
+      "persistedAfter503": true,
+      "oldCookieAuthorityAfterDestroyAndLateSave": true,
+      "cancellationProven": false,
+      "durableFenceImplemented": false
+    },
+    {
+      "candidate": "B",
+      "name": "touch missing key does not recreate it; multiple sessions and destroy isolation",
+      "passed": true,
+      "milliseconds": 10
+    },
+    {
+      "candidate": "B",
+      "name": "absolute deadline rejects still-live session; renewal clamps lifetime",
+      "passed": true,
+      "milliseconds": 18,
+      "clock": "fixture-only injected application clock; stock adapter has no absolute deadline"
+    },
+    {
+      "candidate": "B",
+      "name": "real idle TTL expiry invalidates HTTP cookie",
+      "passed": true,
+      "milliseconds": 2112
+    },
+    {
+      "candidate": "B",
+      "name": "HTTP destroy invalidates subsequent request",
+      "passed": true,
+      "milliseconds": 14
+    },
+    {
+      "candidate": "B",
+      "name": "read write regeneration and save callback errors fail closed",
+      "passed": true,
+      "milliseconds": 20
+    },
+    {
+      "candidate": "B",
+      "name": "HTTPS trusted proxy emits host cookie; untrusted spoof and disabled trust rejected",
+      "passed": true,
+      "milliseconds": 329
+    },
+    {
+      "candidate": "B",
+      "name": "signing secret rotation accepts bounded previous key; removal rejects old cookie",
+      "passed": true,
+      "milliseconds": 47
+    },
+    {
+      "candidate": "B",
+      "name": "Valkey disconnect during request returns 503; restart reconnects without memory authority",
+      "passed": true,
+      "milliseconds": 1174,
+      "clientErrorEvents": 4
+    },
+    {
+      "candidate": "B",
+      "name": "blocked store operation reaches harness deadline without success",
+      "passed": true,
+      "milliseconds": 102,
+      "deadlineMilliseconds": 100,
+      "observedMilliseconds": 102,
+      "scope": "deadline primitive only; not cancellation of middleware/store work"
+    },
+    {
+      "candidate": "B",
+      "name": "stock blocked-read deadline behavior is measured",
+      "passed": true,
+      "milliseconds": 2588,
+      "status": 200,
+      "observedMilliseconds": 1269,
+      "securityDeadlinePassed": false,
+      "commandDeadlineMilliseconds": 750,
+      "serverPauseMilliseconds": 1200
+    },
+    {
+      "candidate": "B",
+      "name": "test-only bounded Store returns 503 for real blocked read",
+      "passed": true,
+      "milliseconds": 2079,
+      "callbackDeadlineMilliseconds": 750,
+      "cancellationProven": false
+    },
+    {
+      "candidate": "B",
+      "name": "unavailable startup rejects bounded client connection",
+      "passed": true,
+      "milliseconds": 3438
+    },
+    {
+      "candidate": "B",
+      "name": "modern connect-redis rejects actual incompatible ioredis invocation",
+      "passed": true,
+      "milliseconds": 12
+    },
+    {
+      "candidate": "B",
+      "name": "direct application cleanup closes listener",
+      "passed": true,
+      "milliseconds": 1
+    },
+    {
+      "candidate": "B",
+      "name": "direct client cleanup closes connection",
+      "passed": true,
+      "milliseconds": 0
+    },
+    {
+      "candidate": "primitive",
+      "name": "Valkey atomic generation CAS prevents delayed resurrection and epoch mismatch",
+      "passed": true,
+      "milliseconds": 21,
+      "rejectedConcurrentStaleSaves": 8,
+      "durability": "Valkey-only; PostgreSQL integration not proven"
+    },
+    {
+      "candidate": "fixture",
+      "name": "disposable Valkey container removed",
+      "passed": true,
+      "milliseconds": 496
+    }
+  ]
+}

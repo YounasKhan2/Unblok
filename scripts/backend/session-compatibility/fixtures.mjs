@@ -1,14 +1,13 @@
 import { createRequire } from 'node:module';
 import { realpathSync } from 'node:fs';
 import { mkdir, readFile } from 'node:fs/promises';
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { createServer as createHttpsServer, request as httpsRequest } from 'node:https';
 import { request as httpRequest, createServer as createHttpServer } from 'node:http';
 
-export const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
-export const scratch = resolve(root, '.git/be-00f');
+import { root, scratch } from './paths.mjs';
+export { root, scratch } from './paths.mjs';
 const apiRequire = createRequire(resolve(root, 'apps/api/package.json'));
 apiRequire('reflect-metadata');
 const { Module } = apiRequire('@nestjs/common');
@@ -29,14 +28,25 @@ export async function deadline(operation, milliseconds = 2500) {
   } finally { clearTimeout(timer); }
 }
 export async function command(args, options = {}) {
-  const child = Bun.spawn(args, { cwd: root, stdout: 'pipe', stderr: 'pipe', ...options });
+  const failure = (stage, error, exitCode) => Object.assign(new Error('Fixture command failed'), { evidence: {
+    fixtureCommand: args[0].includes('openssl') ? 'openssl' : args[0], fixtureStage: stage,
+    ...(Number.isInteger(exitCode) ? { fixtureExitCode: exitCode } : {}),
+    errorCategory: ['ENOMEM', 'EAGAIN', 'ENOENT', 'EPERM', 'EACCES'].includes(error?.code) ? error.code : 'unspecified',
+  } });
+  let child;
+  try { child = Bun.spawn(args, { cwd: root, stdout: 'pipe', stderr: 'pipe', ...options }); }
+  catch (error) { throw failure('spawn', error); }
   const output = new Response(child.stdout).text();
   const errors = new Response(child.stderr).text();
   try {
     const [code, result] = await deadline(Promise.all([child.exited, output, errors]), 30000);
-    if (code !== 0) { console.log(JSON.stringify({ case: 'fixture-command', command: args[0], exitCode: code })); throw new Error('Fixture command failed'); }
+    if (code !== 0) throw failure('exit', undefined, code);
     return result.trim();
-  } catch { child.kill(); await child.exited; throw new Error('Fixture command failed'); }
+  } catch (error) {
+    if (child.exitCode === null) child.kill();
+    await child.exited;
+    throw error.evidence ? error : failure('await', error, child.exitCode);
+  }
 }
 export async function valkeyFixture() {
   const name = `unblok-be00f-${randomUUID()}`;
@@ -61,6 +71,15 @@ export async function valkeyFixture() {
     return { url: `redis://:${password}@127.0.0.1:${port}/0`, close,
       stop: () => command(['docker', 'stop', '-t', '1', name]),
       start: () => command(['docker', 'start', name]),
+      // Inspect only our disposable fixture; expose booleans, never credentials.
+      credentialExposure: async () => {
+        const env = JSON.parse(await command(['docker', 'inspect', '--format', '{{json .Config.Env}}', name]));
+        const startup = JSON.parse(await command(['docker', 'inspect', '--format', '{{json .Config.Cmd}}', name]));
+        const argv = await command(['docker', 'exec', name, 'cat', '/proc/1/cmdline']);
+        return { containerEnvironmentContainsPassword: env.includes(`BE00F_PASSWORD=${password}`),
+          startupArgumentExpandsPassword: startup.some(value => value.includes('--requirepass "$BE00F_PASSWORD"')),
+          runtimeProcessTitleContainsPassword: argv.includes(password), productionDeliveryCertified: false };
+      },
       version: '8.1.3', image };
   } catch { await close(); throw new Error('Valkey fixture setup failed'); }
 }
@@ -96,7 +115,8 @@ export async function candidate(kind, url) {
         client.disconnect();
         try { await deadline(ended); }
         catch { throw Object.assign(new Error('Client cleanup not confirmed'), { evidence: {
-          stateBefore, stateAfter: client.status, cleanupConfirmed: false, deadlineMilliseconds: 2500 } }); }
+          stateBefore, stateAfter: client.status, cleanupConfirmed: false, deadlineMilliseconds: 2500,
+          socketDestroyed: client.stream?.destroyed === true, reconnectTimerPresent: !!client.reconnectTimeout } }); }
       }
     }
     else { if (client.isOpen) client.destroy(); }
