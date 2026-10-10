@@ -4,13 +4,11 @@
  */
 
 import React from 'react';
-import { AppProviders } from './app/providers/AppProviders';
-import { AppRouter } from './app/router/AppRouter';
+import { SessionProvider } from './features/auth/session/SessionContext';
+import { LiveRouter } from './features/auth/live/LiveRouter';
+import { DemoExperience } from './features/auth/live/DemoExperience';
 
 export default function App() {
-  return (
-    <AppProviders>
-      <AppRouter />
-    </AppProviders>
-  );
+  if (window.location.pathname === '/demo' || window.location.pathname.startsWith('/demo/')) return <DemoExperience/>;
+  return <SessionProvider><LiveRouter/></SessionProvider>;
 }

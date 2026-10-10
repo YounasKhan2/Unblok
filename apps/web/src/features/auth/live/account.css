@@ -1,0 +1,9 @@
+/* Adapt the existing public auth primitives to canonical application tokens.
+   Scope aliases to live auth only; public marketing/demo styles are unchanged. */
+.auth-surface {
+  --color-pub-text-primary: var(--color-text-primary);
+  --color-pub-text-secondary: var(--color-text-secondary);
+  --color-pub-text-muted: var(--color-text-muted);
+  --color-pub-border: var(--color-border);
+  --color-pub-accent: var(--color-accent);
+}

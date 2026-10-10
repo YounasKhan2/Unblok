@@ -11,6 +11,7 @@ import { Eye, EyeOff, AlertCircle, Check } from 'lucide-react';
 import { evaluatePassword, MIN_PASSWORD_LENGTH } from '../domain/passwordRules';
 
 export interface PasswordInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
+  appearance?: 'public' | 'application';
   id: string;
   name: string;
   label: string;
@@ -24,6 +25,7 @@ export interface PasswordInputProps extends Omit<React.InputHTMLAttributes<HTMLI
 export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
   (
     {
+      appearance = 'public',
       id,
       name,
       label,
@@ -112,11 +114,13 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
               .filter(Boolean)
               .join(' ') || undefined
           }
-          className={`w-full rounded-lg border px-3.5 py-2.5 pr-10 text-sm text-[var(--color-pub-text-primary)] bg-white placeholder:text-[var(--color-pub-text-muted)] focus:outline-none focus:ring-2 transition-all ${
-            error
+          className={`w-full rounded-lg border px-3.5 py-2.5 pr-10 text-sm text-[var(--color-pub-text-primary)] ${appearance === 'application' ? 'bg-surface-base' : 'bg-white'} placeholder:text-[var(--color-pub-text-muted)] focus:outline-none focus:ring-2 transition-all ${
+            appearance === 'application'
+              ? (error ? 'border-danger focus:ring-danger/30' : 'border-border focus:border-accent focus:ring-accent/30')
+              : error
               ? 'border-red-400 focus:border-red-500 focus:ring-red-100'
               : 'border-[var(--color-pub-border)] focus:border-[var(--color-pub-accent)] focus:ring-indigo-100'
-          } ${disabled ? 'opacity-60 cursor-not-allowed bg-gray-50' : ''}`}
+          } ${disabled ? `opacity-60 cursor-not-allowed ${appearance === 'public' ? 'bg-gray-50' : ''}` : ''}`}
         />
 
         <button
@@ -137,7 +141,7 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
       {error && (
         <p
           id={errorId}
-          className="text-xs text-red-600 flex items-center gap-1.5 mt-1 font-medium"
+          className={`text-xs ${appearance === 'application' ? 'text-danger' : 'text-red-600'} flex items-center gap-1.5 mt-1 font-medium`}
           role="alert"
         >
           <AlertCircle className="w-3.5 h-3.5 shrink-0" />

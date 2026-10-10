@@ -49,3 +49,5 @@ This is an **initial repository-grounded audit**, not an exhaustive dependency g
 BE-00I-B review implementation: [secure email verification](22-BE-00I-B-EMAIL-VERIFICATION.md), pending human review; not merged/deployed.
 
 BE-00I-C review implementation: [secure password recovery](23-BE-00I-C-PASSWORD-RECOVERY.md), anonymous proof authority and atomic password/epoch/session revocation; not merged/deployed.
+
+FE-AUTH-01 review implementation: [real frontend authentication](../frontend/01-FE-AUTH-01-INTEGRATION.md), server-backed account flows with a separate NEXUS demo; not merged/deployed, browser and responsive visual validation pending.
