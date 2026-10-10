@@ -19,7 +19,11 @@ export function validState(value: unknown, now = Date.now()): SessionState | nul
   const result = stateSchema.safeParse(value);
   if (!result.success) return null;
   const s = result.data;
-  if (s.issuedAt > now || s.idleExpiresAt > s.absoluteExpiresAt || Math.min(s.idleExpiresAt, s.absoluteExpiresAt) <= now) return null;
+  const absoluteLimit = s.kind === 'authenticated' ? 12 * 60 * 60 * 1000 : 10 * 60 * 1000;
+  const idleLimit = s.kind === 'authenticated' ? 30 * 60 * 1000 : 10 * 60 * 1000;
+  if (!Number.isSafeInteger(now) || s.issuedAt > now || s.issuedAt >= s.idleExpiresAt ||
+    s.idleExpiresAt > s.absoluteExpiresAt || s.idleExpiresAt <= now ||
+    s.absoluteExpiresAt - s.issuedAt > absoluteLimit || s.idleExpiresAt - now > idleLimit) return null;
   return s;
 }
 export const validSid = (sid: unknown): sid is string => typeof sid === 'string' && /^[A-Za-z0-9_-]{43}$/.test(sid);

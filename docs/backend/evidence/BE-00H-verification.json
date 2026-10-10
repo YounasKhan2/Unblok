@@ -4,8 +4,24 @@
   "branch": "feat/be-00h-session-infrastructure",
   "status": "implemented locally; human review; not merged or production-certified",
   "headLocation": "PR metadata; no self-referential commit hash",
-  "environment": { "platform": "win32", "bun": "1.4.2", "nest": "11.2.7", "adapterExpress": "5.2.1", "directExpress": "5.3.0", "postgresql": "17.6", "valkey": "8.1.3" },
-  "dependencies": { "express-session": "1.19.0", "connect-redis": "10.0.0", "redis": "6.3.0", "@types/express-session": "1.18.2 (development only)", "candidateLockIntegrityMatches": true, "existingLockEntriesChanged": false, "vendorBunSupportClaimed": false },
+  "environment": {
+    "platform": "win32",
+    "bun": "1.4.2",
+    "nest": "11.2.7",
+    "adapterExpress": "5.2.1",
+    "directExpress": "5.3.0",
+    "postgresql": "17.6",
+    "valkey": "8.1.3"
+  },
+  "dependencies": {
+    "express-session": "1.19.0",
+    "connect-redis": "10.0.0",
+    "redis": "6.3.0",
+    "@types/express-session": "1.18.2 (development only)",
+    "candidateLockIntegrityMatches": true,
+    "existingLockEntriesChanged": false,
+    "vendorBunSupportClaimed": false
+  },
   "authority": {
     "storeCallbackDeadlineMs": 750,
     "timeoutCancelsOperation": false,
@@ -35,28 +51,116 @@
     "Real primary database and session-client outages return unavailable without protected callback/authorization fallback"
   ],
   "gates": {
-    "frozenInstall": { "exit": 0 },
-    "prismaGenerate": { "exit": 0, "schemaAndMigrationsChanged": false },
-    "architectureAndTypecheck": { "exit": 0, "files": 332, "edges": 925, "violations": 0 },
-    "lint": { "exit": 0 },
-    "build": { "exit": 0, "apiEntryKB": 30.88, "workerEntryKB": 2.12 },
-    "sessions": { "exit": 0, "passed": 20, "failed": 0, "assertions": 194, "durationSeconds": 13.72 },
-    "backend": { "exit": 0, "passed": 87, "failed": 0, "assertions": 175, "durationSeconds": 6.66, "includesArchitectureTests": 47, "newUnitTests": 4 },
-    "authFences": { "exit": 0, "passed": 24, "failed": 0, "assertions": 134, "durationSeconds": 11.57 },
-    "tenancy": { "exit": 0, "passed": 34, "failed": 0, "assertions": 131, "durationSeconds": 13.84 },
-    "integration": { "exit": 0, "passed": 2, "failed": 0, "assertions": 5, "durationSeconds": 0.927 },
-    "infra": { "exit": 0, "passed": 5, "failed": 0, "assertions": 18, "durationSeconds": 0.66, "historicalIntermittentFailureResolved": false },
-    "lifecycle": { "exit": 1, "passed": 1, "failed": 2, "assertions": 7, "durationSeconds": 3.04, "apiSigtermExit": 143, "workerSigtermExit": 143, "expectedExit": 0, "matchesDocumentedBaseline": true },
-    "audit": { "exit": 1, "package": "deepmerge-ts", "version": "7.1.5", "severity": "high", "advisory": "https://github.com/advisories/GHSA-ggr8-5vv4-36mx", "dependencyOwner": "pre-existing @prisma/config 6.19.3", "identicalBaseLockEntry": true, "unrelatedUpgradeAttempted": false }
+    "frozenInstall": {
+      "exit": 0,
+      "correctionRerun": false
+    },
+    "prismaGenerate": {
+      "exit": 0,
+      "schemaAndMigrationsChanged": false,
+      "correctionRerun": false
+    },
+    "architectureAndTypecheck": {
+      "exit": 0,
+      "files": 332,
+      "edges": 925,
+      "violations": 0
+    },
+    "lint": {
+      "exit": 0
+    },
+    "build": {
+      "exit": 0,
+      "apiEntryKB": 32.16,
+      "workerEntryKB": 2.12
+    },
+    "sessions": {
+      "exit": 0,
+      "passed": 25,
+      "failed": 0,
+      "assertions": 254,
+      "durationSeconds": 18.05
+    },
+    "backend": {
+      "exit": 0,
+      "passed": 88,
+      "failed": 0,
+      "assertions": 191,
+      "durationSeconds": 7.86,
+      "includesArchitectureTests": 47,
+      "newUnitTests": 5
+    },
+    "authFences": {
+      "exit": 0,
+      "passed": 24,
+      "failed": 0,
+      "assertions": 134,
+      "durationSeconds": 10.8
+    },
+    "tenancy": {
+      "exit": 0,
+      "passed": 34,
+      "failed": 0,
+      "assertions": 131,
+      "durationSeconds": 13.14
+    },
+    "integration": {
+      "exit": 0,
+      "passed": 2,
+      "failed": 0,
+      "assertions": 5,
+      "durationSeconds": 1.57
+    },
+    "infra": {
+      "exit": 0,
+      "passed": 5,
+      "failed": 0,
+      "assertions": 18,
+      "durationSeconds": 1.088,
+      "historicalIntermittentFailureResolved": false
+    },
+    "lifecycle": {
+      "exit": 1,
+      "passed": 1,
+      "failed": 2,
+      "assertions": 7,
+      "durationSeconds": 3.75,
+      "apiSigtermExit": 143,
+      "workerSigtermExit": 143,
+      "expectedExit": 0,
+      "matchesDocumentedBaseline": true
+    },
+    "audit": {
+      "exit": 1,
+      "package": "deepmerge-ts",
+      "version": "7.1.5",
+      "severity": "high",
+      "advisory": "https://github.com/advisories/GHSA-ggr8-5vv4-36mx",
+      "dependencyOwner": "pre-existing @prisma/config 6.19.3",
+      "identicalBaseLockEntry": true,
+      "unrelatedUpgradeAttempted": false
+    }
   },
   "developmentObservations": [
     "Initial typecheck before Prisma generation failed on generated model types; resolved by generation, no production schema edit",
     "Initial scripts-owned test could not resolve API-owned Nest/reflect-metadata dependencies; test relocated to API verification instead of adding root framework packages",
     "Initial fake Store used abstract class type; corrected with explicit test subclass",
     "Intermediate expanded security suite: 16 pass/1 fail because Bun matcher rejects direct PrismaPromise input; Promise.resolve preserves/executes same DDL assertion; no deadline raised",
-    "Passing suite expansion: 11 tests/117 assertions, 18/181, 19/186, final 20/194; earlier observations retained"
+    "Passing suite expansion: 11 tests/117 assertions, 18/181, 19/186, final 20/194; earlier observations retained",
+    "Correction first expanded session run: 23 pass/1 fail, 223 assertions, 20.02s, exit1. Existing 50ms rotation-save fixture bootstrap returned503 before intentional paused save. No timeout or assertion changed; subsequent full runs 24/235 and final25/254 passed. Timing sensitivity remains unresolved.",
+    "Correction initial typecheck found response overload wrapper typing and optional fixture-state assignment issues; corrected types, final typecheck/lint passed.",
+    "Correction first infrastructure run:3 pass/2 fail/1 between-test error,12 assertions,5.86s,exit1. Historical unsupported-job timeout and late rejection reproduced; RustFS/Mailpit refusal was missing-service setup. Full compose startup restored prerequisites; final5/18 passed with unchanged timeout. Historical queue failure is not resolved."
   ],
-  "cleanup": { "ownedDatabases": 0, "ownedRoles": 0, "ownedCacheKeys": 0, "disposableValkeyContainers": 0, "developmentServicesStoppedWithVolumesRetained": true, "localDocumentationTargetsChecked": 26, "jsonValid": true, "diffCheck": "passed" },
+  "cleanup": {
+    "ownedDatabases": 0,
+    "ownedRoles": 0,
+    "ownedCacheKeys": 0,
+    "disposableValkeyContainers": 0,
+    "developmentServicesStoppedWithVolumesRetained": true,
+    "localDocumentationTargetsChecked": 9,
+    "jsonValid": true,
+    "diffCheck": "passed"
+  },
   "remainingRisks": [
     "Browser SameSite/CORS deployment and real production TLS/ACL/proxy topology are not certified by a loopback HTTPS fixture",
     "Unknown PostgreSQL commit or failed compensating revoke leaves unconfirmed orphan/reconciliation work; new SID is suppressed but distributed cancellation is not proven",
@@ -66,6 +170,154 @@
     "Historical queue notification timeout/late error, candidate A acknowledgement, BE-00F fixture/lint and BE-00G CLI timing risks remain unresolved",
     "Frozen frontend NEXUS failures not rerun or changed",
     "Production roles/provisioning, SECURITY DEFINER audit, retention, noeviction capacity, load, clocks, observability, namespace/signing reset and restoration runbook still require review",
-    "No credential verifier, auth endpoints, approved business grants, endpoint-specific abuse policy, frontend integration or WebSocket implementation"
-  ]
+    "No credential verifier, auth endpoints, approved business grants, endpoint-specific abuse policy, frontend integration or WebSocket implementation",
+    "Existing 50ms save-timeout fixture had one unrelated bootstrap503 during correction verification; reruns passed without changing deadline. Clock synchronization is required for strict cache lifetime bounds."
+  ],
+  "reviewedHead": "ab7c34cfa863193d14d4f8dc37821afe026c9229",
+  "reviewedHeadGates": {
+    "frozenInstall": {
+      "exit": 0
+    },
+    "prismaGenerate": {
+      "exit": 0,
+      "schemaAndMigrationsChanged": false
+    },
+    "architectureAndTypecheck": {
+      "exit": 0,
+      "files": 332,
+      "edges": 925,
+      "violations": 0
+    },
+    "lint": {
+      "exit": 0
+    },
+    "build": {
+      "exit": 0,
+      "apiEntryKB": 30.88,
+      "workerEntryKB": 2.12
+    },
+    "sessions": {
+      "exit": 0,
+      "passed": 20,
+      "failed": 0,
+      "assertions": 194,
+      "durationSeconds": 13.72
+    },
+    "backend": {
+      "exit": 0,
+      "passed": 87,
+      "failed": 0,
+      "assertions": 175,
+      "durationSeconds": 6.66,
+      "includesArchitectureTests": 47,
+      "newUnitTests": 4
+    },
+    "authFences": {
+      "exit": 0,
+      "passed": 24,
+      "failed": 0,
+      "assertions": 134,
+      "durationSeconds": 11.57
+    },
+    "tenancy": {
+      "exit": 0,
+      "passed": 34,
+      "failed": 0,
+      "assertions": 131,
+      "durationSeconds": 13.84
+    },
+    "integration": {
+      "exit": 0,
+      "passed": 2,
+      "failed": 0,
+      "assertions": 5,
+      "durationSeconds": 0.927
+    },
+    "infra": {
+      "exit": 0,
+      "passed": 5,
+      "failed": 0,
+      "assertions": 18,
+      "durationSeconds": 0.66,
+      "historicalIntermittentFailureResolved": false
+    },
+    "lifecycle": {
+      "exit": 1,
+      "passed": 1,
+      "failed": 2,
+      "assertions": 7,
+      "durationSeconds": 3.04,
+      "apiSigtermExit": 143,
+      "workerSigtermExit": 143,
+      "expectedExit": 0,
+      "matchesDocumentedBaseline": true
+    },
+    "audit": {
+      "exit": 1,
+      "package": "deepmerge-ts",
+      "version": "7.1.5",
+      "severity": "high",
+      "advisory": "https://github.com/advisories/GHSA-ggr8-5vv4-36mx",
+      "dependencyOwner": "pre-existing @prisma/config 6.19.3",
+      "identicalBaseLockEntry": true,
+      "unrelatedUpgradeAttempted": false
+    }
+  },
+  "focusedCorrections": {
+    "F1": "Terminal request flag removes session before Express end/writeHead hooks. Logout enters terminal state after confirmed PostgreSQL revoke, before bounded destroy. Real delayed destroy + late reload + explicit save preserves stale Valkey bytes but returns one clearing cookie, no automatic save, read 401.",
+    "F2": "Regeneration failure/timeout and fence create/rotate failures suppress finalization and cookie delivery. Rotation attempts durable family revoke including pre-fence failure. Timeout is not cancellation; failed compensation remains unconfirmed.",
+    "F3": "issuedAt <= now < idleExpiresAt <= absoluteExpiresAt, issuedAt < idleExpiresAt, authenticated absolute-issued <=12h and idle-now <=30m; anonymous <=10m. Exact expiry rejected; rotation may advance idle beyond original issuance window without extending absolute deadline.",
+    "reviewedProductionCounterexamples": {
+      "http": {
+        "passed": 0,
+        "failed": 4,
+        "assertions": 27,
+        "exit": 1,
+        "durationSeconds": 3.96
+      },
+      "lifetimeUnit": {
+        "passed": 0,
+        "failed": 1,
+        "assertions": 5,
+        "exit": 1,
+        "durationSeconds": 0.593
+      },
+      "method": "Temporarily execute reviewed versions of the two changed production files with new focused tests, finally restore corrected bytes. All other tracked code identical to reviewed HEAD except new test hooks/tests.",
+      "observations": [
+        "Logout emitted two Set-Cookie headers after real late reload/save",
+        "Establishment and rotation regeneration-timeout callbacks emitted signed successor SID",
+        "Artificially extended future cache state admitted a read",
+        "12-hour plus one millisecond absolute state accepted"
+      ]
+    },
+    "correctedFocusedChecks": {
+      "http": {
+        "passed": 4,
+        "failed": 0,
+        "assertions": 41,
+        "exit": 0,
+        "durationSeconds": 3.92
+      },
+      "lifetimeUnit": {
+        "passed": 1,
+        "failed": 0,
+        "assertions": 16,
+        "exit": 0,
+        "durationSeconds": 0.557
+      }
+    },
+    "actualRedisDelayedExecution": "Full final suite additionally pauses real Valkey after hydration/admission. Actual regeneration DEL executes after the 750ms unavailable result; both establishment and rotation return only the clearing cookie. Predecessor cache resurrection denied; rotation family confirmed revoked.",
+    "preservedPaths": [
+      "packages/database",
+      "apps/web",
+      "bun.lock",
+      "package.json",
+      "apps/api/package.json"
+    ],
+    "migrationsChanged": false,
+    "productionFilesChanged": [
+      "apps/api/src/modules/sessions/application/sessions.ts",
+      "apps/api/src/modules/sessions/infrastructure/store.ts"
+    ]
+  }
 }

@@ -49,7 +49,8 @@ afterAll(async () => {
   }
 }, 10000);
 function gate() { let release!: () => void; const wait = new Promise<void>(r => { release = r; }); return { wait, release }; }
-async function fixture(options: { settings?: SessionSettings; database?: Database; deny?: boolean; wrap?: (store: BoundedSessionStore) => BoundedSessionStore } = {}) {
+async function fixture(options: { settings?: SessionSettings; database?: Database; deny?: boolean; wrap?: (store: BoundedSessionStore) => BoundedSessionStore;
+  beforeResponse?: (req: Request) => Promise<void>; afterLogout?: (req: Request, saved: Request['session']) => Promise<void> } = {}) {
   const userId = randomUUID(), identityId = randomUUID(), workspaceId = randomUUID(), membershipId = randomUUID(), teamId = randomUUID(), projectId = randomUUID(), issueId = randomUUID();
   await db.transaction(async tx => {
     await tx.user.create({ data: { id: userId, name: 'Session test' } });
@@ -78,7 +79,10 @@ async function fixture(options: { settings?: SessionSettings; database?: Databas
   let escaped: VerifiedPrincipal | undefined, entered = gate(), hold: ReturnType<typeof gate> | undefined;
   let heldDenied = false;
   const route = (path: string, method: 'get' | 'post', run: (req: Request, res: Response) => Promise<void>) => router[method](path, (req, res) => {
-    void run(req, res).catch(error => { if (!res.destroyed) res.status(error instanceof AuthUnavailableError ? 503 : error instanceof TenantAccessError ? 401 : 500).json({ error: 'Unavailable' }); });
+    void run(req, res).catch(async error => {
+      await options.beforeResponse?.(req);
+      if (!res.destroyed) res.status(error instanceof AuthUnavailableError ? 503 : error instanceof TenantAccessError ? 401 : 500).json({ error: 'Unavailable' });
+    });
   });
   route('/bootstrap', 'get', async (req, res) => { res.json({ csrf: await sessions.bootstrap(req) }); });
   route('/establish', 'post', async (req, res) => { await sessions.establish(req, proof); res.json({ csrf: req.session.state!.csrf }); });
@@ -104,7 +108,7 @@ async function fixture(options: { settings?: SessionSettings; database?: Databas
     await q.compareAndSetIssueTitle(issueId, 1, 'After'); entered.release(); await hold?.wait;
   })); res.json({ ok: true }); });
   route('/rotate', 'post', async (req, res) => { await sessions.rotate(req); res.json({ csrf: req.session.state!.csrf }); });
-  route('/logout', 'post', async (req, res) => { res.json(await sessions.logout(req)); });
+  route('/logout', 'post', async (req, res) => { const saved = req.session, result = await sessions.logout(req); await options.afterLogout?.(req, saved); res.json(result); });
   route('/logout-all', 'post', async (req, res) => { res.json(await sessions.logout(req, true)); });
   await app.init(); await app.listen(0, '127.0.0.1');
   const address = app.getHttpServer().address(); if (!address || typeof address === 'string') throw new Error('Missing listener');
@@ -217,6 +221,116 @@ test('timed-out establishment delivers no new SID, revokes its family, and late 
   const family = await db.client.authSessionFamily.findFirstOrThrow({ where: { userId: f.userId } }); expect(family.revokedAt).not.toBeNull();
   expect((await f.http('/read', anonymous)).status).toBe(401);
 });
+test('logout terminal finalization ignores a real late reload/save after delayed destroy and restored Valkey state', async () => {
+  let pause = false, release!: () => Promise<void>, raw = '', key = '', automaticSaves = 0;
+  const f = await fixture({ wrap: original => {
+    const adapter = new BoundedSessionStore(original, 50);
+    adapter.destroy = (sid, done) => {
+      if (!pause) { original.destroy(sid, done); return; }
+      release = () => new Promise<void>((resolve, reject) => original.destroy(sid, error => {
+        done?.(error); if (error) reject(error); else resolve();
+      }));
+    };
+    const wrapped = new BoundedSessionStore(adapter, 50), set = wrapped.set.bind(wrapped);
+    wrapped.set = (sid, data, done) => { if (pause) automaticSaves++; set(sid, data, done); };
+    return wrapped;
+  }, afterLogout: async (req, saved) => {
+    await release(); await cache.set(key, raw, 'EX', 60);
+    // Express reload really assigns a Session back to the terminal Request.
+    await new Promise<void>((resolve, reject) => saved.reload(error => error ? reject(error) : resolve()));
+    req.session.state!.csrf = randomBytes(32).toString('base64url');
+    await new Promise<void>((resolve, reject) => req.session.save(error => error ? reject(error) : resolve()));
+    req.session.state!.csrf = randomBytes(32).toString('base64url'); // would trigger another implicit save/header
+  } });
+  const auth = await f.login(); key = f.key(auth); raw = (await cache.get(key))!; pause = true;
+  const response = await f.http('/logout', auth, 'POST');
+  expect(response.status).toBe(200); expect(await response.json()).toEqual({ revocation: 'confirmed', cleanup: 'unconfirmed' });
+  expect(response.headers.getSetCookie()).toHaveLength(1);
+  expect(f.cookieOf(response)).toBe(`${settings.name}=`);
+  expect(response.headers.get('set-cookie')).toContain('Expires=Thu, 01 Jan 1970');
+  expect(automaticSaves).toBe(1); // explicit adversarial late save only
+  expect(await cache.get(key)).not.toBeNull();
+  expect((await f.http('/read', auth)).status).toBe(401);
+});
+
+for (const path of ['/establish', '/rotate']) test(`${path} regeneration timeout with late real DEL/generation suppresses finalization and cookie delivery`, async () => {
+  let pause = false, release!: () => Promise<void>, completed = false, generatedSid = '', originalState: Request['session']['state'];
+  const s = { ...settings, deadlineMs: 50 };
+  const f = await fixture({ settings: s, wrap: original => {
+    const regenerate = original.regenerate.bind(original);
+    original.regenerate = (req, done) => {
+      if (!pause) { regenerate(req, done); return; }
+      originalState = req.session.state;
+      release = () => new Promise<void>(resolve => regenerate(req, error => {
+        generatedSid = req.sessionID; completed = true;
+        // A late callback restores/modifies state before the HTTP error ends.
+        if (originalState) req.session.state = originalState;
+        done(error); resolve();
+      }));
+    };
+    return original;
+  }, beforeResponse: async () => { await release(); } });
+  let auth: { cookie: string; csrf: string };
+  if (path === '/rotate') auth = await f.login();
+  else { const response = await f.http('/bootstrap'); auth = { cookie: f.cookieOf(response), csrf: (await response.json()).csrf }; }
+  const raw = (await cache.get(f.key(auth)))!; pause = true;
+  const response = await f.http(path, auth, 'POST');
+  expect(response.status).toBe(503); expect(completed).toBe(true); expect(generatedSid).not.toBe(f.sid(auth));
+  expect(response.headers.getSetCookie()).toHaveLength(1); expect(f.cookieOf(response)).toBe(`${settings.name}=`);
+  expect(await cache.get(settings.prefix + generatedSid)).toBeNull();
+  await cache.set(f.key(auth), raw, 'EX', 60);
+  expect((await f.http('/read', auth)).status).toBe(401);
+  const families = await db.client.authSessionFamily.findMany({ where: { userId: f.userId } });
+  expect(families).toHaveLength(path === '/rotate' ? 1 : 0);
+  if (path === '/rotate') expect(families[0]!.revokedAt).not.toBeNull();
+});
+
+test('future-expiring cache state with extended absolute/idle lifetime fails before fresh principal admission', async () => {
+  const f = await fixture(), auth = await f.login(), raw = JSON.parse((await cache.get(f.key(auth)))!);
+  for (const state of [
+    { ...raw.state, issuedAt: raw.state.absoluteExpiresAt },
+    { ...raw.state, absoluteExpiresAt: raw.state.issuedAt + 43200001 },
+    { ...raw.state, idleExpiresAt: Date.now() + 1801000 },
+  ]) {
+    await cache.set(f.key(auth), JSON.stringify({ ...raw, state }), 'EX', 60);
+    expect((await f.http('/read', auth)).status).toBe(401);
+  }
+  await cache.set(f.key(auth), JSON.stringify(raw), 'EX', 60);
+  expect((await f.http('/read', auth)).status).toBe(200);
+});
+
+test('real blocked regeneration DEL completes after unavailable response without issuing a successor cookie', async () => {
+  for (const path of ['/establish', '/rotate']) {
+    let pause = false, entered = false;
+    const f = await fixture({ wrap: original => {
+      const regenerate = original.regenerate.bind(original);
+      original.regenerate = (req, done) => {
+        if (!pause) { regenerate(req, done); return; }
+        // Hydration/admission already completed. Block the actual DEL on the
+        // server, rather than only holding an application callback.
+        void cache.call('CLIENT', 'PAUSE', '1200', 'ALL').then(() => {
+          entered = true; regenerate(req, done);
+        }, error => done(error));
+      };
+      return original;
+    } });
+    let auth: { cookie: string; csrf: string };
+    if (path === '/rotate') auth = await f.login();
+    else { const response = await f.http('/bootstrap'); auth = { cookie: f.cookieOf(response), csrf: (await response.json()).csrf }; }
+    const raw = (await cache.get(f.key(auth)))!; pause = true;
+    const response = await f.http(path, auth, 'POST');
+    expect(entered).toBe(true); expect(response.status).toBe(503);
+    expect(response.headers.getSetCookie()).toHaveLength(1); expect(f.cookieOf(response)).toBe(`${settings.name}=`);
+    await Bun.sleep(650);
+    expect(await cache.get(f.key(auth))).toBeNull(); // DEL really executed late
+    await cache.set(f.key(auth), raw, 'EX', 60);
+    expect((await f.http('/read', auth)).status).toBe(401);
+    const families = await db.client.authSessionFamily.findMany({ where: { userId: f.userId } });
+    expect(families).toHaveLength(path === '/rotate' ? 1 : 0);
+    if (path === '/rotate') expect(families[0]!.revokedAt).not.toBeNull();
+  }
+}, 10000);
+
 test('primary fences reject forged cache identities/generations and mixed SID evidence; cookie flags are clamped', async () => {
   const f = await fixture(), auth = await f.login(), raw = await cache.get(f.key(auth)), payload = JSON.parse(raw!);
   for (const state of [{ ...payload.state, userId: randomUUID() }, { ...payload.state, generation: '999' }, { ...payload.state, authEpoch: '999' }, { ...payload.state, grants: ['ADMIN'] }]) {

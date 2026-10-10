@@ -30,6 +30,27 @@ test('state rejects injected grants, malformed epochs, future issuance and expir
   expect(validState({ ...state, idleExpiresAt: Date.now() - 1 })).toBeNull();
   expect(validState({ ...state, idleExpiresAt: state.absoluteExpiresAt + 1 })).toBeNull();
 });
+test('lifetime boundaries enforce issuance, absolute ceilings and rolling idle windows without rejecting rotation', () => {
+  const now = 100000000, state = { version: 1, kind: 'authenticated', csrf: 'a'.repeat(43),
+    userId: '11111111-1111-4111-8111-111111111111', identityId: '22222222-2222-4222-8222-222222222222',
+    familyId: '33333333-3333-4333-8333-333333333333', authEpoch: '1', generation: '1',
+    issuedAt: now, idleExpiresAt: now + 1800000, absoluteExpiresAt: now + 43200000 };
+  expect(validState(state, now)).not.toBeNull();
+  expect(validState({ ...state, issuedAt: now - 3600000, absoluteExpiresAt: now - 3600000 + 43200000 }, now)).not.toBeNull();
+  for (const change of [{ issuedAt: now + 1 }, { issuedAt: state.idleExpiresAt },
+    { absoluteExpiresAt: now + 43200001 }, { idleExpiresAt: now + 1800001 },
+    { idleExpiresAt: now }, { absoluteExpiresAt: now }, { authEpoch: '0' }, { generation: '0' }]) {
+    expect(validState({ ...state, ...change }, now)).toBeNull();
+  }
+  expect(validState({ ...state, idleExpiresAt: now + 1, absoluteExpiresAt: now + 1 }, now)).not.toBeNull();
+  const anonymous = { version: 1, kind: 'anonymous', csrf: state.csrf, issuedAt: now, idleExpiresAt: now + 600000, absoluteExpiresAt: now + 600000 };
+  expect(validState(anonymous, now)).not.toBeNull();
+  expect(validState({ ...anonymous, absoluteExpiresAt: now + 600001 }, now)).toBeNull();
+  expect(validState({ ...anonymous, idleExpiresAt: now + 600001, absoluteExpiresAt: now + 600001 }, now)).toBeNull();
+  expect(validState(anonymous, now + 600000)).toBeNull();
+  expect(validState(state, Number.NaN)).toBeNull();
+});
+
 test('bounded callbacks fail once; late success is not cancellation and never changes result', async () => {
   const underlying = new FixtureStore();
   let complete!: (error?: unknown) => void, callbacks = 0, persisted = false;

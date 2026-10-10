@@ -13,7 +13,7 @@ export interface SessionFences {
   revoke(evidence: SessionEvidence): Promise<void>;
   revokeAll(userId: string): Promise<void>;
 }
-type Boundary = { sid: string; response: Response; abort: AbortController; used: boolean; evidence?: SessionEvidence; state?: SessionState };
+type Boundary = { sid: string; response: Response; abort: AbortController; used: boolean; terminal?: boolean; evidence?: SessionEvidence; state?: SessionState };
 const random = () => randomBytes(32).toString('base64url');
 const digest = (sid: string) => createHash('sha256').update(sid).digest('hex');
 const health = (r: Request) => r.method === 'GET' && ['/live', '/ready', '/api/v1/live', '/api/v1/ready'].includes(r.path);
@@ -69,7 +69,19 @@ export class Sessions implements SessionVerifier {
         const abort = new AbortController();
         const end = () => abort.abort();
         req.once('aborted', end); res.once('close', end); res.once('finish', end);
-        this.#requests.set(req, { sid: req.sessionID, response: res, abort, used: false });
+        const boundary: Boundary = { sid: req.sessionID, response: res, abort, used: false };
+        this.#requests.set(req, boundary);
+        // Late library callbacks can restore req.session. Remove it before
+        // express-session's finalization and header hooks on terminal requests.
+        const responseEnd = res.end, writeHead = res.writeHead;
+        res.end = function (...args: unknown[]) {
+          if (boundary.terminal) Reflect.deleteProperty(req, 'session');
+          return Reflect.apply(responseEnd, this, args);
+        };
+        res.writeHead = function (...args: unknown[]) {
+          if (boundary.terminal) Reflect.deleteProperty(req, 'session');
+          return Reflect.apply(writeHead, this, args);
+        };
         if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
           const s = validState(req.session?.state);
           // No missing/null Origin fallback; no Referer or forwarded-origin trust.
@@ -109,7 +121,7 @@ export class Sessions implements SessionVerifier {
     // Suppress express-session's implicit response-finalization retry/Set-Cookie.
     // A failed establishment/rotation must not deliver its new SID even when
     // the late save and compensating database revoke are both indeterminate.
-    Reflect.deleteProperty(req, 'session'); boundary.abort.abort();
+    boundary.terminal = true; Reflect.deleteProperty(req, 'session'); boundary.abort.abort();
     boundary.response.clearCookie(this.settings.name, { httpOnly: true, secure: this.settings.secure, sameSite: 'lax', path: '/' });
   }
   // Future explicitly reviewed GET bootstrap handler must be no-store and
@@ -134,9 +146,12 @@ export class Sessions implements SessionVerifier {
     if (req.method !== 'POST') throw new TenantAccessError();
     const identity = await this.resolveIdentity(assertion);
     if (!identity || b.abort.signal.aborted) throw new TenantAccessError();
-    await this.operation(done => req.session.regenerate(done)); b.sid = req.sessionID;
+    try { await this.operation(done => req.session.regenerate(done)); b.sid = req.sessionID; }
+    catch (error) { this.abandon(req, b); throw error; }
     const now = Date.now(), absolute = now + this.settings.absoluteMs, idle = Math.min(absolute, now + this.settings.idleMs);
-    const evidence = await this.fences.create({ ...identity, sidDigest: digest(b.sid), absoluteExpiresAt: new Date(absolute), idleExpiresAt: new Date(idle) });
+    let evidence: SessionEvidence;
+    try { evidence = await this.fences.create({ ...identity, sidDigest: digest(b.sid), absoluteExpiresAt: new Date(absolute), idleExpiresAt: new Date(idle) }); }
+    catch (error) { this.abandon(req, b); throw error; }
     try {
       if (b.abort.signal.aborted) throw new TenantAccessError();
       await this.save(req, { version: 1, kind: 'authenticated', csrf: random(), issuedAt: now, absoluteExpiresAt: absolute, idleExpiresAt: idle,
@@ -157,9 +172,16 @@ export class Sessions implements SessionVerifier {
       const old = b.state;
       if (!old || old.kind !== 'authenticated') throw new TenantAccessError();
       const evidence = this.admittedEvidence(b);
-      await this.operation(done => req.session.regenerate(done)); b.sid = req.sessionID;
+      try { await this.operation(done => req.session.regenerate(done)); b.sid = req.sessionID; }
+      catch (error) {
+        this.abandon(req, b);
+        try { await this.fences.revoke(evidence); } catch { /* unconfirmed; no success or cookie delivery */ }
+        throw error;
+      }
       const idle = Math.min(old.absoluteExpiresAt, Date.now() + this.settings.idleMs);
-      const updated = await this.fences.rotate(evidence, digest(b.sid), new Date(idle));
+      let updated: SessionEvidence;
+      try { updated = await this.fences.rotate(evidence, digest(b.sid), new Date(idle)); }
+      catch (error) { this.abandon(req, b); try { await this.fences.revoke(evidence); } catch { /* unconfirmed */ } throw error; }
       try {
         if (b.abort.signal.aborted) throw new TenantAccessError();
         await this.save(req, { ...old, csrf: random(), generation: updated.generation.toString(), idleExpiresAt: idle });
@@ -178,9 +200,10 @@ export class Sessions implements SessionVerifier {
       const b = this.#requests.get(req)!;
       const evidence = this.admittedEvidence(b);
       if (all) await this.fences.revokeAll(evidence.userId); else await this.fences.revoke(evidence);
+      const active = req.session;
+      this.abandon(req, b);
       let cleanup: 'confirmed' | 'unconfirmed' = 'confirmed';
-      try { await this.operation(done => req.session.destroy(done)); } catch { cleanup = 'unconfirmed'; }
-      b.response.clearCookie(this.settings.name, { httpOnly: true, secure: this.settings.secure, sameSite: 'lax', path: '/' });
+      try { await this.operation(done => active.destroy(done)); } catch { cleanup = 'unconfirmed'; }
       return { revocation: 'confirmed', cleanup };
     });
   }
