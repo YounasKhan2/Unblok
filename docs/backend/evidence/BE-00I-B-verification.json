@@ -273,5 +273,102 @@
     "outbox monitoring, five-attempt exhaustion and reconciliation/retention",
     "cache eviction/flush and distributed abuse/load/HA calibration",
     "historical SIGTERM/queue/audit and BE-00F/NEXUS risks remain; no production certification"
-  ]
+  ],
+  "pr31Correction": {
+    "date": "2026-10-11",
+    "reviewedHead": "d535ab56f91c15a03b1b41434e0929f6838cdb9f",
+    "headLocation": "PR metadata",
+    "F1": {
+      "productionChanged": false,
+      "sequentialWrongProofs": 10,
+      "committedAttempts": 10,
+      "httpBody": "status accepted only; no existence/remaining count",
+      "concurrent": "accepted HTTP responses equal committed attempts; SERIALIZABLE conflicts return503 and roll back",
+      "exhaustion": "correct proof denied after10; fresh API/cache namespace and worker instance cannot reset primary cap"
+    },
+    "F2": {
+      "productionChange": "credential-locked transactional cancellation/replacement for undelivered five-claim outbox with no live final lease",
+      "inFlight": "reuse until unchanged30s final lease expires",
+      "abuse": "unchanged account5/hour IP10/hour; every request consumes budget",
+      "lateSuccess": "actual Mailpit delivery and successful old acknowledgement after replacement cannot revive canceled proof",
+      "expiry": "replacement15min maximum; old lifetime never extended",
+      "concurrent": "exactly one replacement commits; conflicts fail closed"
+    },
+    "gates": {
+      "emailSecurity": {
+        "exit": 0,
+        "pass": 16,
+        "fail": 0,
+        "assertions": 468,
+        "seconds": 27.21
+      },
+      "authentication": {
+        "exit": 0,
+        "pass": 26,
+        "fail": 0,
+        "assertions": 812,
+        "seconds": 24.89
+      },
+      "sessions": {
+        "exit": 0,
+        "pass": 25,
+        "fail": 0,
+        "assertions": 254,
+        "seconds": 21.07
+      },
+      "authFences": {
+        "exit": 0,
+        "pass": 24,
+        "fail": 0,
+        "assertions": 134,
+        "seconds": 16.69
+      },
+      "tenancy": {
+        "exit": 0,
+        "pass": 34,
+        "fail": 0,
+        "assertions": 132,
+        "seconds": 24.47
+      },
+      "backend": {
+        "exit": 0,
+        "pass": 97,
+        "fail": 0,
+        "assertions": 247,
+        "seconds": 15.2
+      },
+      "databaseIntegration": {
+        "exit": 0,
+        "pass": 2,
+        "fail": 0,
+        "assertions": 5,
+        "seconds": 2.34
+      },
+      "migrationReplaySchemaEquality": "pass in email suite; upgrade history in tenancy",
+      "architecture": "346 files958 edges0 violations",
+      "typecheck": "pass",
+      "lint": "pass",
+      "build": "pass API49.92KB worker4.29KB",
+      "diff": "pass"
+    },
+    "failedObservations": [
+      {
+        "pass": 15,
+        "fail": 1,
+        "assertions": 467,
+        "seconds": 35.2,
+        "finding": "Existing migration/schema test hit unchanged5s deadline while static checks overlapped; retained observation, no proven root cause or harmlessness claim"
+      }
+    ],
+    "intermediateRepeat": {
+      "pass": 16,
+      "fail": 0,
+      "assertions": 467,
+      "seconds": 26.02
+    },
+    "historicalFailures": "Original infrastructure/lifecycle/audit observations above retained; not rerun or declared fixed by this correction",
+    "freeze": "frontend, all migrations/schema, packages/lock, API/worker/session/fence code unchanged; only database challenge-reuse leaf, tests, report/evidence/tracker changed",
+    "deployment": "all original operational/TLS/mail/key/runtime-grant requirements remain; exhausted deliveries recover by explicit rate-admitted request, not automatic endless retry",
+    "status": "awaiting human review; do not merge or begin BE-00I-C"
+  }
 }

@@ -286,3 +286,102 @@ test('misconfigured same-version worker key cannot send an inconsistent proof',a
   await expect(new VerificationDelivery(database,{id:verificationKey.id,secret:randomBytes(32).toString('hex')}).once(async()=>{sent=true;})).rejects.toThrow('Authentication dependency unavailable');
   expect(sent).toBe(false);
 });
+
+test('wrong HTTP proofs commit ten sequential attempts and remain exhausted after worker and API restart', async()=>{
+  const f=await prepared(), token=await delivered(f);
+  const row=await database.client.emailVerificationChallenge.findFirstOrThrow({where:{identityId:f.credential.identityId}});
+  for(let i=1;i<=10;i++){
+    const response=await f.http('/api/v1/auth/email-verification/confirm','POST',f.auth,{token:`${randomUUID()}.${randomBytes(32).toString('base64url')}`});
+    expect(response.status).toBe(200);expect(await response.json()).toEqual({status:'accepted'});
+    expect((await database.client.emailVerificationChallenge.findUniqueOrThrow({where:{id:row.id}})).attempts).toBe(i);
+  }
+  expect((await f.http('/api/v1/auth/email-verification/confirm','POST',f.auth,{token})).status).toBe(429);
+  await f.close();
+  expect(await new VerificationDelivery(database,verificationKey).once(async()=>{throw new Error('Exhausted proof must not dispatch');})).toBe(false);
+  const restarted=await fixture(), auth=await restarted.login(f.email);
+  for(let i=0;i<2;i++){
+    const response=await restarted.http('/api/v1/auth/email-verification/confirm','POST',auth,{token});
+    expect(response.status).toBe(200);expect(await response.json()).toEqual({status:'accepted'});
+  }
+  const exhausted=await database.client.emailVerificationChallenge.findUniqueOrThrow({where:{id:row.id}});
+  expect(exhausted.attempts).toBe(10);expect(exhausted.consumedAt).toBeNull();
+  expect((await database.client.passwordCredential.findUniqueOrThrow({where:{email:f.email}})).emailVerifiedAt).toBeNull();
+});
+
+test('overlapping wrong HTTP attempts persist exactly the committed accepted attempts, then exhaust durably', async()=>{
+  const f=await prepared(), token=await delivered(f);
+  const row=await database.client.emailVerificationChallenge.findFirstOrThrow({where:{identityId:f.credential.identityId}});
+  const responses=await Promise.all(Array.from({length:10},()=>f.http('/api/v1/auth/email-verification/confirm','POST',f.auth,{token:`${randomUUID()}.${randomBytes(32).toString('base64url')}`})));
+  expect(responses.every(r=>[200,503].includes(r.status))).toBe(true);
+  const committed=responses.filter(r=>r.status===200).length;expect(committed).toBeGreaterThan(0);
+  for(const response of responses.filter(r=>r.status===200)) expect(await response.json()).toEqual({status:'accepted'});
+  expect((await database.client.emailVerificationChallenge.findUniqueOrThrow({where:{id:row.id}})).attempts).toBe(committed);
+  // Fresh isolated limiter models cache namespace loss; PostgreSQL evidence survives.
+  const next=await fixture(), auth=await next.login(f.email);
+  for(let i=committed;i<10;i++) expect((await next.http('/api/v1/auth/email-verification/confirm','POST',auth,{token:`${randomUUID()}.${randomBytes(32).toString('base64url')}`})).status).toBe(200);
+  const correct=await next.http('/api/v1/auth/email-verification/confirm','POST',auth,{token});
+  expect(correct.status).toBe(200);expect(await correct.json()).toEqual({status:'accepted'});
+  expect((await database.client.emailVerificationChallenge.findUniqueOrThrow({where:{id:row.id}})).attempts).toBe(10);
+  expect((await database.client.passwordCredential.findUniqueOrThrow({where:{email:f.email}})).emailVerifiedAt).toBeNull();
+});
+
+test('five failed delivery claims recover transactionally; final live lease and late acknowledgement cannot revive old proof', async()=>{
+  const f=await prepared(), failed=transport('http://127.0.0.1:1/api/v1/send');
+  const old=await database.client.emailVerificationChallenge.findFirstOrThrow({where:{identityId:f.credential.identityId}});
+  try{
+    for(let i=1;i<=4;i++){
+      await database.client.emailVerificationOutbox.update({where:{challengeId:old.id},data:{nextAttemptAt:new Date(0)}});
+      expect(await f.delivery.once(failed.send)).toBe(true);
+      const outbox=await database.client.emailVerificationOutbox.findUniqueOrThrow({where:{challengeId:old.id}});
+      expect(outbox.attempts).toBe(i);expect(outbox.deliveredAt).toBeNull();
+    }
+  }finally{await failed.close();}
+  await database.client.emailVerificationOutbox.update({where:{challengeId:old.id},data:{nextAttemptAt:new Date(0)}});
+  let entered!:()=>void, release!:()=>void;const ready=new Promise<void>(ok=>{entered=ok;}), hold=new Promise<void>(ok=>{release=ok;});
+  let staleToken=''; const sender=transport();
+  const pending=f.delivery.once(async(...args)=>{staleToken=args[1];entered();await hold;await sender.send(...args);});
+  try{
+    await ready;
+    expect((await f.http('/api/v1/auth/email-verification/request','POST',f.auth)).status).toBe(202);
+    expect(await database.client.emailVerificationChallenge.count({where:{identityId:old.identityId}})).toBe(1);
+    // Owned scheduling fixture models expiry of the unchanged production30s lease.
+    await database.client.emailVerificationOutbox.update({where:{challengeId:old.id},data:{leaseUntil:new Date(0)}});
+    const responses=await Promise.all(Array.from({length:3},()=>f.http('/api/v1/auth/email-verification/request','POST',f.auth)));
+    expect(responses.some(r=>r.status===202)).toBe(true);expect(responses.every(r=>[202,503].includes(r.status))).toBe(true);
+    const rows=await database.client.emailVerificationChallenge.findMany({where:{identityId:old.identityId}});
+    expect(rows).toHaveLength(2);expect(rows.find(r=>r.id===old.id)!.canceledAt).not.toBeNull();
+    const replacement=rows.find(r=>r.id!==old.id)!;
+    expect(replacement.email).toBe(old.email);expect(replacement.authEpoch).toBe(old.authEpoch);
+    expect(replacement.expiresAt.getTime()-replacement.issuedAt.getTime()).toBe(900000);
+    expect((await f.http('/api/v1/auth/email-verification/request','POST',f.auth)).status).toBe(429);
+    release();expect(await pending).toBe(true);
+    expect((await database.client.emailVerificationOutbox.findUniqueOrThrow({where:{challengeId:old.id}})).deliveredAt).not.toBeNull();
+    await message(f.email);
+    expect((await f.http('/api/v1/auth/email-verification/confirm','POST',f.auth,{token:staleToken})).status).toBe(200);
+    expect((await database.client.passwordCredential.findUniqueOrThrow({where:{email:f.email}})).emailVerifiedAt).toBeNull();
+    expect(await new VerificationDelivery(database,verificationKey).once(sender.send)).toBe(true);
+    const token=await message(f.email);expect(token).not.toBe(staleToken);
+    expect((await f.http('/api/v1/auth/email-verification/confirm','POST',f.auth,{token})).status).toBe(200);
+    expect((await database.client.passwordCredential.findUniqueOrThrow({where:{email:f.email}})).emailVerifiedAt).not.toBeNull();
+    expect((await database.client.emailVerificationChallenge.findUniqueOrThrow({where:{id:old.id}})).consumedAt).toBeNull();
+    expect(await database.client.workspaceMembership.count()).toBe(0);
+  }finally{release();await pending;await sender.close();}
+});
+
+test('acknowledged five transport failures permit a bounded replacement without waiting for proof expiry', async()=>{
+  const f=await prepared(), failed=transport('http://127.0.0.1:1/api/v1/send');
+  const old=await database.client.emailVerificationChallenge.findFirstOrThrow({where:{identityId:f.credential.identityId}});
+  try{for(let i=0;i<5;i++){
+    await database.client.emailVerificationOutbox.update({where:{challengeId:old.id},data:{nextAttemptAt:new Date(0)}});
+    expect(await f.delivery.once(failed.send)).toBe(true);
+  }}finally{await failed.close();}
+  const outbox=await database.client.emailVerificationOutbox.findUniqueOrThrow({where:{challengeId:old.id}});
+  expect(outbox.attempts).toBe(5);expect(outbox.leaseId).toBeNull();expect(outbox.deliveredAt).toBeNull();
+  expect(await f.delivery.once(async()=>{throw new Error('Exhausted cannot dispatch');})).toBe(false);
+  expect((await f.http('/api/v1/auth/email-verification/request','POST',f.auth)).status).toBe(202);
+  const rows=await database.client.emailVerificationChallenge.findMany({where:{identityId:old.identityId}});
+  expect(rows).toHaveLength(2);expect(rows.find(r=>r.id===old.id)!.canceledAt).not.toBeNull();
+  const token=await delivered(f);
+  expect((await f.http('/api/v1/auth/email-verification/confirm','POST',f.auth,{token})).status).toBe(200);
+  expect((await database.client.passwordCredential.findUniqueOrThrow({where:{email:f.email}})).emailVerifiedAt).not.toBeNull();
+});

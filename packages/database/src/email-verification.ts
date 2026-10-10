@@ -21,9 +21,13 @@ export async function verificationAction(tx: Prisma.TransactionClient, authority
   if (action === 'status' || credential.emailVerifiedAt !== null) return credential.emailVerifiedAt !== null;
   const now = await clock(tx);
   const current = await tx.emailVerificationChallenge.findFirst({ where: { identityId, authEpoch: authority.authEpoch, keyId: key.id,
-    consumedAt: null, canceledAt: null, attempts: { lt: 10 }, expiresAt: { gt: now } }, orderBy: { issuedAt: 'desc' } });
+    consumedAt: null, canceledAt: null, attempts: { lt: 10 }, expiresAt: { gt: now } }, orderBy: { issuedAt: 'desc' }, include: { delivery: true } });
   if (action === 'request') {
-    if (current) return false; // Retry reuses the same committed challenge/outbox.
+    // Keep delivered/retryable work and an outstanding final lease. Once the
+    // final lease expires or reports failure, cancel and replace atomically
+    // under the credential lock. A late send/ack cannot reopen canceled proof.
+    if (current?.delivery && (current.delivery.deliveredAt !== null || current.delivery.attempts < 5 ||
+      (current.delivery.leaseUntil !== null && current.delivery.leaseUntil > now))) return false;
     await tx.emailVerificationChallenge.updateMany({ where: { identityId, consumedAt: null, canceledAt: null }, data: { canceledAt: now } });
     const row = { id: randomUUID(), identityId, email: credential.email, authEpoch: authority.authEpoch };
     await tx.emailVerificationChallenge.create({ data: { ...row, keyId: key.id, tokenDigest: hmac(key, 'email-digest:v1', proof(key, row)),
