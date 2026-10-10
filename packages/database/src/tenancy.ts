@@ -147,6 +147,23 @@ export class Tenancy {
   }
 
   read<T>(principal: VerifiedPrincipal, workspaceId: string, run: (queries: TenantQueries) => Promise<T>) { return this.scoped(principal, workspaceId, 'read', run); }
+  // Global self-profile only; no memberships, grants or raw models exposed.
+  async currentUser(principal: VerifiedPrincipal): Promise<Readonly<{ id: string; name: string; email: string | null }>> {
+    const authority = this.#principals.get(principal);
+    if (!authority || !authority.session) throw new TenantAccessError();
+    this.assertPrincipal(principal, authority);
+    try { return await this.database.transaction(async tx => {
+      await tx.$executeRaw`SET LOCAL lock_timeout = '1500ms'`;
+      await tx.$executeRaw`SET LOCAL statement_timeout = '4000ms'`;
+      this.assertPrincipal(principal, authority); await lockAuthority(tx, authority);
+      const row = await tx.user.findUniqueOrThrow({ where: { id: authority.userId }, select: { id: true, name: true, email: true } });
+      await lockAuthority(tx, authority); this.assertPrincipal(principal, authority);
+      return Object.freeze(row);
+    }); } catch (error) {
+      if (error instanceof AuthDeniedError || error instanceof TenantAccessError) throw new TenantAccessError();
+      throw new AuthUnavailableError();
+    }
+  }
   write<T>(principal: VerifiedPrincipal, workspaceId: string, run: (queries: TenantQueries) => Promise<T>) { return this.scoped(principal, workspaceId, 'write', run); }
   private assertPrincipal(principal: VerifiedPrincipal, authority: PrincipalAuthority) {
     if (this.#principals.get(principal) !== authority || (authority.session && this.#sessionRequest.getStore() !== principal)) throw new TenantAccessError();

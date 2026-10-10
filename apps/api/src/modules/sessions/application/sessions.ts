@@ -8,7 +8,7 @@ import { validSid, validState, type SessionState, type BoundedSessionStore } fro
 import type { SessionSettings } from '../infrastructure/settings';
 
 export interface SessionFences {
-  create(input: { userId: string; identityId: string; sidDigest: string; absoluteExpiresAt: Date; idleExpiresAt: Date }): Promise<SessionEvidence>;
+  create(input: { userId: string; identityId: string; authEpoch?: bigint; sidDigest: string; absoluteExpiresAt: Date; idleExpiresAt: Date }): Promise<SessionEvidence>;
   rotate(evidence: SessionEvidence, digest: string, idle: Date): Promise<SessionEvidence>;
   revoke(evidence: SessionEvidence): Promise<void>;
   revokeAll(userId: string): Promise<void>;
@@ -22,14 +22,13 @@ function csrfMatches(actual: string | undefined, expected: string) {
   return !!actual && /^[A-Za-z0-9_-]{43}$/.test(actual) && timingSafeEqual(Buffer.from(actual), Buffer.from(expected));
 }
 
-// No controllers or authentication endpoints. Only the server composition owns
-// these capabilities; identity resolution defaults to denial in production.
+// Only the server composition owns these capabilities and identity resolution.
 export class Sessions implements SessionVerifier {
   #requests = new WeakMap<Request, Boundary>();
   #assertions = new WeakMap<object, Boundary>();
   #tenancy?: Tenancy;
   constructor(private readonly store: BoundedSessionStore, readonly settings: SessionSettings, private readonly fences: SessionFences,
-    private readonly resolveIdentity: (assertion: unknown) => Promise<{ userId: string; identityId: string } | null>) {}
+    private readonly resolveIdentity: (assertion: unknown) => Promise<{ userId: string; identityId: string; authEpoch?: bigint } | null>) {}
   bind(tenancy: Tenancy) { if (this.#tenancy) throw new Error('Session tenancy already bound'); this.#tenancy = tenancy; }
   private load(sid: string) {
     return new Promise<session.SessionData | null>( (resolve, reject) => this.store.get(sid, (error, data) => error ? reject(new AuthUnavailableError()) : resolve(data ?? null)) );
@@ -124,13 +123,33 @@ export class Sessions implements SessionVerifier {
     boundary.terminal = true; Reflect.deleteProperty(req, 'session'); boundary.abort.abort();
     boundary.response.clearCookie(this.settings.name, { httpOnly: true, secure: this.settings.secure, sameSite: 'lax', path: '/' });
   }
-  // Future explicitly reviewed GET bootstrap handler must be no-store and
-  // rate-limited. It must call this with an exact allowed Origin; no route exists.
-  async bootstrap(req: Request): Promise<string> {
+  // The reviewed auth GET bootstrap is no-store and rate-limited. Exact
+  // Origin remains required unless its narrow same-origin browser rule is enabled.
+  async bootstrap(req: Request, allowSameOriginFetch = false): Promise<string> {
     const b = this.boundary(req);
-    if (req.method !== 'GET' || !this.settings.origins.includes(req.get('origin') ?? '')) throw new TenantAccessError();
+    const origin = req.get('origin');
+    const mode = req.get('sec-fetch-mode'), site = req.get('sec-fetch-site'), destination = req.get('sec-fetch-dest');
+    const requestOrigin = `${req.protocol}://${req.get('host')}`;
+    // Navigation is never a token delivery mechanism. Browser-controlled fetch
+    // metadata must agree with an explicit Origin, when supplied. Non-browser
+    // clients can forge headers; this is not a cryptographic client attestation.
+    if ((mode !== undefined && !['cors', 'same-origin'].includes(mode)) ||
+        (destination !== undefined && !['', 'empty'].includes(destination)) ||
+        (origin !== undefined && (mode === 'same-origin' || site === 'same-origin') && origin !== requestOrigin)) throw new TenantAccessError();
+    // Browsers may omit Origin on same-origin GET. Only the reviewed bootstrap
+    // opts into Fetch Metadata + exact configured host/protocol corroboration.
+    const sameOrigin = allowSameOriginFetch && origin === undefined && req.get('sec-fetch-site') === 'same-origin' &&
+      ['cors', 'same-origin'].includes(mode ?? '') && this.settings.origins.includes(requestOrigin);
+    if (req.method !== 'GET' || (!sameOrigin && !this.settings.origins.includes(origin ?? ''))) throw new TenantAccessError();
     b.response.setHeader('Cache-Control', 'no-store');
     const existing = validState(req.session.state);
+    if (existing?.kind === 'authenticated') {
+      // A restored cache entry is not authority. Reuse the fresh request-bound
+      // verifier and PostgreSQL fences before exposing an authenticated token.
+      await this.withRequest(req, async () => {});
+      this.admittedEvidence(b);
+      return b.state!.csrf;
+    }
     if (existing) return existing.csrf;
     const now = Date.now(), csrf = random();
     try {
@@ -142,10 +161,16 @@ export class Sessions implements SessionVerifier {
   // Only fresh credentials checked by the injected server verifier may establish
   // identity; no provider/subject/user/role fields supplied by a browser are used.
   async establish(req: Request, assertion: unknown) {
-    const b = this.boundary(req); b.used = true;
+    const b = this.boundary(req);
     if (req.method !== 'POST') throw new TenantAccessError();
     const identity = await this.resolveIdentity(assertion);
     if (!identity || b.abort.signal.aborted) throw new TenantAccessError();
+    // Reauthentication must durably retire the presented family as well as
+    // deleting its cache SID. Otherwise a late SET could revive that predecessor.
+    if (validState(req.session.state)?.kind === 'authenticated') {
+      try { await this.withRequest(req, async () => { await this.fences.revoke(this.admittedEvidence(b)); }); }
+      catch (error) { this.abandon(req, b); throw error; }
+    } else b.used = true;
     try { await this.operation(done => req.session.regenerate(done)); b.sid = req.sessionID; }
     catch (error) { this.abandon(req, b); throw error; }
     const now = Date.now(), absolute = now + this.settings.absoluteMs, idle = Math.min(absolute, now + this.settings.idleMs);

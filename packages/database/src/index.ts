@@ -33,3 +33,4 @@ export class Database {
 
 export * from './tenancy';
 export { AuthFences, AuthDeniedError, AuthUnavailableError, type SessionEvidence, type SessionVerifier } from './auth-fences';
+export { AccountCredentials, type CredentialSnapshot } from './credentials';

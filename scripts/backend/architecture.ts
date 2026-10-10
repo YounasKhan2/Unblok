@@ -112,6 +112,7 @@ export function auditArchitecture(directory: string) {
     }
     if (file === 'packages/database/src/index.ts' && symbol?.name === 'Database') return 'Database';
     if (file === 'packages/database/src/auth-fences.ts' && symbol?.name === 'AuthFences') return 'AuthFences';
+    if (file === 'packages/database/src/credentials.ts' && symbol?.name === 'AccountCredentials') return 'AccountCredentials';
     return undefined;
   }
   const graph = new Map<string, Edge[]>();
@@ -189,7 +190,7 @@ export function auditArchitecture(directory: string) {
         const privileged = capability(node);
         const line = source.getLineAndCharacterOfPosition(node.getStart()).line + 1;
         if ((privileged === 'HEALTH_PUBLIC' || privileged === 'PublicHealth') && file !== 'apps/api/src/access.ts' && file !== 'apps/api/src/health.ts') note('health-public', file, line, 'Public health capability/metadata cannot be imported, aliased or re-exported into business code');
-        if ((privileged === 'Database' || privileged === 'AuthFences') && owner !== 'packages/database' && file !== 'apps/api/src/main.ts') note('raw-persistence', file, line, 'Indirect privileged persistence capability remains infrastructure-only');
+        if ((privileged === 'Database' || privileged === 'AuthFences' || privileged === 'AccountCredentials') && owner !== 'packages/database' && file !== 'apps/api/src/main.ts') note('raw-persistence', file, line, 'Indirect privileged persistence capability remains infrastructure-only');
       }
       if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
         const clause = node.importClause, bindings = clause?.namedBindings;

@@ -65,6 +65,13 @@ describe('package and browser boundaries reject real import mutations', () => {
 });
 
 describe('application, controller and worker persistence boundaries', () => {
+  for (const source of ['import { AccountCredentials } from "@unblok/database";', 'import { Tenancy } from "@unblok/database"; const grants = new Tenancy();']) test(`password persistence remains privileged: ${source}`, () => {
+    const f = fixture();
+    f.put('packages/database/src/credentials.ts', 'export class AccountCredentials {}');
+    f.put('packages/database/src/index.ts', 'export { AccountCredentials as Tenancy, AccountCredentials } from "./credentials";');
+    f.put('apps/api/src/modules/issues/application/read.ts', source);
+    expect(f.rules()).toContain('raw-persistence');
+  });
   test('auth lifecycle capability is privileged and cannot be disguised as Tenancy', () => {
     const f = fixture();
     f.put('packages/database/src/auth-fences.ts', 'export class AuthFences {}');
