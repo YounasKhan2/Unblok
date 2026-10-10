@@ -22,7 +22,7 @@ export class AuthenticationLimits implements AuthLimits {
     this.logoutIp = new RedisRateLimiter(redis, 30, 900000, prefix);
   }
   async consume(action: AuthAction, ip: string, email?: string) {
-    const budgetAction = action === 'email-request' ? 'signup' : action === 'email-confirm' ? 'login' : action;
+    const budgetAction = (action === 'email-request' || action === 'recovery-request') ? 'signup' : (action === 'email-confirm' || action === 'recovery-confirm') ? 'login' : action;
     const ipKey = `auth:${action}:ip:${ip}`;
     const accountKey = `auth:${action}:account:${createHmac('sha256', this.secret).update(email ?? '').digest('hex')}`;
     const checks = budgetAction === 'login' ? [this.loginIp.consume(ipKey), this.loginAccount.consume(accountKey)]

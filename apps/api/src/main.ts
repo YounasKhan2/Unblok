@@ -1,5 +1,5 @@
-import { AccountCredentials, AuthFences, Database, Tenancy, denyAll } from '@unblok/database';
-import { loadVerificationKey, closeRedis, createLogger, createRedis, loadApiConfig, registerShutdown, withDeadline } from '@unblok/backend-runtime';
+import { PasswordRecovery, AccountCredentials, AuthFences, Database, Tenancy, denyAll } from '@unblok/database';
+import { loadRecoveryKey, loadVerificationKey, closeRedis, createLogger, createRedis, loadApiConfig, registerShutdown, withDeadline } from '@unblok/backend-runtime';
 import { createApp } from './app';
 import { RedisRateLimiter } from './security';
 import { connectSessionStore, sessionSettings, Sessions } from './modules/sessions';
@@ -24,7 +24,7 @@ async function main() {
     if (config.NODE_ENV === 'production') await database.assertRuntimePrivileges();
     sessionConnection = await connectSessionStore(config.REDIS_URL, settings);
     const fences = new AuthFences(database);
-    const authentication = new Authentication(new AccountCredentials(database), await Passwords.create(), new AuthenticationLimits(redis, settings.secrets[0]!, settings.prefix));
+    const authentication = new Authentication(new AccountCredentials(database), await Passwords.create(), new AuthenticationLimits(redis, settings.secrets[0]!, settings.prefix), new PasswordRecovery(database,loadRecoveryKey(process.env)));
     const sessions = new Sessions(sessionConnection.store, settings, {
       create: input => fences.create(input), rotate: (evidence, sid, idle) => fences.rotate(evidence, sid, idle),
       revoke: evidence => fences.revoke(evidence), revokeAll: userId => fences.revokeAll(userId),

@@ -31,9 +31,23 @@ for (const file of [api, worker]) {
   } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
 }
 const verification = `EMAIL_VERIFICATION_KEY_ID=${verificationId}\nEMAIL_VERIFICATION_KEY=${verificationKey}\nEMAIL_MAIL_ENDPOINT=http://127.0.0.1:8025/api/v1/send\nEMAIL_MAIL_FROM=verification@unblok.local\n`;
+let recoveryKey = randomBytes(32).toString('hex'), recoveryId = 'v1';
+let foundRecovery = false;
+for (const file of [api, worker]) {
+  try {
+    const existing = await readFile(file, 'utf8'), key = /^PASSWORD_RECOVERY_KEY=(.*)$/m.exec(existing)?.[1]?.trim();
+    const id = /^PASSWORD_RECOVERY_KEY_ID=(.*)$/m.exec(existing)?.[1]?.trim();
+    if (key !== undefined) {
+      if (!/^[0-9a-f]{64}$/.test(key) || !id || !/^[a-z0-9-]{1,40}$/.test(id) || (foundRecovery && (key !== recoveryKey || id !== recoveryId))) throw new Error('Existing recovery keys require explicit reconciliation; files preserved');
+      recoveryKey = key; recoveryId = id; foundRecovery = true;
+    }
+  } catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
+}
+if(recoveryKey===verificationKey) throw new Error('Recovery requires independent key; files preserved');
+const recovery = `PASSWORD_RECOVERY_KEY_ID=${recoveryId}\nPASSWORD_RECOVERY_KEY=${recoveryKey}\n`;
 const common = `NODE_ENV=development\nDATABASE_URL=postgresql://unblok:${values.POSTGRES_PASSWORD}@127.0.0.1:5432/unblok?connect_timeout=3&pool_timeout=3&connection_limit=5\nREDIS_URL=redis://:${values.VALKEY_PASSWORD}@127.0.0.1:6379/0\nLOG_LEVEL=info\nSHUTDOWN_TIMEOUT_MS=10000\n`;
 for (const [file, extra] of [[api, `API_HOST=127.0.0.1\nAPI_PORT=4000\nCORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000\nBODY_LIMIT_BYTES=65536\nRATE_LIMIT_MAX=120\nRATE_LIMIT_WINDOW_MS=60000\nSESSION_SECRETS=${randomBytes(32).toString('hex')}\nSESSION_NAMESPACE=v1\nSESSION_CROSS_ORIGIN=false\n`], [worker, 'WORKER_CONCURRENCY=2\n']] as const) {
-  try { await writeFile(file, common + verification + extra, { flag: 'wx', mode: 0o600 }); }
+  try { await writeFile(file, common + verification + recovery + extra, { flag: 'wx', mode: 0o600 }); }
   catch (error) { if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error; }
 }
 await chmod(infra, 0o600);

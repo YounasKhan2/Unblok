@@ -1,6 +1,6 @@
 import { Body, Controller, Get, HttpCode, Inject, Post, Req, Res, ServiceUnavailableException, UnauthorizedException, HttpException, UseInterceptors } from '@nestjs/common';
 import type { Request, Response } from 'express';
-import { emailVerificationConfirmSchema, emailVerificationStatusSchema, signupSchema, loginSchema, emptyAuthSchema, csrfResponseSchema, signupResponseSchema, meResponseSchema, logoutResponseSchema, type SignupInput, type LoginInput } from '@unblok/contracts';
+import { passwordRecoveryRequestSchema, passwordRecoveryConfirmSchema, emailVerificationConfirmSchema, emailVerificationStatusSchema, signupSchema, loginSchema, emptyAuthSchema, csrfResponseSchema, signupResponseSchema, meResponseSchema, logoutResponseSchema, type SignupInput, type LoginInput } from '@unblok/contracts';
 import { SchemaPipe, ResponseSchemaInterceptor } from '../../../validation';
 import { Authentication, AuthRateError } from '../application/authentication';
 
@@ -32,11 +32,15 @@ export class AuthController {
   emailConfirm(@Req() req: Request, @Res({ passthrough: true }) res: Response, @Body(new SchemaPipe(emailVerificationConfirmSchema)) body: { token: string }) { return this.execute(res, () => this.auth.emailVerification(req, 'confirm', body.token)); }
   @Get('email-verification/status') @UseInterceptors(new ResponseSchemaInterceptor(emailVerificationStatusSchema))
   emailStatus(@Req() req: Request, @Res({ passthrough: true }) res: Response) { return this.execute(res, () => this.auth.emailVerification(req, 'status')); }
+  @Post('password-recovery/request') @HttpCode(202) @UseInterceptors(new ResponseSchemaInterceptor(signupResponseSchema))
+  recoveryRequest(@Req() req: Request, @Res({ passthrough: true }) res: Response, @Body(new SchemaPipe(passwordRecoveryRequestSchema)) body: {email:string}) { return this.execute(res,()=>this.auth.passwordRecovery(req,body)); }
+  @Post('password-recovery/confirm') @HttpCode(200) @UseInterceptors(new ResponseSchemaInterceptor(signupResponseSchema))
+  recoveryConfirm(@Req() req: Request, @Res({ passthrough: true }) res: Response, @Body(new SchemaPipe(passwordRecoveryConfirmSchema)) body: {email:string;token:string;password:string}) { return this.execute(res,()=>this.auth.passwordRecovery(req,body)); }
   @Get('me') @UseInterceptors(new ResponseSchemaInterceptor(meResponseSchema))
   me(@Req() req: Request, @Res({ passthrough: true }) res: Response) { return this.execute(res, () => this.auth.me(req)); }
 }
 
 // Exact handler references, not client URLs, metadata or a module-wide bypass.
 const authenticationHandlers = new Set<unknown>([AuthController.prototype.csrf, AuthController.prototype.signup,
-  AuthController.prototype.login, AuthController.prototype.logout, AuthController.prototype.logoutAll, AuthController.prototype.me, AuthController.prototype.emailRequest, AuthController.prototype.emailConfirm, AuthController.prototype.emailStatus]);
+  AuthController.prototype.login, AuthController.prototype.logout, AuthController.prototype.logoutAll, AuthController.prototype.me, AuthController.prototype.emailRequest, AuthController.prototype.emailConfirm, AuthController.prototype.emailStatus, AuthController.prototype.recoveryRequest, AuthController.prototype.recoveryConfirm]);
 export const isAuthenticationHandler = (handler: unknown) => authenticationHandlers.has(handler);

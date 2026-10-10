@@ -29,3 +29,6 @@ export type LoginInput = z.infer<typeof loginSchema>;
 
 export const emailVerificationConfirmSchema = z.object({ token: z.string().regex(/^[0-9a-f-]{36}\.[A-Za-z0-9_-]{43}$/) }).strict();
 export const emailVerificationStatusSchema = z.object({ emailVerified: z.boolean() }).strict();
+
+export const passwordRecoveryRequestSchema = z.object({ email: credentialEmailSchema }).strict();
+export const passwordRecoveryConfirmSchema = z.object({ email: credentialEmailSchema, token: emailVerificationConfirmSchema.shape.token, password: passwordSchema }).strict();
