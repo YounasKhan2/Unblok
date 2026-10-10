@@ -70,7 +70,7 @@ describe('fresh additive migrations and canonical constraints', () => {
     expect(diff).toContain('No difference');
     expect(await database.ready()).toBe(true);
     const applied = await database.client.$queryRaw<{ migration_name: string }[]>`SELECT migration_name FROM _prisma_migrations WHERE finished_at IS NOT NULL ORDER BY migration_name`;
-    expect(applied.map(row => row.migration_name)).toEqual(['20261010000000_foundation', '20261010010000_domain_tenancy', '20261010020000_guard_corrections', '20261010030000_auth_revocation_fences']);
+    expect(applied.map(row => row.migration_name)).toEqual(['20261010000000_foundation', '20261010010000_domain_tenancy', '20261010020000_guard_corrections', '20261010030000_auth_revocation_fences', '20261010040000_password_credentials']);
   });
   test('identity keys are unique; users have no global role and email is not an authentication key', async () => {
     const f = await fixture();
@@ -328,7 +328,8 @@ describe('PR24 PostgreSQL guard regressions', () => {
       await prisma(['migrate', 'deploy', '--schema', 'packages/database/prisma/schema.prisma'], upgradeUrl.toString());
       const after = await upgrade.client.$queryRaw<typeof history>`SELECT migration_name, checksum, finished_at FROM _prisma_migrations ORDER BY migration_name`;
       expect(after.slice(0, 2)).toEqual(history);
-      expect(after).toHaveLength(4);
+      expect(after).toHaveLength(5);
+      expect(await upgrade.client.passwordCredential.count()).toBe(0); // No implicit credential/contact-email migration.
       expect((await upgrade.client.user.findUniqueOrThrow({ where: { id: f.actor } })).authEpoch).toBe(1n);
       expect(await upgrade.client.authSessionFamily.count()).toBe(0);
       const row = await upgrade.client.issue.update({ where, data: { title: 'After repair' } });

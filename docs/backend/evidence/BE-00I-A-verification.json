@@ -1,0 +1,238 @@
+{
+  "phase": "BE-00I-A",
+  "base": "be72f4b2e314dbc395e12f807bfe0d70a6125de0",
+  "branch": "feat/be-00i-a-core-authentication",
+  "headLocation": "PR metadata; no self-referential source hash",
+  "status": "implemented; awaiting human review; not merged, deployed or production-certified",
+  "environment": {
+    "platform": "Windows",
+    "bun": "1.4.2",
+    "nest": "11.2.7",
+    "adapterExpress": "5.2.1",
+    "directExpress": "5.3.0",
+    "postgresql": "17.6",
+    "valkey": "8.1.3",
+    "express-session": "1.19.0",
+    "connect-redis": "10.0.0",
+    "redis": "6.3.0"
+  },
+  "contracts": {
+    "endpoints": [
+      "GET /api/v1/auth/csrf",
+      "POST /api/v1/auth/signup",
+      "POST /api/v1/auth/login",
+      "POST /api/v1/auth/logout",
+      "POST /api/v1/auth/logout-all",
+      "GET /api/v1/auth/me"
+    ],
+    "signup": "202 accepted for new and duplicate canonical email; separate login; no auto-membership",
+    "loginFailures": "generic 401 for missing/wrong/disabled; equivalent-cost dummy verification; perfect timing indistinguishability not proven",
+    "csrf": "cookie-bound token plus strict Origin on mutations; bootstrap-only absent-Origin GET requires same-origin Fetch Metadata and exact configured protocol/Host",
+    "credentials": "server-owned one-use private WeakMap proof; primary confirmation then expected-epoch family mint",
+    "passwords": {
+      "algorithm": "Argon2id",
+      "version": 19,
+      "memoryKiB": 19456,
+      "iterations": 2,
+      "parallelism": 1,
+      "saltBytes": 32,
+      "hashBytes": 32,
+      "workSlots": 4,
+      "queue": false,
+      "acknowledgementDeadlineMs": 2000,
+      "timeoutCancelsNativeWork": false,
+      "slotRetainedUntilUnderlyingSettlement": true,
+      "minCodePoints": 16,
+      "maxCodePoints": 128,
+      "maxUtf8Bytes": 512
+    }
+  },
+  "migration": {
+    "new": "20261010040000_password_credentials",
+    "additive": true,
+    "originalMigrationFilesUnchanged": [
+      "packages/database/prisma/migrations/20261010000000_foundation/migration.sql",
+      "packages/database/prisma/migrations/20261010010000_domain_tenancy/migration.sql",
+      "packages/database/prisma/migrations/20261010020000_guard_corrections/migration.sql",
+      "packages/database/prisma/migrations/20261010030000_auth_revocation_fences/migration.sql",
+      "packages/database/prisma/migrations/migration_lock.toml"
+    ],
+    "freshDeployReplayAndSchemaEquality": "PASS",
+    "existingRowsNotAutomaticallyGrantedCredentials": true,
+    "localDeploy": "PASS; five applied, no pending; no reset/seed",
+    "constraints": [
+      "identity FK/PK",
+      "unique canonical ASCII email",
+      "bounded Argon2id PHC profile"
+    ],
+    "transactionalSignup": "User/Identity/Credential atomic; unique contender rolls back; only known serialization rollback retried up to three attempts; unknown commits not retried"
+  },
+  "securityCoverage": [
+    "registration/login/me/logout/logout-all with real production Nest handlers and PG/Valkey",
+    "duplicate/canonical email and concurrent registration without orphans",
+    "private forged proof rejected",
+    "invalid/nonexistent/disabled credentials generic failures",
+    "CSRF unknown/missing/null Origin, wrong token, body authority injection; same-origin GET bootstrap positive and negative",
+    "regenerated SID/CSRF; correct re-login revokes predecessor even after late cache restore",
+    "logout/logout-all stale cache resurrection rejected",
+    "primary current-user revalidation and escaped/reused principal rejected",
+    "credential confirmation race with logout-all denied by expected-epoch fence",
+    "expired/deleted/malformed/forged session rejection",
+    "login/signup/bootstrap endpoint budgets",
+    "real PostgreSQL connection outage rejects signup/login/logout/logout-all/me",
+    "closed session client and actual disposable Valkey container outage reject; live/ready behavior",
+    "fresh additive migration/replay/schema equality and SQL constraints"
+  ],
+  "gates": {
+    "architecture": {
+      "exit": 0,
+      "sourceFiles": 341,
+      "resolvedEdges": 951,
+      "violations": 0
+    },
+    "typecheck:backend": {
+      "exit": 0
+    },
+    "lint:backend": {
+      "exit": 0
+    },
+    "build:backend": {
+      "exit": 0,
+      "apiKB": 46.13,
+      "workerKB": 2.12
+    },
+    "test:backend": {
+      "exit": 0,
+      "pass": 94,
+      "fail": 0,
+      "assertions": 219,
+      "durationSeconds": 10.52
+    },
+    "test:backend:authentication": {
+      "exit": 0,
+      "pass": 18,
+      "fail": 0,
+      "assertions": 317,
+      "durationSeconds": 16.42
+    },
+    "test:backend:sessions": {
+      "exit": 0,
+      "pass": 25,
+      "fail": 0,
+      "assertions": 254,
+      "durationSeconds": 21.49
+    },
+    "test:backend:auth-fences": {
+      "exit": 0,
+      "pass": 24,
+      "fail": 0,
+      "assertions": 134,
+      "durationSeconds": 13.82
+    },
+    "test:backend:tenancy": {
+      "exit": 0,
+      "pass": 34,
+      "fail": 0,
+      "assertions": 132,
+      "durationSeconds": 20.36
+    },
+    "test:backend:integration": {
+      "exit": 0,
+      "pass": 2,
+      "fail": 0,
+      "assertions": 5,
+      "durationSeconds": 1.469
+    },
+    "test:backend:infra": {
+      "exit": 1,
+      "pass": 4,
+      "fail": 1,
+      "betweenTestErrors": 1,
+      "assertions": 14,
+      "durationSeconds": 6.02,
+      "failure": "unchanged 5s unsupported-job finish notification timeout followed by late error; RustFS/Mailpit checks passed"
+    },
+    "test:backend:lifecycle": {
+      "exit": 1,
+      "pass": 1,
+      "fail": 2,
+      "assertions": 7,
+      "durationSeconds": 6.34,
+      "failure": "API and worker SIGTERM exit143 instead of0; existing documented baseline, not graceful shutdown certification"
+    },
+    "bun audit --json": {
+      "exit": 1,
+      "failure": "existing high deepmerge-ts7.1.5 under Prisma @prisma/config6.19.3; GHSA-ggr8-5vv4-36mx; dependencies unchanged"
+    },
+    "db:migrate": {
+      "exit": 0,
+      "migrations": 5,
+      "pending": 0
+    },
+    "prismaFormatValidateGenerate": {
+      "exit": 0
+    },
+    "git diff --check": {
+      "exit": 0
+    },
+    "documentationLocalLinks": {
+      "exit": 0
+    }
+  },
+  "developmentFailedObservations": [
+    {
+      "suite": "authentication",
+      "pass": 12,
+      "fail": 1,
+      "assertions": 214,
+      "durationSeconds": 15.04,
+      "finding": "incorrect test expected no cookie on failed bootstrap; existing BE-00H intentionally clears cookie; corrected test requires exactly one clearing cookie, no production workaround"
+    },
+    {
+      "suite": "backend",
+      "pass": 93,
+      "fail": 1,
+      "assertions": 215,
+      "durationSeconds": 14.38,
+      "finding": "architecture assertion6.201s exceeded unchanged5s limit while lint ran; cause unproven; serial rerun94/215 passed; final94/219 passed"
+    },
+    {
+      "suite": "tenancy",
+      "pass": 33,
+      "fail": 1,
+      "assertions": 124,
+      "durationSeconds": 19.69,
+      "finding": "existing upgrade assertion expected4 migrations; updated to5 with additional zero-credential assertion; original row/history invariants retained"
+    },
+    {
+      "command": "bun run typecheck / lint / build",
+      "exit": 1,
+      "finding": "root generic script names absent; actual backend scripts subsequently passed, no package change to disguise command error"
+    }
+  ],
+  "freeze": {
+    "frontendMarketingNexus": true,
+    "dependencyManifestsAndLock": true,
+    "originalMigrations": true,
+    "existingBusinessRoutesFailClosed": true,
+    "noEmailVerificationRecoveryOAuthMfa": true,
+    "noProductionDeployment": true
+  },
+  "cleanup": {
+    "ownedAuthenticationDatabasesRemaining": 0,
+    "ownedAuthenticationCacheKeysRemaining": 0,
+    "ownedAuthenticationOutageContainersRemaining": 0,
+    "sharedQueuePurged": false,
+    "devComposeVolumesPreserved": true
+  },
+  "remainingRisks": [
+    "human review of additive SQL and credential email namespace",
+    "browser/TLS/Host/proxy/CORS topology not certified",
+    "runtime least-privilege DB roles and Valkey ACLs, restoration/PITR session namespace/key reset",
+    "unknown DB commit/family compensation outcomes require reconciliation; no blanket immediate revocation claim",
+    "shared IP/account budget DoS and distributed/load/HA not certified; signing-key rotation resets account budget",
+    "Argon2 hardware/load calibration and profile upgrade strategy",
+    "no email ownership verification/recovery/MFA",
+    "existing queue/lifecycle/audit failures; BE-00F and frozen NEXUS failures not recertified"
+  ]
+}

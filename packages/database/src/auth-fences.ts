@@ -90,10 +90,12 @@ export class AuthFences {
       return Object.freeze({ userId: identity.userId, identityId: identity.id, authEpoch: current.auth_epoch });
     });
   }
-  create(input: { userId: string; identityId: string; sidDigest: string; absoluteExpiresAt: Date; idleExpiresAt: Date }): Promise<SessionEvidence> {
+  create(input: { userId: string; identityId: string; authEpoch?: bigint; sidDigest: string; absoluteExpiresAt: Date; idleExpiresAt: Date }): Promise<SessionEvidence> {
     const snapshot = { ...input };
     return this.transaction(async tx => {
       const current = await user(tx, snapshot.userId);
+      // Fresh password proof cannot be promoted into a newer logout-all epoch.
+      if (snapshot.authEpoch !== undefined && snapshot.authEpoch !== current.auth_epoch) throw new AuthDeniedError();
       id(snapshot.identityId);
       if (!/^[0-9a-f]{64}$/.test(snapshot.sidDigest)) throw new AuthDeniedError();
       const dates = await tx.$queryRaw<{ valid: boolean }[]>`SELECT (${snapshot.idleExpiresAt}::timestamptz > statement_timestamp() AND ${snapshot.absoluteExpiresAt}::timestamptz >= ${snapshot.idleExpiresAt}::timestamptz) AS valid`;

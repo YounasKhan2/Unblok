@@ -11,10 +11,10 @@ if n == 1 then redis.call('PEXPIRE', KEYS[1], ARGV[1]) end
 local ttl = redis.call('PTTL', KEYS[1])
 return {n, ttl}`;
 export class RedisRateLimiter implements RateLimiter {
-  constructor(private readonly redis: Redis, private readonly max: number, private readonly window: number) {}
+  constructor(private readonly redis: Redis, private readonly max: number, private readonly window: number, private readonly prefix = 'unblok:rate:') {}
   async consume(key: string) {
     const hash = createHash('sha256').update(key).digest('hex');
-    const [count, ttl] = await this.redis.eval(script, 1, `unblok:rate:${hash}`, this.window) as [number, number];
+    const [count, ttl] = await this.redis.eval(script, 1, `${this.prefix}${hash}`, this.window) as [number, number];
     return { allowed: count <= this.max, retryAfter: Math.max(1, Math.ceil(ttl / 1000)) };
   }
 }

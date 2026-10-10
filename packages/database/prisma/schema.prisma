@@ -62,20 +62,31 @@ model User {
   @@map("users")
 }
 
-// Provider subjects are opaque verified identifiers. No passwords or tokens.
+// Provider subjects are opaque verified identifiers; credentials are separate.
 model Identity {
-  id              String              @id @default(uuid()) @db.Uuid
-  userId          String              @map("user_id") @db.Uuid
-  provider        String              @db.VarChar(200)
-  subject         String              @db.VarChar(512)
-  createdAt       DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
-  user            User                @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  sessionFamilies AuthSessionFamily[]
+  id                 String              @id @default(uuid()) @db.Uuid
+  userId             String              @map("user_id") @db.Uuid
+  provider           String              @db.VarChar(200)
+  subject            String              @db.VarChar(512)
+  createdAt          DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  user               User                @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  sessionFamilies    AuthSessionFamily[]
+  passwordCredential PasswordCredential?
 
   @@unique([provider, subject])
   @@unique([id, userId])
   @@index([userId])
   @@map("identities")
+}
+
+model PasswordCredential {
+  identityId   String   @id @map("identity_id") @db.Uuid
+  email        String   @unique @db.VarChar(320)
+  passwordHash String   @map("password_hash") @db.VarChar(256)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  identity     Identity @relation(fields: [identityId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@map("password_credentials")
 }
 
 // Durable authority, never session payload or credentials. Retain revoked rows.

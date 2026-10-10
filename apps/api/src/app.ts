@@ -8,9 +8,11 @@ import { AppModule, Readiness, type Resources } from './health';
 import { ErrorFilter } from './errors';
 import { bodyBoundary, correlation, cors, rateLimit, type RateLimiter } from './security';
 import type { Sessions } from './modules/sessions';
+import type { Authentication } from './modules/auth';
 
-export async function createApp(config: ApiConfig, resources: Resources, limiter: RateLimiter, logger: Logger, sessions?: Sessions) {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule.register(resources), {
+export async function createApp(config: ApiConfig, resources: Resources, limiter: RateLimiter, logger: Logger, sessions?: Sessions, authentication?: Authentication) {
+  if (authentication && !sessions) throw new Error('Authentication requires session infrastructure');
+  const app = await NestFactory.create<NestExpressApplication>(AppModule.register(resources, authentication), {
     logger: false, bodyParser: false, abortOnError: false,
   });
   app.disable('x-powered-by');
@@ -18,6 +20,10 @@ export async function createApp(config: ApiConfig, resources: Resources, limiter
   // explicitly reviewed before running behind an ingress.
   app.set('trust proxy', sessions?.settings.trustedProxies.length ? sessions.settings.trustedProxies : false);
   app.use(correlation(logger));
+  app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (req.path.startsWith('/api/v1/auth/')) { res.setHeader('Cache-Control', 'no-store'); res.setHeader('Pragma', 'no-cache'); }
+    next();
+  });
   app.use(helmet());
   app.use(cors(config, sessions?.settings.credentials ?? false, !!sessions));
   app.use(rateLimit(limiter));

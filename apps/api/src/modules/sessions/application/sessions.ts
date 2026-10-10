@@ -8,7 +8,7 @@ import { validSid, validState, type SessionState, type BoundedSessionStore } fro
 import type { SessionSettings } from '../infrastructure/settings';
 
 export interface SessionFences {
-  create(input: { userId: string; identityId: string; sidDigest: string; absoluteExpiresAt: Date; idleExpiresAt: Date }): Promise<SessionEvidence>;
+  create(input: { userId: string; identityId: string; authEpoch?: bigint; sidDigest: string; absoluteExpiresAt: Date; idleExpiresAt: Date }): Promise<SessionEvidence>;
   rotate(evidence: SessionEvidence, digest: string, idle: Date): Promise<SessionEvidence>;
   revoke(evidence: SessionEvidence): Promise<void>;
   revokeAll(userId: string): Promise<void>;
@@ -29,7 +29,7 @@ export class Sessions implements SessionVerifier {
   #assertions = new WeakMap<object, Boundary>();
   #tenancy?: Tenancy;
   constructor(private readonly store: BoundedSessionStore, readonly settings: SessionSettings, private readonly fences: SessionFences,
-    private readonly resolveIdentity: (assertion: unknown) => Promise<{ userId: string; identityId: string } | null>) {}
+    private readonly resolveIdentity: (assertion: unknown) => Promise<{ userId: string; identityId: string; authEpoch?: bigint } | null>) {}
   bind(tenancy: Tenancy) { if (this.#tenancy) throw new Error('Session tenancy already bound'); this.#tenancy = tenancy; }
   private load(sid: string) {
     return new Promise<session.SessionData | null>( (resolve, reject) => this.store.get(sid, (error, data) => error ? reject(new AuthUnavailableError()) : resolve(data ?? null)) );
@@ -124,11 +124,16 @@ export class Sessions implements SessionVerifier {
     boundary.terminal = true; Reflect.deleteProperty(req, 'session'); boundary.abort.abort();
     boundary.response.clearCookie(this.settings.name, { httpOnly: true, secure: this.settings.secure, sameSite: 'lax', path: '/' });
   }
-  // Future explicitly reviewed GET bootstrap handler must be no-store and
-  // rate-limited. It must call this with an exact allowed Origin; no route exists.
-  async bootstrap(req: Request): Promise<string> {
+  // The reviewed auth GET bootstrap is no-store and rate-limited. Exact
+  // Origin remains required unless its narrow same-origin browser rule is enabled.
+  async bootstrap(req: Request, allowSameOriginFetch = false): Promise<string> {
     const b = this.boundary(req);
-    if (req.method !== 'GET' || !this.settings.origins.includes(req.get('origin') ?? '')) throw new TenantAccessError();
+    const origin = req.get('origin');
+    // Browsers may omit Origin on same-origin GET. Only the reviewed bootstrap
+    // opts into Fetch Metadata + exact configured host/protocol corroboration.
+    const sameOrigin = allowSameOriginFetch && origin === undefined && req.get('sec-fetch-site') === 'same-origin' &&
+      ['cors', 'same-origin'].includes(req.get('sec-fetch-mode') ?? '') && this.settings.origins.includes(`${req.protocol}://${req.get('host')}`);
+    if (req.method !== 'GET' || (!sameOrigin && !this.settings.origins.includes(origin ?? ''))) throw new TenantAccessError();
     b.response.setHeader('Cache-Control', 'no-store');
     const existing = validState(req.session.state);
     if (existing) return existing.csrf;
@@ -142,10 +147,16 @@ export class Sessions implements SessionVerifier {
   // Only fresh credentials checked by the injected server verifier may establish
   // identity; no provider/subject/user/role fields supplied by a browser are used.
   async establish(req: Request, assertion: unknown) {
-    const b = this.boundary(req); b.used = true;
+    const b = this.boundary(req);
     if (req.method !== 'POST') throw new TenantAccessError();
     const identity = await this.resolveIdentity(assertion);
     if (!identity || b.abort.signal.aborted) throw new TenantAccessError();
+    // Reauthentication must durably retire the presented family as well as
+    // deleting its cache SID. Otherwise a late SET could revive that predecessor.
+    if (validState(req.session.state)?.kind === 'authenticated') {
+      try { await this.withRequest(req, async () => { await this.fences.revoke(this.admittedEvidence(b)); }); }
+      catch (error) { this.abandon(req, b); throw error; }
+    } else b.used = true;
     try { await this.operation(done => req.session.regenerate(done)); b.sid = req.sessionID; }
     catch (error) { this.abandon(req, b); throw error; }
     const now = Date.now(), absolute = now + this.settings.absoluteMs, idle = Math.min(absolute, now + this.settings.idleMs);
