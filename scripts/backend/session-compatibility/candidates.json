@@ -1,0 +1,11 @@
+{
+  "name": "unblok-disposable-session-candidates",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "express-session": "1.19.0",
+    "store8": "npm:connect-redis@8.1.0",
+    "store10": "npm:connect-redis@10.0.0",
+    "redis": "6.3.0"
+  }
+}

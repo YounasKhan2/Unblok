@@ -1,0 +1,90 @@
+{
+  "observations": [
+    {
+      "scenario": "ready",
+      "stateBefore": "ready",
+      "stateAfter": "end",
+      "acknowledgementPassed": true,
+      "closeMilliseconds": 8,
+      "deadlineMilliseconds": 2500,
+      "socketDestroyed": true,
+      "reconnectTimerPresent": false,
+      "serverConnectionPresent": false,
+      "eventsAfterCloseAttempt": [
+        "close",
+        "end"
+      ],
+      "futureConnectEventObserved": false,
+      "naturalExit": true,
+      "exitCode": 0,
+      "childMilliseconds": 1019
+    },
+    {
+      "scenario": "already-ended",
+      "stateBefore": "end",
+      "stateAfter": "end",
+      "acknowledgementPassed": true,
+      "closeMilliseconds": 2,
+      "deadlineMilliseconds": 2500,
+      "socketDestroyed": true,
+      "reconnectTimerPresent": false,
+      "serverConnectionPresent": false,
+      "eventsAfterCloseAttempt": [],
+      "futureConnectEventObserved": false,
+      "naturalExit": true,
+      "exitCode": 0,
+      "childMilliseconds": 2944
+    },
+    {
+      "scenario": "reconnecting",
+      "stateBefore": "reconnecting",
+      "stateAfter": "reconnecting",
+      "acknowledgementPassed": false,
+      "closeMilliseconds": 2506,
+      "deadlineMilliseconds": 2500,
+      "socketDestroyed": true,
+      "reconnectTimerPresent": false,
+      "serverConnectionPresent": false,
+      "eventsAfterCloseAttempt": [],
+      "futureConnectEventObserved": false,
+      "naturalExit": true,
+      "exitCode": 0,
+      "childMilliseconds": 3265
+    },
+    {
+      "scenario": "reconnecting",
+      "stateBefore": "reconnecting",
+      "stateAfter": "reconnecting",
+      "acknowledgementPassed": false,
+      "closeMilliseconds": 2505,
+      "deadlineMilliseconds": 2500,
+      "socketDestroyed": true,
+      "reconnectTimerPresent": false,
+      "serverConnectionPresent": false,
+      "eventsAfterCloseAttempt": [],
+      "futureConnectEventObserved": false,
+      "naturalExit": true,
+      "exitCode": 0,
+      "childMilliseconds": 3270
+    },
+    {
+      "scenario": "reconnecting",
+      "stateBefore": "reconnecting",
+      "stateAfter": "reconnecting",
+      "acknowledgementPassed": false,
+      "closeMilliseconds": 2505,
+      "deadlineMilliseconds": 2500,
+      "socketDestroyed": true,
+      "reconnectTimerPresent": false,
+      "serverConnectionPresent": false,
+      "eventsAfterCloseAttempt": [],
+      "futureConnectEventObserved": false,
+      "naturalExit": true,
+      "exitCode": 0,
+      "childMilliseconds": 3600
+    }
+  ],
+  "failedDiagnostics": 0,
+  "acknowledgementFailures": 3,
+  "scope": "event/state, socket, retry timer, server connection and natural child exit; not production signal shutdown"
+}
