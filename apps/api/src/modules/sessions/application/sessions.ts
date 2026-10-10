@@ -22,8 +22,7 @@ function csrfMatches(actual: string | undefined, expected: string) {
   return !!actual && /^[A-Za-z0-9_-]{43}$/.test(actual) && timingSafeEqual(Buffer.from(actual), Buffer.from(expected));
 }
 
-// No controllers or authentication endpoints. Only the server composition owns
-// these capabilities; identity resolution defaults to denial in production.
+// Only the server composition owns these capabilities and identity resolution.
 export class Sessions implements SessionVerifier {
   #requests = new WeakMap<Request, Boundary>();
   #assertions = new WeakMap<object, Boundary>();
@@ -129,13 +128,28 @@ export class Sessions implements SessionVerifier {
   async bootstrap(req: Request, allowSameOriginFetch = false): Promise<string> {
     const b = this.boundary(req);
     const origin = req.get('origin');
+    const mode = req.get('sec-fetch-mode'), site = req.get('sec-fetch-site'), destination = req.get('sec-fetch-dest');
+    const requestOrigin = `${req.protocol}://${req.get('host')}`;
+    // Navigation is never a token delivery mechanism. Browser-controlled fetch
+    // metadata must agree with an explicit Origin, when supplied. Non-browser
+    // clients can forge headers; this is not a cryptographic client attestation.
+    if ((mode !== undefined && !['cors', 'same-origin'].includes(mode)) ||
+        (destination !== undefined && !['', 'empty'].includes(destination)) ||
+        (origin !== undefined && (mode === 'same-origin' || site === 'same-origin') && origin !== requestOrigin)) throw new TenantAccessError();
     // Browsers may omit Origin on same-origin GET. Only the reviewed bootstrap
     // opts into Fetch Metadata + exact configured host/protocol corroboration.
     const sameOrigin = allowSameOriginFetch && origin === undefined && req.get('sec-fetch-site') === 'same-origin' &&
-      ['cors', 'same-origin'].includes(req.get('sec-fetch-mode') ?? '') && this.settings.origins.includes(`${req.protocol}://${req.get('host')}`);
+      ['cors', 'same-origin'].includes(mode ?? '') && this.settings.origins.includes(requestOrigin);
     if (req.method !== 'GET' || (!sameOrigin && !this.settings.origins.includes(origin ?? ''))) throw new TenantAccessError();
     b.response.setHeader('Cache-Control', 'no-store');
     const existing = validState(req.session.state);
+    if (existing?.kind === 'authenticated') {
+      // A restored cache entry is not authority. Reuse the fresh request-bound
+      // verifier and PostgreSQL fences before exposing an authenticated token.
+      await this.withRequest(req, async () => {});
+      this.admittedEvidence(b);
+      return b.state!.csrf;
+    }
     if (existing) return existing.csrf;
     const now = Date.now(), csrf = random();
     try {

@@ -290,3 +290,168 @@ test('actual isolated Valkey server outage rejects core HTTP APIs while liveness
     expect((await f.http('/live')).status).toBe(200); expect((await f.http('/ready')).status).toBe(503);
   } finally { await f?.close(); await docker(['rm', '-f', container]); }
 }, 20000);
+
+
+test('unverified ownership stays separate from unrelated contact identities, grants and disabled duplicate accounts', async () => {
+  const f = await fixture(), email = `${randomUUID()}@example.test`;
+  const contact = await database.client.user.create({ data: { email, name: 'Unrelated existing contact' } });
+  const oldIdentity = await database.client.identity.create({ data: { provider: 'existing-provider', subject: randomUUID(), userId: contact.id } });
+  const workspace = await database.client.workspace.create({ data: { slug: `contact-${randomUUID()}`, name: 'Existing contact workspace' } });
+  const membership = await database.client.workspaceMembership.create({ data: { workspaceId: workspace.id, userId: contact.id, role: 'ADMIN', status: 'ACTIVE' } });
+  const { client } = await f.signup(email);
+  const credential = await database.client.passwordCredential.findUniqueOrThrow({ where: { email }, include: { identity: true } });
+  expect(credential.emailVerifiedAt).toBeNull(); expect(credential.identityId).not.toBe(oldIdentity.id);
+  expect(credential.identity.userId).not.toBe(contact.id);
+  expect(await database.client.identity.findUniqueOrThrow({ where: { id: oldIdentity.id } })).toEqual(oldIdentity);
+  expect(await database.client.user.findUniqueOrThrow({ where: { id: contact.id } })).toEqual(contact);
+  expect(await database.client.workspaceMembership.count({ where: { userId: credential.identity.userId } })).toBe(0);
+  const auth = await f.login(email, client), response = await f.http('/api/v1/auth/me', 'GET', auth);
+  expect(response.status).toBe(200); expect((await response.json()).user).toEqual({ id: credential.identity.userId, name: 'Account', email, emailVerified: false });
+  expect(await database.client.workspaceMembership.findUniqueOrThrow({ where: { workspaceId_id: { workspaceId: workspace.id, id: membership.id } } })).toEqual(membership);
+  const anonymous = await f.bootstrap();
+  for (const field of ['emailVerified', 'emailVerifiedAt', 'identityId']) {
+    expect((await f.http('/api/v1/auth/signup', 'POST', anonymous, { email, name: 'Forged', password, [field]: true })).status).toBe(400);
+  }
+  await database.client.user.update({ where: { id: credential.identity.userId }, data: { authDisabled: true } });
+  expect((await f.http('/api/v1/auth/signup', 'POST', anonymous, { email: email.toUpperCase(), name: 'Replacement', password: 'Changed long private password' })).status).toBe(202);
+  const { identity: ignoredIdentity, ...originalCredential } = credential; void ignoredIdentity;
+  expect(await database.client.passwordCredential.findUniqueOrThrow({ where: { email } })).toEqual(originalCredential);
+  expect((await f.http('/api/v1/auth/login', 'POST', anonymous, { email, password })).status).toBe(401);
+  expect((await f.http('/api/v1/auth/me', 'GET', auth)).status).toBe(401);
+  expect((await f.http('/api/v1/auth/csrf', 'GET', auth)).status).toBe(401);
+});
+
+test('durable email ownership has immutable binding and ordered nullable verification without an email-verification API', async () => {
+  const f = await fixture(), { email } = await f.signup();
+  const row = await database.client.passwordCredential.findUniqueOrThrow({ where: { email } });
+  expect(row.emailVerifiedAt).toBeNull();
+  const owner = await database.client.identity.findUniqueOrThrow({ where: { id: row.identityId } });
+  const other = await database.client.identity.create({ data: { userId: owner.userId, provider: 'unrelated-provider', subject: randomUUID() } });
+  for (const data of [{ identityId: other.id }, { email: `${randomUUID()}@example.test` }, { createdAt: new Date(row.createdAt.getTime() - 1) }, { emailVerifiedAt: new Date(row.createdAt.getTime() - 1) }]) {
+    await expect(Promise.resolve(database.client.passwordCredential.update({ where: { identityId: row.identityId }, data }))).rejects.toThrow();
+  }
+  // Test-only privileged SQL is not a verification endpoint. A future workflow
+  // must prove ownership and authorize this transition; this slice grants none.
+  await database.client.passwordCredential.update({ where: { identityId: row.identityId }, data: { emailVerifiedAt: row.createdAt } });
+  expect((await database.client.passwordCredential.findUniqueOrThrow({ where: { email } })).emailVerifiedAt).toEqual(row.createdAt);
+  const auth = await f.login(email), response = await f.http('/api/v1/auth/me', 'GET', auth);
+  expect((await response.json()).user.emailVerified).toBe(false);
+  const identity = await database.client.identity.findUniqueOrThrow({ where: { id: row.identityId } });
+  expect(await database.client.workspaceMembership.count({ where: { userId: identity.userId } })).toBe(0);
+});
+
+test('anonymous and authenticated bootstrap rejects navigation and inconsistent browser metadata; legitimate same-origin fetch remains no-store', async () => {
+  const f = await fixture(), { email, client } = await f.signup(), auth = await f.login(email, client);
+  const allowed = new URL(config.CORS_ORIGINS[0]!), anonymous = await f.bootstrap();
+  for (const current of [anonymous, auth]) {
+    const legitimate = { origin: undefined, host: allowed.host, 'sec-fetch-site': 'same-origin', 'sec-fetch-mode': 'cors', 'sec-fetch-dest': 'empty' };
+    const response = await f.http('/api/v1/auth/csrf', 'GET', current, undefined, legitimate);
+    expect(response.status).toBe(200); expect(await response.json()).toEqual({ csrf: current.csrf });
+    expect(response.headers.get('cache-control')).toBe('no-store'); expect(response.headers.get('pragma')).toBe('no-cache');
+    expect(response.headers.has('set-cookie')).toBe(false);
+    const attacks: Record<string, string | undefined>[] = [
+      { ...legitimate, 'sec-fetch-site': 'cross-site', 'sec-fetch-mode': 'navigate', 'sec-fetch-dest': 'document' },
+      { ...legitimate, 'sec-fetch-mode': 'navigate' },
+      { ...legitimate, 'sec-fetch-dest': 'iframe' },
+      { ...legitimate, 'sec-fetch-site': 'cross-site' },
+      { ...legitimate, 'sec-fetch-site': 'same-site' },
+      { ...legitimate, host: 'evil.example' },
+      { ...legitimate, origin: 'null' },
+      { ...legitimate, origin: 'https://evil.example' },
+      { ...legitimate, origin: allowed.origin, host: 'evil.example' },
+      { ...legitimate, 'x-forwarded-proto': 'https' },
+    ];
+    for (const extra of attacks) {
+      const denied = await f.http('/api/v1/auth/csrf', 'GET', current, undefined, extra);
+      // Untrusted X-Forwarded-Proto cannot change protocol: this one remains a
+      // legitimate loopback same-origin request, not an HTTPS trust assertion.
+      const ignoredForward = extra['x-forwarded-proto'] === 'https';
+      expect(denied.status).toBeOneOf(ignoredForward ? [200] : [401, 403]);
+      const body = await denied.json(); if (!ignoredForward) { expect(body.csrf).toBeUndefined(); expect(JSON.stringify(body)).not.toContain(current.csrf); }
+      expect(denied.headers.get('cache-control')).toBe('no-store'); expect(denied.headers.get('pragma')).toBe('no-cache');
+      if (extra.origin === 'https://evil.example') expect(denied.headers.has('access-control-allow-origin')).toBe(false);
+    }
+  }
+});
+
+test('bootstrap cannot disclose tokens from restored revoked, epoch-stale, disabled, malformed or missing session data', async () => {
+  const f = await fixture(), { email } = await f.signup(), auth = await f.login(email), raw = (await cache.get(f.key(auth)))!;
+  const before = await f.http('/api/v1/auth/csrf', 'GET', auth); expect(before.status).toBe(200); expect(await before.json()).toEqual({ csrf: auth.csrf });
+  expect((await f.http('/api/v1/auth/logout', 'POST', auth)).status).toBe(200);
+  await cache.set(f.key(auth), raw, 'EX', 60);
+  const revoked = await f.http('/api/v1/auth/csrf', 'GET', auth); expect(revoked.status).toBe(401); expect((await revoked.json()).csrf).toBeUndefined();
+  const next = await f.login(email), saved = (await cache.get(f.key(next)))!;
+  expect((await f.http('/api/v1/auth/logout-all', 'POST', next)).status).toBe(200); await cache.set(f.key(next), saved, 'EX', 60);
+  expect((await f.http('/api/v1/auth/csrf', 'GET', next)).status).toBe(401);
+  const live = await f.login(email); await cache.del(f.key(live));
+  const missing = await f.http('/api/v1/auth/csrf', 'GET', live); expect(missing.status).toBe(401); expect((await missing.json()).csrf).toBeUndefined();
+  expect(missing.headers.get('cache-control')).toBe('no-store');
+  const malformed = JSON.parse(saved); malformed.state.absoluteExpiresAt += 86400000;
+  await cache.set(f.key(next), JSON.stringify(malformed), 'EX', 60);
+  expect((await f.http('/api/v1/auth/csrf', 'GET', next)).status).toBe(401);
+});
+
+test('real Valkey concurrent account/IP budgets are atomic and survive limiter reconstruction and rejected attempts', async () => {
+  const f = await fixture();
+  for (const action of ['login', 'signup'] as const) {
+    const accountMax = action === 'login' ? 10 : 5, ipMax = action === 'login' ? 30 : 10;
+    const email = `${randomUUID()}@example.test`, ip = `owned-ip-${randomUUID()}`;
+    const accounts = await Promise.all(Array.from({ length: accountMax + 7 }, (_, i) => f.limits.consume(action, `owned-${randomUUID()}-${i}`, email)));
+    expect(accounts.filter(r => r.allowed)).toHaveLength(accountMax);
+    const ips = await Promise.all(Array.from({ length: ipMax + 7 }, () => f.limits.consume(action, ip, `${randomUUID()}@example.test`)));
+    expect(ips.filter(r => r.allowed)).toHaveLength(ipMax);
+    const restarted = new AuthenticationLimits(cache, f.settings.secrets[0]!, f.settings.prefix);
+    expect((await restarted.consume(action, `other-${randomUUID()}`, email)).allowed).toBe(false);
+    expect((await restarted.consume(action, ip, `${randomUUID()}@example.test`)).allowed).toBe(false);
+  }
+  const keys = await cache.keys(`${f.settings.prefix}rate:*`), before = await Promise.all(keys.map(async key => ({ key, count: Number(await cache.get(key)), ttl: await cache.pttl(key) })));
+  expect(before.every(row => row.count >= 1 && row.ttl > 0)).toBe(true);
+  await Bun.sleep(15);
+  for (const row of before) { expect(Number(await cache.get(row.key))).toBe(row.count); expect(await cache.pttl(row.key)).toBeLessThanOrEqual(row.ttl); }
+});
+
+test('overlapping real HTTP signup/login consumes account budgets even on bounded password admission failures', async () => {
+  const f = await fixture(), client = await f.bootstrap();
+  const email = `${randomUUID()}@example.test`;
+  const signups = await Promise.all(Array.from({ length: 8 }, () => f.http('/api/v1/auth/signup', 'POST', client, { email, name: 'Concurrent', password })));
+  expect(signups.filter(r => r.status === 429)).toHaveLength(3);
+  expect(signups.every(r => [202, 429, 503].includes(r.status))).toBe(true);
+  expect(signups.some(r => r.status === 202)).toBe(true); expect(await database.client.passwordCredential.count({ where: { email } })).toBe(1);
+  expect((await f.http('/api/v1/auth/signup', 'POST', client, { email, name: 'Retry', password })).status).toBe(429);
+  const guesses = await Promise.all(Array.from({ length: 12 }, () => f.http('/api/v1/auth/login', 'POST', client, { email, password: 'A wrong private password 2026' })));
+  expect(guesses.filter(r => r.status === 429)).toHaveLength(2);
+  expect(guesses.every(r => [401, 429, 503].includes(r.status))).toBe(true);
+  expect((await f.http('/api/v1/auth/login', 'POST', client, { email, password })).status).toBe(429);
+  for (const response of [...signups, ...guesses]) expect(response.headers.has('set-cookie')).toBe(false);
+});
+
+
+test('late Valkey rate operation after acknowledgement timeout still consumes its original atomic budget', async () => {
+  const f = await fixture(), delayed = createRedis(config.REDIS_URL); delayed.on('error', () => {}); await delayed.connect();
+  const original = delayed.eval.bind(delayed);
+  let release!: () => void, done!: () => void, completed = 0;
+  const hold = new Promise<void>(ok => { release = ok; }), finished = new Promise<void>(ok => { done = ok; });
+  delayed.eval = (async (...args: Parameters<typeof delayed.eval>) => { await hold; const result = await Reflect.apply(original, delayed, args); if (++completed === 2) done(); return result; }) as typeof delayed.eval;
+  const email = `${randomUUID()}@example.test`, ip = `timeout-${randomUUID()}`, limits = new AuthenticationLimits(delayed, f.settings.secrets[0]!, f.settings.prefix);
+  try {
+    await expect(limits.consume('login', ip, email)).rejects.toThrow('Authentication dependency unavailable');
+    expect(completed).toBe(0); release(); await finished;
+    const keys = await cache.keys(`${f.settings.prefix}rate:*`); expect(keys).toHaveLength(2);
+    for (const key of keys) { expect(await cache.get(key)).toBe('1'); expect(await cache.pttl(key)).toBeGreaterThan(0); }
+    for (let i = 0; i < 9; i++) expect((await f.limits.consume('login', ip, email)).allowed).toBe(true);
+    expect((await f.limits.consume('login', ip, email)).allowed).toBe(false);
+    expect((await new AuthenticationLimits(cache, f.settings.secrets[0]!, f.settings.prefix).consume('login', ip, email)).allowed).toBe(false);
+  } finally { release(); delayed.disconnect(); }
+});
+
+test('overlapping HTTP requests cannot evade IP budgets with different accounts or untrusted forwarded addresses', async () => {
+  for (const action of ['signup', 'login'] as const) {
+    const f = await fixture(), client = await f.bootstrap(), maximum = action === 'login' ? 30 : 10;
+    const responses = await Promise.all(Array.from({ length: maximum + 6 }, (_, i) => f.http(`/api/v1/auth/${action}`, 'POST', client,
+      { email: `${randomUUID()}@example.test`, password, ...(action === 'signup' ? { name: 'Concurrent IP' } : {}) }, { 'x-forwarded-for': `198.51.100.${i + 1}` })));
+    expect(responses.filter(r => r.status === 429)).toHaveLength(6);
+    expect(responses.every(r => (action === 'signup' ? [202, 429, 503] : [401, 429, 503]).includes(r.status))).toBe(true);
+    expect((await f.http(`/api/v1/auth/${action}`, 'POST', client, { email: `${randomUUID()}@example.test`, password, ...(action === 'signup' ? { name: 'Retry' } : {}) })).status).toBe(429);
+    for (const response of responses) expect(response.headers.get('cache-control')).toBe('no-store');
+  }
+});

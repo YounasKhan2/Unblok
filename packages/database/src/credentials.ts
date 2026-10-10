@@ -28,7 +28,7 @@ export class AccountCredentials {
           await tx.$executeRaw`SET LOCAL statement_timeout = '4000ms'`;
           const user = await tx.user.create({ data: { name: input.name, email: input.email } });
           const identity = await tx.identity.create({ data: { userId: user.id, provider: 'password', subject: randomUUID() } });
-          await tx.passwordCredential.create({ data: { identityId: identity.id, email: input.email, passwordHash: input.passwordHash } });
+          await tx.passwordCredential.create({ data: { identityId: identity.id, email: input.email, passwordHash: input.passwordHash, emailVerifiedAt: null } });
         });
         return;
       } catch (error) {

@@ -62,7 +62,8 @@ model User {
   @@map("users")
 }
 
-// Provider subjects are opaque verified identifiers; credentials are separate.
+// Provider subjects identify an authenticated provider assertion; password
+// possession does not verify email ownership. Credentials are separate.
 model Identity {
   id                 String              @id @default(uuid()) @db.Uuid
   userId             String              @map("user_id") @db.Uuid
@@ -80,11 +81,13 @@ model Identity {
 }
 
 model PasswordCredential {
-  identityId   String   @id @map("identity_id") @db.Uuid
-  email        String   @unique @db.VarChar(320)
-  passwordHash String   @map("password_hash") @db.VarChar(256)
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  identity     Identity @relation(fields: [identityId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  identityId      String    @id @map("identity_id") @db.Uuid
+  email           String    @unique @db.VarChar(320)
+  passwordHash    String    @map("password_hash") @db.VarChar(256)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  // NULL is unverified email ownership, regardless of password possession.
+  emailVerifiedAt DateTime? @map("email_verified_at") @db.Timestamptz(3)
+  identity        Identity  @relation(fields: [identityId], references: [id], onDelete: Restrict, onUpdate: Restrict)
 
   @@map("password_credentials")
 }
