@@ -31,7 +31,7 @@ export function correlation(logger: Logger): RequestHandler {
     next();
   };
 }
-export function cors(config: ApiConfig): RequestHandler {
+export function cors(config: ApiConfig, credentials = false, sessions = false): RequestHandler {
   return (request: CorrelatedRequest, response, next) => {
     const origin = request.get('origin');
     response.vary('Origin');
@@ -40,17 +40,18 @@ export function cors(config: ApiConfig): RequestHandler {
     }
     if (origin) {
       response.setHeader('Access-Control-Allow-Origin', origin);
+      if (credentials) response.setHeader('Access-Control-Allow-Credentials', 'true');
       response.setHeader('Access-Control-Expose-Headers', 'X-Request-Id, Retry-After');
     }
     if (request.method === 'OPTIONS') {
       const method = request.get('access-control-request-method');
       const headers = (request.get('access-control-request-headers') ?? '').toLowerCase().split(',').map(value => value.trim()).filter(Boolean);
       if (!origin || !method || !['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'].includes(method) ||
-          headers.some(header => !['content-type', 'x-request-id', 'authorization'].includes(header))) {
+          headers.some(header => !['content-type', 'x-request-id', 'authorization', ...(sessions ? ['x-csrf-token'] : [])].includes(header))) {
         response.status(403).json(normalizeError(403, request.requestId ?? 'unavailable')); return;
       }
       response.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-      response.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Request-Id, Authorization');
+      response.setHeader('Access-Control-Allow-Headers', `Content-Type, X-Request-Id, Authorization${sessions ? ', X-CSRF-Token' : ''}`);
       response.status(204).end(); return;
     }
     next();
