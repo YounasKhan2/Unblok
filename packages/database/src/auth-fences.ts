@@ -9,6 +9,9 @@ export interface SessionEvidence {
   readonly generation: bigint;
   readonly sidDigest: string;
 }
+// Called once for each authenticateSession request callback. Must perform a
+// fresh bounded cache lookup, reject missing/expired state and bind the actual
+// presented SID; never return a previously cached positive result.
 export interface SessionVerifier { verify(assertion: unknown): Promise<SessionEvidence | null> }
 export class AuthDeniedError extends Error {
   constructor() { super('Authentication unavailable'); this.name = 'AuthDeniedError'; }

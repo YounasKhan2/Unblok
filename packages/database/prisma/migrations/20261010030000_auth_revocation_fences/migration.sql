@@ -36,8 +36,15 @@ BEGIN
   IF NEW.id <> OLD.id OR NEW.user_id <> OLD.user_id OR NEW.identity_id <> OLD.identity_id
     OR NEW.auth_epoch <> OLD.auth_epoch OR NEW.issued_at <> OLD.issued_at
     OR NEW.absolute_expires_at <> OLD.absolute_expires_at OR NEW.generation < OLD.generation
-    OR (OLD.revoked_at IS NOT NULL AND NEW.revoked_at IS DISTINCT FROM OLD.revoked_at)
-    OR (NEW.sid_digest <> OLD.sid_digest AND NEW.generation <= OLD.generation)
+    -- A revoked row is frozen; an identical UPDATE permits idempotent logout.
+    OR (OLD.revoked_at IS NOT NULL AND NEW IS DISTINCT FROM OLD)
+    -- Rotation is one atomic generation+digest transition, never either alone.
+    OR ((NEW.generation IS DISTINCT FROM OLD.generation) <> (NEW.sid_digest IS DISTINCT FROM OLD.sid_digest))
+    OR (NEW.generation <> OLD.generation AND NEW.generation - OLD.generation <> 1)
+    -- First revocation changes only revoked_at, not generation/digest/idle time.
+    OR (NEW.revoked_at IS DISTINCT FROM OLD.revoked_at AND (
+      NEW.generation IS DISTINCT FROM OLD.generation OR NEW.sid_digest IS DISTINCT FROM OLD.sid_digest
+      OR NEW.idle_expires_at IS DISTINCT FROM OLD.idle_expires_at))
   THEN RAISE EXCEPTION 'Invalid authentication fence transition'; END IF;
   RETURN NEW;
 END $$;

@@ -1,11 +1,15 @@
 {
   "phase": "BE-00G",
   "base": "1f01372f09a59ed82b4cd58a5247b185be3e591c",
+  "reviewedHead": "852a60818a6f60d4b05b0a34d8c8b677d56aef28",
   "branch": "feat/be-00g-auth-revocation-fences",
   "status": "implemented on review branch; not merged or deployed",
   "environment": { "host": "Windows", "bun": "1.4.2", "postgresql": "17.6", "valkey": "8.1.3", "prisma": "6.19.3" },
   "authority": {
-    "source": "PostgreSQL primary; no positive authority cache or replica fallback",
+    "source": "Fresh live-session verification per request/action plus PostgreSQL primary; no positive authority cache or replica fallback",
+    "sessionPrincipalLifetime": "Only its server-owned authenticateSession callback and async context; registry entry deleted on resolve/throw",
+    "perQueryValkeyReads": false,
+    "callbackFreeSessionAuthenticationAllowed": false,
     "sessionVerifierInstalledInProduction": false,
     "browserAuthenticationCertified": false,
     "productionSessionDependenciesInstalled": false,
@@ -13,6 +17,13 @@
     "revocationLinearization": "confirmed PostgreSQL commit",
     "instantaneousResponseCancellationClaimed": false,
     "physicalCommitTimeExpiryClaimed": false
+  },
+  "reviewedHeadResults": {
+    "authFences": { "passed": 15, "failed": 0, "assertions": 67, "durationSeconds": 10.49, "exit": 0 },
+    "tenancy": { "passed": 34, "failed": 0, "assertions": 131, "durationSeconds": 17.80, "exit": 0 },
+    "backend": { "passed": 83, "failed": 0, "assertions": 154, "durationSeconds": 27.97, "exit": 0 },
+    "integration": { "passed": 2, "failed": 0, "assertions": 5, "durationSeconds": 2.16, "exit": 0 },
+    "limitationsFoundInReview": ["session principal lifetime not bounded to a request", "SQL generation/digest transitions could diverge; revoked mutable fields not fully frozen"]
   },
   "securityObservations": [
     { "case": "family logout", "result": "durable, idempotent; old evidence and already-minted read/write principal denied" },
@@ -28,13 +39,28 @@
     { "case": "SQL safeguards", "result": "cross-user identity binding, epoch decrease, revocation reversal and ordinary family deletion rejected" },
     { "case": "real PostgreSQL outage", "result": "suite database rejects reconnects and existing connections terminated; validation/authentication/write unavailable; protected callback never runs; recovery preserves business row" }
   ],
+  "correctionObservations": [
+    { "finding": "F1", "case": "one fresh lookup per request", "result": "multiple scoped reads do not invoke verifier again; nested request invokes a fresh verifier and rejects parent principal; parent context restores afterward" },
+    { "finding": "F1", "case": "real cache deletion", "result": "key absent while PostgreSQL evidence remains valid; subsequent callback never runs; cross-context principal reuse denied while prior request active and after completion" },
+    { "finding": "F1", "case": "real cache TTL expiry", "result": "key expires without PostgreSQL revocation; primary evidence still valid; fresh requests and escaped read/write principal denied" },
+    { "finding": "F1", "case": "request completion and exception", "result": "returned/escaped principal inert; throwing callback preserves application exception and expires authority; callback-free API rejected" },
+    { "finding": "F1", "case": "detached async work", "result": "continuation retaining async context denied after callback settles; already-started transaction held in callback rolls back after request completion" },
+    { "finding": "F2", "case": "direct SQL active family negatives", "result": "generation-only, digest-only, generation skip, each immutable field, combined revocation+rotation/idle change rejected with trigger reason; complete row unchanged" },
+    { "finding": "F2", "case": "direct SQL revoked family negatives", "result": "generation/digest pair, idle expiry and revocation timestamp mutation rejected; row unchanged; repeated logout succeeds" },
+    { "finding": "F2", "case": "legitimate rotation and stale evidence", "result": "generation advances exactly one and digest changes; old or mixed evidence denied by primary validation and fresh request; current rotated cache evidence accepted" },
+    { "finding": "F1/F2", "case": "preserved PostgreSQL fences", "result": "already-minted active-request principal denied after logout, epoch advance or rotation; both write/revocation lock orders retained for family/logout-all; real database outage fails closed" }
+  ],
+  "correctionRuns": [
+    { "gate": "first correction auth suite", "passed": 24, "failed": 0, "assertions": 130, "durationSeconds": 14.28, "exit": 0 },
+    { "gate": "final correction auth suite", "passed": 24, "failed": 0, "assertions": 134, "durationSeconds": 10.39, "exit": 0, "changeSinceFirstRun": "four additional direct SQL negative assertions" }
+  ],
   "finalGates": {
     "cleanup": { "remainingSuiteDatabases": 0, "remainingOwnedCacheKeys": 0, "startedServicesStopped": true, "existingVolumesRetained": true },
-    "authFences": { "passed": 15, "failed": 0, "assertions": 67, "durationSeconds": 10.49, "exit": 0 },
-    "tenancy": { "passed": 34, "failed": 0, "assertions": 131, "durationSeconds": 17.80, "exit": 0 },
-    "backend": { "passed": 83, "failed": 0, "assertions": 154, "durationSeconds": 27.97, "exit": 0 },
+    "authFences": { "passed": 24, "failed": 0, "assertions": 134, "durationSeconds": 10.39, "exit": 0 },
+    "tenancy": { "passed": 34, "failed": 0, "assertions": 131, "durationSeconds": 14.03, "exit": 0 },
+    "backend": { "passed": 83, "failed": 0, "assertions": 154, "durationSeconds": 17.40, "exit": 0 },
     "architectureTestsIncludedInBackend": { "passed": 47, "failed": 0 },
-    "integration": { "passed": 2, "failed": 0, "assertions": 5, "durationSeconds": 2.16, "exit": 0 },
+    "integration": { "passed": 2, "failed": 0, "assertions": 5, "durationSeconds": 1.031, "exit": 0 },
     "architectureScan": { "files": 326, "edges": 911, "violations": 0 },
     "typecheck": "passed",
     "lint": "passed",
@@ -50,6 +76,8 @@
     { "gate": "intermediate auth suite", "passed": 12, "failed": 2, "betweenTestErrors": 1, "assertions": 60, "durationSeconds": 63.05, "exit": 1, "observations": ["migration replay exceeded unchanged 15s test deadline", "logout test exceeded unchanged 5s deadline", "unsettled CLI waiter rejected after timeout", "other test durations also increased"], "rootCause": "unestablished", "followUp": "owned CLI commands now capped at 6s with termination awaited; no existing test or production deadline increased; serial reruns passed" }
   ],
   "remainingRisks": [
+    "future transport must establish one authenticateSession callback per HTTP request/WebSocket action and settle on completion/error/abort; production verifier/abort wiring remains unimplemented",
+    "initial live-cache admission does not instantly cancel an earlier request or commit when cache disappears; no per-query cache/network access in SQL scopes",
     "intermittent host/CLI scheduling cause unestablished; successful reruns do not prove reliability",
     "existing queue notification timeout and late error, Windows SIGTERM 143, candidate A cleanup acknowledgement, BE-00F fixture/lint failures and three NEXUS failures remain known; not rerun/reclassified",
     "production runtime role/DDL restrictions, large-table rollout, backup/restore invalidation and fence retention/purge need review",

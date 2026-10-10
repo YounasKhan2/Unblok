@@ -1,4 +1,5 @@
 import type { Prisma, WorkspaceRole, RecordStatus } from '@prisma/client';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import type { Database } from './index';
 import { AuthFences, AuthDeniedError, AuthUnavailableError, lockAuthority, type PrincipalAuthority, type SessionVerifier } from './auth-fences';
 
@@ -40,12 +41,12 @@ class ScopedQueries {
   #context: Readonly<WorkspaceContext>;
   #mode: 'read' | 'write';
   #policy: AuthorizationPolicy;
-  constructor(tx: Prisma.TransactionClient, context: Readonly<WorkspaceContext>, mode: 'read' | 'write', policy: AuthorizationPolicy) {
+  constructor(tx: Prisma.TransactionClient, context: Readonly<WorkspaceContext>, mode: 'read' | 'write', policy: AuthorizationPolicy, private readonly assertAuthority: () => void) {
     this.#tx = tx; this.#context = context; this.#mode = mode; this.#policy = policy; Object.freeze(this);
   }
   get context() { return this.#context; }
   expire() { this.#active = false; }
-  private assertActive() { if (!this.#active) throw new TenantAccessError(); }
+  private assertActive() { if (!this.#active) throw new TenantAccessError(); this.assertAuthority(); }
   private async authorize(projectId: string, action: TenantAction, issueId?: string) {
     this.assertActive(); assertId(projectId);
     if (action !== 'issue:read' && (this.#mode !== 'write' || this.context.status !== 'ACTIVE' || this.context.role === 'OBSERVER')) throw new TenantAccessError();
@@ -107,6 +108,7 @@ export type TenantQueries = Pick<ScopedQueries, 'context' | 'issue' | 'issues' |
 
 export class Tenancy {
   #principals = new WeakMap<VerifiedPrincipal, PrincipalAuthority>();
+  #sessionRequest = new AsyncLocalStorage<VerifiedPrincipal>();
   #fences: AuthFences;
   constructor(private readonly database: Database, private readonly verifier: IdentityVerifier, private readonly policy: AuthorizationPolicy = denyAll, private readonly sessions?: SessionVerifier) {
     this.#fences = new AuthFences(database);
@@ -115,18 +117,22 @@ export class Tenancy {
     const principal = Object.freeze({}) as VerifiedPrincipal;
     this.#principals.set(principal, authority); return principal;
   }
-  // A live session lookup must be supplied by a narrow server-private verifier.
-  // No request identity field or structurally forged principal is accepted.
-  async authenticateSession(assertion: unknown): Promise<VerifiedPrincipal> {
+  // One server-owned request/action boundary, never a reusable session principal.
+  // Await the complete request work in run; subsequent requests must verify again.
+  async authenticateSession<T>(assertion: unknown, run: (principal: VerifiedPrincipal) => Promise<T>): Promise<T> {
+    if (typeof run !== 'function') throw new TenantAccessError();
+    let principal: VerifiedPrincipal;
     try {
       const session = await this.sessions?.verify(assertion);
       if (!session) throw new TenantAccessError();
-      return this.mint(await this.#fences.validate(session));
+      principal = this.mint(await this.#fences.validate(session));
     } catch (error) {
       if (error instanceof AuthUnavailableError) throw error;
       if (error instanceof AuthDeniedError || error instanceof TenantAccessError) throw new TenantAccessError();
       throw new AuthUnavailableError();
     }
+    try { return await this.#sessionRequest.run(principal, () => run(principal)); }
+    finally { this.#principals.delete(principal); }
   }
   async authenticate(assertion: unknown): Promise<VerifiedPrincipal> {
     try {
@@ -138,15 +144,21 @@ export class Tenancy {
 
   read<T>(principal: VerifiedPrincipal, workspaceId: string, run: (queries: TenantQueries) => Promise<T>) { return this.scoped(principal, workspaceId, 'read', run); }
   write<T>(principal: VerifiedPrincipal, workspaceId: string, run: (queries: TenantQueries) => Promise<T>) { return this.scoped(principal, workspaceId, 'write', run); }
+  private assertPrincipal(principal: VerifiedPrincipal, authority: PrincipalAuthority) {
+    if (this.#principals.get(principal) !== authority || (authority.session && this.#sessionRequest.getStore() !== principal)) throw new TenantAccessError();
+  }
   private async scoped<T>(principal: VerifiedPrincipal, workspaceId: string, mode: 'read' | 'write', run: (queries: TenantQueries) => Promise<T>): Promise<T> {
     const authority = this.#principals.get(principal); if (!authority) throw new TenantAccessError(); assertId(workspaceId);
+    this.assertPrincipal(principal, authority);
     const userId = authority.userId;
     try {
       return await this.database.transaction(async tx => {
+        this.assertPrincipal(principal, authority);
         await tx.$executeRaw`SET LOCAL lock_timeout = '1500ms'`;
         await tx.$executeRaw`SET LOCAL statement_timeout = '4000ms'`;
         // Global order: user → family → workspace → resource. Held through commit.
         await lockAuthority(tx, authority);
+        this.assertPrincipal(principal, authority);
         // Lock mode is a closed server enum, not interpolated request text.
         const workspace = mode === 'write'
           ? await tx.$queryRaw<{ status: RecordStatus }[]>`SELECT status FROM workspaces WHERE id = ${workspaceId}::uuid FOR UPDATE`
@@ -155,11 +167,13 @@ export class Tenancy {
         const membership = await tx.workspaceMembership.findUnique({ where: { workspaceId_userId: { workspaceId, userId } }, select: { id: true, role: true, status: true } });
         if (!membership || membership.status !== 'ACTIVE') throw new TenantAccessError();
         const context = Object.freeze({ workspaceId, membershipId: membership.id, userId, role: membership.role, status: workspace[0].status });
-        const queries = new ScopedQueries(tx, context, mode, this.policy);
+        const queries = new ScopedQueries(tx, context, mode, this.policy, () => this.assertPrincipal(principal, authority));
         try {
           const result = await run(queries);
+          this.assertPrincipal(principal, authority);
           // Recheck DB time after callback: expiry during work rolls back writes.
           await lockAuthority(tx, authority);
+          this.assertPrincipal(principal, authority);
           return result;
         } finally { queries.expire(); }
       });

@@ -62,12 +62,26 @@ async function fixture() {
   });
   const session = await fences.create({ userId, identityId, sidDigest: digest(), absoluteExpiresAt: new Date(Date.now() + 60000), idleExpiresAt: new Date(Date.now() + 30000) });
   const assertion = Symbol('private verified live session');
-  let live: SessionEvidence | null = session;
-  const tenancy = new Tenancy(db, { verify: async () => null }, { allows: () => true }, { verify: async input => input === assertion ? live : null });
-  const principal = await tenancy.authenticateSession(assertion);
-  const read = (p = principal) => tenancy.read(p, workspaceId, q => q.issue(issueId));
-  const write = (p = principal) => tenancy.write(p, workspaceId, q => q.compareAndSetIssueTitle(issueId, 1, 'After'));
-  return { userId, identityId, workspaceId, issueId, session, assertion, tenancy, principal, read, write, setLive: (s: SessionEvidence | null) => { live = s; } };
+  const key = `be00g:test:${randomUUID()}`; keys.push(key);
+  const setLive = async (s: SessionEvidence | null) => {
+    if (!s) { await cache.del(key); return; }
+    await cache.set(key, JSON.stringify(s, (_key, value) => typeof value === 'bigint' ? value.toString() : value), 'EX', 60);
+  };
+  await setLive(session);
+  let lookups = 0;
+  const tenancy = new Tenancy(db, { verify: async () => null }, { allows: () => true }, { verify: async input => {
+    if (input !== assertion) return null;
+    lookups++;
+    const payload = await cache.get(key); if (!payload) return null;
+    const s = JSON.parse(payload) as Record<string, string>;
+    return { userId: s.userId!, identityId: s.identityId!, familyId: s.familyId!, sidDigest: s.sidDigest!, authEpoch: BigInt(s.authEpoch!), generation: BigInt(s.generation!) };
+  } });
+  const request = <T>(run: (principal: VerifiedPrincipal) => Promise<T>) => tenancy.authenticateSession(assertion, run);
+  // Deliberately return an escaped principal to test that it has no authority.
+  const principal = await request(async p => p);
+  const read = (p?: VerifiedPrincipal) => p ? tenancy.read(p, workspaceId, q => q.issue(issueId)) : request(p => tenancy.read(p, workspaceId, q => q.issue(issueId)));
+  const write = (p?: VerifiedPrincipal) => p ? tenancy.write(p, workspaceId, q => q.compareAndSetIssueTitle(issueId, 1, 'After')) : request(p => tenancy.write(p, workspaceId, q => q.compareAndSetIssueTitle(issueId, 1, 'After')));
+  return { userId, identityId, workspaceId, issueId, session, assertion, tenancy, principal, read, write, request, setLive, key, lookups: () => lookups };
 }
 function gate() {
   let release!: () => void;
@@ -91,9 +105,13 @@ test('fresh migration replay and Prisma-visible schema equality', async () => {
 }, 15000);
 test('logout is durable/idempotent and denies already-minted principals', async () => {
   const f = await fixture(); expect((await f.read()).title).toBe('Before');
-  await fences.revoke(f.session); await fences.revoke(f.session);
+  await f.request(async principal => {
+    await fences.revoke(f.session); await fences.revoke(f.session);
+    await expect(f.read(principal)).rejects.toBeInstanceOf(TenantAccessError);
+    await expect(f.write(principal)).rejects.toBeInstanceOf(TenantAccessError);
+  });
   await expect(fences.validate(f.session)).rejects.toBeInstanceOf(AuthDeniedError);
-  await expect(f.tenancy.authenticateSession(f.assertion)).rejects.toBeInstanceOf(TenantAccessError);
+  await expect(f.request(async () => {})).rejects.toBeInstanceOf(TenantAccessError);
   await expect(f.read()).rejects.toBeInstanceOf(TenantAccessError);
   await expect(f.write()).rejects.toBeInstanceOf(TenantAccessError);
   expect((await db.client.issue.findUniqueOrThrow({ where: { workspaceId_id: { workspaceId: f.workspaceId, id: f.issueId } } })).title).toBe('Before');
@@ -103,7 +121,10 @@ test('logout-all fences every old family; fresh independently verified identity 
   const second = await fences.create({ userId: f.userId, identityId: f.identityId, sidDigest: digest(), absoluteExpiresAt: new Date(Date.now() + 60000), idleExpiresAt: new Date(Date.now() + 30000) });
   const legacy = new Tenancy(db, { verify: async () => ({ provider: 'test', subject: f.userId }) }, { allows: () => true });
   const old = await legacy.authenticate(Symbol());
-  await fences.revokeAll(f.userId);
+  await f.request(async principal => {
+    await fences.revokeAll(f.userId);
+    await expect(f.write(principal)).rejects.toBeInstanceOf(TenantAccessError);
+  });
   for (const session of [f.session, second]) await expect(fences.validate(session)).rejects.toBeInstanceOf(AuthDeniedError);
   await expect(f.write()).rejects.toBeInstanceOf(TenantAccessError);
   await expect(legacy.write(old, f.workspaceId, q => q.compareAndSetIssueTitle(f.issueId, 1, 'Attack'))).rejects.toBeInstanceOf(TenantAccessError);
@@ -119,23 +140,27 @@ test('late real Valkey save recreates stale data but cannot restore PostgreSQL a
   held.release(); await lateSave;
   expect(await cache.get(key)).toBe(payload);
   const restored = JSON.parse((await cache.get(key))!) as Record<string, string>;
-  f.setLive({ userId: restored.userId!, identityId: restored.identityId!, familyId: restored.familyId!, sidDigest: restored.sidDigest!, authEpoch: BigInt(restored.authEpoch!), generation: BigInt(restored.generation!) });
-  await expect(f.tenancy.authenticateSession(f.assertion)).rejects.toBeInstanceOf(TenantAccessError);
+  await f.setLive({ userId: restored.userId!, identityId: restored.identityId!, familyId: restored.familyId!, sidDigest: restored.sidDigest!, authEpoch: BigInt(restored.authEpoch!), generation: BigInt(restored.generation!) });
+  await expect(f.request(async () => {})).rejects.toBeInstanceOf(TenantAccessError);
   await expect(f.write()).rejects.toBeInstanceOf(TenantAccessError);
 });
 test('missing, mismatched, malformed and client-controlled authority fails closed', async () => {
   const f = await fixture();
   for (const patch of [{ familyId: randomUUID() }, { userId: randomUUID() }, { identityId: randomUUID() }, { sidDigest: digest() }, { generation: 99n }, { authEpoch: 99n }, { familyId: 'invalid' }]) await expect(fences.validate({ ...f.session, ...patch })).rejects.toBeInstanceOf(AuthDeniedError);
-  await expect(f.tenancy.authenticateSession(f.session)).rejects.toBeInstanceOf(TenantAccessError);
+  await expect(f.tenancy.authenticateSession(f.session, async () => {})).rejects.toBeInstanceOf(TenantAccessError);
   await expect(f.read({} as VerifiedPrincipal)).rejects.toBeInstanceOf(TenantAccessError);
   const other = new Tenancy(db, { verify: async () => null });
-  await expect(other.authenticateSession(f.assertion)).rejects.toBeInstanceOf(TenantAccessError);
+  await expect(other.authenticateSession(f.assertion, async () => {})).rejects.toBeInstanceOf(TenantAccessError);
   await expect(other.read(f.principal, f.workspaceId, q => q.issue(f.issueId))).rejects.toBeInstanceOf(TenantAccessError);
-  f.setLive(null); await expect(f.tenancy.authenticateSession(f.assertion)).rejects.toBeInstanceOf(TenantAccessError);
+  await f.setLive(null); await expect(f.request(async () => {})).rejects.toBeInstanceOf(TenantAccessError);
 });
 test('rotation cannot refresh stale epochs or extend absolute lifetime; old principals are denied', async () => {
   const f = await fixture();
-  const next = await fences.rotate(f.session, digest(), new Date(Date.now() + 30000));
+  const next = await f.request(async principal => {
+    const next = await fences.rotate(f.session, digest(), new Date(Date.now() + 30000));
+    await expect(f.write(principal)).rejects.toBeInstanceOf(TenantAccessError);
+    return next;
+  });
   await expect(fences.validate(f.session)).rejects.toBeInstanceOf(AuthDeniedError);
   await expect(f.write()).rejects.toBeInstanceOf(TenantAccessError);
   expect((await fences.validate(next)).session?.generation).toBe(2n);
@@ -150,11 +175,132 @@ test('concurrent rotations allow one current generation only', async () => {
   expect(results.filter(r => r.status === 'rejected')).toHaveLength(1);
   await expect(fences.validate(f.session)).rejects.toBeInstanceOf(AuthDeniedError);
 });
+test('request boundary verifies once, rejects cross-request principals and never rereads cache per query', async () => {
+  const f = await fixture(); const before = f.lookups();
+  await f.request(async principal => {
+    expect((await f.read(principal)).title).toBe('Before');
+    expect((await f.read(principal)).title).toBe('Before');
+    expect(f.lookups()).toBe(before + 1);
+    await f.request(async second => {
+      await expect(f.read(principal)).rejects.toBeInstanceOf(TenantAccessError);
+      await expect(f.write(principal)).rejects.toBeInstanceOf(TenantAccessError);
+      expect((await f.read(second)).title).toBe('Before');
+    });
+    // Nested boundary completion restores its parent's still-live context.
+    expect((await f.read(principal)).title).toBe('Before');
+  });
+  expect(f.lookups()).toBe(before + 2);
+  await expect(f.read(f.principal)).rejects.toBeInstanceOf(TenantAccessError);
+  // Runtime callers cannot opt back into the old callback-free API.
+  const unbound = f.tenancy.authenticateSession.bind(f.tenancy) as unknown as (assertion: unknown) => Promise<unknown>;
+  await expect(unbound(f.assertion)).rejects.toBeInstanceOf(TenantAccessError);
+});
+test('cache deletion denies a subsequent request and escaped principal while the durable fence remains valid', async () => {
+  const f = await fixture(); const entered = gate(), finish = gate(); let active!: VerifiedPrincipal;
+  const prior = f.request(async principal => { active = principal; expect((await f.read(principal)).title).toBe('Before'); entered.release(); await finish.wait; });
+  await entered.wait;
+  try {
+    await f.setLive(null); expect(await cache.get(f.key)).toBeNull();
+    expect((await fences.validate(f.session)).session?.familyId).toBe(f.session.familyId);
+    let called = false;
+    await expect(f.request(async () => { called = true; })).rejects.toBeInstanceOf(TenantAccessError);
+    expect(called).toBe(false);
+    // The prior request is still running; another async context cannot reuse it.
+    await expect(f.read(active)).rejects.toBeInstanceOf(TenantAccessError);
+    await expect(f.write(active)).rejects.toBeInstanceOf(TenantAccessError);
+  } finally { finish.release(); }
+  await prior;
+  await expect(f.read(active)).rejects.toBeInstanceOf(TenantAccessError);
+  await expect(f.write(active)).rejects.toBeInstanceOf(TenantAccessError);
+});
+test('real Valkey expiry denies fresh requests and reused principals without PostgreSQL revocation', async () => {
+  const f = await fixture();
+  expect(await cache.pexpire(f.key, 80)).toBe(1); await Bun.sleep(100);
+  expect(await cache.get(f.key)).toBeNull();
+  expect((await fences.validate(f.session)).authEpoch).toBe(f.session.authEpoch);
+  await expect(f.request(async () => {})).rejects.toBeInstanceOf(TenantAccessError);
+  await expect(f.read(f.principal)).rejects.toBeInstanceOf(TenantAccessError);
+  await expect(f.write(f.principal)).rejects.toBeInstanceOf(TenantAccessError);
+});
+test('throwing request expires its principal and preserves the application error', async () => {
+  const f = await fixture(); let escaped!: VerifiedPrincipal; const failure = new Error('Synthetic application failure');
+  await expect(f.request(async principal => {
+    escaped = principal; expect((await f.read(principal)).title).toBe('Before'); throw failure;
+  })).rejects.toBe(failure);
+  await expect(f.read(escaped)).rejects.toBeInstanceOf(TenantAccessError);
+  await expect(f.write(escaped)).rejects.toBeInstanceOf(TenantAccessError);
+});
+test('detached continuation inherits context but cannot reuse a completed request principal', async () => {
+  const f = await fixture(); const finish = gate(); let late!: Promise<unknown>;
+  await f.request(async principal => {
+    late = finish.wait.then(() => f.write(principal)).then(() => 'committed', error => error);
+  });
+  finish.release(); expect(await late).toBeInstanceOf(TenantAccessError);
+  expect((await db.client.issue.findUniqueOrThrow({ where: { workspaceId_id: { workspaceId: f.workspaceId, id: f.issueId } } })).title).toBe('Before');
+});
+test('already-started detached transaction rolls back if the request completes during its callback', async () => {
+  const f = await fixture(); const entered = gate(), finish = gate(); let pending!: Promise<unknown>;
+  try {
+    await f.request(async principal => {
+      pending = f.tenancy.write(principal, f.workspaceId, async q => {
+        await q.compareAndSetIssueTitle(f.issueId, 1, 'Must roll back'); entered.release(); await finish.wait;
+      }).then(() => 'committed', error => error);
+      await entered.wait;
+    });
+  } finally { finish.release(); }
+  expect(await pending).toBeInstanceOf(TenantAccessError);
+  expect((await db.client.issue.findUniqueOrThrow({ where: { workspaceId_id: { workspaceId: f.workspaceId, id: f.issueId } } })).title).toBe('Before');
+});
+test('direct SQL cannot split generation/digest rotation, skip generations or change immutable family fields', async () => {
+  const f = await fixture(); const g = await fixture();
+  const before = await db.client.authSessionFamily.findUniqueOrThrow({ where: { id: f.session.familyId } });
+  const attempts = [
+    () => db.client.$executeRaw`UPDATE auth_session_families SET generation = generation + 1 WHERE id = ${f.session.familyId}::uuid`,
+    () => db.client.$executeRaw`UPDATE auth_session_families SET sid_digest = ${digest()} WHERE id = ${f.session.familyId}::uuid`,
+    () => db.client.$executeRaw`UPDATE auth_session_families SET generation = generation + 2, sid_digest = ${digest()} WHERE id = ${f.session.familyId}::uuid`,
+    () => db.client.$executeRaw`UPDATE auth_session_families SET generation = generation + 1, sid_digest = ${digest()}, revoked_at = statement_timestamp() WHERE id = ${f.session.familyId}::uuid`,
+    () => db.client.$executeRaw`UPDATE auth_session_families SET idle_expires_at = idle_expires_at + interval '1 second', revoked_at = statement_timestamp() WHERE id = ${f.session.familyId}::uuid`,
+    () => db.client.$executeRaw`UPDATE auth_session_families SET id = ${randomUUID()}::uuid WHERE id = ${f.session.familyId}::uuid`,
+    () => db.client.$executeRaw`UPDATE auth_session_families SET user_id = ${g.userId}::uuid WHERE id = ${f.session.familyId}::uuid`,
+    () => db.client.$executeRaw`UPDATE auth_session_families SET identity_id = ${g.identityId}::uuid WHERE id = ${f.session.familyId}::uuid`,
+    () => db.client.$executeRaw`UPDATE auth_session_families SET user_id = ${g.userId}::uuid, identity_id = ${g.identityId}::uuid WHERE id = ${f.session.familyId}::uuid`,
+    () => db.client.$executeRaw`UPDATE auth_session_families SET auth_epoch = auth_epoch + 1 WHERE id = ${f.session.familyId}::uuid`,
+    () => db.client.$executeRaw`UPDATE auth_session_families SET issued_at = issued_at + interval '1 second' WHERE id = ${f.session.familyId}::uuid`,
+    () => db.client.$executeRaw`UPDATE auth_session_families SET absolute_expires_at = absolute_expires_at + interval '1 second' WHERE id = ${f.session.familyId}::uuid`,
+  ];
+  for (const attempt of attempts) await expect(Promise.resolve(attempt())).rejects.toThrow('Invalid authentication fence transition');
+  expect(await db.client.authSessionFamily.findUniqueOrThrow({ where: { id: f.session.familyId } })).toEqual(before);
+  expect((await fences.validate(f.session)).session?.generation).toBe(1n);
+});
+test('revoked SQL rows are frozen while idempotent family logout remains valid', async () => {
+  const f = await fixture(); await fences.revoke(f.session);
+  const before = await db.client.authSessionFamily.findUniqueOrThrow({ where: { id: f.session.familyId } });
+  const attempts = [
+    () => db.client.$executeRaw`UPDATE auth_session_families SET generation = generation + 1, sid_digest = ${digest()} WHERE id = ${f.session.familyId}::uuid`,
+    () => db.client.$executeRaw`UPDATE auth_session_families SET idle_expires_at = idle_expires_at + interval '1 second' WHERE id = ${f.session.familyId}::uuid`,
+    () => db.client.$executeRaw`UPDATE auth_session_families SET revoked_at = NULL WHERE id = ${f.session.familyId}::uuid`,
+    () => db.client.$executeRaw`UPDATE auth_session_families SET revoked_at = revoked_at + interval '1 second' WHERE id = ${f.session.familyId}::uuid`,
+  ];
+  for (const attempt of attempts) await expect(Promise.resolve(attempt())).rejects.toThrow('Invalid authentication fence transition');
+  await fences.revoke(f.session);
+  expect(await db.client.authSessionFamily.findUniqueOrThrow({ where: { id: f.session.familyId } })).toEqual(before);
+  await expect(fences.rotate(f.session, digest(), new Date(Date.now() + 30000))).rejects.toBeInstanceOf(AuthDeniedError);
+});
+test('valid rotation succeeds but stale and mixed generation/digest evidence never regains authority', async () => {
+  const f = await fixture(); const next = await fences.rotate(f.session, digest(), new Date(Date.now() + 30000));
+  expect(next.generation).toBe(f.session.generation + 1n); expect(next.sidDigest).not.toBe(f.session.sidDigest);
+  for (const stale of [f.session, { ...next, generation: f.session.generation }, { ...next, sidDigest: f.session.sidDigest }]) {
+    await expect(fences.validate(stale)).rejects.toBeInstanceOf(AuthDeniedError);
+    await f.setLive(stale); await expect(f.read()).rejects.toBeInstanceOf(TenantAccessError);
+  }
+  await expect(fences.rotate(f.session, digest(), new Date(Date.now() + 30000))).rejects.toBeInstanceOf(AuthDeniedError);
+  await f.setLive(next); expect((await f.read()).title).toBe('Before');
+});
 for (const kind of ['family', 'all'] as const) test(`write-first ordering: ${kind} revocation waits for protected commit`, async () => {
   const f = await fixture(); const entered = gate(), finish = gate(); let revoked = false;
-  const write = f.tenancy.write(f.principal, f.workspaceId, async q => {
+  const write = f.request(principal => f.tenancy.write(principal, f.workspaceId, async q => {
     await q.compareAndSetIssueTitle(f.issueId, 1, 'Committed before revocation'); entered.release(); await finish.wait;
-  });
+  }));
   await entered.wait;
   const revocation = (kind === 'family' ? fences.revoke(f.session) : fences.revokeAll(f.userId)).then(() => { revoked = true; });
   try { await blocked(); expect(revoked).toBe(false); } finally { finish.release(); }
@@ -164,26 +310,28 @@ for (const kind of ['family', 'all'] as const) test(`write-first ordering: ${kin
 });
 for (const kind of ['family', 'all'] as const) test(`revocation-first ordering: ${kind} fence prevents a concurrent stale commit`, async () => {
   const f = await fixture(); const entered = gate(), finish = gate();
-  // Hold the same ordered locks/update used by production revocation until the
-  // test observes the protected transaction waiting in PostgreSQL itself.
-  const revocation = db.transaction(async tx => {
-    if (kind === 'all') {
-      await tx.$queryRaw`SELECT id FROM users WHERE id = ${f.userId}::uuid FOR UPDATE`;
-      await tx.$executeRaw`UPDATE users SET auth_epoch = auth_epoch + 1 WHERE id = ${f.userId}::uuid`;
-    } else {
-      await tx.$queryRaw`SELECT id FROM users WHERE id = ${f.userId}::uuid FOR SHARE`;
-      await tx.$queryRaw`SELECT id FROM auth_session_families WHERE id = ${f.session.familyId}::uuid FOR UPDATE`;
-      await tx.$executeRaw`UPDATE auth_session_families SET revoked_at = statement_timestamp() WHERE id = ${f.session.familyId}::uuid`;
-    }
-    entered.release(); await finish.wait;
+  await f.request(async principal => {
+    // Hold the same ordered locks/update used by production revocation until the
+    // test observes the protected transaction waiting in PostgreSQL itself.
+    const revocation = db.transaction(async tx => {
+      if (kind === 'all') {
+        await tx.$queryRaw`SELECT id FROM users WHERE id = ${f.userId}::uuid FOR UPDATE`;
+        await tx.$executeRaw`UPDATE users SET auth_epoch = auth_epoch + 1 WHERE id = ${f.userId}::uuid`;
+      } else {
+        await tx.$queryRaw`SELECT id FROM users WHERE id = ${f.userId}::uuid FOR SHARE`;
+        await tx.$queryRaw`SELECT id FROM auth_session_families WHERE id = ${f.session.familyId}::uuid FOR UPDATE`;
+        await tx.$executeRaw`UPDATE auth_session_families SET revoked_at = statement_timestamp() WHERE id = ${f.session.familyId}::uuid`;
+      }
+      entered.release(); await finish.wait;
+    });
+    await entered.wait;
+    const write = f.write(principal).then(() => 'committed', error => error);
+    try { await blocked(); } finally { finish.release(); }
+    await revocation; const outcome = await write;
+    expect(outcome instanceof TenantConflictError || outcome instanceof TenantAccessError).toBe(true);
+    await expect(f.write(principal)).rejects.toBeInstanceOf(TenantAccessError);
+    expect((await db.client.issue.findUniqueOrThrow({ where: { workspaceId_id: { workspaceId: f.workspaceId, id: f.issueId } } })).title).toBe('Before');
   });
-  await entered.wait;
-  const write = f.write().then(() => 'committed', error => error);
-  try { await blocked(); } finally { finish.release(); }
-  await revocation; const outcome = await write;
-  expect(outcome instanceof TenantConflictError || outcome instanceof TenantAccessError).toBe(true);
-  await expect(f.write()).rejects.toBeInstanceOf(TenantAccessError);
-  expect((await db.client.issue.findUniqueOrThrow({ where: { workspaceId_id: { workspaceId: f.workspaceId, id: f.issueId } } })).title).toBe('Before');
 });
 test('disabled account and expired idle/absolute authority deny existing principals', async () => {
   const f = await fixture(); await db.client.user.update({ where: { id: f.userId }, data: { authDisabled: true } });
@@ -203,11 +351,11 @@ test('disabled account and expired idle/absolute authority deny existing princip
 test('expiry during protected work rolls the mutation back before completion', async () => {
   const f = await fixture();
   const short = await fences.create({ userId: f.userId, identityId: f.identityId, sidDigest: digest(), absoluteExpiresAt: new Date(Date.now() + 60000), idleExpiresAt: new Date(Date.now() + 1000) });
-  f.setLive(short); const principal = await f.tenancy.authenticateSession(f.assertion);
-  await expect(f.tenancy.write(principal, f.workspaceId, async q => {
+  await f.setLive(short);
+  await expect(f.request(principal => f.tenancy.write(principal, f.workspaceId, async q => {
     await q.compareAndSetIssueTitle(f.issueId, 1, 'Must roll back');
     await Bun.sleep(1100);
-  })).rejects.toBeInstanceOf(TenantAccessError);
+  }))).rejects.toBeInstanceOf(TenantAccessError);
   expect((await db.client.issue.findUniqueOrThrow({ where: { workspaceId_id: { workspaceId: f.workspaceId, id: f.issueId } } })).title).toBe('Before');
 });
 test('SQL guards retain fences, bind identities and prevent epoch/revocation rollback', async () => {
@@ -221,18 +369,20 @@ test('SQL guards retain fences, bind identities and prevent epoch/revocation rol
 });
 test('real PostgreSQL outage denies authentication and prevents protected callback execution', async () => {
   const f = await fixture(); let called = false;
-  // Only this suite's disposable DB. Disallow reconnects and terminate its
-  // connections; do not stop the shared server or another suite's database.
-  await admin.client.$executeRawUnsafe(`ALTER DATABASE "${name}" ALLOW_CONNECTIONS false`);
-  await admin.client.$queryRaw`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = ${name}`;
-  try {
-    await expect(fences.validate(f.session)).rejects.toBeInstanceOf(AuthUnavailableError);
-    await expect(f.tenancy.authenticateSession(f.assertion)).rejects.toBeInstanceOf(AuthUnavailableError);
-    await expect(f.tenancy.write(f.principal, f.workspaceId, async () => { called = true; })).rejects.toBeInstanceOf(AuthUnavailableError);
-    expect(called).toBe(false);
-  } finally {
-    await admin.client.$executeRawUnsafe(`ALTER DATABASE "${name}" ALLOW_CONNECTIONS true`);
-    await db.close(); await db.connect();
-  }
+  await f.request(async principal => {
+    // Only this suite's disposable DB. Disallow reconnects and terminate its
+    // connections; do not stop the shared server or another suite's database.
+    await admin.client.$executeRawUnsafe(`ALTER DATABASE "${name}" ALLOW_CONNECTIONS false`);
+    await admin.client.$queryRaw`SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = ${name}`;
+    try {
+      await expect(fences.validate(f.session)).rejects.toBeInstanceOf(AuthUnavailableError);
+      await expect(f.request(async () => {})).rejects.toBeInstanceOf(AuthUnavailableError);
+      await expect(f.tenancy.write(principal, f.workspaceId, async () => { called = true; })).rejects.toBeInstanceOf(AuthUnavailableError);
+      expect(called).toBe(false);
+    } finally {
+      await admin.client.$executeRawUnsafe(`ALTER DATABASE "${name}" ALLOW_CONNECTIONS true`);
+      await db.close(); await db.connect();
+    }
+  });
   expect((await f.read()).title).toBe('Before');
 }, 15000);
