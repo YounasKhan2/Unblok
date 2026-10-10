@@ -38,4 +38,6 @@ This is an **initial repository-grounded audit**, not an exhaustive dependency g
 
 [BE-00F session infrastructure compatibility verification](18-BE-00F-SESSION-COMPATIBILITY.md) records the isolated Nest/Bun/Express/Valkey candidate harness, HTTPS cookies, lifecycle/outage/concurrency evidence, unsafe stock-store findings, a conditional adapter recommendation and unresolved acceptance gates. Submitted for human review; no production authentication or dependency integration and no merged-status claim.
 
+[BE-00G durable authentication revocation fences](19-BE-00G-AUTH-REVOCATION-FENCES.md) records the additive PostgreSQL epochs/session-family barrier, private principal adaptation, transactional ordering and real database/cache security evidence. Implemented on its review branch; not merged, deployed or login/session-middleware certification.
+
 [Backend status and delivery roadmap](16-BACKEND-STATUS-AND-ROADMAP.md) tracks merged phases, outstanding business capabilities, known verification failures and future delivery order. **Update this tracker whenever merging an Unblok branch that changes backend progress**, including a dated change-log entry and the merge SHA when available. This is a status document and does not supersede the architecture/security contracts above.

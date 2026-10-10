@@ -1,0 +1,60 @@
+{
+  "phase": "BE-00G",
+  "base": "1f01372f09a59ed82b4cd58a5247b185be3e591c",
+  "branch": "feat/be-00g-auth-revocation-fences",
+  "status": "implemented on review branch; not merged or deployed",
+  "environment": { "host": "Windows", "bun": "1.4.2", "postgresql": "17.6", "valkey": "8.1.3", "prisma": "6.19.3" },
+  "authority": {
+    "source": "PostgreSQL primary; no positive authority cache or replica fallback",
+    "sessionVerifierInstalledInProduction": false,
+    "browserAuthenticationCertified": false,
+    "productionSessionDependenciesInstalled": false,
+    "lockOrder": ["user", "session family", "workspace", "resource"],
+    "revocationLinearization": "confirmed PostgreSQL commit",
+    "instantaneousResponseCancellationClaimed": false,
+    "physicalCommitTimeExpiryClaimed": false
+  },
+  "securityObservations": [
+    { "case": "family logout", "result": "durable, idempotent; old evidence and already-minted read/write principal denied" },
+    { "case": "logout-all", "result": "both old families and previously minted independent-identity principal denied; fresh provision captures new epoch" },
+    { "case": "late real Valkey SET", "result": "deleted payload restored after family revocation; key exists but fresh session authentication and old protected write denied" },
+    { "case": "forgery and binding", "result": "missing/malformed/foreign family, identity, user, generation, epoch and digest denied; absent verifier and foreign-instance principal denied" },
+    { "case": "rotation", "result": "old generation/principal denied; no stale-epoch refresh or absolute-lifetime extension; one concurrent rotation succeeds" },
+    { "case": "write before family logout", "result": "PostgreSQL lock waiter observed; revocation waits; earlier protected mutation commits before successful revocation; later stale write denied" },
+    { "case": "write before logout-all", "result": "PostgreSQL lock waiter observed; epoch advance waits until earlier protected transaction completes; later stale write denied" },
+    { "case": "family/logout-all fence before write", "result": "concurrent write observed blocked on primary family/user row; stale transaction cannot commit; retry denied and business row unchanged in both cases" },
+    { "case": "disabled account", "result": "authority denied; re-enable cannot revive old epoch; privileged revocation remains available while disabled" },
+    { "case": "idle and absolute expiry", "result": "expired evidence denied; expired family cannot rotate; expiry during protected callback rolls mutation back" },
+    { "case": "SQL safeguards", "result": "cross-user identity binding, epoch decrease, revocation reversal and ordinary family deletion rejected" },
+    { "case": "real PostgreSQL outage", "result": "suite database rejects reconnects and existing connections terminated; validation/authentication/write unavailable; protected callback never runs; recovery preserves business row" }
+  ],
+  "finalGates": {
+    "cleanup": { "remainingSuiteDatabases": 0, "remainingOwnedCacheKeys": 0, "startedServicesStopped": true, "existingVolumesRetained": true },
+    "authFences": { "passed": 15, "failed": 0, "assertions": 67, "durationSeconds": 10.49, "exit": 0 },
+    "tenancy": { "passed": 34, "failed": 0, "assertions": 131, "durationSeconds": 17.80, "exit": 0 },
+    "backend": { "passed": 83, "failed": 0, "assertions": 154, "durationSeconds": 27.97, "exit": 0 },
+    "architectureTestsIncludedInBackend": { "passed": 47, "failed": 0 },
+    "integration": { "passed": 2, "failed": 0, "assertions": 5, "durationSeconds": 2.16, "exit": 0 },
+    "architectureScan": { "files": 326, "edges": 911, "violations": 0 },
+    "typecheck": "passed",
+    "lint": "passed",
+    "build": "passed API and worker",
+    "frozenInstall": "passed; bun.lock/dependency versions unchanged",
+    "prisma": "generation, format, validation, fresh deploy, replay, schema equality and retained-row upgrade passed",
+    "productionApiFrontendAndOldMigrations": "unchanged"
+  },
+  "failedDevelopmentObservations": [
+    { "gate": "initial typecheck", "result": "test root could not resolve ioredis type; corrected to existing backend-runtime factory" },
+    { "gate": "initial auth suite", "passed": 11, "failed": 2, "assertions": 54, "durationSeconds": 19.98, "causes": ["Prisma FK map mismatch", "raw SQL serialization conflict classification"], "resolution": "schema relation map and SQLSTATE conflict handling corrected" },
+    { "gate": "initial tenancy", "passed": 33, "failed": 1, "assertions": 121, "durationSeconds": 15.04, "cause": "new Prisma defaults inserted into intentional pre-auth schema", "resolution": "old-schema test seeding uses original column surface; assertions retained" },
+    { "gate": "intermediate auth suite", "passed": 12, "failed": 2, "betweenTestErrors": 1, "assertions": 60, "durationSeconds": 63.05, "exit": 1, "observations": ["migration replay exceeded unchanged 15s test deadline", "logout test exceeded unchanged 5s deadline", "unsettled CLI waiter rejected after timeout", "other test durations also increased"], "rootCause": "unestablished", "followUp": "owned CLI commands now capped at 6s with termination awaited; no existing test or production deadline increased; serial reruns passed" }
+  ],
+  "remainingRisks": [
+    "intermittent host/CLI scheduling cause unestablished; successful reruns do not prove reliability",
+    "existing queue notification timeout and late error, Windows SIGTERM 143, candidate A cleanup acknowledgement, BE-00F fixture/lint failures and three NEXUS failures remain known; not rerun/reclassified",
+    "production runtime role/DDL restrictions, large-table rollout, backup/restore invalidation and fence retention/purge need review",
+    "production session verifier, cookie middleware, callback wrapper, TLS/ACL, CSRF/CORS, browser and identity workflows not implemented or certified",
+    "primary-only validation and user/family locks require future capacity testing; no HA/load guarantee",
+    "PostgreSQL disaster restore can roll epochs back; recovery must invalidate prior session authority before reopening authentication"
+  ]
+}

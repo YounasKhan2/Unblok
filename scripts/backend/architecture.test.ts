@@ -65,6 +65,20 @@ describe('package and browser boundaries reject real import mutations', () => {
 });
 
 describe('application, controller and worker persistence boundaries', () => {
+  test('auth lifecycle capability is privileged and cannot be disguised as Tenancy', () => {
+    const f = fixture();
+    f.put('packages/database/src/auth-fences.ts', 'export class AuthFences {}');
+    f.put('packages/database/src/index.ts', 'export { AuthFences as Tenancy } from "./auth-fences";');
+    f.put('apps/api/src/modules/issues/application/read.ts', 'import { Tenancy } from "@unblok/database"; const grant = new Tenancy();');
+    expect(f.rules()).toContain('raw-persistence');
+  });
+  test('business handlers cannot import auth lifecycle capability directly', () => {
+    const f = fixture();
+    f.put('packages/database/src/auth-fences.ts', 'export class AuthFences {}');
+    f.put('packages/database/src/index.ts', 'export { AuthFences } from "./auth-fences";');
+    f.put('apps/api/src/modules/issues/application/read.ts', 'import { AuthFences as Grants } from "@unblok/database";');
+    expect(f.rules()).toContain('raw-persistence');
+  });
   for (const source of ['import { Database as Store } from "@unblok/database";', 'import * as db from "@unblok/database";', 'const db = require("@unblok/database");', 'import type { PrismaClient } from "@prisma/client";']) test(`business service rejects raw capability: ${source}`, () => {
     const f = fixture(); f.put('apps/api/src/modules/issues/application/read.ts', source);
     expect(f.rules()).toContain('raw-persistence');

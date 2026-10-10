@@ -50,28 +50,50 @@ enum IssuePriority {
 }
 
 model User {
-  id          String                @id @default(uuid()) @db.Uuid
-  name        String                @db.VarChar(120)
-  email       String?               @db.VarChar(320)
-  createdAt   DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
-  identities  Identity[]
-  memberships WorkspaceMembership[]
+  id           String                @id @default(uuid()) @db.Uuid
+  name         String                @db.VarChar(120)
+  email        String?               @db.VarChar(320)
+  createdAt    DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
+  authEpoch    BigInt                @default(1) @map("auth_epoch")
+  authDisabled Boolean               @default(false) @map("auth_disabled")
+  identities   Identity[]
+  memberships  WorkspaceMembership[]
 
   @@map("users")
 }
 
 // Provider subjects are opaque verified identifiers. No passwords or tokens.
 model Identity {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  provider  String   @db.VarChar(200)
-  subject   String   @db.VarChar(512)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  id              String              @id @default(uuid()) @db.Uuid
+  userId          String              @map("user_id") @db.Uuid
+  provider        String              @db.VarChar(200)
+  subject         String              @db.VarChar(512)
+  createdAt       DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  user            User                @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  sessionFamilies AuthSessionFamily[]
 
   @@unique([provider, subject])
+  @@unique([id, userId])
   @@index([userId])
   @@map("identities")
+}
+
+// Durable authority, never session payload or credentials. Retain revoked rows.
+model AuthSessionFamily {
+  id                String    @id @default(uuid()) @db.Uuid
+  userId            String    @map("user_id") @db.Uuid
+  identityId        String    @map("identity_id") @db.Uuid
+  authEpoch         BigInt    @map("auth_epoch")
+  generation        BigInt    @default(1)
+  sidDigest         String    @map("sid_digest") @db.VarChar(64)
+  revokedAt         DateTime? @map("revoked_at") @db.Timestamptz(3)
+  issuedAt          DateTime  @default(now()) @map("issued_at") @db.Timestamptz(3)
+  absoluteExpiresAt DateTime  @map("absolute_expires_at") @db.Timestamptz(3)
+  idleExpiresAt     DateTime  @map("idle_expires_at") @db.Timestamptz(3)
+  identity          Identity  @relation(fields: [identityId, userId], references: [id, userId], onDelete: Restrict, onUpdate: Restrict, map: "auth_session_identity_fk")
+
+  @@index([userId, revokedAt])
+  @@map("auth_session_families")
 }
 
 model Workspace {

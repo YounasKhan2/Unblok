@@ -1,5 +1,6 @@
 import type { Prisma, WorkspaceRole, RecordStatus } from '@prisma/client';
 import type { Database } from './index';
+import { AuthFences, AuthDeniedError, AuthUnavailableError, lockAuthority, type PrincipalAuthority, type SessionVerifier } from './auth-fences';
 
 export interface VerifiedIdentity { readonly provider: string; readonly subject: string }
 // The implementation must cryptographically verify its assertion. Never bind a
@@ -105,27 +106,47 @@ class ScopedQueries {
 export type TenantQueries = Pick<ScopedQueries, 'context' | 'issue' | 'issues' | 'compareAndSetIssueTitle' | 'allocateIssueSequence'>;
 
 export class Tenancy {
-  #principals = new WeakMap<VerifiedPrincipal, string>();
-  constructor(private readonly database: Database, private readonly verifier: IdentityVerifier, private readonly policy: AuthorizationPolicy = denyAll) {}
+  #principals = new WeakMap<VerifiedPrincipal, PrincipalAuthority>();
+  #fences: AuthFences;
+  constructor(private readonly database: Database, private readonly verifier: IdentityVerifier, private readonly policy: AuthorizationPolicy = denyAll, private readonly sessions?: SessionVerifier) {
+    this.#fences = new AuthFences(database);
+  }
+  private mint(authority: PrincipalAuthority): VerifiedPrincipal {
+    const principal = Object.freeze({}) as VerifiedPrincipal;
+    this.#principals.set(principal, authority); return principal;
+  }
+  // A live session lookup must be supplied by a narrow server-private verifier.
+  // No request identity field or structurally forged principal is accepted.
+  async authenticateSession(assertion: unknown): Promise<VerifiedPrincipal> {
+    try {
+      const session = await this.sessions?.verify(assertion);
+      if (!session) throw new TenantAccessError();
+      return this.mint(await this.#fences.validate(session));
+    } catch (error) {
+      if (error instanceof AuthUnavailableError) throw error;
+      if (error instanceof AuthDeniedError || error instanceof TenantAccessError) throw new TenantAccessError();
+      throw new AuthUnavailableError();
+    }
+  }
   async authenticate(assertion: unknown): Promise<VerifiedPrincipal> {
     try {
       const identity = await this.verifier.verify(assertion);
       if (!identity || typeof identity.provider !== 'string' || !identity.provider.trim() || typeof identity.subject !== 'string' || !identity.subject.trim()) throw new TenantAccessError();
-      const row = await this.database.client.identity.findUnique({ where: { provider_subject: { provider: identity.provider, subject: identity.subject } }, select: { userId: true } });
-      if (!row) throw new TenantAccessError();
-      const principal = Object.freeze({}) as VerifiedPrincipal;
-      this.#principals.set(principal, row.userId); return principal;
-    } catch { throw new TenantAccessError(); }
+      return this.mint(await this.#fences.resolveIdentity(identity.provider, identity.subject));
+    } catch (error) { if (error instanceof AuthUnavailableError) throw error; throw new TenantAccessError(); }
   }
 
   read<T>(principal: VerifiedPrincipal, workspaceId: string, run: (queries: TenantQueries) => Promise<T>) { return this.scoped(principal, workspaceId, 'read', run); }
   write<T>(principal: VerifiedPrincipal, workspaceId: string, run: (queries: TenantQueries) => Promise<T>) { return this.scoped(principal, workspaceId, 'write', run); }
   private async scoped<T>(principal: VerifiedPrincipal, workspaceId: string, mode: 'read' | 'write', run: (queries: TenantQueries) => Promise<T>): Promise<T> {
-    const userId = this.#principals.get(principal); if (!userId) throw new TenantAccessError(); assertId(workspaceId);
+    const authority = this.#principals.get(principal); if (!authority) throw new TenantAccessError(); assertId(workspaceId);
+    const userId = authority.userId;
     try {
       return await this.database.transaction(async tx => {
         await tx.$executeRaw`SET LOCAL lock_timeout = '1500ms'`;
         await tx.$executeRaw`SET LOCAL statement_timeout = '4000ms'`;
+        // Global order: user → family → workspace → resource. Held through commit.
+        await lockAuthority(tx, authority);
         // Lock mode is a closed server enum, not interpolated request text.
         const workspace = mode === 'write'
           ? await tx.$queryRaw<{ status: RecordStatus }[]>`SELECT status FROM workspaces WHERE id = ${workspaceId}::uuid FOR UPDATE`
@@ -135,14 +156,22 @@ export class Tenancy {
         if (!membership || membership.status !== 'ACTIVE') throw new TenantAccessError();
         const context = Object.freeze({ workspaceId, membershipId: membership.id, userId, role: membership.role, status: workspace[0].status });
         const queries = new ScopedQueries(tx, context, mode, this.policy);
-        try { return await run(queries); } finally { queries.expire(); }
+        try {
+          const result = await run(queries);
+          // Recheck DB time after callback: expiry during work rolls back writes.
+          await lockAuthority(tx, authority);
+          return result;
+        } finally { queries.expire(); }
       });
     } catch (error) {
       if (error instanceof TenantAccessError || error instanceof TenantConflictError) throw error;
+      if (error instanceof AuthDeniedError) throw new TenantAccessError();
       const code = error && typeof error === 'object' && 'code' in error ? error.code : undefined;
-      if (code === 'P2034' || code === 'P2028') throw new TenantConflictError();
+      const meta = error && typeof error === 'object' && 'meta' in error ? error.meta : undefined;
+      const sqlCode = meta && typeof meta === 'object' && 'code' in meta ? meta.code : undefined;
+      if (code === 'P2034' || code === 'P2028' || (code === 'P2010' && (sqlCode === '40001' || sqlCode === '40P01'))) throw new TenantConflictError();
       // Never expose raw Prisma errors, FK details, values, or foreign existence.
-      throw new TenantAccessError();
+      throw new AuthUnavailableError();
     }
   }
 }
