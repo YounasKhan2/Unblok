@@ -19,7 +19,7 @@ for (const key of ['POSTGRES_PASSWORD', 'VALKEY_PASSWORD', 'RUSTFS_ACCESS_KEY', 
   if (!values[key] || !/^[a-zA-Z0-9_-]{16,}$/.test(values[key])) throw new Error(`Local ${key} must contain at least 16 safe characters; existing files were preserved`);
 }
 const common = `NODE_ENV=development\nDATABASE_URL=postgresql://unblok:${values.POSTGRES_PASSWORD}@127.0.0.1:5432/unblok?connect_timeout=3&pool_timeout=3&connection_limit=5\nREDIS_URL=redis://:${values.VALKEY_PASSWORD}@127.0.0.1:6379/0\nLOG_LEVEL=info\nSHUTDOWN_TIMEOUT_MS=10000\n`;
-for (const [file, extra] of [[api, 'API_HOST=127.0.0.1\nAPI_PORT=4000\nCORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000\nBODY_LIMIT_BYTES=65536\nRATE_LIMIT_MAX=120\nRATE_LIMIT_WINDOW_MS=60000\n'], [worker, 'WORKER_CONCURRENCY=2\n']] as const) {
+for (const [file, extra] of [[api, `API_HOST=127.0.0.1\nAPI_PORT=4000\nCORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000\nBODY_LIMIT_BYTES=65536\nRATE_LIMIT_MAX=120\nRATE_LIMIT_WINDOW_MS=60000\nSESSION_SECRETS=${randomBytes(32).toString('hex')}\nSESSION_NAMESPACE=v1\nSESSION_CROSS_ORIGIN=false\n`], [worker, 'WORKER_CONCURRENCY=2\n']] as const) {
   try { await writeFile(file, common + extra, { flag: 'wx', mode: 0o600 }); }
   catch (error) { if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error; }
 }

@@ -1,0 +1,71 @@
+{
+  "phase": "BE-00H",
+  "base": "2fd6686af4ec1558650f201b1f0bd206eeab1139",
+  "branch": "feat/be-00h-session-infrastructure",
+  "status": "implemented locally; human review; not merged or production-certified",
+  "headLocation": "PR metadata; no self-referential commit hash",
+  "environment": { "platform": "win32", "bun": "1.4.2", "nest": "11.2.7", "adapterExpress": "5.2.1", "directExpress": "5.3.0", "postgresql": "17.6", "valkey": "8.1.3" },
+  "dependencies": { "express-session": "1.19.0", "connect-redis": "10.0.0", "redis": "6.3.0", "@types/express-session": "1.18.2 (development only)", "candidateLockIntegrityMatches": true, "existingLockEntriesChanged": false, "vendorBunSupportClaimed": false },
+  "authority": {
+    "storeCallbackDeadlineMs": 750,
+    "timeoutCancelsOperation": false,
+    "libraryHydrationLookupsPerAuthenticatedRequest": 1,
+    "additionalFreshVerifierLookupsPerRequestBoundary": 1,
+    "perQueryValkeyReads": false,
+    "primaryFencesRequired": true,
+    "principalExpiredOnCompletionErrorAndHttpDisconnect": true,
+    "unknownPostgresCommitIsConfirmedRevocation": false,
+    "productionIdentityVerifier": "deny all; real credentials not implemented",
+    "productionBusinessPolicy": "denyAll and FoundationAccessGuard retained"
+  },
+  "securityObservations": [
+    "Actual signed SID/CSRF regeneration and host-only HttpOnly/Lax cookies; no automatic read/polling renewal",
+    "Cache deletion after library hydration rejected by fresh verifier while PostgreSQL family remains valid; two scoped reads add no cache queries",
+    "Real HTTP disconnect invalidates already-active principal before inherited callback resumes",
+    "503 for timed-out establishment/rotation, new SID delivery suppressed and failed-operation family durably revoked; actual late cache payload persists but cannot regain authority",
+    "Real isolated Valkey pause causes bounded SET/GET unavailable; SET subsequently persists and callback result remains failed exactly once",
+    "Confirmed logout with timed-out cache destruction reports cleanup unconfirmed; stale payload resurrection still denied by primary",
+    "Logout-all epoch rejects old cache authority without needing cache enumeration",
+    "Forged/malformed/duplicate/oversized cookies, direct identity body/assertion objects, injected grants and wrong cache identity/epoch/generation denied",
+    "Idle and absolute expiry reject artificially extended cache deadlines; legitimate rotation preserves immutable absolute lifetime",
+    "Strict origin/CSRF/JSON rejection paths and explicit credentialed CORS allowlist/preflight tests",
+    "Certificate-verified loopback HTTPS ingress emits __Host cookie; trusted proxy overwrites spoofed protocol and untrusted/disabled forwarding fails",
+    "Production DB privilege check rejects owner and CREATE; real restricted non-owner role passes and direct runtime CREATE fails",
+    "Protected HTTP write holds PostgreSQL fences through commit; concurrently blocked logout acknowledges after commit; subsequent stale write denied",
+    "Real primary database and session-client outages return unavailable without protected callback/authorization fallback"
+  ],
+  "gates": {
+    "frozenInstall": { "exit": 0 },
+    "prismaGenerate": { "exit": 0, "schemaAndMigrationsChanged": false },
+    "architectureAndTypecheck": { "exit": 0, "files": 332, "edges": 925, "violations": 0 },
+    "lint": { "exit": 0 },
+    "build": { "exit": 0, "apiEntryKB": 30.88, "workerEntryKB": 2.12 },
+    "sessions": { "exit": 0, "passed": 20, "failed": 0, "assertions": 194, "durationSeconds": 13.72 },
+    "backend": { "exit": 0, "passed": 87, "failed": 0, "assertions": 175, "durationSeconds": 6.66, "includesArchitectureTests": 47, "newUnitTests": 4 },
+    "authFences": { "exit": 0, "passed": 24, "failed": 0, "assertions": 134, "durationSeconds": 11.57 },
+    "tenancy": { "exit": 0, "passed": 34, "failed": 0, "assertions": 131, "durationSeconds": 13.84 },
+    "integration": { "exit": 0, "passed": 2, "failed": 0, "assertions": 5, "durationSeconds": 0.927 },
+    "infra": { "exit": 0, "passed": 5, "failed": 0, "assertions": 18, "durationSeconds": 0.66, "historicalIntermittentFailureResolved": false },
+    "lifecycle": { "exit": 1, "passed": 1, "failed": 2, "assertions": 7, "durationSeconds": 3.04, "apiSigtermExit": 143, "workerSigtermExit": 143, "expectedExit": 0, "matchesDocumentedBaseline": true },
+    "audit": { "exit": 1, "package": "deepmerge-ts", "version": "7.1.5", "severity": "high", "advisory": "https://github.com/advisories/GHSA-ggr8-5vv4-36mx", "dependencyOwner": "pre-existing @prisma/config 6.19.3", "identicalBaseLockEntry": true, "unrelatedUpgradeAttempted": false }
+  },
+  "developmentObservations": [
+    "Initial typecheck before Prisma generation failed on generated model types; resolved by generation, no production schema edit",
+    "Initial scripts-owned test could not resolve API-owned Nest/reflect-metadata dependencies; test relocated to API verification instead of adding root framework packages",
+    "Initial fake Store used abstract class type; corrected with explicit test subclass",
+    "Intermediate expanded security suite: 16 pass/1 fail because Bun matcher rejects direct PrismaPromise input; Promise.resolve preserves/executes same DDL assertion; no deadline raised",
+    "Passing suite expansion: 11 tests/117 assertions, 18/181, 19/186, final 20/194; earlier observations retained"
+  ],
+  "cleanup": { "ownedDatabases": 0, "ownedRoles": 0, "ownedCacheKeys": 0, "disposableValkeyContainers": 0, "developmentServicesStoppedWithVolumesRetained": true, "localDocumentationTargetsChecked": 26, "jsonValid": true, "diffCheck": "passed" },
+  "remainingRisks": [
+    "Browser SameSite/CORS deployment and real production TLS/ACL/proxy topology are not certified by a loopback HTTPS fixture",
+    "Unknown PostgreSQL commit or failed compensating revoke leaves unconfirmed orphan/reconciliation work; new SID is suppressed but distributed cancellation is not proven",
+    "Already admitted requests and commits in progress are not instantly canceled by cache deletion/abort",
+    "SIGTERM exit 143 remains; graceful process shutdown is unverified",
+    "Pre-existing high deepmerge-ts advisory needs separate dependency review",
+    "Historical queue notification timeout/late error, candidate A acknowledgement, BE-00F fixture/lint and BE-00G CLI timing risks remain unresolved",
+    "Frozen frontend NEXUS failures not rerun or changed",
+    "Production roles/provisioning, SECURITY DEFINER audit, retention, noeviction capacity, load, clocks, observability, namespace/signing reset and restoration runbook still require review",
+    "No credential verifier, auth endpoints, approved business grants, endpoint-specific abuse policy, frontend integration or WebSocket implementation"
+  ]
+}

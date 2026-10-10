@@ -40,4 +40,6 @@ This is an **initial repository-grounded audit**, not an exhaustive dependency g
 
 [BE-00G durable authentication revocation fences](19-BE-00G-AUTH-REVOCATION-FENCES.md) records the additive PostgreSQL epochs/session-family barrier, private principal adaptation, transactional ordering and real database/cache security evidence. Implemented on its review branch; not merged, deployed or login/session-middleware certification.
 
+[BE-00H real session infrastructure](20-BE-00H-SESSION-INFRASTRUCTURE.md) records the bounded candidate B integration, real request-bound verifier, cookies/expiry/rotation/logout infrastructure, CSRF/CORS and PostgreSQL/Valkey/HTTP/TLS evidence. Implemented for human review; no authentication endpoints or production/browser certification.
+
 [Backend status and delivery roadmap](16-BACKEND-STATUS-AND-ROADMAP.md) tracks merged phases, outstanding business capabilities, known verification failures and future delivery order. **Update this tracker whenever merging an Unblok branch that changes backend progress**, including a dated change-log entry and the merge SHA when available. This is a status document and does not supersede the architecture/security contracts above.

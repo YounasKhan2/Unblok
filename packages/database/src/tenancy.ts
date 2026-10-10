@@ -119,8 +119,8 @@ export class Tenancy {
   }
   // One server-owned request/action boundary, never a reusable session principal.
   // Await the complete request work in run; subsequent requests must verify again.
-  async authenticateSession<T>(assertion: unknown, run: (principal: VerifiedPrincipal) => Promise<T>): Promise<T> {
-    if (typeof run !== 'function') throw new TenantAccessError();
+  async authenticateSession<T>(assertion: unknown, run: (principal: VerifiedPrincipal) => Promise<T>, signal?: AbortSignal): Promise<T> {
+    if (typeof run !== 'function' || signal?.aborted) throw new TenantAccessError();
     let principal: VerifiedPrincipal;
     try {
       const session = await this.sessions?.verify(assertion);
@@ -131,8 +131,12 @@ export class Tenancy {
       if (error instanceof AuthDeniedError || error instanceof TenantAccessError) throw new TenantAccessError();
       throw new AuthUnavailableError();
     }
-    try { return await this.#sessionRequest.run(principal, () => run(principal)); }
-    finally { this.#principals.delete(principal); }
+    const expire = () => this.#principals.delete(principal);
+    signal?.addEventListener('abort', expire, { once: true });
+    try {
+      if (signal?.aborted) throw new TenantAccessError();
+      return await this.#sessionRequest.run(principal, () => run(principal));
+    } finally { expire(); signal?.removeEventListener('abort', expire); }
   }
   async authenticate(assertion: unknown): Promise<VerifiedPrincipal> {
     try {
