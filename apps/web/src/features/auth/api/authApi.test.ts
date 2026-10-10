@@ -9,6 +9,11 @@ function transport(responses:Array<Response|(()=>Promise<Response>)>){
 }
 const json=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json'}});
 describe('live authentication boundary',()=>{
+  it('does not invoke native fetch with AuthApi as its receiver',async()=>{
+    const original=globalThis.fetch;
+    globalThis.fetch=function(this:unknown){if(this instanceof AuthApi)throw new Error('Illegal invocation');return Promise.resolve(json({user:{id:'12345678-1234-4234-8234-123456789012',name:'Server',email:null,emailVerified:false}}));} as typeof fetch;
+    try{expect((await new AuthApi().me()).user.name).toBe('Server');}finally{globalThis.fetch=original;}
+  });
   it('uses cookie credentials, bounded CSRF bootstrap and strict request contracts',async()=>{
     const t=transport([json({csrf}),json(accepted,202),json(accepted,202)]);const api=new AuthApi('',t.fetcher);
     await api.requestRecovery('user@example.com');await api.requestRecovery('user@example.com');

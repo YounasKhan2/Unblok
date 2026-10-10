@@ -9,19 +9,25 @@ export class SessionStore {
   snapshot=()=>this.state;
   subscribe=(listener:()=>void)=>{this.listeners.add(listener);return()=>{this.listeners.delete(listener);};};
   private publish(state:SessionState) {this.state=state;for(const listener of this.listeners)listener();}
-  clear() {this.version++;this.api.clear();this.publish({status:'anonymous',user:null,pending:this.state.pending});}
+  private advance() {this.version++;this.restoring=undefined;this.api.invalidateRequests();}
+  clear() {this.advance();this.api.clear();this.publish({status:'anonymous',user:null,pending:this.state.pending});}
   refresh=():Promise<void>=>{
+    if(this.state.pending)return Promise.resolve();
+    return this.restore();
+  };
+  private restore():Promise<void> {
     if(this.restoring)return this.restoring;
     const version=this.version;
-    this.restoring=this.api.me().then(({user})=>{
+    const restoring=this.api.me().then(({user})=>{
       if(version===this.version)this.publish({...this.state,status:'authenticated',user,error:undefined});
     },error=>{
-      if(version===this.version)this.publish({...this.state,status:error instanceof AuthApiError&&error.status===401?'anonymous':'unavailable',user:null,error:error instanceof Error?error.message:'Unblok is unavailable.'});
-    }).finally(()=>{this.restoring=undefined;});return this.restoring;
-  };
+      if(version===this.version)this.publish({...this.state,status:'unavailable',error:error instanceof Error?error.message:'Unblok is unavailable.'});
+    }).finally(()=>{if(this.restoring===restoring)this.restoring=undefined;});
+    this.restoring=restoring;return restoring;
+  }
   async submit<T>(run:()=>Promise<T>):Promise<T> {
     if(this.state.pending)throw new AuthApiError(409,'Please wait for your current request to finish.');
-    this.version++;this.publish({...this.state,pending:true});
+    this.advance();this.publish({...this.state,pending:true});
     try{return await run();}finally{this.publish({...this.state,pending:false});}
   }
   async login(input:{email:string;password:string}) {return this.submit(async()=>{
@@ -33,7 +39,7 @@ export class SessionStore {
     catch(error){if(error instanceof AuthApiError&&error.status===401){this.clear();return null;}throw error;}
   });}
   async reset(input:{email:string;token:string;password:string}) {return this.submit(async()=>{
-    await this.api.confirmRecovery(input);this.clear();
+    await this.api.confirmRecovery(input);await this.restore();
   });}
   async verify(token:string) {return this.submit(async()=>{
     await this.api.confirmVerification(token);

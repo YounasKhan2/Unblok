@@ -1,6 +1,6 @@
 # FE-AUTH-01 — Real frontend authentication
 
-Implemented for human review on `feat/fe-auth-01-integration`; not merged, deployed or browser-certified. Exact clean fetched base: `1b619b189f0e7d89fc16f70ba766306354259eb6`, including PR #32 and the roadmap handoff. Final head is recorded in PR metadata. Reviewed backend reports 20–23 and the actual shared Zod/controller/session contracts. Evidence: [verification JSON](evidence/FE-AUTH-01-verification.json).
+Implemented for human review on `feat/fe-auth-01-integration`; not merged, deployed or browser-certified. Exact clean fetched base: `1b619b189f0e7d89fc16f70ba766306354259eb6`, including PR #32 and the roadmap handoff. Final head is recorded in PR metadata. Reviewed backend reports 20–23 and the actual shared Zod/controller/session contracts. Evidence: [verification JSON](evidence/FE-AUTH-01-verification.json). The focused correction section below supersedes the historical initial verification matrix.
 
 ## Audit and scope
 
@@ -23,7 +23,7 @@ Real authenticated accounts see their server profile, verification state and an 
 | Sign out / everywhere | POST logout / logout-all. Confirmed primary revocation clears client state even with unconfirmed cache cleanup; unavailable/unknown outcomes are not reported as success. |
 | `/verify-email` | Authenticated request; paste the complete manual code. Confirm acceptance is followed by GET verification status and GET me. False status is not displayed as verification success. |
 | `/forgot-password` | Anonymous or authenticated generic request; explain that an eligible verified account receives a code. No account lookup disclosure. |
-| `/reset-password` | Email, manual code and new password/confirmation. Generic accepted response leads to fresh login, without asserting that proof redemption succeeded. Successful reset revokes previous authority on the backend. No automatic login. |
+| `/reset-password` | Email, manual code and new password/confirmation. Generic acceptance displays conditional sign-in instructions, without asserting redemption or clearing an existing account. A separate me check determines whether its session ended. Successful reset revokes previous authority on the backend. No automatic login. |
 
 Proofs are pasted into transient React state, never URLs, localStorage, analytics or evidence. Passwords and CSRF tokens are memory-only. Reset/login controls disable during submission; synchronous store/API admission also rejects overlapping operations. Strict shared response schemas reject malformed or extra identity/authority fields. Controlled messages cover 400, 401, 403, 429, 503 and network/unknown outcomes without exposing backend diagnostics. Retry-After is parsed, and 429 asks the user to wait; there is no automatic retry or retry countdown claim.
 
@@ -43,7 +43,7 @@ An optional `VITE_AUTH_API_ORIGIN` must be an exact origin; production accepts H
 
 Live cards use opt-in application appearance and scoped aliases to existing semantic tokens. Public/demo defaults retain their styling. Light/dark follows system preference initially and has an explicit toggle. Forms have associated labels, autocomplete, error descriptions, busy/disabled states, first-invalid-field focus and existing password visibility controls. Desktop/mobile layout and light/dark rendering are implemented but **not visually verified** here.
 
-## Verification
+## Original implementation verification (historical)
 
 | Gate | Final observation |
 | --- | --- |
@@ -70,3 +70,30 @@ Development observations are preserved: initial root reflect-metadata test impor
 ## Pending human and deployment review
 
 Actual browser flows and keyboard interaction; 320/390/768/1024/1440 layouts in both themes; HTTPS ingress, Host allowlists and forwarded-header enforcement; SameSite/cross-origin cookie and CORS topology; XSS/CSP and browser storage inspection; mail relay/provider and delivery operations; accessibility/contrast review; rate-limit UX under load; known queue/lifecycle/audit reliability; key/backup restoration and runtime grants remain unresolved. Build retains the existing Vite native-config and large-chunk warnings. No production readiness or launch certification is claimed. Stop at review; no merge or business/frontend data integration follows this change.
+
+## PR #33 focused corrections — current verification
+
+Reviewed head `f573a985ea591165a031db83de544217588837b6`; one correction commit on the existing branch. Backend production, existing migrations, fixtures, dependency versions, CSS and approved design remain unchanged.
+
+**F1:** Restoration promises belong to their current generation. Every submission/clear advances the generation, detaches previous deduplication and invalidates old API unauthorized callbacks while retaining a usable CSRF token where appropriate. Completion of an old promise cannot erase a newer in-flight promise. Same-generation focus/visibility refresh calls coalesce; polling skips active mutations. Controlled deferred tests cover restoration during login/logout, immediate fresh checks after login, late401, old-finally/new-promise ordering and coalesced focus/visibility calls.
+
+**F2:** Generic reset acceptance never establishes proof redemption. The store performs a separate authenticated-session check:200 preserves identity;401 clears it; unavailable checking blocks protected rendering but retains identity for subsequent verification. Unknown mutation outcomes do not infer revocation. Both valid and invalid accepted confirmations show the same conditional message: try the new password, request another email if needed, and sign out first if still authenticated. No proof validity is disclosed through the public response. Unit and real HTTP tests cover invalid proof with a live account, valid reset, anonymous recovery and unknown outcomes.
+
+**F3:** The computer-use kernel still fails initialization with path-not-found while writing assets. The supported bundled Playwright alternative launches actual Chromium; no repository package/version was installed or changed. Browser execution exposed native Window.fetch's illegal receiver when called as an AuthApi method. The default transport now invokes fetch through a wrapper; a focused receiver regression and real browser flow verify the correction. Initial password locator and filtered-header assertions were runner errors, corrected using associated input names and Playwright allHeaders; no production security rule changed.
+
+Actual browser passes: anonymous protected-route redirect; keyboard focus and invalid form feedback; signup; login; native HttpOnly/Lax/Path cookie and absent document.cookie visibility; actual POST Origin and CSRF headers; refresh restoration; verification via real worker/Mailpit; logout-all revoking a second browser context; forgot-password; invalid proof preserving authenticated account; valid reset causing me401; replacement-password login in a fresh context; ordinary logout; labelled NEXUS separation. Screenshots cover login at320/390/768/1024/1440,900-height,DPR1 in explicitly emulated light/dark before initialization. Additional320 light/dark signup/forgot/reset captures check all input bounds and horizontal overflow. [Browser observations](evidence/browser-correction/results.json) and [mobile form observations](evidence/browser-correction/form-visuals.json) are reproducible using `scripts/frontend/auth-browser.cjs` and `auth-visuals.cjs`, with `PLAYWRIGHT_MODULE` pointing at the already-installed module and local API/worker/web/infrastructure running. No proof/password/cookie values are stored in evidence. Only owned Mailpit messages are deleted; disposable registered accounts remain in the local development database without memberships.
+
+**Browser gate remains unresolved, with a demonstrated backend limitation:** after an authenticated valid reset, PostgreSQL revokes authority but the browser retains the well-formed HttpOnly SID cookie. `/me` returns401; the following `/csrf` also returns401 without clearing the cookie. Ordinary same-context re-login therefore fails before credentials can be submitted. Source inspection confirms `Sessions.bootstrap()` revalidates the authenticated family and AuthController maps denial to401 without terminal cookie cleanup. The browser cannot remove an HttpOnly cookie; bypassing CSRF, changing backend semantics or installing a cookie workaround is outside this correction. The runner returns exit1 and records this failure even though a fresh isolated context can authenticate with the replacement password. That fresh context is test evidence, not an application workaround or a full browser pass. Human review must resolve the backend cleanup boundary separately before accepting this end-to-end flow.
+
+| Correction gate | Result |
+| --- | --- |
+| Focused frontend tests |38 passed /0 failed|
+| Full frontend |771 passed /3 unchanged NEXUS failures|
+| Real frontend HTTP integration |1 passed /135 assertions, including invalid-proof session preservation|
+| Frontend/backend typecheck, lint, architecture and builds |Passed; no external package/lock changes|
+| Backend architecture/regression |51/59 and99/260 passed (tests/assertions)|
+| Authentication/sessions/fences/tenancy |26/812,25/254,24/134,34/132 passed|
+| Email/recovery/database integration |16/468,18/421,2/5 passed; initial email migration replay5-second timeout retained, unchanged rerun passed|
+| Browser |Partial, exit1 for retained revoked-cookie same-context reset/login failure; no production certification|
+
+An intermediate backend typecheck detected Bun's fetch.preconnect augmentation on the wrapper type; the transport now specifies only the callable signature and recheck passes. Vite also logged a SessionGuard error during source-edit hot refresh; final navigation/guard checks and captured forms passed, but no general HMR reliability claim is made. Historical three NEXUS failures, queue notification timeout/between-test error, SIGTERM143 and deepmerge-ts advisory remain unresolved; their earlier executions above remain evidence and are not relabelled as passing. HTTPS ingress/proxy, production CORS/SameSite topology, CSP/XSS, browser coverage beyond Chromium, comprehensive accessibility/contrast, operational mail/key/grants/restore and load review remain pending. Local same-origin HTTP evidence is not production TLS certification. Stop at human review; do not merge or start BE-API-00.

@@ -28,13 +28,14 @@ export function CredentialsPage({mode}:{mode:Mode}) {
       if(mode==='login'){await store.login({email,password});setPassword('');navigate('/account',{replace:true});}
       else if(mode==='signup'){await store.submit(()=>store.api.signup({name,email,password}));setPassword('');setAccepted(true);}
       else if(mode==='forgot'){await store.submit(()=>store.api.requestRecovery(email));setAccepted(true);}
-      else{await store.reset({email,token,password});setToken('');setPassword('');setConfirmation('');navigate('/login?recovery=received',{replace:true});}
+      else{await store.reset({email,token,password});setToken('');setPassword('');setConfirmation('');setAccepted(true);}
     }catch(cause){setError(cause instanceof AuthApiError?cause.message:'Check your information before trying again.');}
     finally{submitting.current=false;}
   };
   const footer=<div className="flex flex-wrap justify-center gap-x-4 gap-y-2"><Link to="/login">Sign in</Link><Link to="/signup">Create account</Link>{mode==='login'&&<Link to="/forgot-password">Forgot password?</Link>}</div>;
-  if(accepted)return <AuthCard appearance="application" title={mode==='signup'?'Request received':'Check your email'} footer={footer}>
-    <p role="status" className="text-sm text-text-secondary">{mode==='signup'?'Your registration request was received. Sign in to continue. An existing account is left unchanged.':'If this email belongs to an account with verified email ownership, you’ll receive a code. Check your inbox and spam folder.'}</p>
+  if(accepted)return <AuthCard appearance="application" title={mode==='forgot'?'Check your email':'Request received'} footer={footer}>
+    <p role="status" className="text-sm text-text-secondary">{mode==='reset'?'Your reset request was received. Try signing in with the new password. If it doesn’t work, request a new email. If you are still signed in, return to your account and sign out first.':mode==='signup'?'Your registration request was received. Sign in to continue. An existing account is left unchanged.':'If this email belongs to an account with verified email ownership, you’ll receive a code. Check your inbox and spam folder.'}</p>
+    {mode==='reset'&&<div className="mt-4 flex flex-wrap gap-4 text-sm text-accent"><Link to="/account">Your account</Link><Link to="/forgot-password">Request another email</Link></div>}
     {mode==='forgot'&&<Link className="inline-block mt-4 text-sm text-accent" to="/reset-password">Enter email code</Link>}
   </AuthCard>;
   return <AuthCard appearance="application" title={titles[mode]} subtitle={mode==='reset'?'Paste the email code and set a password. Then sign in again.':mode==='forgot'?'Recovery is available for accounts with verified email ownership.':'Your account does not create or join a workspace automatically.'} footer={footer}>

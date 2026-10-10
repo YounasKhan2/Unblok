@@ -4,11 +4,12 @@
   "base": "1b619b189f0e7d89fc16f70ba766306354259eb6",
   "branch": "feat/fe-auth-01-integration",
   "headLocation": "PR metadata",
-  "status": "implemented for human review; browser/visual verification pending; not merged or deployed",
+  "status": "focused correction for human review; actual browser partial with same-context post-reset cookie failure; not merged or deployed",
+  "correction": {"reviewedHead":"f573a985ea591165a031db83de544217588837b6","evidence":"FE-AUTH-01-correction.json","headLocation":"PR metadata"},
   "environment": {"os":"Windows","bun":"1.4.2","nestjs":"11.2.7","prisma":"6.19.3","postgresql":"17.6","valkey":"8.1.3","mailpit":"local pinned 1.27.8"},
   "scope": {"backendProductionChanged":false,"schemaMigrationsChanged":false,"nexusFixturesChanged":false,"businessComponentsChanged":false,"workspaceApiImplemented":false,"externalPackageResolutionsChanged":false,"dependencyChange":"web uses existing @unblok/contracts workspace"},
   "authority": {"source":"strict server me response","csrf":"memory-only bootstrap token, reused until rejection/login rotation","cookies":"credentials include; reviewed backend unchanged","storage":"no real auth identity, password, proof or CSRF in localStorage/sessionStorage","mutationRetries":false,"demo":"explicit /demo basename, curated-data label, prototype providers excluded from live root"},
-  "verification": {
+  "originalVerification": {
     "focusedFrontend":{"passed":31,"failed":0,"files":4},
     "fullFrontend":{"passed":764,"failed":3,"files":54,"exit":1},
     "shippedClientRealHttp":{"passed":1,"failed":0,"assertions":125,"exit":0,"browserCookieJar":false,"testOnlyManualCookieJar":true},

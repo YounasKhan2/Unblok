@@ -6,6 +6,7 @@ export class AuthApiError extends Error {
   constructor(readonly status:number, message:string, readonly retryAfter?:number) {super(message);}
 }
 type Schema<T> = {parse(value:unknown):T};
+type Transport = (...args:Parameters<typeof fetch>)=>ReturnType<typeof fetch>;
 export function authOrigin(value:string, production:boolean) {
   if(!value) return '';
   const url=new URL(value);
@@ -18,8 +19,9 @@ export class AuthApi {
   private busy=false;
   private epoch=0;
   onUnauthorized=()=>{};
-  constructor(private readonly origin='',private readonly transport:typeof fetch=fetch) {}
+  constructor(private readonly origin='',private readonly transport:Transport=(...args)=>fetch(...args)) {}
   clear() {this.csrf=undefined;this.epoch++;}
+  invalidateRequests() {this.epoch++;}
   private async request<T>(path:string,schema:Schema<T>,body?:unknown):Promise<T> {
     const epoch=this.epoch;
     let response:Response;

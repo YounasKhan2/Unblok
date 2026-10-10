@@ -72,6 +72,8 @@ test('shipped frontend client: signup, login, restoration, mail verification/rec
   const other=f.client();console.info('FE HTTP: second session');await other.login({email,password});
   await s.logout(true);await other.refresh();expect(other.snapshot().status).toBe('anonymous');
   console.info('FE HTTP: login after logout-all');await s.login({email,password});await s.submit(()=>s.api.requestRecovery(email));
+  await s.reset({email,token:randomUUID()+'.'+'a'.repeat(43),password:'An unaccepted new private password'});
+  expect(s.snapshot().status).toBe('authenticated');
   const proof=await deliver(email,true),newPassword='A new long private frontend test password';
   const anonymous=f.client();await anonymous.refresh();await anonymous.reset({email,token:proof,password:newPassword});expect(anonymous.snapshot().status).toBe('anonymous');
   await s.refresh();expect(s.snapshot().status).toBe('anonymous');
