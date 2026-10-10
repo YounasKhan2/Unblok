@@ -45,3 +45,5 @@ This is an **initial repository-grounded audit**, not an exhaustive dependency g
 [Backend status and delivery roadmap](16-BACKEND-STATUS-AND-ROADMAP.md) tracks merged phases, outstanding business capabilities, known verification failures and future delivery order. **Update this tracker whenever merging an Unblok branch that changes backend progress**, including a dated change-log entry and the merge SHA when available. This is a status document and does not supersede the architecture/security contracts above.
 
 [BE-00I-A core authentication APIs](21-BE-00I-A-CORE-AUTHENTICATION.md) records real local credentials, six versioned auth handlers, strict CSRF/rate limits, additive credential migration and real HTTP/database/cache evidence. Implemented on the review branch; not merged, frontend-integrated or production-certified.
+
+BE-00I-B review implementation: [secure email verification](22-BE-00I-B-EMAIL-VERIFICATION.md), pending human review; not merged/deployed.

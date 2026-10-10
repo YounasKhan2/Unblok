@@ -1,4 +1,5 @@
 import type { Prisma, WorkspaceRole, RecordStatus } from '@prisma/client';
+import { verificationAction, type VerificationKey } from './email-verification';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import type { Database } from './index';
 import { AuthFences, AuthDeniedError, AuthUnavailableError, lockAuthority, type PrincipalAuthority, type SessionVerifier } from './auth-fences';
@@ -110,7 +111,7 @@ export class Tenancy {
   #principals = new WeakMap<VerifiedPrincipal, PrincipalAuthority>();
   #sessionRequest = new AsyncLocalStorage<VerifiedPrincipal>();
   #fences: AuthFences;
-  constructor(private readonly database: Database, private readonly verifier: IdentityVerifier, private readonly policy: AuthorizationPolicy = denyAll, private readonly sessions?: SessionVerifier) {
+  constructor(private readonly database: Database, private readonly verifier: IdentityVerifier, private readonly policy: AuthorizationPolicy = denyAll, private readonly sessions?: SessionVerifier, private readonly verificationKey?: VerificationKey) {
     this.#fences = new AuthFences(database);
   }
   private mint(authority: PrincipalAuthority): VerifiedPrincipal {
@@ -147,8 +148,22 @@ export class Tenancy {
   }
 
   read<T>(principal: VerifiedPrincipal, workspaceId: string, run: (queries: TenantQueries) => Promise<T>) { return this.scoped(principal, workspaceId, 'read', run); }
+  async emailVerification(principal: VerifiedPrincipal, action: 'request' | 'confirm' | 'status', token?: string) {
+    const authority = this.#principals.get(principal);
+    if (!authority?.session || !this.verificationKey) throw new TenantAccessError();
+    this.assertPrincipal(principal, authority);
+    try { return await this.database.transaction(async tx => {
+      await tx.$executeRaw`SET LOCAL lock_timeout = '1500ms'`; await tx.$executeRaw`SET LOCAL statement_timeout = '4000ms'`;
+      this.assertPrincipal(principal, authority); await lockAuthority(tx, authority);
+      const result = await verificationAction(tx, authority, this.verificationKey!, action, token);
+      await lockAuthority(tx, authority); this.assertPrincipal(principal, authority); return result;
+    }); } catch (error) {
+      if (error instanceof AuthDeniedError || error instanceof TenantAccessError) throw new TenantAccessError();
+      throw new AuthUnavailableError();
+    }
+  }
   // Global self-profile only; no memberships, grants or raw models exposed.
-  async currentUser(principal: VerifiedPrincipal): Promise<Readonly<{ id: string; name: string; email: string | null }>> {
+  async currentUser(principal: VerifiedPrincipal): Promise<Readonly<{ id: string; name: string; email: string | null; emailVerified: boolean }>> {
     const authority = this.#principals.get(principal);
     if (!authority || !authority.session) throw new TenantAccessError();
     this.assertPrincipal(principal, authority);
@@ -157,8 +172,10 @@ export class Tenancy {
       await tx.$executeRaw`SET LOCAL statement_timeout = '4000ms'`;
       this.assertPrincipal(principal, authority); await lockAuthority(tx, authority);
       const row = await tx.user.findUniqueOrThrow({ where: { id: authority.userId }, select: { id: true, name: true, email: true } });
+      this.assertPrincipal(principal, authority);
+      const credential = await tx.passwordCredential.findUnique({ where: { identityId: authority.identityId }, select: { email: true, emailVerifiedAt: true } });
       await lockAuthority(tx, authority); this.assertPrincipal(principal, authority);
-      return Object.freeze(row);
+      return Object.freeze({ ...row, email: credential?.email ?? row.email, emailVerified: credential?.emailVerifiedAt !== null && credential?.emailVerifiedAt !== undefined });
     }); } catch (error) {
       if (error instanceof AuthDeniedError || error instanceof TenantAccessError) throw new TenantAccessError();
       throw new AuthUnavailableError();

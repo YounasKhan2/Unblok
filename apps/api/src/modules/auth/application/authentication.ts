@@ -13,7 +13,7 @@ export interface Credentials {
   lookup(email: string): Promise<StoredCredential | null>;
   confirm(snapshot: StoredCredential): Promise<boolean>;
 }
-export type AuthAction = 'signup' | 'login' | 'csrf' | 'logout' | 'logout-all';
+export type AuthAction = 'signup' | 'login' | 'csrf' | 'logout' | 'logout-all' | 'email-request' | 'email-confirm';
 export interface AuthLimits { consume(action: AuthAction, ip: string, email?: string): Promise<{ allowed: boolean; retryAfter: number }> }
 export class AuthRateError extends Error { constructor(readonly retryAfter: number) { super('Authentication rate exceeded'); } }
 
@@ -56,9 +56,19 @@ export class Authentication {
   }
   async csrf(req: Request) { await this.budget(req, 'csrf'); return { csrf: await this.sessions().bootstrap(req, true) }; }
   async logout(req: Request, all = false) { await this.budget(req, all ? 'logout-all' : 'logout'); return this.sessions().logout(req, all); }
+  async emailVerification(req: Request, action: 'request' | 'confirm' | 'status', token?: string) {
+    const tenancy = this.#tenancy; if (!tenancy) throw new AuthUnavailableError();
+    const verified = await this.sessions().withRequest(req, async principal => {
+      // Account namespace is server-owned, not an email/identity supplied by client.
+      const user = await tenancy.currentUser(principal);
+      if (action !== 'status') await this.budget(req, action === 'request' ? 'email-request' : 'email-confirm', user.id);
+      return tenancy.emailVerification(principal, action, token);
+    });
+    return action === 'status' ? { emailVerified: verified } : { status: 'accepted' as const };
+  }
   async me(req: Request) {
     const tenancy = this.#tenancy; if (!tenancy) throw new AuthUnavailableError();
     const row = await this.sessions().withRequest(req, principal => tenancy.currentUser(principal));
-    return { user: { id: row.id, name: row.name, email: row.email, emailVerified: false as const } };
+    return { user: { id: row.id, name: row.name, email: row.email, emailVerified: row.emailVerified } };
   }
 }

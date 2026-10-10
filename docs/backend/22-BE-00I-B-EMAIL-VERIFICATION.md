@@ -1,0 +1,70 @@
+# BE-00I-B - Secure email ownership verification
+
+Implemented on `feat/be-00i-b-email-verification`, awaiting human review; not merged, deployed or production-certified. Exact clean base: `b41b6cc4670cd3ecf8bd14d1019311771baadb8b`, latest fetched origin/main containing PR #30 merge and tracker maintenance. Final head is recorded in the PR rather than self-referential source. Reviewed backend documents14-21 and merged BE-00G/H/I-A contracts. Their current code takes precedence over historical planning labels.
+
+## API contracts and authority
+
+All three handlers are exact server-owned AuthController references in the existing foundation guard. Other business handlers still fail closed. Each uses fresh Valkey session verification plus instance-owned request-bound principals; Tenancy revalidates enabled user, identity, epoch, SID/family/generation and expiry in PostgreSQL before and after transaction work. User/family locks precede credential/challenge locks. No session role, verification flag or browser identity is trusted.
+
+| Endpoint | Input / result |
+|---|---|
+| POST /api/v1/auth/email-verification/request | Strict JSON `{}`, authenticated password account, Origin/CSRF.202 `{status:"accepted"}` whether pending or already verified. No token/recipient/challenge ID returned. |
+| POST /api/v1/auth/email-verification/confirm | Strict JSON `{token}`; authenticated same password credential, Origin/CSRF.200 `{status:"accepted"}` for valid, wrong, expired, canceled, replayed or already-verified proofs. Status is independently available to the authenticated owner. |
+| GET /api/v1/auth/email-verification/status | Fresh authenticated authority.200 `{emailVerified:boolean}` read from the primary bound credential. No cacheable response. |
+
+Anonymous, nonexistent/forged session and disabled authority receive the existing generic401; there is no public email-address lookup or client-selected account. Invalid bodies400, CSRF/origin403, exhausted budgets429, unavailable/unknown transaction outcomes503. These generic contracts reduce enumeration; perfect timing indistinguishability is not claimed. Account creation/duplicate signup is unchanged. A contact-email coincidence never links identities or grants a membership. `/me` now reports authoritative credential ownership and uses its immutable credential email; its boolean schema broadens from the earlier literalfalse intentionally. A BE-00I-A privileged-SQL fixture assertion updates to true for the durable stamped fact, retaining the zero-membership assertion.
+
+## Additive migration and one-use proof
+
+`20261010060000_email_verification` is seventh. All six existing migrations remain byte-identical. It adds the redundant unique immutable credential tuple needed for the composite identity/email FK, `email_verification_challenges`, and a one-to-one `email_verification_outbox`. There is no backfill, account conversion, runtime DDL or workspace grant.
+
+Challenge: server UUID, exact immutable identity/email FK, current auth epoch, key version ID, keyed SHA256 digest, primary issuance/expiry, monotonic attempt count, consumed/canceled times. SQL bounds lifetime to15minutes and attempts to10; forbids rewriting identity/email/epoch/key/digest/times, reducing attempts, reopening terminal rows or deleting evidence. Confirmation serializes on the credential, compares equal-length keyed digests in constant time, then atomically increments attempts/consumes only where primary `clock_timestamp()` is still before expiry and the row is unused/uncanceled/below limit. The same transaction stamps `emailVerifiedAt` with consumption time and revalidates existing authority before completion. Replay never stamps again. Concurrent serializable conflicts return unavailable without partial writes; retrying the HTTP operation is safe.
+
+A server cryptographic UUID plus a separate256-bit verification secret feed a domain-separated HMAC-SHA256 PRF over key ID, challenge ID, identity, immutable email and epoch. Proof is `uuid.43-character-base64url-MAC`. A separately domain-separated HMAC digest of the whole proof is persisted. No plaintext proof is stored in PostgreSQL, a BullMQ job, outbox, source, logs, evidence or URL/query/analytics. The worker can reconstruct the exact same unpredictable proof from durable metadata and the independent key; independent API/worker signing configuration must match. This is deliberate keyed reconstruction, not an unkeyed hash or derivable public token. [HMAC specification](https://www.rfc-editor.org/rfc/rfc2104) defines the primitive; application domain separation/binding is this implementation's design.
+
+Key ID and key must change together for rotation. Older-key challenges fail closed and new issuance cancels obsolete candidates. A same-version worker-key mismatch is detected against the persisted digest before sending, leaving a recoverable leased record. No multi-key fallback, automatic secret rotation or restoration override exists. Loss/inconsistent deployment of keys can make pending proofs unusable; requests under a new key ID safely issue replacements. Protect keys with a production secret manager; key compromise plus metadata exposes pending proofs, not a new workspace grant. Primary/outbox restoration must preserve the BE-00G epoch/session namespace/key recovery rules.
+
+## Transactional outbox and asynchronous delivery
+
+Issuance inserts challenge and outbox atomically; it sends nothing. Retried issuance reuses the active same-key/current-epoch challenge until it expires/is exhausted, so uncertain commit acknowledgements do not generate uncontrolled email jobs. The separate existing worker process polls PostgreSQL once per second using a narrow privileged VerificationDelivery instance constructed only in worker bootstrap. A new negative architecture fixture forbids direct/disguised delivery imports in other jobs. Worker main receives only named Database/VerificationDelivery imports; AuthFences/AccountCredentials and namespaces remain forbidden there.
+
+Dispatcher leases one due record with `FOR UPDATE SKIP LOCKED`, checks current credential binding, enabled user/epoch, unverified state and live unused challenge, and commits a30s lease before sending. Maximum five delivery claims,30s retry delay,2s transport acknowledgement deadline. HTTP abort/timeout is **not cancellation or proof of nondelivery**. Unknown delivery retries the identical proof; duplicates and delayed messages cannot extend expiry, reopen consumption, change account binding or bypass current primary authority. A stale worker acknowledgement uses lease-ID compare-and-set and cannot overwrite a newer lease. Crashes leave durable records recoverable after the lease. Exhausted, expired, canceled, verified, disabled or stale-epoch work is not dispatched; retention/reconciliation and alerting are deployment requirements. A fresh issuance after expiry/attempt exhaustion is permitted within account/IP budgets.
+
+Local delivery uses the existing loopback Mailpit JSON Send API, documented by [Mailpit](https://mailpit.axllent.org/docs/usage/sending-messages/). Production configuration requires authenticated HTTPS with verified TLS, no URL credentials/query/fragment, fixed `/api/v1/send` path, paired Basic credentials and validated sender. It supports a reviewed Mailpit-compatible relay/gateway contract; it does not install or certify an external delivery provider. Redirects are forbidden, response bodies are discarded, and errors log only an allowlisted event. Mail acknowledgement is neither inbox arrival nor recipient authentication. The message contains a short-lived manual proof for the authenticated same account, without a token URL or new frontend workflow.
+
+Email transport necessarily delivers plaintext proof to the recipient mailbox. Mailpit intentionally stores test emails; this is recipient mail storage, not application challenge/outbox persistence. Tests delete only owned messages, without claiming forensic secure erasure. The pinned existing Mailpit version remains local-only, and Mailpit access/retention/upgrades must be reviewed separately; it is not approved as a publicly exposed production service. HTTPS relay TLS, SMTP downstream delivery, SPF/DKIM/DMARC, secrets/ACLs, mailbox confidentiality and message retention need deployment review.
+
+No new external package is installed or upgraded. Worker declares the already-existing database workspace dependency; the lock change is that single workspace edge, and frozen install verifies no package changes. Fresh local initializer generates/reuses matching independent API/worker verification keys without overwriting existing files; inconsistent existing keys fail rather than rotate. Existing environments need explicit reviewed configuration. Production has no loopback/default key fallback.
+
+## Abuse and security evidence
+
+Request: account5/hour, IP10/hour. Confirm: account10/15minutes, IP30/15minutes. Keys are server-owned current user IDs under domain-specific actions, HMAC-protected by existing limiter infrastructure; fixed-window Lua remains atomic per key. All syntactically valid attempts count, even unknown/denied outcomes, without refunds. The durable10-attempt challenge cap remains authoritative across cache loss/new instances. Malformed bodies stop at Zod plus existing coarse IP throttle. Status uses the existing coarse IP throttle. Signing/namespace rotation, cache eviction/flush or restoration can reset cache budgets; primary challenge attempts and expiry still apply. NAT fairness and distributed abuse/load require calibration.
+
+Real PostgreSQL/Valkey/HTTP/Mailpit tests cover fresh migration/replay/schema equality; actual mail plus successful primary stamp; no plaintext in persistence/logs; duplicate issuance; concurrent redemption and unchanged replay evidence; transport refusal and acknowledgement lost after real delivery; same proof retried; credential isolation/forgery and durable attempt cap; delayed stale-epoch/disabled messages; expiration and SQL rewrite rejection; strict body/CSRF/Origin; absent/invalid/deleted cache; database/Valkey outages; worker lease expiry/stale acknowledgement; key rotation; request account/IP budgets; confirmation with an already-minted principal after concurrent logout-all. Scheduling/time fault injection changes only disposable test rows, with production30s lease/retry and15minute TTL unchanged. The expiration test administratively adjusts timestamps with the guard disabled only inside an owned test transaction, then restores it; normal SQL extension remains rejected.
+
+Exact final matrix and sanitized failed observations: [verification JSON](evidence/BE-00I-B-verification.json). Historical SIGTERM143, queue notification timeout/late error, dependency advisory and earlier BE-00F/NEXUS failures are not hidden or marked resolved. Initial development: cross-workspace test placement was rejected by architecture (moved to the established root integration location); BigInt serialization and Prisma thenable fixture assertions failed (6pass/2fail,190 assertions,15.95s); a root reflect-metadata import did not resolve (removed; production app owns that dependency). These were corrected without weaker assertions or timeout increases.
+
+## Final verification matrix
+
+| Gate | Result |
+|---|---|
+| Real PostgreSQL/Valkey/HTTP/Mailpit verification |12 pass,303 assertions;16.28s|
+| Authentication |26 pass,812 assertions;17.75s|
+| Session security |25 pass,254 assertions;16.53s|
+| Auth fences |24 pass,134 assertions;9.88s|
+| Tenancy/upgrade |34 pass,132 assertions;15.03s|
+| Backend including architecture |97 pass,247 assertions;10.41s|
+| Database integration |2 pass,5 assertions;1.192s|
+| Architecture/typecheck/lint/build |Pass;346 files,958 edges,zero violations;API49.92KB/worker4.29KB|
+| Schema/migration/frozen install/docs/diff |Pass;7 migrations,no pending;no external package change|
+| Infrastructure |**4 pass,1 fail,1 between-test error**,14 assertions;5.67s;unchanged5s queue timeout|
+| Lifecycle |**1 pass,2 fail**,7 assertions;3.51s;API/workerSIGTERM143|
+| Audit |**Exit1**,existing high deepmerge-ts advisory|
+
+Final lint also caught an unused local binding in the same-key mismatch fixture; it was removed and lint passed. Final12-test evidence includes the added pre-send consistency check. Owned databases/cache keys and Mailpit messages were zero at cleanup; no shared queue purge or forensic erasure is claimed.
+
+## Human review and remaining requirements
+
+Review the new SQL/keyed reconstruction/worker capability boundary, actual runtime grants (including ownership-stamp privileges), concurrency and fail-closed evidence before merge. Existing unrestricted migration-owner test credentials are disposable local infrastructure, not production runtime approval. Browser/TLS/CSRF/ingress deployment, production mail gateway end-to-end delivery, token/mailbox logging controls, clock synchronization, key/namespace recovery, outbox alerts/exhaustion reconciliation, retention and performance/HA remain unresolved. Verification proves mailbox receipt plus current password-account/session authority only; it does not establish legal identity, trustworthiness, workspace eligibility or privileged membership. No password recovery, OAuth/MFA, implicit linking, frontend wiring, marketing changes or BE-00I-C implementation.
+
+Stop at human review. Do not merge or start BE-00I-C.

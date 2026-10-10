@@ -34,6 +34,7 @@
     "test:backend:tenancy": "bun --env-file=apps/api/.env test scripts/backend/tenancy.test.ts",
     "test:backend:auth-fences": "bun --env-file=apps/api/.env test scripts/backend/auth-fences.test.ts",
     "test:backend:sessions": "bun --env-file=apps/api/.env test apps/api/verification/session-integration.test.ts",
+    "test:backend:email-verification": "bun --env-file=apps/api/.env test scripts/backend/email-verification.test.ts",
     "test:backend:authentication": "bun --env-file=apps/api/.env test apps/api/verification/authentication-integration.test.ts"
   },
   "packageManager": "bun@1.4.2",

@@ -49,3 +49,22 @@ export const loadApiConfig = (env: Record<string, string | undefined>) => parse(
 export const loadWorkerConfig = (env: Record<string, string | undefined>) => parse(workerSchema, env);
 export type ApiConfig = ReturnType<typeof loadApiConfig>;
 export type WorkerConfig = ReturnType<typeof loadWorkerConfig>;
+
+// Independent domain key; same id/key on API and dispatcher. Rotation invalidates
+// pending old-key proofs; never rotate silently during restoration.
+export function loadVerificationKey(env: Record<string, string | undefined>) {
+  return parse(z.object({ id: z.string().regex(/^[a-z0-9-]{1,40}$/), secret: z.string().regex(/^[0-9a-f]{64}$/) }),
+    { id: env.EMAIL_VERIFICATION_KEY_ID, secret: env.EMAIL_VERIFICATION_KEY });
+}
+export function loadVerificationMail(env: Record<string, string | undefined>) {
+  const schema = z.object({ endpoint: z.url(), from: z.email(), username: z.string().optional(), password: z.string().optional() });
+  const parsed = schema.safeParse({ endpoint: env.EMAIL_MAIL_ENDPOINT, from: env.EMAIL_MAIL_FROM, username: env.EMAIL_MAIL_USERNAME, password: env.EMAIL_MAIL_PASSWORD });
+  if (!parsed.success) throw new Error('Invalid verification mail configuration');
+  const result = parsed.data, url = new URL(result.endpoint);
+  if (!!result.username !== !!result.password || (result.username && /[:\r\n]/.test(result.username))) throw new Error('Invalid verification mail credentials');
+  if (url.username || url.password || url.search || url.hash || url.pathname !== '/api/v1/send') throw new Error('Invalid verification mail endpoint');
+  if (env.NODE_ENV === 'production') {
+    if (url.protocol !== 'https:' || !result.username || !result.password) throw new Error('Verification mail requires authenticated HTTPS');
+  } else if (url.protocol !== 'http:' || url.hostname !== '127.0.0.1') throw new Error('Development mail requires loopback HTTP');
+  return result;
+}

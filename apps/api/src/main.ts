@@ -1,5 +1,5 @@
 import { AccountCredentials, AuthFences, Database, Tenancy, denyAll } from '@unblok/database';
-import { closeRedis, createLogger, createRedis, loadApiConfig, registerShutdown, withDeadline } from '@unblok/backend-runtime';
+import { loadVerificationKey, closeRedis, createLogger, createRedis, loadApiConfig, registerShutdown, withDeadline } from '@unblok/backend-runtime';
 import { createApp } from './app';
 import { RedisRateLimiter } from './security';
 import { connectSessionStore, sessionSettings, Sessions } from './modules/sessions';
@@ -29,7 +29,7 @@ async function main() {
       create: input => fences.create(input), rotate: (evidence, sid, idle) => fences.rotate(evidence, sid, idle),
       revoke: evidence => fences.revoke(evidence), revokeAll: userId => fences.revokeAll(userId),
     }, assertion => authentication.resolveIdentity(assertion));
-    const tenancy = new Tenancy(database, { verify: async () => null }, denyAll, sessions);
+    const tenancy = new Tenancy(database, { verify: async () => null }, denyAll, sessions, loadVerificationKey(process.env));
     sessions.bind(tenancy); authentication.bind(sessions, tenancy);
     const server = await createApp(config, resources, new RedisRateLimiter(redis, config.RATE_LIMIT_MAX, config.RATE_LIMIT_WINDOW_MS), logger, sessions, authentication);
     registerShutdown(server.close, config.SHUTDOWN_TIMEOUT_MS, logger);

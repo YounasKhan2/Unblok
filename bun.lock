@@ -71,6 +71,7 @@
       "dependencies": {
         "@unblok/backend-runtime": "workspace:*",
         "@unblok/contracts": "workspace:*",
+        "@unblok/database": "workspace:*",
         "bullmq": "5.81.5",
       },
     },

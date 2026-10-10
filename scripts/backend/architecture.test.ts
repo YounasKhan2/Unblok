@@ -242,3 +242,12 @@ describe('deny-default foundation cannot become a public business fixture', () =
     const rules = f.rules(); expect(rules).toContain('test-leak'); expect(rules).toContain('bootstrap-import'); expect(rules).toContain('computed-load');
   });
 });
+
+
+test('outbox delivery is private to worker bootstrap; direct and disguised business imports are rejected', () => {
+  for (const source of ['import { VerificationDelivery } from "@unblok/database";', 'import { Tenancy } from "@unblok/database"; const delivery = new Tenancy();']) {
+    const f = fixture(); f.put('packages/database/src/email-verification.ts', 'export class VerificationDelivery {}');
+    f.put('packages/database/src/index.ts', 'export { VerificationDelivery, VerificationDelivery as Tenancy } from "./email-verification";');
+    f.put('apps/worker/src/jobs/other/application/send.ts', source); expect(f.rules()).toContain('raw-persistence');
+  }
+});
