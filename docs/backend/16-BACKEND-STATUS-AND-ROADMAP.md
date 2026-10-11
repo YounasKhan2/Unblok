@@ -1,7 +1,7 @@
 # Unblok — Backend Status and Delivery Roadmap
 
 **Last updated:** 2026-10-11
-**Repository milestone:** BE-00I-C / PR #32 merged as `bdae8efc67ff19933b103b45fd868943945b1f70` (password recovery; frontend integration and production certification pending)  
+**Repository milestone:** FE-AUTH-01 / PR #33 merged as `48f0607fa89122eaf1f189d87934a00be2b13366` (frontend auth integration and revoked-cookie recovery; production certification pending)  
 **Purpose:** Living, repository-grounded backend delivery tracker. Update when an approved backend PR is merged. This is a status tracker, **not** a replacement for the implementation/security/database architecture contracts in this folder.
 
 > **Status rule:** Check actual merge status and current code before editing. Record implemented vs planned vs verified separately. Do not mark a feature complete solely because a schema, interface, design, or proposal exists. Keep known test failures visible. Update this tracker **with every future backend branch merge**, preferably as part of the reviewed PR before merge; if the merge SHA is not known until afterward, follow with a status-only commit on `main` and record it. Record the PR, merge SHA, changes, new gaps, and new test outcomes. For other Unblok branches, update the relevant status section when they change backend deliverables or dependencies.
@@ -104,6 +104,7 @@ When reviewing and merging **any future Unblok PR that affects backend progress*
 
 | Date | Repository milestone | Effect |
 | --- | --- | --- |
+| 2026-10-11 | FE-AUTH-01 [PR #33](https://github.com/YounasKhan2/Unblok/pull/33), merge `48f0607fa89122eaf1f189d87934a00be2b13366` | Real frontend authentication and Chromium same-context revoked-cookie recovery merged; local verification only. Next BE-API-00 enterprise API architecture gate before Workspace APIs; historical failures and production validation remain open. |
 | 2026-10-10 | BE-00I-A [PR #30](https://github.com/YounasKhan2/Unblok/pull/30), merge `4b824b9b5a4bb96709e49b6523c2977273d36d8d` | Core signup/login/logout/logout-all/me merged; 26 auth tests reported passing; email verification and production certification pending |
 | 2026-10-10 | BE-00H [PR #29](https://github.com/YounasKhan2/Unblok/pull/29), merge `6499ccbe587a1eb8c1d39826f1b840a634a91f8a` | Bounded sessions, verifier, CSRF/CORS and failure cleanup merged; 25 security tests reported passing; not deployed/certified |
 | 2026-10-10 | BE-00C [PR #24](https://github.com/YounasKhan2/Unblok/pull/24), merge `66d419e6c058208605f895b74da77ab37995df21` | Tenant foundation complete; business APIs remain outstanding |
@@ -111,3 +112,9 @@ When reviewing and merging **any future Unblok PR that affects backend progress*
 | 2026-10-10 | BE-00E [PR #26](https://github.com/YounasKhan2/Unblok/pull/26), merge `83a52e3d230659dc612ebb9591985649c7f79ef4` | Session, CSRF, revocation, verifier and authorization planning merged. No auth implementation or runtime adapter certification; reported 45 architecture tests/typecheck pass, full suites not rerun |
 | 2026-10-10 | BE-00G [PR #28](https://github.com/YounasKhan2/Unblok/pull/28), merge `0059c18a9b16ea1c2e9fc4049f0a2642eaafb799` | PostgreSQL auth epochs/session-family fences and request-bound principals merged; 24 security tests reported passing, not production session-certified |
 | 2026-10-10 | BE-00F [PR #27](https://github.com/YounasKhan2/Unblok/pull/27), merge `f4fc4e1ef1ae18a5dfc7dab94645bccde1d937bf` | Isolated compatibility evidence merged: B conditionally preferred, 53/1 comparison with known A cleanup failure, B 29/0, both stock stores late-write resurrection, bounded callback does not cancel writes; PostgreSQL fences and production security remain unimplemented |
+
+## FE-AUTH-01 handoff (2026-10-11)
+
+[PR #33](https://github.com/YounasKhan2/Unblok/pull/33) merged as `48f0607fa89122eaf1f189d87934a00be2b13366`. Existing frontend auth is connected to real backend signup/login, verification, recovery, logout and session restoration. The F4 correction durably retires revoked presented SIDs before fresh anonymous CSRF bootstrap; local Chromium same-context password-reset/re-login passed. NEXUS remains a separately labelled fixture demo. Full frontend had 771 passing tests and three historical NEXUS failures; infrastructure queue/SIGTERM/audit and migration timing issues remain documented. No production deployment or security certification is claimed.
+
+**Next approval gate: BE-API-00 enterprise API architecture and performance contracts.** Design and review bounded resource/projection endpoints, keyset pagination, tenant authorization, graph query boundaries, query/index budgets, load methodology and compatibility before Workspace business implementation. Keep frontend UX frozen and demo fixtures separate.
