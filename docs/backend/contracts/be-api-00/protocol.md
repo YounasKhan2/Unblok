@@ -2,6 +2,8 @@
 
 Design only. [ADR](../../24-BE-API-00-ENTERPRISE-CONTRACTS.md) and [registry](registry.json) establish scope/status.
 
+[Workspace MVP](workspaces.md), [explicit policy](authorization.md) and [revision/cursor/idempotency lifecycle](lifecycle.md) complete this contract. Lifecycle retention rules supersede any ambiguous24h deletion implication below: full results are retained at least24h, minimal tombstones prevent same-key re-execution until a separately approved purge policy. No such infrastructure is implemented.
+
 ## Scope, versions and payloads
 
 Use `/api/v1`. UUIDs select immutable resources; slug/team/project keys and derived issue keys are display/navigation aliases. Resolve aliases within explicit workspace scope, never globally. Nested routes independently validate parent-child relationships. Global `/workspaces` lists only the principal's ACTIVE memberships. My Work derives the user's membership from the principal, never a submitted user ID.

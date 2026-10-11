@@ -17,3 +17,15 @@ All totals use identical authorized filter/scope. Unknown capability is distinct
 Lazy metadata consists of separately paged team/project/member lookup DTOs≤100 each, never a universal user list. No badge endpoint sprawl: row owns lightweight references; overview owns coherent sections. Writes stay resource-based then invalidate affected projections.
 
 Later UX ledger: desktop/mobile light/dark, loading/empty/error/403/429/503, URL filters, drawer/J/K, focus across paging, optimistic conflict rollback, account/workspace switches with requests pending, and no NEXUS fallback. This phase audits source and does not claim browser recertification.
+
+## Workspace vertical-slice additions (all proposed)
+
+| Surface | Initial/on-action requests | Bounds, loading and authorization |
+| --- | --- | --- |
+| Selected workspace/shell context |1 GET workspace detail containing own role/capabilities; standalone `/me` only for explicit later refresh |64KiB, no nested business records; selection clears prior-tenant content;404revocation removes selection,503keeps unavailable state; hints rechecked server-side on actions |
+| Membership management |1 GET scoped memberships; pages on demand |50default/100max,128KiB, joinedAt/id keyset, status filter; ADMIN management grant only; spinner/error distinct from empty; no contact emails |
+| Workspace onboarding creation |1 POST workspace with CSRF + Idempotency-Key, then selected detail |201≤64KiB, initial creator ADMIN only after atomic commit; duplicate submit coalesced; unknown outcome reconciles same key, no fixture workspace |
+| Invitation management |1 POST scoped invitation |202generic≤64KiB; no immediate membership/recipient-existence inference; bounded role choices under approved admin policy, no ADMIN elevation |
+| Invitation redemption |1 POST account-scoped acceptance, then GET workspace list and own detail only if server lists the membership |202generic≤64KiB; verification required, no client role/identity; accepted≠joined; suspended accounts/memberships never revived; preserve loading/error states without mock fallback |
+
+[Workspace contracts](workspaces.md) define exact proposed transitions, pagination and slice dependencies. These reads are coherent context/management operations, not a badge endpoint per capability. No frontend flow is implemented or redesigned by this correction.

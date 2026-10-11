@@ -1,0 +1,529 @@
+{
+  "status": "synthetic-design-decision-model-not-runtime-proof",
+  "cases": [
+    {
+      "name": "valid-list-cursor",
+      "facts": {
+        "kind": "cursor",
+        "authority": "active",
+        "signatureValid": true,
+        "keyState": "active",
+        "issued": 100,
+        "expires": 1000,
+        "now": 200,
+        "graph": false,
+        "bindingMatch": true,
+        "policyRevisionMatch": true,
+        "dataRevisionMatch": true,
+        "requiresDataRevision": false
+      },
+      "expected": "continue"
+    },
+    {
+      "name": "verify-only-key-before-expiry",
+      "facts": {
+        "kind": "cursor",
+        "authority": "active",
+        "signatureValid": true,
+        "keyState": "verify-only",
+        "issued": 100,
+        "expires": 1000,
+        "now": 200,
+        "graph": false,
+        "bindingMatch": true,
+        "policyRevisionMatch": true,
+        "dataRevisionMatch": true,
+        "requiresDataRevision": false
+      },
+      "expected": "continue"
+    },
+    {
+      "name": "deleted-last-row-tuple-retained",
+      "facts": {
+        "kind": "cursor",
+        "authority": "active",
+        "signatureValid": true,
+        "keyState": "active",
+        "issued": 100,
+        "expires": 1000,
+        "now": 200,
+        "graph": false,
+        "bindingMatch": true,
+        "policyRevisionMatch": true,
+        "dataRevisionMatch": true,
+        "requiresDataRevision": false,
+        "lastRowDeleted": true
+      },
+      "expected": "continue"
+    },
+    {
+      "name": "new-insert-not-a-snapshot",
+      "facts": {
+        "kind": "cursor",
+        "authority": "active",
+        "signatureValid": true,
+        "keyState": "active",
+        "issued": 100,
+        "expires": 1000,
+        "now": 200,
+        "graph": false,
+        "bindingMatch": true,
+        "policyRevisionMatch": true,
+        "dataRevisionMatch": true,
+        "requiresDataRevision": false,
+        "concurrentInsert": true
+      },
+      "expected": "continue"
+    },
+    {
+      "name": "mutable-filter-update-live-semantics",
+      "facts": {
+        "kind": "cursor",
+        "authority": "active",
+        "signatureValid": true,
+        "keyState": "active",
+        "issued": 100,
+        "expires": 1000,
+        "now": 200,
+        "graph": false,
+        "bindingMatch": true,
+        "policyRevisionMatch": true,
+        "dataRevisionMatch": true,
+        "requiresDataRevision": false,
+        "concurrentFilterUpdate": true
+      },
+      "expected": "continue"
+    },
+    {
+      "name": "tampered-signature",
+      "facts": {
+        "kind": "cursor",
+        "authority": "active",
+        "signatureValid": false,
+        "keyState": "active",
+        "issued": 100,
+        "expires": 1000,
+        "now": 200,
+        "graph": false,
+        "bindingMatch": true,
+        "policyRevisionMatch": true,
+        "dataRevisionMatch": true,
+        "requiresDataRevision": false
+      },
+      "expected": "invalid-cursor"
+    },
+    {
+      "name": "retired-key",
+      "facts": {
+        "kind": "cursor",
+        "authority": "active",
+        "signatureValid": true,
+        "keyState": "retired",
+        "issued": 100,
+        "expires": 1000,
+        "now": 200,
+        "graph": false,
+        "bindingMatch": true,
+        "policyRevisionMatch": true,
+        "dataRevisionMatch": true,
+        "requiresDataRevision": false
+      },
+      "expected": "invalid-cursor"
+    },
+    {
+      "name": "expired",
+      "facts": {
+        "kind": "cursor",
+        "authority": "active",
+        "signatureValid": true,
+        "keyState": "active",
+        "issued": 100,
+        "expires": 1000,
+        "now": 1000,
+        "graph": false,
+        "bindingMatch": true,
+        "policyRevisionMatch": true,
+        "dataRevisionMatch": true,
+        "requiresDataRevision": false
+      },
+      "expected": "invalid-cursor"
+    },
+    {
+      "name": "excess-list-lifetime",
+      "facts": {
+        "kind": "cursor",
+        "authority": "active",
+        "signatureValid": true,
+        "keyState": "active",
+        "issued": 100,
+        "expires": 1001,
+        "now": 200,
+        "graph": false,
+        "bindingMatch": true,
+        "policyRevisionMatch": true,
+        "dataRevisionMatch": true,
+        "requiresDataRevision": false
+      },
+      "expected": "invalid-cursor"
+    },
+    {
+      "name": "actor-tenant-root-filter-sort-mismatch",
+      "facts": {
+        "kind": "cursor",
+        "authority": "active",
+        "signatureValid": true,
+        "keyState": "active",
+        "issued": 100,
+        "expires": 1000,
+        "now": 200,
+        "graph": false,
+        "bindingMatch": false,
+        "policyRevisionMatch": true,
+        "dataRevisionMatch": true,
+        "requiresDataRevision": false
+      },
+      "expected": "invalid-cursor"
+    },
+    {
+      "name": "policy-change",
+      "facts": {
+        "kind": "cursor",
+        "authority": "active",
+        "signatureValid": true,
+        "keyState": "active",
+        "issued": 100,
+        "expires": 1000,
+        "now": 200,
+        "graph": false,
+        "bindingMatch": true,
+        "policyRevisionMatch": false,
+        "dataRevisionMatch": true,
+        "requiresDataRevision": false
+      },
+      "expected": "cursor-stale"
+    },
+    {
+      "name": "graph-revision-change",
+      "facts": {
+        "kind": "cursor",
+        "authority": "active",
+        "signatureValid": true,
+        "keyState": "active",
+        "issued": 100,
+        "expires": 220,
+        "now": 200,
+        "graph": true,
+        "bindingMatch": true,
+        "policyRevisionMatch": true,
+        "dataRevisionMatch": false,
+        "requiresDataRevision": true
+      },
+      "expected": "cursor-stale"
+    },
+    {
+      "name": "membership-revoked-before-cursor-disclosure",
+      "facts": {
+        "kind": "cursor",
+        "authority": "revoked",
+        "signatureValid": true,
+        "keyState": "active",
+        "issued": 100,
+        "expires": 1000,
+        "now": 200,
+        "graph": false,
+        "bindingMatch": false,
+        "policyRevisionMatch": true,
+        "dataRevisionMatch": true,
+        "requiresDataRevision": false
+      },
+      "expected": "resource-unavailable"
+    },
+    {
+      "name": "primary-outage",
+      "facts": {
+        "kind": "cursor",
+        "authority": "unavailable",
+        "signatureValid": true,
+        "keyState": "active",
+        "issued": 100,
+        "expires": 1000,
+        "now": 200,
+        "graph": false,
+        "bindingMatch": true,
+        "policyRevisionMatch": true,
+        "dataRevisionMatch": true,
+        "requiresDataRevision": false
+      },
+      "expected": "unavailable"
+    },
+    {
+      "name": "atomic-confirmed-result-replay",
+      "facts": {
+        "kind": "idempotency",
+        "authority": "active",
+        "sameDigest": true,
+        "record": "committed",
+        "resultExpired": false,
+        "originalResolved": true,
+        "effectResultAtomic": true
+      },
+      "expected": "replay"
+    },
+    {
+      "name": "lost-acknowledgement-but-primary-result-exists",
+      "facts": {
+        "kind": "idempotency",
+        "authority": "active",
+        "sameDigest": true,
+        "record": "committed",
+        "resultExpired": false,
+        "originalResolved": true,
+        "effectResultAtomic": true,
+        "clientOutcome": "unknown"
+      },
+      "expected": "replay"
+    },
+    {
+      "name": "different-body-same-key",
+      "facts": {
+        "kind": "idempotency",
+        "authority": "active",
+        "sameDigest": false,
+        "record": "committed",
+        "resultExpired": false,
+        "originalResolved": true,
+        "effectResultAtomic": true
+      },
+      "expected": "idempotency-conflict"
+    },
+    {
+      "name": "same-key-original-in-flight",
+      "facts": {
+        "kind": "idempotency",
+        "authority": "active",
+        "sameDigest": true,
+        "record": "in-flight",
+        "resultExpired": false,
+        "originalResolved": false,
+        "effectResultAtomic": true
+      },
+      "expected": "in-progress"
+    },
+    {
+      "name": "absent-ledger-original-proven-aborted",
+      "facts": {
+        "kind": "idempotency",
+        "authority": "active",
+        "sameDigest": true,
+        "record": "absent",
+        "resultExpired": false,
+        "originalResolved": true,
+        "effectResultAtomic": true
+      },
+      "expected": "execute"
+    },
+    {
+      "name": "absent-ledger-original-unknown",
+      "facts": {
+        "kind": "idempotency",
+        "authority": "active",
+        "sameDigest": true,
+        "record": "absent",
+        "resultExpired": false,
+        "originalResolved": false,
+        "effectResultAtomic": true
+      },
+      "expected": "unavailable"
+    },
+    {
+      "name": "expired-result-tombstone",
+      "facts": {
+        "kind": "idempotency",
+        "authority": "active",
+        "sameDigest": true,
+        "record": "committed",
+        "resultExpired": true,
+        "originalResolved": true,
+        "effectResultAtomic": true
+      },
+      "expected": "result-expired"
+    },
+    {
+      "name": "revoked-membership-before-replay",
+      "facts": {
+        "kind": "idempotency",
+        "authority": "revoked",
+        "sameDigest": true,
+        "record": "committed",
+        "resultExpired": false,
+        "originalResolved": true,
+        "effectResultAtomic": true
+      },
+      "expected": "resource-unavailable"
+    },
+    {
+      "name": "effect-without-atomic-result",
+      "facts": {
+        "kind": "idempotency",
+        "authority": "active",
+        "sameDigest": true,
+        "record": "committed",
+        "resultExpired": false,
+        "originalResolved": true,
+        "effectResultAtomic": false
+      },
+      "expected": "invalid-contract"
+    },
+    {
+      "name": "earlier-bounded-read-holds-shared-lock",
+      "facts": {
+        "kind": "read-order",
+        "authority": "active",
+        "order": "read-first"
+      },
+      "expected": "earlier-read-may-finish"
+    },
+    {
+      "name": "revocation-holds-conflicting-lock-first",
+      "facts": {
+        "kind": "read-order",
+        "authority": "revoked",
+        "order": "revoke-first"
+      },
+      "expected": "resource-unavailable"
+    },
+    {
+      "name": "cross-actor-cursor-rejected",
+      "facts": {
+        "kind": "cursor",
+        "authority": "active",
+        "signatureValid": true,
+        "keyState": "active",
+        "issued": 100,
+        "expires": 1000,
+        "now": 200,
+        "graph": false,
+        "bindingMatch": false,
+        "policyRevisionMatch": true,
+        "dataRevisionMatch": true,
+        "requiresDataRevision": false,
+        "mismatchedBinding": "actor"
+      },
+      "expected": "invalid-cursor"
+    },
+    {
+      "name": "cross-operation-cursor-rejected",
+      "facts": {
+        "kind": "cursor",
+        "authority": "active",
+        "signatureValid": true,
+        "keyState": "active",
+        "issued": 100,
+        "expires": 1000,
+        "now": 200,
+        "graph": false,
+        "bindingMatch": false,
+        "policyRevisionMatch": true,
+        "dataRevisionMatch": true,
+        "requiresDataRevision": false,
+        "mismatchedBinding": "operation"
+      },
+      "expected": "invalid-cursor"
+    },
+    {
+      "name": "cross-workspace-cursor-rejected",
+      "facts": {
+        "kind": "cursor",
+        "authority": "active",
+        "signatureValid": true,
+        "keyState": "active",
+        "issued": 100,
+        "expires": 1000,
+        "now": 200,
+        "graph": false,
+        "bindingMatch": false,
+        "policyRevisionMatch": true,
+        "dataRevisionMatch": true,
+        "requiresDataRevision": false,
+        "mismatchedBinding": "workspace"
+      },
+      "expected": "invalid-cursor"
+    },
+    {
+      "name": "cross-root-cursor-rejected",
+      "facts": {
+        "kind": "cursor",
+        "authority": "active",
+        "signatureValid": true,
+        "keyState": "active",
+        "issued": 100,
+        "expires": 1000,
+        "now": 200,
+        "graph": false,
+        "bindingMatch": false,
+        "policyRevisionMatch": true,
+        "dataRevisionMatch": true,
+        "requiresDataRevision": false,
+        "mismatchedBinding": "root"
+      },
+      "expected": "invalid-cursor"
+    },
+    {
+      "name": "cross-filter-cursor-rejected",
+      "facts": {
+        "kind": "cursor",
+        "authority": "active",
+        "signatureValid": true,
+        "keyState": "active",
+        "issued": 100,
+        "expires": 1000,
+        "now": 200,
+        "graph": false,
+        "bindingMatch": false,
+        "policyRevisionMatch": true,
+        "dataRevisionMatch": true,
+        "requiresDataRevision": false,
+        "mismatchedBinding": "filter"
+      },
+      "expected": "invalid-cursor"
+    },
+    {
+      "name": "cross-projection-cursor-rejected",
+      "facts": {
+        "kind": "cursor",
+        "authority": "active",
+        "signatureValid": true,
+        "keyState": "active",
+        "issued": 100,
+        "expires": 1000,
+        "now": 200,
+        "graph": false,
+        "bindingMatch": false,
+        "policyRevisionMatch": true,
+        "dataRevisionMatch": true,
+        "requiresDataRevision": false,
+        "mismatchedBinding": "projection"
+      },
+      "expected": "invalid-cursor"
+    },
+    {
+      "name": "cross-sort-cursor-rejected",
+      "facts": {
+        "kind": "cursor",
+        "authority": "active",
+        "signatureValid": true,
+        "keyState": "active",
+        "issued": 100,
+        "expires": 1000,
+        "now": 200,
+        "graph": false,
+        "bindingMatch": false,
+        "policyRevisionMatch": true,
+        "dataRevisionMatch": true,
+        "requiresDataRevision": false,
+        "mismatchedBinding": "sort"
+      },
+      "expected": "invalid-cursor"
+    }
+  ]
+}

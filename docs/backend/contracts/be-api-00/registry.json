@@ -1704,6 +1704,283 @@
         "observedVisibleEdges"
       ],
       "additionalProperties": false
+    },
+    "Capabilities": {
+      "type": "object",
+      "properties": {
+        "readWorkspace": {
+          "type": "boolean"
+        },
+        "listMembers": {
+          "type": "boolean"
+        },
+        "inviteMembers": {
+          "type": "boolean"
+        },
+        "createTeam": {
+          "type": "boolean"
+        },
+        "writeIssues": {
+          "type": "boolean"
+        },
+        "writeDependencies": {
+          "type": "boolean"
+        },
+        "completeDependentIssues": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "readWorkspace",
+        "listMembers",
+        "inviteMembers",
+        "createTeam",
+        "writeIssues",
+        "writeDependencies",
+        "completeDependentIssues"
+      ],
+      "additionalProperties": false
+    },
+    "WorkspaceSelf": {
+      "type": "object",
+      "properties": {
+        "workspaceId": {
+          "$ref": "#/schemas/Id"
+        },
+        "membershipId": {
+          "$ref": "#/schemas/Id"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "ADMIN",
+            "MEMBER",
+            "OBSERVER"
+          ]
+        },
+        "membershipStatus": {
+          "type": "string",
+          "enum": [
+            "ACTIVE"
+          ]
+        },
+        "workspaceStatus": {
+          "type": "string",
+          "enum": [
+            "ACTIVE",
+            "ARCHIVED"
+          ]
+        },
+        "capabilities": {
+          "$ref": "#/schemas/Capabilities"
+        }
+      },
+      "required": [
+        "workspaceId",
+        "membershipId",
+        "role",
+        "membershipStatus",
+        "workspaceStatus",
+        "capabilities"
+      ],
+      "additionalProperties": false
+    },
+    "WorkspaceDetail": {
+      "type": "object",
+      "properties": {
+        "workspace": {
+          "$ref": "#/schemas/WorkspaceRow"
+        },
+        "self": {
+          "$ref": "#/schemas/WorkspaceSelf"
+        }
+      },
+      "required": [
+        "workspace",
+        "self"
+      ],
+      "additionalProperties": false
+    },
+    "MembershipRow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/schemas/Id"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "ADMIN",
+            "MEMBER",
+            "OBSERVER"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "ACTIVE",
+            "INVITED",
+            "SUSPENDED"
+          ]
+        },
+        "joinedAt": {
+          "$ref": "#/schemas/Timestamp"
+        }
+      },
+      "required": [
+        "id",
+        "displayName",
+        "role",
+        "status",
+        "joinedAt"
+      ],
+      "additionalProperties": false
+    },
+    "MembershipPage": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/schemas/MembershipRow"
+          },
+          "minItems": 0,
+          "maxItems": 100
+        },
+        "page": {
+          "$ref": "#/schemas/PageInfo"
+        }
+      },
+      "required": [
+        "items",
+        "page"
+      ],
+      "additionalProperties": false
+    },
+    "MembershipQuery": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "after": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "ACTIVE",
+            "INVITED",
+            "SUSPENDED",
+            "ALL"
+          ]
+        },
+        "sort": {
+          "type": "string",
+          "enum": [
+            "joined_asc",
+            "joined_desc"
+          ]
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "WorkspaceCreated": {
+      "type": "object",
+      "properties": {
+        "workspace": {
+          "$ref": "#/schemas/WorkspaceRow"
+        },
+        "initialAdministrator": {
+          "$ref": "#/schemas/WorkspaceSelf"
+        }
+      },
+      "required": [
+        "workspace",
+        "initialAdministrator"
+      ],
+      "additionalProperties": false
+    },
+    "InvitationRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 320,
+          "pattern": "^[!-~]+@[!-~]+$"
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "MEMBER",
+            "OBSERVER"
+          ]
+        }
+      },
+      "required": [
+        "email",
+        "role"
+      ],
+      "additionalProperties": false,
+      "designConstraints": [
+        "Full canonical email validation must reuse existing neutral credentialEmailSchema; pattern alone is not mailbox ownership"
+      ]
+    },
+    "InvitationAccepted": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "accepted"
+          ]
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "additionalProperties": false
+    },
+    "InvitationAccept": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^[0-9a-f-]{36}\\.[A-Za-z0-9_-]{43}$"
+        }
+      },
+      "required": [
+        "token"
+      ],
+      "additionalProperties": false
+    },
+    "InvitationAcceptanceResult": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "accepted"
+          ]
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "additionalProperties": false
     }
   },
   "operations": [
@@ -2428,7 +2705,7 @@
         "$ref": "#/schemas/CreateWorkspace"
       },
       "responseSchema": {
-        "$ref": "#/schemas/WorkspaceRow"
+        "$ref": "#/schemas/WorkspaceCreated"
       },
       "successStatus": 201,
       "authentication": "fresh-cookie-valkey-primary-request-bound",
@@ -2444,8 +2721,12 @@
       "dependencies": [
         "approved-workspace-creation-policy",
         "atomic-initial-admin",
-        "durable-idempotency-ledger"
-      ]
+        "durable-idempotency-ledger",
+        "account-fenced-workspace-bootstrap-port",
+        "server-only-initial-admin",
+        "workspace-policy-revision-record"
+      ],
+      "policyStatus": "proposed-not-granted"
     },
     {
       "id": "createTeam",
@@ -2642,6 +2923,286 @@
           "revision-pinned-spatial-query"
         ]
       }
+    },
+    {
+      "id": "getWorkspace",
+      "status": "proposed-not-implemented",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}",
+      "scope": "workspace",
+      "pathSchema": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "$ref": "#/schemas/Id"
+          }
+        },
+        "required": [
+          "workspaceId"
+        ],
+        "additionalProperties": false
+      },
+      "querySchema": {
+        "$ref": "#/schemas/Empty"
+      },
+      "headerSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "bodySchema": {
+        "$ref": "#/schemas/Empty"
+      },
+      "responseSchema": {
+        "$ref": "#/schemas/WorkspaceDetail"
+      },
+      "successStatus": 200,
+      "authentication": "fresh-cookie-valkey-primary-request-bound",
+      "authorization": "workspace:read",
+      "csrf": false,
+      "idempotencyRequired": false,
+      "casRequired": false,
+      "cache": "private,no-store",
+      "responseMaxBytes": 65536,
+      "requestMaxBytes": 32768,
+      "businessSelectMax": 4,
+      "order": null,
+      "dependencies": [
+        "approved-workspace-read-policy",
+        "workspace-detail-scoped-port",
+        "capability-projection"
+      ],
+      "policyStatus": "proposed-not-granted"
+    },
+    {
+      "id": "listWorkspaceMembers",
+      "status": "proposed-not-implemented",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/memberships",
+      "scope": "workspace",
+      "pathSchema": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "$ref": "#/schemas/Id"
+          }
+        },
+        "required": [
+          "workspaceId"
+        ],
+        "additionalProperties": false
+      },
+      "querySchema": {
+        "$ref": "#/schemas/MembershipQuery"
+      },
+      "headerSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "bodySchema": {
+        "$ref": "#/schemas/Empty"
+      },
+      "responseSchema": {
+        "$ref": "#/schemas/MembershipPage"
+      },
+      "successStatus": 200,
+      "authentication": "fresh-cookie-valkey-primary-request-bound",
+      "authorization": "workspace:members:list",
+      "csrf": false,
+      "idempotencyRequired": false,
+      "casRequired": false,
+      "cache": "private,no-store",
+      "responseMaxBytes": 131072,
+      "requestMaxBytes": 32768,
+      "businessSelectMax": 4,
+      "order": "joinedAt:asc,id:asc",
+      "dependencies": [
+        "approved-member-directory-privacy-policy",
+        "membership-list-scoped-port",
+        "policy-revision-record"
+      ],
+      "policyStatus": "proposed-not-granted"
+    },
+    {
+      "id": "workspaceSelf",
+      "status": "proposed-not-implemented",
+      "method": "GET",
+      "path": "/api/v1/workspaces/{workspaceId}/me",
+      "scope": "workspace",
+      "pathSchema": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "$ref": "#/schemas/Id"
+          }
+        },
+        "required": [
+          "workspaceId"
+        ],
+        "additionalProperties": false
+      },
+      "querySchema": {
+        "$ref": "#/schemas/Empty"
+      },
+      "headerSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "bodySchema": {
+        "$ref": "#/schemas/Empty"
+      },
+      "responseSchema": {
+        "$ref": "#/schemas/WorkspaceSelf"
+      },
+      "successStatus": 200,
+      "authentication": "fresh-cookie-valkey-primary-request-bound",
+      "authorization": "workspace:self",
+      "csrf": false,
+      "idempotencyRequired": false,
+      "casRequired": false,
+      "cache": "private,no-store",
+      "responseMaxBytes": 65536,
+      "requestMaxBytes": 32768,
+      "businessSelectMax": 4,
+      "order": null,
+      "dependencies": [
+        "approved-action-matrix",
+        "current-membership-capability-port"
+      ],
+      "policyStatus": "proposed-not-granted"
+    },
+    {
+      "id": "requestWorkspaceInvitation",
+      "status": "proposed-not-implemented",
+      "method": "POST",
+      "path": "/api/v1/workspaces/{workspaceId}/invitations",
+      "scope": "workspace",
+      "pathSchema": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "$ref": "#/schemas/Id"
+          }
+        },
+        "required": [
+          "workspaceId"
+        ],
+        "additionalProperties": false
+      },
+      "querySchema": {
+        "$ref": "#/schemas/Empty"
+      },
+      "headerSchema": {
+        "type": "object",
+        "properties": {
+          "X-CSRF-Token": {
+            "type": "string",
+            "minLength": 43,
+            "maxLength": 43,
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "Idempotency-Key": {
+            "$ref": "#/schemas/Id"
+          }
+        },
+        "required": [
+          "X-CSRF-Token",
+          "Idempotency-Key"
+        ],
+        "additionalProperties": false
+      },
+      "bodySchema": {
+        "$ref": "#/schemas/InvitationRequest"
+      },
+      "responseSchema": {
+        "$ref": "#/schemas/InvitationAccepted"
+      },
+      "successStatus": 202,
+      "authentication": "fresh-cookie-valkey-primary-request-bound",
+      "authorization": "workspace:invite",
+      "csrf": true,
+      "idempotencyRequired": true,
+      "casRequired": false,
+      "cache": "private,no-store",
+      "responseMaxBytes": 65536,
+      "requestMaxBytes": 2048,
+      "businessSelectMax": 4,
+      "order": null,
+      "dependencies": [
+        "approved-workspace-invite-policy",
+        "verified-sender-and-role-ceiling",
+        "invitation-challenge-additive-schema",
+        "durable-invitation-outbox",
+        "durable-idempotency-ledger",
+        "invitation-abuse-budgets"
+      ],
+      "policyStatus": "proposed-not-granted"
+    },
+    {
+      "id": "acceptWorkspaceInvitation",
+      "status": "proposed-not-implemented",
+      "method": "POST",
+      "path": "/api/v1/workspace-invitations/accept",
+      "scope": "own-account",
+      "pathSchema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "querySchema": {
+        "$ref": "#/schemas/Empty"
+      },
+      "headerSchema": {
+        "type": "object",
+        "properties": {
+          "X-CSRF-Token": {
+            "type": "string",
+            "minLength": 43,
+            "maxLength": 43,
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "Idempotency-Key": {
+            "$ref": "#/schemas/Id"
+          }
+        },
+        "required": [
+          "X-CSRF-Token",
+          "Idempotency-Key"
+        ],
+        "additionalProperties": false
+      },
+      "bodySchema": {
+        "$ref": "#/schemas/InvitationAccept"
+      },
+      "responseSchema": {
+        "$ref": "#/schemas/InvitationAcceptanceResult"
+      },
+      "successStatus": 202,
+      "authentication": "fresh-cookie-valkey-primary-request-bound",
+      "authorization": "invitation:accept",
+      "csrf": true,
+      "idempotencyRequired": true,
+      "casRequired": false,
+      "cache": "private,no-store",
+      "responseMaxBytes": 65536,
+      "requestMaxBytes": 2048,
+      "businessSelectMax": 4,
+      "order": null,
+      "dependencies": [
+        "approved-proof-bound-acceptance-policy",
+        "verified-immutable-recipient-credential",
+        "one-use-invitation-additive-schema",
+        "transactional-acceptance-port",
+        "durable-idempotency-ledger",
+        "invitation-abuse-budgets"
+      ],
+      "policyStatus": "proposed-not-granted"
     }
   ],
   "graphBudget": {
@@ -2690,5 +3251,43 @@
         "p99": 1000
       }
     }
-  ]
+  ],
+  "contractRules": {
+    "revisionOwner": "database-owned-atomic",
+    "authorizationRevisionRequired": true,
+    "cursorIndependentSigningKey": true,
+    "listCursorMaxSeconds": 900,
+    "graphCursorMaxSeconds": 120,
+    "retiredKeyAccepted": false,
+    "scopeBinding": [
+      "actor",
+      "operation",
+      "workspace",
+      "root",
+      "filter",
+      "projection",
+      "sort"
+    ],
+    "replayRequiresCurrentAuthority": true,
+    "idempotencyScopeNonnull": true,
+    "effectResultAtomic": true,
+    "fullResultRetentionSeconds": 86400,
+    "expiredKeyMayReexecute": false,
+    "isolation": "SERIALIZABLE",
+    "lockOrder": [
+      "user",
+      "family",
+      "workspace",
+      "idempotency",
+      "graph",
+      "sorted-resources"
+    ],
+    "runtimeInfrastructureImplemented": false,
+    "benchmarkAcceptanceRequired": true
+  },
+  "reviewedHead": "3fd04459138e2f7323156c74807bf717a6cff13c",
+  "contractRevision": 2,
+  "benchmarkGate": "not-executed-not-accepted",
+  "policyDocument": "authorization.md",
+  "lifecycleDocument": "lifecycle.md"
 }

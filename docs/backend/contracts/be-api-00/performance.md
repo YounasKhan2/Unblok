@@ -24,3 +24,17 @@ Caps: workspace64KiB; teams/issues/dependencies128KiB; overview/My Work192KiB; g
 7. Publish sanitized raw histograms/plans, exact tool/config versions, successes/failures/dropped arrivals, duration/exit/cleanup residuals. Same-host/config baseline/candidate comparison; security/ownership invariants and repeatability required. If targets fail, report and propose a bounded next slice; no covert timeout/assertion change.
 
 Launch still requires production grants/TLS/ingress/CORS/SameSite/browser/CSRF, cache ACL/HA/capacity, mail/outbox alerts, keys/restore/retention, queue reliability and signal shutdown. Local tests cannot certify this table.
+
+## Mandatory acceptance gate before enterprise claims
+
+Gate is currently **NOT EXECUTED / NOT ACCEPTED**. A future reviewer must approve the harness/config and provisional budgets, then require three reproducible measured runs per claimed tier, raw histograms/plans/failure counts and security results. Publish offered/sustained rate and concurrency together, including timeouts/conflicts/429/503, rather than selecting only fast successes. Each claimed tier must meet its approved latency/payload/query/memory/error bounds and zero authority leakage. Failure of any dimension blocks that tier's claim; a smaller proven tier may be named explicitly. Revisions to budgets require review before rerunning, never retroactive rewriting to fit results. No performance numbers in this PR are measurements.
+
+| Required scenario | Measurements / acceptance evidence |
+| --- | --- |
+| Hot-workspace protected writes | Same-workspace vs many-workspace arrival ramps; shared/exclusive workspace lock wait/hold time, committed throughput, SERIALIZABLE conflicts, abort/revocation outcomes and retry amplification. Preserve locks for first comparison; no correctness bypass to improve latency |
+| SID-digest retirement | Seed family history at10k/1m/10mrows including revoked, expired, duplicate synthetic digests; test matching/missing digest and concurrent rotation/retirement. Capture actual current-query plan/rows/buffers/sort and latency before/after candidate full digest index on owned DB, plus insert/rotate/revoke WAL/storage cost. No partial-index query weakening |
+| PostgreSQL indexes | Per-screen common/rare filters, generic/custom prepared plans, cold/warm skewed tenants; actual rows/loops/heap/index/temp/WAL, scanned/returned ratios, count/query budgets, vacuum/write overhead. Approve index only after measured net benefit and migration-lock review |
+| Authorization cost | Real fresh session+primary entry/completion fences, membership/team/issue visibility and policy revisions; compare visible/hidden/mostly-hidden pages and revocation races. Separate auth SQL/callback CPU from business SQL but include both in total latency/command budget. No allow-all benchmark policy |
+| Graph frontier exhaustion | Hubs/chains/diamonds and mostly-hidden edges, high fan-out where response remains small; assert inspected2000/frontier500/visited1000/depth3/SQL12 limits and deadlines. Measure scan/queue/heap/CPU/truncation/cursor restart under exhausted budget, not only returned nodes. Truncated display must never authorize completion |
+
+Benchmarks, runner/generator, candidate indexes, instrumentation and real grant policy remain future implementation dependencies. Local contract examples cannot satisfy this acceptance gate.

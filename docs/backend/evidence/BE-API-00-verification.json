@@ -110,5 +110,84 @@
     ],
     "viewport": "bounded rectangle with revision; conditional on unimplemented reviewed layout snapshot",
     "targets": "Proposed only, no benchmarks"
+  },
+  "correctionF1F4": {
+    "date": "2026-10-12",
+    "reviewedHead": "3fd04459138e2f7323156c74807bf717a6cff13c",
+    "correctionHeadLocation": "PR metadata; one correction commit",
+    "reviewInput": "User F1-F4 request; GitHub fetch_pr_comments failed with connector transport error",
+    "productionChanges": false,
+    "benchmarksExecuted": false,
+    "checks": {
+      "contractValidation": {
+        "command": "bun docs/backend/contracts/be-api-00/validate.mjs",
+        "exitCode": 0,
+        "operations": 21,
+        "schemas": 55,
+        "examples": 27,
+        "negativeChecks": 26,
+        "lifecycleScenarios": 32,
+        "localLinks": 23,
+        "scope": "Schema/contract decision model, not runtime crypto/DB/concurrency proof"
+      },
+      "architectureTests": {
+        "command": "bun run test:backend:architecture",
+        "exitCode": 0,
+        "passed": 51,
+        "failed": 0,
+        "assertions": 59,
+        "suiteSeconds": 5.23
+      },
+      "backendTypecheck": {
+        "command": "bun run typecheck:backend",
+        "exitCode": 0,
+        "architectureSources": 365,
+        "edges": 1006,
+        "violations": 0
+      },
+      "backendLint": {
+        "command": "bun run lint:backend",
+        "exitCode": 0,
+        "scope": "Existing backend ESLint command; docs validator separately executed"
+      },
+      "documentationLinks": {
+        "relativeLinks": 106,
+        "missing": 0,
+        "legacyCp1252Doc20": "read without modifying bytes"
+      },
+      "diffCheck": {
+        "command": "git diff --check",
+        "exitCode": 0
+      },
+      "freeze": {
+        "result": "passed",
+        "comparedAgainst": "3fd04459138e2f7323156c74807bf717a6cff13c",
+        "changedFiles": [
+          "docs/backend/16-BACKEND-STATUS-AND-ROADMAP.md",
+          "docs/backend/24-BE-API-00-ENTERPRISE-CONTRACTS.md",
+          "docs/backend/contracts/be-api-00/authorization.md",
+          "docs/backend/contracts/be-api-00/examples.json",
+          "docs/backend/contracts/be-api-00/lifecycle-examples.json",
+          "docs/backend/contracts/be-api-00/lifecycle.md",
+          "docs/backend/contracts/be-api-00/performance.md",
+          "docs/backend/contracts/be-api-00/protocol.md",
+          "docs/backend/contracts/be-api-00/registry.json",
+          "docs/backend/contracts/be-api-00/screens.md",
+          "docs/backend/contracts/be-api-00/validate.mjs",
+          "docs/backend/contracts/be-api-00/workspaces.md",
+          "docs/backend/evidence/BE-API-00-verification.json"
+        ],
+        "unchanged": "Production/frontend/NEXUS/dependencies/schema/migrations/existing tests"
+      }
+    },
+    "remainingDependencies": [
+      "approved workspace/resource/action/disclosure policy",
+      "new scoped workspace/member/bootstrap/invitation ports",
+      "additive invitation/revision/idempotency/outbox infrastructure",
+      "independent cursor keyring and retention/purge decision",
+      "real PostgreSQL/Valkey/HTTP concurrency/security tests in later slices",
+      "measured benchmark gate before tier-specific enterprise claims"
+    ],
+    "historicalFindings": "All original checks, development failures and historicalNotRerun entries above preserved; no runtime recertification"
   }
 }

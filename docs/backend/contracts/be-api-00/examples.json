@@ -469,5 +469,122 @@
       "height": 900,
       "layoutRevision": "synthetic-layout-1"
     }
+  },
+  {
+    "name": "archived-observer-self",
+    "schema": "WorkspaceSelf",
+    "value": {
+      "workspaceId": "12345678-1234-1234-1234-123456789012",
+      "membershipId": "12345678-1234-1234-1234-123456789012",
+      "role": "OBSERVER",
+      "membershipStatus": "ACTIVE",
+      "workspaceStatus": "ARCHIVED",
+      "capabilities": {
+        "readWorkspace": true,
+        "listMembers": false,
+        "inviteMembers": false,
+        "createTeam": false,
+        "writeIssues": false,
+        "writeDependencies": false,
+        "completeDependentIssues": false
+      }
+    },
+    "operation": "workspaceSelf"
+  },
+  {
+    "name": "workspace-detail",
+    "schema": "WorkspaceDetail",
+    "value": {
+      "workspace": {
+        "id": "12345678-1234-1234-1234-123456789012",
+        "slug": "synthetic",
+        "name": "Synthetic workspace",
+        "status": "ARCHIVED",
+        "membershipRole": "OBSERVER"
+      },
+      "self": {
+        "workspaceId": "12345678-1234-1234-1234-123456789012",
+        "membershipId": "12345678-1234-1234-1234-123456789012",
+        "role": "OBSERVER",
+        "membershipStatus": "ACTIVE",
+        "workspaceStatus": "ARCHIVED",
+        "capabilities": {
+          "readWorkspace": true,
+          "listMembers": false,
+          "inviteMembers": false,
+          "createTeam": false,
+          "writeIssues": false,
+          "writeDependencies": false,
+          "completeDependentIssues": false
+        }
+      }
+    },
+    "operation": "getWorkspace"
+  },
+  {
+    "name": "bounded-memberships",
+    "schema": "MembershipPage",
+    "value": {
+      "items": [
+        {
+          "id": "12345678-1234-1234-1234-123456789012",
+          "displayName": "Synthetic member",
+          "role": "MEMBER",
+          "status": "ACTIVE",
+          "joinedAt": "2026-10-11T00:00:00.000Z"
+        }
+      ],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    },
+    "operation": "listWorkspaceMembers"
+  },
+  {
+    "name": "invite-request",
+    "schema": "InvitationRequest",
+    "value": {
+      "email": "synthetic@example.invalid",
+      "role": "MEMBER"
+    }
+  },
+  {
+    "name": "generic-invite-acceptance",
+    "schema": "InvitationAcceptanceResult",
+    "value": {
+      "status": "accepted"
+    },
+    "operation": "acceptWorkspaceInvitation"
+  },
+  {
+    "name": "atomic-creator-admin",
+    "schema": "WorkspaceCreated",
+    "value": {
+      "workspace": {
+        "id": "12345678-1234-1234-1234-123456789012",
+        "slug": "synthetic",
+        "name": "Synthetic workspace",
+        "status": "ACTIVE",
+        "membershipRole": "ADMIN"
+      },
+      "initialAdministrator": {
+        "workspaceId": "12345678-1234-1234-1234-123456789012",
+        "membershipId": "12345678-1234-1234-1234-123456789012",
+        "role": "ADMIN",
+        "membershipStatus": "ACTIVE",
+        "workspaceStatus": "ACTIVE",
+        "capabilities": {
+          "readWorkspace": true,
+          "listMembers": true,
+          "inviteMembers": true,
+          "createTeam": true,
+          "writeIssues": false,
+          "writeDependencies": false,
+          "completeDependentIssues": false
+        }
+      }
+    },
+    "operation": "createWorkspace"
   }
 ]
