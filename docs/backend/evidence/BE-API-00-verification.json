@@ -1,0 +1,114 @@
+{
+  "phase": "BE-API-00",
+  "status": "documentation-review",
+  "base": "adbcd125403ca7de6578b1c3b01e39f758abfbc8",
+  "headLocation": "Final commit and PR metadata; no self-referential SHA",
+  "productionChanges": false,
+  "benchmarksExecuted": false,
+  "checks": {
+    "scopedContractValidation": {
+      "command": "bun docs/backend/contracts/be-api-00/validate.mjs",
+      "exitCode": 0,
+      "operations": 16,
+      "schemas": 44,
+      "examples": 21,
+      "negativeChecks": 15,
+      "localLinks": 11
+    },
+    "architecture": {
+      "command": "bun run check:architecture",
+      "exitCode": 0,
+      "sourceFiles": 365,
+      "resolvedEdges": 1006,
+      "violations": 0,
+      "wallSeconds": 9.4117598
+    },
+    "architectureTests": {
+      "command": "bun run test:backend:architecture",
+      "exitCode": 0,
+      "passed": 51,
+      "failed": 0,
+      "assertions": 59,
+      "suiteSeconds": 5.68
+    },
+    "backendTypecheck": {
+      "command": "bun run typecheck:backend",
+      "exitCode": 0,
+      "includesArchitecture": true
+    },
+    "backendLint": {
+      "command": "bun run lint:backend",
+      "exitCode": 0
+    },
+    "backendDocumentationLinks": {
+      "result": "passed",
+      "relativeLinks": 94,
+      "missing": 0,
+      "legacyEncoding": "Existing document20 read as cp1252 without changing bytes"
+    },
+    "diffWhitespace": {
+      "command": "git diff --check",
+      "exitCode": 0
+    },
+    "productionFreeze": {
+      "result": "passed",
+      "method": "Every changed/untracked task file constrained to docs/backend; staged diff checked before commit"
+    }
+  },
+  "developmentObservations": [
+    {
+      "check": "first scoped validator invocation",
+      "result": "failed",
+      "reason": "Report linked the not-yet-written evidence file; checks reached local-link validation. Evidence added before final rerun."
+    },
+    {
+      "check": "broad backend link scan with UTF-8-only decoder",
+      "result": "failed",
+      "reason": "Existing document20 contains cp1252 byte0x97; rerun reads that legacy file as cp1252 without modification. All94relative targets exist."
+    },
+    {
+      "check": "first multi-document write command",
+      "result": "not-executed",
+      "reason": "Windows process launch rejected overlong command (os error206); documents written with apply_patch instead."
+    },
+    {
+      "check": "negative fixture after adding workspace-specific sort schema",
+      "result": "failed then corrected",
+      "reason": "Offset negative mutated now-unused shared PageQuery, so it no longer tested a registered route. Fixture retargeted registered WorkspaceQuery; unchanged no-offset assertion and all15negatives pass."
+    }
+  ],
+  "historicalNotRerun": [
+    "queue notification timeout/late between-test error and later worker log ordering failure",
+    "API/worker SIGTERM exit143",
+    "high deepmerge-ts advisory under existing Prisma tooling",
+    "three NEXUS fixture failures",
+    "migration/CLI timing failures and BE-00F cleanup observations"
+  ],
+  "limitations": [
+    "No business endpoints, migrations, indexes, policy grants or runtime security/load tests implemented",
+    "No enterprise measurements or production capacity claim",
+    "Registry validator is a scoped subset validator, not full OpenAPI/JSON Schema certification"
+  ],
+  "notRunThisPhase": [
+    "Runtime regression/security/real database/browser/full frontend suites: production and existing tests unchanged; prior outcomes retained rather than recertified",
+    "Migration replay and index/EXPLAIN/benchmarks: no schema/index/query implementation authorized",
+    "Dependency audit and infrastructure/lifecycle: existing historical failures retained, no package/runtime change"
+  ],
+  "environment": {
+    "host": "Windows",
+    "bun": "1.4.2",
+    "date": "2026-10-11",
+    "repository": "YounasKhan2/Unblok"
+  },
+  "proposedDeliverables": {
+    "operations": 16,
+    "schemas": 44,
+    "examples": 21,
+    "graphRoots": [
+      "project",
+      "issue"
+    ],
+    "viewport": "bounded rectangle with revision; conditional on unimplemented reviewed layout snapshot",
+    "targets": "Proposed only, no benchmarks"
+  }
+}

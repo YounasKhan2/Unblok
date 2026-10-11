@@ -1,0 +1,473 @@
+[
+  {
+    "name": "own-workspace-list",
+    "schema": "WorkspacePage",
+    "value": {
+      "items": [
+        {
+          "id": "12345678-1234-1234-1234-123456789012",
+          "slug": "synthetic",
+          "name": "Synthetic workspace",
+          "status": "ACTIVE",
+          "membershipRole": "MEMBER"
+        }
+      ],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    },
+    "operation": "listWorkspaces"
+  },
+  {
+    "name": "team-directory",
+    "schema": "TeamPage",
+    "value": {
+      "items": [
+        {
+          "id": "12345678-1234-1234-1234-123456789012",
+          "key": "ENG",
+          "name": "Synthetic team",
+          "status": "ACTIVE",
+          "memberCount": 3,
+          "projectCount": 2,
+          "activeIssueCount": 8
+        }
+      ],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    },
+    "operation": "listTeams"
+  },
+  {
+    "name": "issue-page",
+    "schema": "IssuePage",
+    "value": {
+      "items": [
+        {
+          "id": "12345678-1234-1234-1234-123456789012",
+          "projectId": "12345678-1234-1234-1234-123456789012",
+          "key": "ENG-1",
+          "title": "A bounded issue",
+          "state": "TODO",
+          "priority": "HIGH",
+          "version": 1,
+          "createdAt": "2026-10-11T00:00:00.000Z",
+          "assignee": {
+            "membershipId": "12345678-1234-1234-1234-123456789012",
+            "name": "Synthetic member"
+          },
+          "blocker": "unavailable"
+        }
+      ],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    },
+    "operation": "listIssues"
+  },
+  {
+    "name": "compact-page",
+    "schema": "CompactIssuePage",
+    "value": {
+      "items": [
+        {
+          "id": "12345678-1234-1234-1234-123456789012",
+          "projectId": "12345678-1234-1234-1234-123456789012",
+          "key": "ENG-1",
+          "title": "A bounded issue",
+          "state": "TODO",
+          "priority": "HIGH",
+          "version": 1,
+          "createdAt": "2026-10-11T00:00:00.000Z"
+        }
+      ],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    },
+    "operation": "listIssues"
+  },
+  {
+    "name": "detail",
+    "schema": "IssueDetail",
+    "value": {
+      "id": "12345678-1234-1234-1234-123456789012",
+      "projectId": "12345678-1234-1234-1234-123456789012",
+      "key": "ENG-1",
+      "title": "A bounded issue",
+      "state": "TODO",
+      "priority": "HIGH",
+      "version": 1,
+      "createdAt": "2026-10-11T00:00:00.000Z",
+      "assignee": {
+        "membershipId": "12345678-1234-1234-1234-123456789012",
+        "name": "Synthetic member"
+      },
+      "blocker": "unavailable",
+      "description": "Owned synthetic text"
+    },
+    "operation": "getIssue"
+  },
+  {
+    "name": "project-overview",
+    "schema": "Overview",
+    "value": {
+      "project": {
+        "id": "12345678-1234-1234-1234-123456789012",
+        "key": "ENG",
+        "name": "Synthetic project"
+      },
+      "team": {
+        "id": "12345678-1234-1234-1234-123456789012",
+        "key": "ENG",
+        "name": "Synthetic project"
+      },
+      "summary": {
+        "total": 1,
+        "active": 1,
+        "blocked": null,
+        "completed": 0,
+        "blockingDownstream": null
+      },
+      "needsAttention": [
+        {
+          "id": "12345678-1234-1234-1234-123456789012",
+          "projectId": "12345678-1234-1234-1234-123456789012",
+          "key": "ENG-1",
+          "title": "A bounded issue",
+          "state": "TODO",
+          "priority": "HIGH",
+          "version": 1,
+          "createdAt": "2026-10-11T00:00:00.000Z",
+          "assignee": {
+            "membershipId": "12345678-1234-1234-1234-123456789012",
+            "name": "Synthetic member"
+          },
+          "blocker": "unavailable"
+        }
+      ],
+      "activeExecution": [],
+      "blockingOthers": [],
+      "cycleCapability": "unavailable",
+      "activityCapability": "unavailable"
+    },
+    "operation": "projectOverview"
+  },
+  {
+    "name": "my-work",
+    "schema": "MyWork",
+    "value": {
+      "sections": {
+        "needsAttention": {
+          "items": [
+            {
+              "id": "12345678-1234-1234-1234-123456789012",
+              "projectId": "12345678-1234-1234-1234-123456789012",
+              "key": "ENG-1",
+              "title": "A bounded issue",
+              "state": "TODO",
+              "priority": "HIGH",
+              "version": 1,
+              "createdAt": "2026-10-11T00:00:00.000Z",
+              "assignee": {
+                "membershipId": "12345678-1234-1234-1234-123456789012",
+                "name": "Synthetic member"
+              },
+              "blocker": "unavailable"
+            }
+          ],
+          "page": {
+            "nextCursor": null,
+            "hasMore": false
+          },
+          "count": 1
+        },
+        "inProgress": {
+          "items": [
+            {
+              "id": "12345678-1234-1234-1234-123456789012",
+              "projectId": "12345678-1234-1234-1234-123456789012",
+              "key": "ENG-1",
+              "title": "A bounded issue",
+              "state": "TODO",
+              "priority": "HIGH",
+              "version": 1,
+              "createdAt": "2026-10-11T00:00:00.000Z",
+              "assignee": {
+                "membershipId": "12345678-1234-1234-1234-123456789012",
+                "name": "Synthetic member"
+              },
+              "blocker": "unavailable"
+            }
+          ],
+          "page": {
+            "nextCursor": null,
+            "hasMore": false
+          },
+          "count": 1
+        },
+        "inReview": {
+          "items": [
+            {
+              "id": "12345678-1234-1234-1234-123456789012",
+              "projectId": "12345678-1234-1234-1234-123456789012",
+              "key": "ENG-1",
+              "title": "A bounded issue",
+              "state": "TODO",
+              "priority": "HIGH",
+              "version": 1,
+              "createdAt": "2026-10-11T00:00:00.000Z",
+              "assignee": {
+                "membershipId": "12345678-1234-1234-1234-123456789012",
+                "name": "Synthetic member"
+              },
+              "blocker": "unavailable"
+            }
+          ],
+          "page": {
+            "nextCursor": null,
+            "hasMore": false
+          },
+          "count": 1
+        },
+        "upNext": {
+          "items": [
+            {
+              "id": "12345678-1234-1234-1234-123456789012",
+              "projectId": "12345678-1234-1234-1234-123456789012",
+              "key": "ENG-1",
+              "title": "A bounded issue",
+              "state": "TODO",
+              "priority": "HIGH",
+              "version": 1,
+              "createdAt": "2026-10-11T00:00:00.000Z",
+              "assignee": {
+                "membershipId": "12345678-1234-1234-1234-123456789012",
+                "name": "Synthetic member"
+              },
+              "blocker": "unavailable"
+            }
+          ],
+          "page": {
+            "nextCursor": null,
+            "hasMore": false
+          },
+          "count": 1
+        },
+        "recentlyCompleted": {
+          "items": [
+            {
+              "id": "12345678-1234-1234-1234-123456789012",
+              "projectId": "12345678-1234-1234-1234-123456789012",
+              "key": "ENG-1",
+              "title": "A bounded issue",
+              "state": "TODO",
+              "priority": "HIGH",
+              "version": 1,
+              "createdAt": "2026-10-11T00:00:00.000Z",
+              "assignee": {
+                "membershipId": "12345678-1234-1234-1234-123456789012",
+                "name": "Synthetic member"
+              },
+              "blocker": "unavailable"
+            }
+          ],
+          "page": {
+            "nextCursor": null,
+            "hasMore": false
+          },
+          "count": 1
+        }
+      },
+      "blockingOthers": [],
+      "cycleCapability": "unavailable"
+    },
+    "operation": "myWork"
+  },
+  {
+    "name": "dependency-page",
+    "schema": "DependencyPage",
+    "value": {
+      "items": [],
+      "page": {
+        "nextCursor": null,
+        "hasMore": false
+      }
+    },
+    "operation": "listDependencies"
+  },
+  {
+    "name": "bounded-graph",
+    "schema": "GraphPage",
+    "value": {
+      "rootProjectId": "12345678-1234-1234-1234-123456789012",
+      "dataRevision": "synthetic-revision-1",
+      "nodes": [
+        {
+          "id": "12345678-1234-1234-1234-123456789012",
+          "projectId": "12345678-1234-1234-1234-123456789012",
+          "key": "ENG-1",
+          "title": "A bounded issue",
+          "state": "TODO",
+          "priority": "HIGH",
+          "version": 1,
+          "createdAt": "2026-10-11T00:00:00.000Z"
+        }
+      ],
+      "edges": [],
+      "completeness": "truncated",
+      "reason": "BUDGET",
+      "analysisStatus": "partial",
+      "nextCursor": "opaque-signed-design-example",
+      "impact": {
+        "completeness": "partial",
+        "observedVisibleNodes": 1,
+        "observedVisibleEdges": 0
+      }
+    },
+    "operation": "queryGraph"
+  },
+  {
+    "name": "graph-input-max",
+    "schema": "GraphInput",
+    "value": {
+      "direction": "both",
+      "depth": 3,
+      "nodeLimit": 200,
+      "edgeLimit": 400
+    }
+  },
+  {
+    "name": "page-input-max",
+    "schema": "PageQuery",
+    "value": {
+      "limit": 100
+    }
+  },
+  {
+    "name": "create-issue",
+    "schema": "CreateIssue",
+    "value": {
+      "title": "New issue",
+      "assigneeMembershipId": null
+    }
+  },
+  {
+    "name": "patch-issue",
+    "schema": "PatchIssue",
+    "value": {
+      "title": "Updated issue"
+    }
+  },
+  {
+    "name": "batch-input",
+    "schema": "BatchInput",
+    "value": {
+      "items": [
+        {
+          "id": "12345678-1234-1234-1234-123456789012",
+          "expectedVersion": 1,
+          "patch": {
+            "state": "IN_PROGRESS"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "name": "batch-result",
+    "schema": "BatchResult",
+    "value": {
+      "items": [
+        {
+          "id": "12345678-1234-1234-1234-123456789012",
+          "version": 2
+        }
+      ]
+    },
+    "operation": "batchIssues"
+  },
+  {
+    "name": "create-workspace",
+    "schema": "CreateWorkspace",
+    "value": {
+      "name": "Synthetic",
+      "slug": "synthetic"
+    }
+  },
+  {
+    "name": "create-team",
+    "schema": "CreateTeam",
+    "value": {
+      "name": "Engineering",
+      "key": "ENG"
+    }
+  },
+  {
+    "name": "create-project",
+    "schema": "CreateProject",
+    "value": {
+      "teamId": "12345678-1234-1234-1234-123456789012",
+      "name": "Platform",
+      "key": "PLAT"
+    }
+  },
+  {
+    "name": "generic-unavailable",
+    "schema": "Error",
+    "value": {
+      "error": {
+        "code": "RESOURCE_UNAVAILABLE",
+        "message": "Resource unavailable",
+        "requestId": "synthetic"
+      }
+    }
+  },
+  {
+    "name": "issue-root-graph",
+    "schema": "GraphIssuePage",
+    "operation": "queryIssueGraph",
+    "value": {
+      "dataRevision": "synthetic-revision-1",
+      "nodes": [
+        {
+          "id": "12345678-1234-1234-1234-123456789012",
+          "projectId": "12345678-1234-1234-1234-123456789012",
+          "key": "ENG-1",
+          "title": "A bounded issue",
+          "state": "TODO",
+          "priority": "HIGH",
+          "version": 1,
+          "createdAt": "2026-10-11T00:00:00.000Z"
+        }
+      ],
+      "edges": [],
+      "completeness": "truncated",
+      "reason": "BUDGET",
+      "analysisStatus": "partial",
+      "nextCursor": "opaque-signed-design-example",
+      "rootIssueId": "12345678-1234-1234-1234-123456789012",
+      "impact": {
+        "completeness": "partial",
+        "observedVisibleNodes": 1,
+        "observedVisibleEdges": 0
+      }
+    }
+  },
+  {
+    "name": "viewport-bounds",
+    "schema": "Viewport",
+    "value": {
+      "x": 0,
+      "y": 0,
+      "width": 1440,
+      "height": 900,
+      "layoutRevision": "synthetic-layout-1"
+    }
+  }
+]
