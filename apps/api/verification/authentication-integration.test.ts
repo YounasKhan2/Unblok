@@ -53,7 +53,7 @@ async function fixture(options: { afterConfirmation?: () => Promise<void>; redis
   const authentication = new Authentication({ create: i => credentials.create(i), lookup: e => credentials.lookup(e), confirm: async snapshot => {
     const valid = await credentials.confirm(snapshot); if (valid) await options.afterConfirmation?.(); return valid;
   } }, await Passwords.create(), limits);
-  const sessions = new Sessions(connection.store, settings, { create: i => fences.create(i), rotate: (e, d, idle) => fences.rotate(e, d, idle), revoke: e => fences.revoke(e), revokeAll: id => fences.revokeAll(id) }, a => authentication.resolveIdentity(a));
+  const sessions = new Sessions(connection.store, settings, { create: i => fences.create(i), rotate: (e, d, idle) => fences.rotate(e, d, idle), revoke: e => fences.revoke(e), retireSid: d => fences.retireSid(d), revokeAll: id => fences.revokeAll(id) }, a => authentication.resolveIdentity(a));
   const tenancy = new Tenancy(database, { verify: async () => null }, denyAll, sessions);
   sessions.bind(tenancy); authentication.bind(sessions, tenancy);
   const coarse = new RedisRateLimiter(rateCache, 120, 60000, settings.prefix + 'coarse:');
@@ -318,7 +318,10 @@ test('unverified ownership stays separate from unrelated contact identities, gra
   expect(await database.client.passwordCredential.findUniqueOrThrow({ where: { email } })).toEqual(originalCredential);
   expect((await f.http('/api/v1/auth/login', 'POST', anonymous, { email, password })).status).toBe(401);
   expect((await f.http('/api/v1/auth/me', 'GET', auth)).status).toBe(401);
-  expect((await f.http('/api/v1/auth/csrf', 'GET', auth)).status).toBe(401);
+  const recovered = await f.http('/api/v1/auth/csrf', 'GET', auth);
+  expect(recovered.status).toBe(200); expect((await recovered.json()).csrf).not.toBe(auth.csrf);
+  expect(recovered.headers.get('set-cookie')!.split(';')[0]).not.toBe(auth.cookie);
+  expect((await f.http('/api/v1/auth/me', 'GET', auth)).status).toBe(401);
 });
 
 test('durable email ownership has immutable binding and ordered nullable verification without inferred grants', async () => {
@@ -374,18 +377,25 @@ test('anonymous and authenticated bootstrap rejects navigation and inconsistent 
   }
 });
 
-test('bootstrap cannot disclose tokens from restored revoked, epoch-stale, disabled, malformed or missing session data', async () => {
+test('bootstrap retires revoked, epoch-stale and missing sessions without disclosing predecessor tokens; malformed data stays denied', async () => {
   const f = await fixture(), { email } = await f.signup(), auth = await f.login(email), raw = (await cache.get(f.key(auth)))!;
   const before = await f.http('/api/v1/auth/csrf', 'GET', auth); expect(before.status).toBe(200); expect(await before.json()).toEqual({ csrf: auth.csrf });
   expect((await f.http('/api/v1/auth/logout', 'POST', auth)).status).toBe(200);
   await cache.set(f.key(auth), raw, 'EX', 60);
-  const revoked = await f.http('/api/v1/auth/csrf', 'GET', auth); expect(revoked.status).toBe(401); expect((await revoked.json()).csrf).toBeUndefined();
+  const recovery = async (old: Client) => {
+    expect((await f.http('/api/v1/auth/me', 'GET', old)).status).toBe(401);
+    const response = await f.http('/api/v1/auth/csrf', 'GET', old); expect(response.status).toBe(200);
+    const replacement = { cookie: response.headers.get('set-cookie')!.split(';')[0]!, csrf: (await response.json()).csrf as string };
+    expect(replacement.cookie).not.toBe(old.cookie); expect(replacement.csrf).not.toBe(old.csrf);
+    expect((await f.http('/api/v1/auth/me', 'GET', replacement)).status).toBe(401);
+    expect(response.headers.get('cache-control')).toBe('no-store'); return response;
+  };
+  await recovery(auth);
   const next = await f.login(email), saved = (await cache.get(f.key(next)))!;
   expect((await f.http('/api/v1/auth/logout-all', 'POST', next)).status).toBe(200); await cache.set(f.key(next), saved, 'EX', 60);
-  expect((await f.http('/api/v1/auth/csrf', 'GET', next)).status).toBe(401);
+  await recovery(next);
   const live = await f.login(email); await cache.del(f.key(live));
-  const missing = await f.http('/api/v1/auth/csrf', 'GET', live); expect(missing.status).toBe(401); expect((await missing.json()).csrf).toBeUndefined();
-  expect(missing.headers.get('cache-control')).toBe('no-store');
+  await recovery(live);
   const malformed = JSON.parse(saved); malformed.state.absoluteExpiresAt += 86400000;
   await cache.set(f.key(next), JSON.stringify(malformed), 'EX', 60);
   expect((await f.http('/api/v1/auth/csrf', 'GET', next)).status).toBe(401);

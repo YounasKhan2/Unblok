@@ -1,0 +1,56 @@
+[
+  {
+    "route": "signup",
+    "width": 320,
+    "height": 900,
+    "dpr": 1,
+    "theme": "light",
+    "file": "signup-320-light.png",
+    "noHorizontalOverflow": true
+  },
+  {
+    "route": "forgot-password",
+    "width": 320,
+    "height": 900,
+    "dpr": 1,
+    "theme": "light",
+    "file": "forgot-password-320-light.png",
+    "noHorizontalOverflow": true
+  },
+  {
+    "route": "reset-password",
+    "width": 320,
+    "height": 900,
+    "dpr": 1,
+    "theme": "light",
+    "file": "reset-password-320-light.png",
+    "noHorizontalOverflow": true
+  },
+  {
+    "route": "signup",
+    "width": 320,
+    "height": 900,
+    "dpr": 1,
+    "theme": "dark",
+    "file": "signup-320-dark.png",
+    "noHorizontalOverflow": true
+  },
+  {
+    "route": "forgot-password",
+    "width": 320,
+    "height": 900,
+    "dpr": 1,
+    "theme": "dark",
+    "file": "forgot-password-320-dark.png",
+    "noHorizontalOverflow": true
+  },
+  {
+    "route": "reset-password",
+    "width": 320,
+    "height": 900,
+    "dpr": 1,
+    "theme": "dark",
+    "file": "reset-password-320-dark.png",
+    "noHorizontalOverflow": true
+  }
+]

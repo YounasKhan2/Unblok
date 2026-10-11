@@ -216,6 +216,7 @@ export const AppRoutes: React.FC = () => {
 };
 
 export interface AppRouterProps {
+  basename?: string;
   /**
    * Optional override for automated test suites to control harness visibility.
    * In normal production builds, defaults to import.meta.env.DEV (evaluating to false in production).
@@ -223,11 +224,11 @@ export interface AppRouterProps {
   enableDevHarness?: boolean;
 }
 
-export const AppRouter: React.FC<AppRouterProps> = ({ enableDevHarness }) => {
+export const AppRouter: React.FC<AppRouterProps> = ({ enableDevHarness, basename }) => {
   const showDevHarness = enableDevHarness !== undefined ? enableDevHarness : Boolean(import.meta.env.DEV);
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <AppRoutes />
       {showDevHarness && <AuthDevHarness enabled={true} />}
     </BrowserRouter>

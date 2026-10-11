@@ -24,6 +24,7 @@
 | BE-00I-A | Core local-password registration/login/logout/logout-all/current-user APIs and CSRF bootstrap | **Merged; locally verified, not deployed or production-certified** | [PR #30](https://github.com/YounasKhan2/Unblok/pull/30), merge `4b824b9b5a4bb96709e49b6523c2977273d36d8d`; [security report](21-BE-00I-A-CORE-AUTHENTICATION.md); frontend mocks remain frozen |
 | BE-00I-B | Secure authenticated email ownership and durable asynchronous outbox delivery | **Merged and locally verified; not deployed or production-certified** | [Security report](22-BE-00I-B-EMAIL-VERIFICATION.md); frozen frontend, no grants |
 | BE-00I-C | Anonymous verified-email password recovery and atomic authority revocation | **Merged and locally verified; not deployed or production-certified** | [Security report](23-BE-00I-C-PASSWORD-RECOVERY.md); frontend frozen, no grants |
+| FE-AUTH-01 | Real frontend authentication and explicit NEXUS demo separation | **Implemented for human review; local Chromium verified; not merged or production-certified** | [Frontend report and evidence](../frontend/01-FE-AUTH-01-INTEGRATION.md); no business API/data integration |
 
 **Implemented foundation:** Bun monorepo; NestJS API and separate BullMQ worker; Prisma/PostgreSQL domain and tenant constraints; Valkey queue infrastructure; RustFS development storage; Mailpit development email capture; fail-closed foundation authorization; tenant-scoped database access; reusable backend architecture guardrails. These are foundations, not operational business APIs.
 
@@ -47,7 +48,13 @@
 
 **BE-00I-C merged implementation (2026-10-11):** Anonymous verified-credential recovery, bounded keyed proofs/outbox and atomic password/proof/epoch/family revocation are merged via [PR #32](https://github.com/YounasKhan2/Unblok/pull/32); verification is recorded in [23](23-BE-00I-C-PASSWORD-RECOVERY.md). Not deployed or production-certified. Frozen frontend, no linking/grants, seven existing migrations and PostgreSQL/session security contracts remain preserved.
 
-**Next action:** Begin FE-AUTH-01 frontend authentication integration on a separate reviewed branch. Review runtime grants, ingress/browser/TLS/CSRF, timing/abuse/load, mail notification/deployment, key restoration and outbox reconciliation separately. Sessions, core credentials and verification are merged but not deployed; recovery is merged but not deployed; OAuth/MFA and frontend integration remain planned. Candidate B local evidence is not vendor Bun support or production readiness. Maintain queue/SIGTERM reliability and historical timing findings without weakening tests.
+**FE-AUTH-01 review implementation (2026-10-11):** Real frontend signup/login/profile restoration, logout/logout-all, verification and password recovery are implemented on `feat/fe-auth-01-integration` from `1b619b189f0e7d89fc16f70ba766306354259eb6`, pending human review, not merged or deployed. Server identity is authoritative; real accounts have an honest pending-workspace page, while curated NEXUS is confined to the labelled `/demo/*` experience. [Frontend report](../frontend/01-FE-AUTH-01-INTEGRATION.md) distinguishes passing API/SSR/real HTTP checks from unavailable browser/visual validation. Backend production, migrations and fixture data are unchanged. Known three NEXUS failures, queue timeout, SIGTERM143, advisory and intermediate replay timing failures remain visible.
+
+**FE-AUTH-01 F1–F3 correction (historical):** Generation-scoped restoration and server-confirmed reset session handling are corrected. Actual bundled Chromium flows and responsive light/dark captures now exist; the browser gate remains partial because the backend retains a revoked HttpOnly cookie after authenticated reset, rejecting subsequent CSRF bootstrap and same-context login. Fresh-context replacement-password login succeeds but is not an app workaround. Backend production, migrations, NEXUS and dependency versions remain unchanged. See the frontend report for38 focused tests,771/3 frontend results and passing HTTP/security gates; all historical failures remain visible.
+
+**FE-AUTH-01 F4 correction:** Reviewed `cab718ea77ab2ddf943f959feb483e307cd25f87`; narrow session-boundary changes durably retire the signed predecessor before fresh anonymous CSRF state. Same-context Chromium reset/relogin passes without deleting cookies or replacing its context. Request-bound principals, transaction fences and CSRF/cookie protections remain enforced. Frontend production, NEXUS, dependencies and migrations are unchanged. The frontend F4 report/evidence preserves successful and failed observations and deployment limitations. This supersedes the local retained-cookie blocker; PR #33 remains unmerged.
+
+**Next action:** Human review of FE-AUTH-01 including F4. No merge or Workspace API work is authorized here. Review runtime grants, ingress/browser/TLS/CSRF, timing/abuse/load, mail notification/deployment, key restoration and outbox reconciliation separately. Merged authentication/recovery is not deployed; OAuth/MFA and business frontend data integration remain planned. Candidate B local evidence is not vendor Bun support or production readiness.
 
 ## 3. Remaining production backend capabilities
 
@@ -59,7 +66,7 @@
 | Issues CRUD/search/filtering | Bounded scoped persistence primitives exist; business APIs missing | Critical |
 | Dependency graph APIs and cycle-safe writes | Database dependency-write gate active; DAG service missing | Critical |
 | Fine-grained permissions | Deny-by-default policy boundary only; approved action grants missing | Critical |
-| Frontend integration with real APIs | Production frontend still depends on mock/local data | Critical |
+| Frontend integration with real APIs | FE-AUTH-01 authentication review implementation; local Chromium verified, production/browser deployment review pending. Business APIs/data integration missing; NEXUS remains a separate demo | Critical |
 | Audit logs and activity history | Not implemented | High |
 | Notifications and business background jobs | Diagnostic worker only | High |
 | Attachments and file storage workflows | Development infrastructure available; business workflows missing | High |

@@ -114,6 +114,24 @@ export class AuthFences {
       await tx.$executeRaw`UPDATE auth_session_families SET revoked_at = COALESCE(revoked_at, statement_timestamp()) WHERE id = ${s.familyId}::uuid`;
     });
   }
+  // Server-owned presented-SID retirement, including cache-missing sessions.
+  // Discover without a lock, then use the established user -> family ordering.
+  // Rotation racing this operation either changes the digest first (old SID is
+  // already stale) or is fenced by the committed family revocation.
+  retireSid(sidDigest: string): Promise<void> {
+    if (!/^[0-9a-f]{64}$/.test(sidDigest)) return Promise.reject(new AuthDeniedError());
+    return this.transaction(async tx => {
+      const families = await tx.$queryRaw<{ id: string; user_id: string }[]>`
+        SELECT id, user_id FROM auth_session_families WHERE sid_digest = ${sidDigest} ORDER BY user_id, id`;
+      for (const family of families) {
+        await user(tx, family.user_id, false, false);
+        const current = await tx.$queryRaw<{ id: string }[]>`
+          SELECT id FROM auth_session_families WHERE id = ${family.id}::uuid AND sid_digest = ${sidDigest} FOR UPDATE`;
+        if (current.length) await tx.$executeRaw`
+          UPDATE auth_session_families SET revoked_at = COALESCE(revoked_at, statement_timestamp()) WHERE id = ${family.id}::uuid AND revoked_at IS NULL`;
+      }
+    });
+  }
   revokeAll(userId: string): Promise<void> {
     return this.transaction(async tx => {
       await user(tx, userId, true, false);

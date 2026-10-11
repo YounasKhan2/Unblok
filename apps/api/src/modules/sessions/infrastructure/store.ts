@@ -27,6 +27,8 @@ export function validState(value: unknown, now = Date.now()): SessionState | nul
   return s;
 }
 export const validSid = (sid: unknown): sid is string => typeof sid === 'string' && /^[A-Za-z0-9_-]{43}$/.test(sid);
+export class InvalidSessionDataError extends Error {}
+
 type Done = (error?: unknown, value?: session.SessionData | null) => void;
 // Deadlines bound acknowledgement, not the Redis command's execution. A late
 // SET/DEL may still occur. PostgreSQL fences, never cache deletion, revoke auth.
@@ -36,7 +38,7 @@ export class BoundedSessionStore extends session.Store {
     let settled = false;
     const finish: Done = (error, value) => {
       if (settled) return;
-      settled = true; clearTimeout(timer); callback(error ? new AuthUnavailableError() : undefined, value);
+      settled = true; clearTimeout(timer); callback(error instanceof InvalidSessionDataError ? error : error ? new AuthUnavailableError() : undefined, value);
     };
     const timer = setTimeout(() => finish(new AuthUnavailableError()), this.milliseconds);
     try { run(finish); } catch { finish(new AuthUnavailableError()); }
@@ -46,7 +48,14 @@ export class BoundedSessionStore extends session.Store {
     this.call(done => this.underlying.get(sid, (error, data) => {
       if (error) { done(error); return; }
       // Only known internal fields may survive a restored/malformed payload.
-      if (!data || !validState(data.state) || Object.keys(data).some(k => !['cookie', 'state'].includes(k))) { done(undefined, null); return; }
+      if (!data) { done(undefined, null); return; }
+      const parsed = stateSchema.safeParse(data.state);
+      // Recognizable, structurally valid expiration is absence; malformed or
+      // artificially extended cache state is rejection, never recovery input.
+      const expiryTime = parsed.success ? Math.min(Date.now(), parsed.data.idleExpiresAt - 1) : 0;
+      if (!parsed.success || parsed.data.issuedAt > Date.now() || !validState(parsed.data, expiryTime) ||
+        Object.keys(data).some(k => !['cookie', 'state'].includes(k))) { done(new InvalidSessionDataError()); return; }
+      if (!validState(data.state)) { done(undefined, null); return; }
       done(undefined, data);
     }), callback);
   }

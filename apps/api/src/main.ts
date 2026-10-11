@@ -27,7 +27,7 @@ async function main() {
     const authentication = new Authentication(new AccountCredentials(database), await Passwords.create(), new AuthenticationLimits(redis, settings.secrets[0]!, settings.prefix), new PasswordRecovery(database,loadRecoveryKey(process.env)));
     const sessions = new Sessions(sessionConnection.store, settings, {
       create: input => fences.create(input), rotate: (evidence, sid, idle) => fences.rotate(evidence, sid, idle),
-      revoke: evidence => fences.revoke(evidence), revokeAll: userId => fences.revokeAll(userId),
+      revoke: evidence => fences.revoke(evidence), retireSid: d => fences.retireSid(d), revokeAll: userId => fences.revokeAll(userId),
     }, assertion => authentication.resolveIdentity(assertion));
     const tenancy = new Tenancy(database, { verify: async () => null }, denyAll, sessions, loadVerificationKey(process.env));
     sessions.bind(tenancy); authentication.bind(sessions, tenancy);

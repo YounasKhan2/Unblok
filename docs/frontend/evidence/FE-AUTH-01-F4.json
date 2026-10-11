@@ -1,0 +1,217 @@
+{
+  "phase": "FE-AUTH-01 F4 revoked session cookie recovery",
+  "date": "2026-10-11",
+  "pr": 33,
+  "branch": "feat/fe-auth-01-integration",
+  "base": "1b619b189f0e7d89fc16f70ba766306354259eb6",
+  "reviewedHead": "cab718ea77ab2ddf943f959feb483e307cd25f87",
+  "headLocation": "PR metadata",
+  "scope": {
+    "productionFiles": [
+      "apps/api/src/main.ts",
+      "apps/api/src/modules/sessions/application/sessions.ts",
+      "apps/api/src/modules/sessions/infrastructure/store.ts",
+      "packages/database/src/auth-fences.ts"
+    ],
+    "frontendProductionChanged": false,
+    "nexusChanged": false,
+    "workspaceApisChanged": false,
+    "migrationsChanged": false,
+    "schemaChanged": false,
+    "dependenciesChanged": false
+  },
+  "decisions": {
+    "authority": "fresh request verifier and PostgreSQL authority remain required; me denies old cookies",
+    "bootstrap": "existing origin/metadata/rate rules before SID retirement and new anonymous SID; never rewrite predecessor",
+    "missingCache": "verified signed SID and distinct library-generated successor; durable retirement before save",
+    "malformed": "explicit malformed cache/cookie rejection, no anonymous recovery",
+    "retirement": "server-owned SID digest; bounded SERIALIZABLE PG user then family locks; matching families revoked; rotation or protected-write conflicts fail closed",
+    "finalization": "failed regeneration/save terminal hooks suppress late successor delivery; correct clear-cookie profile; timeout not cancellation",
+    "cookies": "host-only configured name, Path=/, HttpOnly, Lax, Secure for required HTTPS; real HTTPS __Host deletion checked",
+    "csrf": "unsafe method protections retained; all bootstrap middleware outcomes no-store/no-cache"
+  },
+  "gates": {
+    "sessions": {
+      "passed": 31,
+      "failed": 0,
+      "assertions": 473,
+      "durationMs": 22470,
+      "exit": 0
+    },
+    "authentication": {
+      "passed": 26,
+      "failed": 0,
+      "assertions": 827
+    },
+    "authFences": {
+      "passed": 24,
+      "failed": 0,
+      "assertions": 134
+    },
+    "tenancy": {
+      "passed": 34,
+      "failed": 0,
+      "assertions": 132
+    },
+    "email": {
+      "passed": 16,
+      "failed": 0,
+      "assertions": 468
+    },
+    "recovery": {
+      "passed": 18,
+      "failed": 0,
+      "assertions": 421
+    },
+    "databaseIntegration": {
+      "passed": 2,
+      "failed": 0,
+      "assertions": 5
+    },
+    "frontendHttp": {
+      "passed": 1,
+      "failed": 0,
+      "assertions": 149
+    },
+    "backendArchitecture": {
+      "passed": 51,
+      "failed": 0,
+      "assertions": 59
+    },
+    "backendRegression": {
+      "passed": 99,
+      "failed": 0,
+      "assertions": 263
+    },
+    "architecture": {
+      "exit": 0,
+      "sources": 365,
+      "edges": 1006,
+      "violations": 0
+    },
+    "backendTypecheckLintBuild": {
+      "exit": 0
+    },
+    "frontendLintBuild": {
+      "exit": 0,
+      "lintIsTypecheck": true
+    },
+    "frontendTests": {
+      "passed": 771,
+      "failed": 3,
+      "exit": 1,
+      "unchangedNexusFailures": true
+    },
+    "infra": {
+      "passed": 4,
+      "failed": 1,
+      "errors": 1,
+      "assertions": 14,
+      "exit": 1,
+      "finding": "unsupported-job finish notification timeout at unchanged5000ms"
+    },
+    "lifecycle": {
+      "passed": 1,
+      "failed": 2,
+      "assertions": 7,
+      "exit": 1,
+      "finding": "API and worker SIGTERM143 rather than0"
+    },
+    "audit": {
+      "exit": 1,
+      "advisory": "GHSA-ggr8-5vv4-36mx",
+      "package": "deepmerge-ts7.1.5 through existing Prisma6.19.3"
+    },
+    "browser": {
+      "status": "passed",
+      "exit": 0,
+      "runner": "externally installed Playwright1.62.1",
+      "chromium": "151.0.7922.34",
+      "details": "browser-f4/results.json",
+      "sameContextRecovery": true,
+      "manualCookieDeletion": false,
+      "csrfDisabled": false,
+      "meRevoked": 401,
+      "anonymousBootstrap": 200,
+      "replacementPasswordLogin": 200,
+      "screenshotCount": 2,
+      "viewport": {
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "themes": [
+          "light",
+          "dark"
+        ]
+      },
+      "productionCertified": false
+    },
+    "diffCheck": {
+      "exit": 0
+    }
+  },
+  "failedObservations": [
+    {
+      "gate": "authentication first run",
+      "passed": 24,
+      "failed": 2,
+      "assertions": 795,
+      "reason": "old tests required401 bootstrap after durable denial; corrected to enforce fresh anonymous SID/non-disclosure and me denial"
+    },
+    {
+      "gate": "regression first run",
+      "passed": 98,
+      "failed": 1,
+      "assertions": 259,
+      "reason": "old malformed store expectation null; now explicit typed rejection, no usable data"
+    },
+    {
+      "gate": "concurrent bootstrap initial",
+      "reason": "one503 under SERIALIZABLE contention; no successor cookie; later controlled retry succeeds; security assertions retained and outcomes made explicit"
+    },
+    {
+      "gate": "recovery replay initial",
+      "passed": 17,
+      "failed": 1,
+      "errors": 1,
+      "assertions": 420,
+      "deadlineMs": 5000,
+      "unchangedRerunPassed": true
+    },
+    {
+      "gate": "later session/HTTP setup",
+      "reason": "unchanged6000ms migration child deadline; session afterAll unconnected-cache error; serial unchanged rechecks passed31/453 and1/149; setup root cause unresolved"
+    },
+    {
+      "gate": "sanitized migration status diagnostic",
+      "exit": 0,
+      "durationMs": 4095,
+      "upToDate": true,
+      "postgresErrorCodes": [],
+      "provesSetupTimingCause": false
+    },
+    {
+      "gate": "historical evidence",
+      "details": [
+        "FE-AUTH-01-verification.json originalVerification and failedObservations",
+        "FE-AUTH-01-correction.json",
+        "browser-correction/results.json"
+      ],
+      "retained": true
+    }
+  ],
+  "remainingRisks": [
+    "SERIALIZABLE contention can fail closed503; no automatic non-idempotent mutation retry",
+    "late cache callbacks/commands can complete after deadline; undelivered anonymous orphans grant no authenticated authority",
+    "SID-digest lookup has no dedicated index in unchanged schema; review production volume/lock performance independently",
+    "production HTTPS ingress/Host/proxy and cross-origin CORS/SameSite deployment",
+    "other browsers, XSS/CSP and comprehensive accessibility",
+    "mail/key/restore/runtime grants/load operations",
+    "historical queue, SIGTERM, audit and migration timing failures"
+  ],
+  "delivery": {
+    "mergeAuthorized": false,
+    "nextPhaseAuthorized": false,
+    "stopAt": "human review"
+  }
+}

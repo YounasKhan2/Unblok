@@ -1,0 +1,251 @@
+{
+  "runner": "external bundled Playwright",
+  "transport": "real Chromium, same-origin HTTP Vite proxy, real API/worker/PostgreSQL/Valkey/Mailpit",
+  "passed": [
+    "protected route",
+    "keyboard and invalid form",
+    "signup",
+    "login cookies CSRF",
+    "restoration and workspace separation",
+    "email verification",
+    "logout-all",
+    "forgot password",
+    "invalid reset preserves authenticated session",
+    "same-context revoked-cookie recovery",
+    "logout",
+    "NEXUS demo separation",
+    "responsive light/dark"
+  ],
+  "visuals": [
+    {
+      "width": 390,
+      "height": 900,
+      "dpr": 1,
+      "theme": "light",
+      "file": "login-390-light.png",
+      "noHorizontalOverflow": true
+    },
+    {
+      "width": 390,
+      "height": 900,
+      "dpr": 1,
+      "theme": "dark",
+      "file": "login-390-dark.png",
+      "noHorizontalOverflow": true
+    }
+  ],
+  "productionCertified": false,
+  "http": [
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/signup",
+      "status": 202
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/email-verification/request",
+      "status": 202
+    },
+    {
+      "path": "/api/v1/auth/email-verification/confirm",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/email-verification/status",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/logout-all",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/password-recovery/request",
+      "status": 202
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/password-recovery/confirm",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/password-recovery/confirm",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/logout",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401
+    }
+  ],
+  "mutationHeaders": [
+    {
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "csrfPresent": true,
+      "originMatches": true
+    }
+  ],
+  "browser": "151.0.7922.34",
+  "revokedMeStatus": 401,
+  "recoveryBootstrap": {
+    "status": 200,
+    "noStore": true,
+    "tokenShape": true
+  },
+  "distinctAnonymousSid": true,
+  "sameBrowserContextRecovery": true,
+  "manualCookieDeletion": false,
+  "unresolved": [],
+  "csrfPosts": 11,
+  "status": "passed"
+}

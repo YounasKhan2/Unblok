@@ -1,0 +1,35 @@
+{
+  "phase":"FE-AUTH-01 focused correction",
+  "reviewedHead":"f573a985ea591165a031db83de544217588837b6",
+  "headLocation":"PR metadata",
+  "branch":"feat/fe-auth-01-integration",
+  "scope":{"backendProductionChanged":false,"migrationsChanged":false,"nexusChanged":false,"cssChanged":false,"dependencyVersionsChanged":false},
+  "decisions":{"restoration":"generation-scoped deduplication; old finally cannot remove newer promise; mutation polling suppressed; stale unauthorized callbacks invalidated","reset":"acceptance followed by independent session check;200 preserves,401 clears,503 blocks routes but retains identity; unknown mutation never implies revocation","nativeFetch":"default wrapper avoids illegal Window receiver; callable transport type excludes Bun-only properties"},
+  "gates":{
+    "focusedFrontend":{"passed":38,"failed":0},
+    "fullFrontend":{"passed":771,"failed":3,"exit":1,"knownNexusFailuresUnchanged":true},
+    "realFrontendHttp":{"passed":1,"failed":0,"assertions":135},
+    "frontendTypecheckLintBuild":{"exit":0},
+    "backendArchitectureTypecheckLintBuild":{"exit":0,"files":365,"edges":1006,"violations":0},
+    "backendArchitecture":{"passed":51,"assertions":59},
+    "backendRegression":{"passed":99,"assertions":260},
+    "authentication":{"passed":26,"assertions":812},
+    "sessions":{"passed":25,"assertions":254},
+    "fences":{"passed":24,"assertions":134},
+    "tenancy":{"passed":34,"assertions":132},
+    "emailFinal":{"passed":16,"assertions":468},
+    "recovery":{"passed":18,"assertions":421},
+    "databaseIntegration":{"passed":2,"assertions":5},
+    "browser":{"runner":"externally bundled Playwright1.62.1","chromium":"151.0.7922.34","status":"partial","exit":1,"details":"browser-correction/results.json","mobileForms":"browser-correction/form-visuals.json","viewportWidths":[320,390,768,1024,1440],"height":900,"dpr":1,"themes":["light","dark"],"screenshotCount":16,"productionCertified":false,"blockingFailure":"Authenticated valid reset leaves revoked HttpOnly cookie; subsequent csrf401 blocks same-context login. Fresh context succeeds. Backend preserved."}
+  },
+  "retainedObservations":[
+    "Original computer-use kernel asset path-not-found reproduced; bundled alternative launches without repository install.",
+    "Actual browser initially fails before any API request: captured fetch called with AuthApi receiver causes illegal invocation. Corrected and regression added.",
+    "Runner password-label exact-match timeout and filtered-header assertion corrected using input names and allHeaders; no security setting changed.",
+    "Initial email suite15pass/1fail,468assertions: unchanged5000ms migration replay timeout. Unchanged rerun16/468 passed; root timing cause unresolved.",
+    "Intermediate backend wrapper typecheck failed on Bun fetch.preconnect; callable transport signature corrected; recheck passed.",
+    "Historical queue timeout/between-test error, SIGTERM143, advisory, three NEXUS failures and previous replay/fixture failures remain unresolved in original evidence. No timeout/assertion weakened."
+  ],
+  "remainingRequirements":["same-context revoked-cookie cleanup requires separate human review","production TLS ingress/proxy/Host","cross-origin cookie/CORS/SameSite deployment","other browsers and comprehensive accessibility/contrast","XSS/CSP","mail operations","runtime grants/key restoration/load"],
+  "delivery":{"mergeAuthorized":false,"nextPhaseAuthorized":false}
+}

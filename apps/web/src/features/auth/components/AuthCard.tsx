@@ -9,6 +9,7 @@
 import React from 'react';
 
 export interface AuthCardProps {
+  appearance?: 'public' | 'application';
   badge?: React.ReactNode;
   title: string;
   subtitle?: string;
@@ -18,6 +19,7 @@ export interface AuthCardProps {
 }
 
 export const AuthCard: React.FC<AuthCardProps> = ({
+  appearance = 'public',
   badge,
   title,
   subtitle,
@@ -26,7 +28,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({
   footer,
 }) => {
   return (
-    <div className="w-full max-w-[440px] mx-auto bg-white border border-[var(--color-pub-border)] rounded-2xl p-6 sm:p-8 shadow-xl shadow-black/[0.04]">
+    <div className={`w-full max-w-[440px] mx-auto ${appearance === 'application' ? 'bg-surface-base' : 'bg-white'} border border-[var(--color-pub-border)] rounded-2xl p-6 sm:p-8 shadow-xl shadow-black/[0.04]`}>
       {/* Optional Top Badge / Status */}
       {badge && <div className="mb-4">{badge}</div>}
 
@@ -36,7 +38,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({
           {title}
         </h1>
         {subtitle && (
-          <p className="mt-1.5 text-xs sm:text-sm text-[var(--color-pub-text-secondary)] leading-relaxed">
+          <p className={`mt-1.5 text-xs sm:text-sm text-[var(--color-pub-text-secondary)] leading-relaxed ${appearance === 'application' ? 'break-words' : ''}`}>
             {subtitle}
           </p>
         )}
