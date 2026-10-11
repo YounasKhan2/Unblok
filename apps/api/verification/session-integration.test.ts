@@ -49,7 +49,7 @@ afterAll(async () => {
   }
 }, 10000);
 function gate() { let release!: () => void; const wait = new Promise<void>(r => { release = r; }); return { wait, release }; }
-async function fixture(options: { settings?: SessionSettings; database?: Database; deny?: boolean; wrap?: (store: BoundedSessionStore) => BoundedSessionStore;
+async function fixture(options: { settings?: SessionSettings; database?: Database; retirementDatabase?: Database; deny?: boolean; wrap?: (store: BoundedSessionStore) => BoundedSessionStore;
   beforeResponse?: (req: Request) => Promise<void>; afterLogout?: (req: Request, saved: Request['session']) => Promise<void> } = {}) {
   const userId = randomUUID(), identityId = randomUUID(), workspaceId = randomUUID(), membershipId = randomUUID(), teamId = randomUUID(), projectId = randomUUID(), issueId = randomUUID();
   await db.transaction(async tx => {
@@ -68,7 +68,7 @@ async function fixture(options: { settings?: SessionSettings; database?: Databas
   const get = connection.store.get.bind(connection.store);
   connection.store.get = (sid, done) => { lookups++; get(sid, done); };
   const sessions = new Sessions(options.wrap?.(connection.store) ?? connection.store, s, {
-    create: input => fences.create(input), rotate: (e, sid, idle) => fences.rotate(e, sid, idle), revoke: e => fences.revoke(e), revokeAll: id => fences.revokeAll(id),
+    create: input => fences.create(input), rotate: (e, sid, idle) => fences.rotate(e, sid, idle), revoke: e => fences.revoke(e), retireSid: d => new AuthFences(options.retirementDatabase ?? db).retireSid(d), revokeAll: id => fences.revokeAll(id),
   }, async assertion => assertion === proof ? { userId, identityId } : null);
   const tenancy = new Tenancy(options.database ?? db, { verify: async () => null }, options.deny ? denyAll : { allows: () => true }, sessions); sessions.bind(tenancy);
   class FixtureModule {} Module({})(FixtureModule);
@@ -85,6 +85,7 @@ async function fixture(options: { settings?: SessionSettings; database?: Databas
     });
   });
   route('/bootstrap', 'get', async (req, res) => { res.json({ csrf: await sessions.bootstrap(req) }); });
+  route('/api/v1/auth/csrf', 'get', async (req, res) => { res.json({ csrf: await sessions.bootstrap(req, true) }); });
   route('/establish', 'post', async (req, res) => { await sessions.establish(req, proof); res.json({ csrf: req.session.state!.csrf }); });
   route('/forged-identity', 'post', async (req, res) => { await sessions.establish(req, req.body); res.json({ unexpected: true }); });
   route('/read', 'get', async (req, res) => { const data = await sessions.withRequest(req, p => tenancy.read(p, workspaceId, q => q.issue(issueId))); res.json(data); });
@@ -138,7 +139,7 @@ test('real Nest middleware regenerates signed SID/CSRF, bounds TTL and leaves he
   expect(await cache.pttl(f.key(auth))).toBeGreaterThan(0);
   expect(await cache.pttl(f.key(auth))).toBeLessThanOrEqual(settings.idleMs);
   expect(read.headers.has('set-cookie')).toBe(false); // ordinary reads do not renew
-  const prod = new Sessions(f.connection.store, settings, { create: i => fences.create(i), rotate: (e, s, d) => fences.rotate(e, s, d), revoke: e => fences.revoke(e), revokeAll: id => fences.revokeAll(id) }, async () => null);
+  const prod = new Sessions(f.connection.store, settings, { create: i => fences.create(i), rotate: (e, s, d) => fences.rotate(e, s, d), revoke: e => fences.revoke(e), retireSid: d => fences.retireSid(d), revokeAll: id => fences.revokeAll(id) }, async () => null);
   prod.bind(new Tenancy(db, { verify: async () => null }, denyAll, prod));
   const app = await createApp(config, { databaseReady: async () => true, queueReady: async () => true, close: async () => {} }, { consume: async () => ({ allowed: true, retryAfter: 1 }) }, createLogger('silent'), prod);
   await app.app.listen(0, '127.0.0.1'); stops.push(app.close);
@@ -421,6 +422,15 @@ test('real HTTPS ingress emits __Host cookie; untrusted forwarded spoof is rejec
     expect(response.status).toBe(200); expect(response.cookie).toStartWith('__Host-unblok.sid=');
     for (const flag of ['HttpOnly', 'Secure', 'SameSite=Lax', 'Path=/']) expect(response.cookie).toContain(flag);
     expect(response.cookie).not.toContain('Domain=');
+    const cleared = await new Promise<{ status: number; cookie: string }>((resolve, reject) => {
+      const request = tlsRequest({ host: '127.0.0.1', port: address.port, path: '/api/v1/auth/csrf', ca: cert, rejectUnauthorized: true,
+        headers: { origin: config.CORS_ORIGINS[0]!, cookie: '__Host-unblok.sid=s%3Amalformed.signature' } }, response => {
+        response.resume(); response.on('end', () => resolve({ status: response.statusCode!, cookie: response.headers['set-cookie']?.[0] ?? '' }));
+      }); request.on('error', reject); request.end();
+    });
+    expect(cleared.status).toBe(401); expect(cleared.cookie).toStartWith('__Host-unblok.sid=;');
+    for (const flag of ['HttpOnly', 'Secure', 'SameSite=Lax', 'Path=/', 'Expires=Thu, 01 Jan 1970']) expect(cleared.cookie).toContain(flag);
+    expect(cleared.cookie).not.toContain('Domain=');
     expect((await f.http('/bootstrap', undefined, 'GET', { 'x-forwarded-proto': 'https' })).status).toBe(403);
     const disabled = await fixture({ settings: { ...secure, trustedProxies: [] } });
     expect((await disabled.http('/bootstrap', undefined, 'GET', { 'x-forwarded-proto': 'https' })).status).toBe(403);
@@ -450,8 +460,13 @@ test('CORS explicitly permits CSRF header, credentials only on opted-in origins;
 });
 test('malformed/forged/duplicate cookies and client identity claims never authenticate', async () => {
   const f = await fixture(), auth = await f.login();
-  for (const cookie of [`${settings.name}=s:forged.signature`, `${settings.name}=%XX`, auth.cookie.slice(0, -4) + 'AAAA', `${auth.cookie}; ${auth.cookie}`, `${settings.name}=${'x'.repeat(8200)}`]) {
+  for (const cookie of [`${settings.name}=s:forged.signature`, `${settings.name}=${encodeURIComponent('s:' + f.sid(auth) + '.' + 'é'.repeat(43))}`, `${settings.name}=%XX`, auth.cookie.slice(0, -4) + 'AAAA', `${auth.cookie}; ${auth.cookie}`, `${settings.name}=${'x'.repeat(8200)}`]) {
     expect([400, 401]).toContain((await f.http('/read', undefined, 'GET', { cookie })).status);
+    const bootstrap = await f.http('/api/v1/auth/csrf', undefined, 'GET', { cookie });
+    expect([400, 401]).toContain(bootstrap.status);
+    expect((await bootstrap.json()).csrf).toBeUndefined();
+    expect(bootstrap.headers.get('cache-control')).toBe('no-store');
+    expect(bootstrap.headers.get('pragma')).toBe('no-cache');
   }
   expect((await f.http('/forged-identity', auth, 'POST')).status).toBe(401);
   expect(await f.sessions.verify({ userId: f.userId })).toBeNull();
@@ -540,4 +555,148 @@ test('HTTP protected write holds PG fences until commit; concurrent logout ackno
   expect((await write).status).toBe(200); expect((await revoke).status).toBe(200);
   expect((await f.http('/write', auth, 'POST')).status).toBe(401);
   expect((await db.client.issue.findUniqueOrThrow({ where: { workspaceId_id: { workspaceId: f.workspaceId, id: f.issueId } } })).title).toBe('After');
+});
+
+
+test('revoked, epoch-stale, deleted and expired signed cookies recover only to a distinct anonymous SID', async () => {
+  for (const reason of ['logout-all', 'epoch', 'family', 'deleted', 'expired'] as const) {
+    const f = await fixture(), auth = await f.login();
+    const raw = (await cache.get(f.key(auth)))!, state = JSON.parse(raw).state;
+    if (reason === 'logout-all') {
+      const other = await f.login(); expect((await f.http('/logout-all', other, 'POST')).status).toBe(200);
+    } else if (reason === 'epoch') {
+      await db.client.$executeRaw`UPDATE users SET auth_epoch = auth_epoch + 1 WHERE id = ${f.userId}::uuid`;
+    } else if (reason === 'family') {
+      await fences.revoke({ userId: state.userId, identityId: state.identityId, familyId: state.familyId,
+        authEpoch: BigInt(state.authEpoch), generation: BigInt(state.generation), sidDigest: createHash('sha256').update(f.sid(auth)).digest('hex') });
+    } else if (reason === 'deleted') await cache.del(f.key(auth));
+    else {
+      const expired = JSON.parse(raw); expired.state.idleExpiresAt = Date.now() - 1;
+      await cache.set(f.key(auth), JSON.stringify(expired), 'EX', 60);
+    }
+    expect((await f.http('/read', auth)).status).toBe(401);
+    const response = await f.http('/api/v1/auth/csrf', auth);
+    expect(response.status).toBe(200); expect(response.headers.get('cache-control')).toBe('no-store');
+    const anonymous = { cookie: f.cookieOf(response), csrf: (await response.json()).csrf as string };
+    expect(anonymous.cookie).not.toBe(auth.cookie); expect(anonymous.csrf).not.toBe(auth.csrf);
+    expect(response.headers.get('set-cookie')).toContain('HttpOnly');
+    expect(response.headers.get('set-cookie')).toContain('Path=/');
+    expect(response.headers.get('set-cookie')).toContain('SameSite=Lax');
+    expect(response.headers.get('set-cookie')).not.toContain('Domain=');
+    expect(JSON.parse((await cache.get(f.key(anonymous)))!).state.kind).toBe('anonymous');
+    expect((await f.http('/read', anonymous)).status).toBe(401);
+    // A real late SET restores the original authenticated snapshot after recovery.
+    await cache.set(f.key(auth), raw, 'EX', 60);
+    expect((await f.http('/read', auth)).status).toBe(401);
+    expect((await db.client.authSessionFamily.findUniqueOrThrow({ where: { id: state.familyId } })).revokedAt).not.toBeNull();
+    const login = await f.http('/establish', anonymous, 'POST'); expect(login.status).toBe(200);
+    expect((await f.http('/read', { cookie: f.cookieOf(login), csrf: (await login.json()).csrf })).status).toBe(200);
+    await f.close();
+  }
+}, 15000);
+
+test('concurrent bootstrap and repeated stale saves cannot reauthorize the predecessor SID', async () => {
+  const f = await fixture(), auth = await f.login(), raw = (await cache.get(f.key(auth)))!;
+  await fences.revokeAll(f.userId);
+  const replies = await Promise.all([f.http('/api/v1/auth/csrf', auth), f.http('/api/v1/auth/csrf', auth),
+    cache.set(f.key(auth), raw, 'EX', 60)]);
+  const cookies = new Set<string>();
+  for (const response of replies.slice(0, 2) as globalThis.Response[]) {
+    expect([200, 503]).toContain(response.status);
+    if (response.status === 503) {
+      expect(f.cookieOf(response)).toBe(`${settings.name}=`); // no successor delivered
+      continue;
+    }
+    cookies.add(f.cookieOf(response));
+    const anonymous = { cookie: f.cookieOf(response), csrf: (await response.json()).csrf };
+    expect(anonymous.cookie).not.toBe(auth.cookie);
+    expect((await f.http('/read', anonymous)).status).toBe(401);
+  }
+  expect(cookies.has(auth.cookie)).toBe(false);
+  // Serializable contention may deny a concurrent recovery; a subsequent
+  // controlled attempt must establish fresh state without reusing the SID.
+  const retry = await f.http('/api/v1/auth/csrf', auth); expect(retry.status).toBe(200);
+  expect(f.cookieOf(retry)).not.toBe(auth.cookie);
+  await cache.set(f.key(auth), raw, 'EX', 60); expect((await f.http('/read', auth)).status).toBe(401);
+});
+
+test('recovery preserves bootstrap trust checks and rejects malformed cached state without an anonymous cookie', async () => {
+  const f = await fixture(), auth = await f.login(), raw = (await cache.get(f.key(auth)))!;
+  await fences.revokeAll(f.userId);
+  for (const headers of [{ origin: 'https://evil.example' }, { origin: 'null' }, { origin: '' },
+    { 'sec-fetch-mode': 'navigate', 'sec-fetch-dest': 'document' }]) {
+    const response = await f.http('/api/v1/auth/csrf', auth, 'GET', headers);
+    expect([401, 403]).toContain(response.status); expect(response.headers.has('set-cookie')).toBe(false);
+  }
+  const payload = JSON.parse(raw); payload.state.absoluteExpiresAt += 86400000;
+  await cache.set(f.key(auth), JSON.stringify(payload), 'EX', 60);
+  const invalid = await f.http('/api/v1/auth/csrf', auth); expect(invalid.status).toBe(401);
+  expect(invalid.headers.get('set-cookie')).toContain('Expires=Thu, 01 Jan 1970');
+  expect(invalid.headers.get('set-cookie')).not.toContain('Max-Age=');
+});
+
+
+test('bootstrap regeneration and anonymous-save timeouts terminalize late callbacks without successor cookie delivery', async () => {
+  for (const phase of ['regenerate', 'save'] as const) {
+    let pause = false, late: (() => Promise<void>) | undefined, lateSid = '';
+    const f = await fixture({ settings: { ...settings, deadlineMs: 80 }, wrap: original => {
+      const regenerate = original.regenerate.bind(original), set = original.set.bind(original);
+      original.regenerate = (req, done) => {
+        if (!pause || phase !== 'regenerate') { regenerate(req, done); return; }
+        late = () => new Promise<void>(resolve => regenerate(req, error => {
+          lateSid = req.sessionID; done(error); resolve();
+        }));
+      };
+      original.set = (sid, data, done) => {
+        if (!pause || phase !== 'save') { set(sid, data, done); return; }
+        lateSid = sid;
+        late = () => new Promise<void>(resolve => set(sid, data, error => { done?.(error); resolve(); }));
+      };
+      return original;
+    }, beforeResponse: async () => { await late?.(); } });
+    const auth = await f.login(), raw = (await cache.get(f.key(auth)))!;
+    await fences.revokeAll(f.userId); pause = true;
+    const response = await f.http('/api/v1/auth/csrf', auth);
+    expect(response.status).toBe(503); expect(lateSid).not.toBe(f.sid(auth));
+    expect(response.headers.getSetCookie()).toHaveLength(1);
+    expect(f.cookieOf(response)).toBe(`${settings.name}=`);
+    const cookie = response.headers.get('set-cookie')!;
+    expect(cookie).toContain('Path=/'); expect(cookie).toContain('HttpOnly'); expect(cookie).toContain('SameSite=Lax');
+    expect(cookie).not.toContain('Domain='); expect(cookie).toContain('Expires=Thu, 01 Jan 1970');
+    await cache.set(f.key(auth), raw, 'EX', 60); expect((await f.http('/read', auth)).status).toBe(401);
+    // A late saved anonymous orphan is not delivered to the browser and cannot
+    // itself authorize a protected request. No cancellation claim is made.
+    if (phase === 'save') expect(JSON.parse((await cache.get(settings.prefix + lateSid))!).state.kind).toBe('anonymous');
+  }
+}, 10000);
+
+test('real cache and PostgreSQL outages prevent revoked-cookie bootstrap recovery', async () => {
+  const f = await fixture(), auth = await f.login(); await fences.revokeAll(f.userId);
+  await f.connection.close(); const unavailable = await f.http('/api/v1/auth/csrf', auth);
+  expect(unavailable.status).toBe(503); expect(unavailable.headers.has('set-cookie')).toBe(false);
+  const badUrl = new URL(dbUrl); badUrl.port = '1';
+  const offline = new Database(badUrl.toString());
+  try {
+    const g = await fixture({ database: offline }), valid = await g.login();
+    const denied = await g.http('/api/v1/auth/csrf', valid);
+    expect(denied.status).toBe(503); expect(denied.headers.has('set-cookie')).toBe(false);
+    const missing = await fixture({ retirementDatabase: offline }), missingAuth = await missing.login();
+    await cache.del(missing.key(missingAuth));
+    const retirement = await missing.http('/api/v1/auth/csrf', missingAuth);
+    expect(retirement.status).toBe(503); expect(missing.cookieOf(retirement)).toBe(`${settings.name}=`);
+    expect(retirement.headers.get('set-cookie')).toContain('Expires=Thu, 01 Jan 1970');
+  } finally { await offline.close(); }
+}, 10000);
+
+
+test('cache-missing bootstrap SID retirement orders after an already-admitted protected write', async () => {
+  const f = await fixture(), auth = await f.login(), raw = (await cache.get(f.key(auth)))!, held = f.hold();
+  const write = f.http('/write', auth, 'POST'); await held.entered;
+  await cache.del(f.key(auth)); let completed = false;
+  const recovery = f.http('/api/v1/auth/csrf', auth).then(response => { completed = true; return response; });
+  await Bun.sleep(50); expect(completed).toBe(false); held.release();
+  expect((await write).status).toBe(200); const response = await recovery; expect(response.status).toBe(200);
+  expect(f.cookieOf(response)).not.toBe(auth.cookie);
+  expect((await db.client.issue.findUniqueOrThrow({ where: { workspaceId_id: { workspaceId: f.workspaceId, id: f.issueId } } })).title).toBe('After');
+  await cache.set(f.key(auth), raw, 'EX', 60); expect((await f.http('/read', auth)).status).toBe(401);
 });

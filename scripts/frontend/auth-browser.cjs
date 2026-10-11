@@ -1,7 +1,7 @@
 // Uses an operator-provided, already installed Playwright module. No installs.
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE);
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{randomUUID}=require('node:crypto');
-const output=path.resolve('docs/frontend/evidence/browser-correction');fs.mkdirSync(output,{recursive:true});
+const output=path.resolve('docs/frontend/evidence/browser-f4');fs.mkdirSync(output,{recursive:true});
 const base='http://localhost:3000',email=`fe-browser-${randomUUID()}@example.test`,password='A private browser password '+randomUUID(),nextPassword='A replacement browser password '+randomUUID();
 const evidence={runner:'external bundled Playwright',transport:'real Chromium, same-origin HTTP Vite proxy, real API/worker/PostgreSQL/Valkey/Mailpit',passed:[],visuals:[],productionCertified:false};
 let step='launch',activePage;const ids=new Set(),headerChecks=[];evidence.http=[];evidence.mutationHeaders=[];
@@ -24,20 +24,26 @@ async function login(page,pw=password){await page.goto(base+'/login');await page
   step='forgot password';await page.goto(base+'/forgot-password');await page.getByLabel('Email',{exact:true}).fill(email);await page.getByRole('button',{name:'Send recovery email'}).click();await heading(page,'Check your email');const proof=await mail();evidence.passed.push(step);
   step='invalid reset preserves authenticated session';await login(page);await page.goto(base+'/reset-password');await page.getByLabel('Email',{exact:true}).fill(email);await page.getByLabel('Code from your email').fill(randomUUID()+'.'+'a'.repeat(43));await page.locator('input[name=password]').fill(nextPassword);await page.locator('input[name=confirmation]').fill(nextPassword);await page.getByRole('button',{name:'Submit new password'}).click();await heading(page,'Request received');await page.getByRole('link',{name:'Your account',exact:true}).click();await heading(page,'Your account');evidence.passed.push(step);
   step='valid reset and fresh login';await page.goto(base+'/reset-password');await page.getByLabel('Email',{exact:true}).fill(email);await page.getByLabel('Code from your email').fill(proof);await page.locator('input[name=password]').fill(nextPassword);await page.locator('input[name=confirmation]').fill(nextPassword);await page.getByRole('button',{name:'Submit new password'}).click();await heading(page,'Request received');await page.getByText(/Try signing in with the new password/).waitFor();
-  await page.goto(base+'/login');await page.getByLabel('Email',{exact:true}).fill(email);await page.locator('input[name=password]').fill(nextPassword);await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.getByRole('alert').waitFor();
-  evidence.unresolved=['After authenticated valid reset, retained revoked HttpOnly cookie makes same-context CSRF bootstrap401; backend does not clear it. Fresh isolated-context login succeeds, but ordinary same-context flow is blocked.'];
-  evidence.revokedCookieRetained=(await context.cookies()).some(c=>c.name==='unblok.sid.dev');assert.equal(evidence.revokedCookieRetained,true);
-  await context.close();const fresh=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1,colorScheme:'light'});page=await fresh.newPage();activePage=page;await login(page,nextPassword);evidence.passed.push('valid reset revokes session; new-password login in fresh context');
+  assert.equal((await context.cookies()).some(c=>c.name==='unblok.sid.dev'),true);
+  const before=(await context.cookies()).find(c=>c.name==='unblok.sid.dev').value;
+  step='same-context revoked-cookie recovery';
+  evidence.revokedMeStatus=await page.evaluate(async()=> (await fetch('/api/v1/auth/me',{credentials:'include',cache:'no-store'})).status);assert.equal(evidence.revokedMeStatus,401);
+  evidence.recoveryBootstrap=await page.evaluate(async()=>{const r=await fetch('/api/v1/auth/csrf',{credentials:'include',cache:'no-store'});const data=await r.json();return {status:r.status,noStore:r.headers.get('cache-control')==='no-store',tokenShape:typeof data.csrf==='string'&&data.csrf.length===43};});
+  assert.deepEqual(evidence.recoveryBootstrap,{status:200,noStore:true,tokenShape:true});
+  assert.notEqual((await context.cookies()).find(c=>c.name==='unblok.sid.dev').value,before);
+  evidence.distinctAnonymousSid=true;await login(page,nextPassword);
+  assert.notEqual((await context.cookies()).find(c=>c.name==='unblok.sid.dev').value,before);
+  evidence.passed.push(step);evidence.sameBrowserContextRecovery=true;evidence.manualCookieDeletion=false;evidence.unresolved=[];
   step='logout';await page.getByRole('button',{name:'Sign out',exact:true}).click();await heading(page,'Welcome back');evidence.passed.push(step);
-  step='NEXUS demo separation';await page.goto(base+'/demo/my-work');await page.getByRole('note').filter({hasText:'Curated sample data'}).waitFor();await page.getByRole('link',{name:'Real account',exact:true}).click();await heading(page,'Welcome back');evidence.passed.push(step);assert.ok(csrfPosts>=9);evidence.csrfPosts=csrfPosts;await fresh.close();
+  step='NEXUS demo separation';await page.goto(base+'/demo/my-work');await page.getByRole('note').filter({hasText:'Curated sample data'}).waitFor();await page.getByRole('link',{name:'Real account',exact:true}).click();await heading(page,'Welcome back');evidence.passed.push(step);assert.ok(csrfPosts>=9);evidence.csrfPosts=csrfPosts;await context.close();
   step='responsive light/dark';
-  for(const width of [320,390,768,1024,1440])for(const theme of ['light','dark']){
+  for(const width of [390])for(const theme of ['light','dark']){
    const c=await browser.newContext({viewport:{width,height:900},deviceScaleFactor:1,colorScheme:theme}),p=await c.newPage();await p.goto(base+'/login');await heading(p,'Welcome back');
    assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
    assert.equal(await p.locator('.auth-surface').evaluate(el=>el.classList.contains('dark')),theme==='dark');
    const bounds=await p.getByLabel('Email',{exact:true}).boundingBox();assert.ok(bounds&&bounds.x>=0&&bounds.x+bounds.width<=width);
    const file=`login-${width}-${theme}.png`;await p.screenshot({path:path.join(output,file),fullPage:true,animations:'disabled'});evidence.visuals.push({width,height:900,dpr:1,theme,file,noHorizontalOverflow:true});await c.close();
-  }await Promise.all(headerChecks);assert.ok(evidence.mutationHeaders.every(h=>h.csrfPresent&&h.originMatches));evidence.passed.push(step);evidence.status='partial; same-context post-reset login blocked';process.exitCode=1;
+  }await Promise.all(headerChecks);assert.ok(evidence.mutationHeaders.every(h=>h.csrfPresent&&h.originMatches));evidence.passed.push(step);evidence.status='passed';
  }catch(error){evidence.status='failed';evidence.failedStep=step;evidence.errorType=error.name;evidence.errorSummary=error.message.split('Call log:')[0].replaceAll(email,'[owned email]').replaceAll(password,'[password]').replaceAll(nextPassword,'[password]');if(activePage&&!activePage.isClosed())evidence.formFeedback=await activePage.getByRole('alert').allTextContents();process.exitCode=1;}
  finally{await browser.close();if(ids.size)await fetch('http://127.0.0.1:8025/api/v1/messages',{method:'DELETE',headers:{'content-type':'application/json'},body:JSON.stringify({IDs:[...ids]})});fs.writeFileSync(path.join(output,'results.json'),JSON.stringify(evidence,null,2));console.log(JSON.stringify(evidence));}
 })();

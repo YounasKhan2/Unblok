@@ -4,11 +4,12 @@
   "base": "1b619b189f0e7d89fc16f70ba766306354259eb6",
   "branch": "feat/fe-auth-01-integration",
   "headLocation": "PR metadata",
-  "status": "focused correction for human review; actual browser partial with same-context post-reset cookie failure; not merged or deployed",
+  "status": "F4 for human review; same-context Chromium verified locally; not merged or deployed",
   "correction": {"reviewedHead":"f573a985ea591165a031db83de544217588837b6","evidence":"FE-AUTH-01-correction.json","headLocation":"PR metadata"},
+  "F4": {"reviewedHead":"cab718ea77ab2ddf943f959feb483e307cd25f87","evidence":"FE-AUTH-01-F4.json","headLocation":"PR metadata"},
   "environment": {"os":"Windows","bun":"1.4.2","nestjs":"11.2.7","prisma":"6.19.3","postgresql":"17.6","valkey":"8.1.3","mailpit":"local pinned 1.27.8"},
-  "scope": {"backendProductionChanged":false,"schemaMigrationsChanged":false,"nexusFixturesChanged":false,"businessComponentsChanged":false,"workspaceApiImplemented":false,"externalPackageResolutionsChanged":false,"dependencyChange":"web uses existing @unblok/contracts workspace"},
-  "authority": {"source":"strict server me response","csrf":"memory-only bootstrap token, reused until rejection/login rotation","cookies":"credentials include; reviewed backend unchanged","storage":"no real auth identity, password, proof or CSRF in localStorage/sessionStorage","mutationRetries":false,"demo":"explicit /demo basename, curated-data label, prototype providers excluded from live root"},
+  "scope": {"backendProductionChanged":true,"backendCorrection":"F4 narrow session-boundary recovery","schemaMigrationsChanged":false,"nexusFixturesChanged":false,"businessComponentsChanged":false,"workspaceApiImplemented":false,"externalPackageResolutionsChanged":false,"dependencyChange":"web uses existing @unblok/contracts workspace"},
+  "authority": {"source":"strict server me response","csrf":"memory-only bootstrap token, reused until rejection/login rotation","cookies":"credentials include; F4 signed predecessor retirement and fresh anonymous recovery","storage":"no real auth identity, password, proof or CSRF in localStorage/sessionStorage","mutationRetries":false,"demo":"explicit /demo basename, curated-data label, prototype providers excluded from live root"},
   "originalVerification": {
     "focusedFrontend":{"passed":31,"failed":0,"files":4},
     "fullFrontend":{"passed":764,"failed":3,"files":54,"exit":1},
@@ -41,6 +42,6 @@
     {"gate":"new HTTP development","observations":["root reflect-metadata resolution failure","6000ms migration child deadline hit","unconnected cleanup error; one owned database subsequently removed","test cookie jar retained clear-cookie, causing login401"],"fixtureCorrectionsOnly":true},
     {"gate":"SSR development","failed":4,"reason":"expected lowercase autocomplete but React SSR emits autoComplete","corrected":true}
   ],
-  "pending": ["real browser flows and keyboard interaction","responsive light/dark visual review","production TLS/ingress/Host/proxy","cookie SameSite and credentialed CORS topology","XSS/CSP review","mail deployment","runtime grants and restore/key operations","queue/lifecycle/audit reliability"],
+  "pending": ["other browsers and comprehensive accessibility/contrast","SID retirement lookup/index/lock/load review","production TLS/ingress/Host/proxy","cookie SameSite and credentialed CORS topology","XSS/CSP review","mail deployment","runtime grants and restore/key operations","queue/lifecycle/audit reliability"],
   "delivery": {"mergeAuthorized":false,"nextPhaseAuthorized":false}
 }

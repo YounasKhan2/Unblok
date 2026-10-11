@@ -34,7 +34,7 @@ async function fixture(){
   const settings={...sessionSettings(config,{SESSION_SECRETS:randomBytes(32).toString('hex'),SESSION_NAMESPACE:'test'}),prefix};
   const connection=await connectSessionStore(config.REDIS_URL,settings),credentials=new AccountCredentials(database),fences=new AuthFences(database);
   const auth=new Authentication({create:i=>credentials.create(i),lookup:e=>credentials.lookup(e),confirm:s=>credentials.confirm(s)},await Passwords.create(),new AuthenticationLimits(cache,settings.secrets[0]!,prefix),new PasswordRecovery(database,recoveryKey));
-  const sessions=new Sessions(connection.store,settings,{create:i=>fences.create(i),rotate:(e,d,idle)=>fences.rotate(e,d,idle),revoke:e=>fences.revoke(e),revokeAll:id=>fences.revokeAll(id)},a=>auth.resolveIdentity(a));
+  const sessions=new Sessions(connection.store,settings,{create:i=>fences.create(i),rotate:(e,d,idle)=>fences.rotate(e,d,idle),revoke:e=>fences.revoke(e),retireSid:d=>fences.retireSid(d),revokeAll:id=>fences.revokeAll(id)},a=>auth.resolveIdentity(a));
   const tenancy=new Tenancy(database,{verify:async()=>null},denyAll,sessions,verificationKey);sessions.bind(tenancy);auth.bind(sessions,tenancy);
   const server=await createApp(config,{databaseReady:()=>database.ready(),queueReady:async()=>await cache.ping()==='PONG',close:()=>connection.close()},new RedisRateLimiter(cache,120,60000,prefix+'coarse:'),createLogger('silent'),sessions,auth);
   await server.app.listen(0,'127.0.0.1');stops.push(server.close);
@@ -77,6 +77,9 @@ test('shipped frontend client: signup, login, restoration, mail verification/rec
   const proof=await deliver(email,true),newPassword='A new long private frontend test password';
   const anonymous=f.client();await anonymous.refresh();await anonymous.reset({email,token:proof,password:newPassword});expect(anonymous.snapshot().status).toBe('anonymous');
   await s.refresh();expect(s.snapshot().status).toBe('anonymous');
+  // The same cookie jar still holds the revoked HttpOnly-equivalent cookie.
+  // No manual deletion or replacement client is used for recovery.
+  await s.login({email,password:newPassword});expect(s.snapshot().status).toBe('authenticated');
   await expect(anonymous.login({email,password})).rejects.toMatchObject({status:401});
   console.info('FE HTTP: login after reset');await anonymous.login({email,password:newPassword});expect(anonymous.snapshot().user?.emailVerified).toBe(true);
   await anonymous.logout();await anonymous.refresh();expect(anonymous.snapshot().status).toBe('anonymous');

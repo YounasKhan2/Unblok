@@ -1,10 +1,10 @@
-import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import session from 'express-session';
 import type { Request, RequestHandler, Response } from 'express';
 import { AuthUnavailableError, Tenancy, TenantAccessError, type SessionEvidence, type SessionVerifier, type VerifiedPrincipal } from '@unblok/database';
 import { normalizeError, type CorrelatedRequest } from '../../../errors';
 import { withDeadline } from '@unblok/backend-runtime';
-import { validSid, validState, type SessionState, type BoundedSessionStore } from '../infrastructure/store';
+import { InvalidSessionDataError, validSid, validState, type SessionState, type BoundedSessionStore } from '../infrastructure/store';
 import type { SessionSettings } from '../infrastructure/settings';
 
 export interface SessionFences {
@@ -12,8 +12,9 @@ export interface SessionFences {
   rotate(evidence: SessionEvidence, digest: string, idle: Date): Promise<SessionEvidence>;
   revoke(evidence: SessionEvidence): Promise<void>;
   revokeAll(userId: string): Promise<void>;
+  retireSid(sidDigest: string): Promise<void>;
 }
-type Boundary = { sid: string; response: Response; abort: AbortController; used: boolean; terminal?: boolean; evidence?: SessionEvidence; state?: SessionState };
+type Boundary = { sid: string; response: Response; abort: AbortController; used: boolean; obsoleteSid?: string; terminal?: boolean; evidence?: SessionEvidence; state?: SessionState };
 const random = () => randomBytes(32).toString('base64url');
 const digest = (sid: string) => createHash('sha256').update(sid).digest('hex');
 const health = (r: Request) => r.method === 'GET' && ['/live', '/ready', '/api/v1/live', '/api/v1/ready'].includes(r.path);
@@ -44,19 +45,49 @@ export class Sessions implements SessionVerifier {
       generation: BigInt(s.generation), sidDigest: digest(boundary.sid) });
     return boundary.evidence;
   }
+  private signedSid(cookie: string): string | null {
+    let value: string;
+    try { value = decodeURIComponent(cookie.slice(cookie.indexOf('=') + 1)); } catch { return null; }
+    if (!value.startsWith('s:')) return null;
+    const sid = value.slice(2, value.lastIndexOf('.')), signature = value.slice(value.lastIndexOf('.') + 1);
+    if (!validSid(sid) || !/^[A-Za-z0-9+/]{43}$/.test(signature)) return null;
+    return this.settings.secrets.some(secret => {
+      const expected = createHmac('sha256', secret).update(sid).digest('base64').replace(/=+$/, '');
+      return signature.length === expected.length && timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+    }) ? sid : null;
+  }
   middleware(): RequestHandler {
     const middleware = session({ store: this.store, secret: this.settings.secrets, name: this.settings.name,
       genid: random, resave: false, saveUninitialized: false, rolling: false,
       cookie: { httpOnly: true, secure: this.settings.secure, sameSite: 'lax', path: '/', maxAge: this.settings.idleMs } });
     return (req, res, next) => {
       if (health(req)) { next(); return; }
+      if (req.method === 'GET' && req.path === '/api/v1/auth/csrf') {
+        res.setHeader('Cache-Control', 'no-store'); res.setHeader('Pragma', 'no-cache');
+      }
       if (this.settings.secure && !req.secure) { failure(req, res, 403); return; }
       const cookie = req.get('cookie') ?? '';
       const copies = cookie.split(';').filter(c => c.includes('=') && c.slice(0, c.indexOf('=')).trim() === this.settings.name);
       if (cookie.length > 8192 || copies.length > 1) { failure(req, res, 400); return; }
+      const presentedSid = copies.length ? this.signedSid(copies[0]!) : null;
+      if (copies.length && !presentedSid) {
+        res.clearCookie(this.settings.name, { httpOnly: true, secure: this.settings.secure, sameSite: 'lax', path: '/' });
+        failure(req, res, 401); return;
+      }
       middleware(req, res, error => {
-        if (error) { failure(req, res, 503); return; }
-        if (!validSid(req.sessionID) || (copies.length && !validState(req.session?.state))) {
+        if (error) {
+          if (error instanceof InvalidSessionDataError) {
+            res.clearCookie(this.settings.name, { httpOnly: true, secure: this.settings.secure, sameSite: 'lax', path: '/' });
+            failure(req, res, 401);
+          } else failure(req, res, 503);
+          return;
+        }
+        // Missing/expired signed sessions may reach only the reviewed bootstrap.
+        // The library has already generated a distinct SID. Origin/metadata and
+        // auth rate limits still run before that anonymous state can be saved.
+        const absentBootstrap = req.method === 'GET' && req.path === '/api/v1/auth/csrf' &&
+          presentedSid !== null && req.sessionID !== presentedSid;
+        if (!validSid(req.sessionID) || (copies.length && !validState(req.session?.state) && !absentBootstrap)) {
           res.clearCookie(this.settings.name, { httpOnly: true, secure: this.settings.secure, sameSite: 'lax', path: '/' });
           failure(req, res, 401); return;
         }
@@ -68,7 +99,7 @@ export class Sessions implements SessionVerifier {
         const abort = new AbortController();
         const end = () => abort.abort();
         req.once('aborted', end); res.once('close', end); res.once('finish', end);
-        const boundary: Boundary = { sid: req.sessionID, response: res, abort, used: false };
+        const boundary: Boundary = { sid: req.sessionID, response: res, abort, used: false, ...(absentBootstrap ? { obsoleteSid: presentedSid! } : {}) };
         this.#requests.set(req, boundary);
         // Late library callbacks can restore req.session. Remove it before
         // express-session's finalization and header hooks on terminal requests.
@@ -142,19 +173,38 @@ export class Sessions implements SessionVerifier {
       ['cors', 'same-origin'].includes(mode ?? '') && this.settings.origins.includes(requestOrigin);
     if (req.method !== 'GET' || (!sameOrigin && !this.settings.origins.includes(origin ?? ''))) throw new TenantAccessError();
     b.response.setHeader('Cache-Control', 'no-store');
+    if (b.obsoleteSid) {
+      // A deleted/expired cache entry is not proof of durable retirement.
+      // Fence its actual signed SID before issuing any replacement cookie.
+      try { await this.fences.retireSid(digest(b.obsoleteSid)); }
+      catch (error) { this.abandon(req, b); throw error; }
+    }
     const existing = validState(req.session.state);
     if (existing?.kind === 'authenticated') {
       // A restored cache entry is not authority. Reuse the fresh request-bound
       // verifier and PostgreSQL fences before exposing an authenticated token.
-      await this.withRequest(req, async () => {});
-      this.admittedEvidence(b);
-      return b.state!.csrf;
+      try {
+        await this.withRequest(req, async () => {});
+        this.admittedEvidence(b);
+        return b.state!.csrf;
+      } catch (error) {
+        // Only definitive authority denial permits anonymous recovery. Outages
+        // do not. Never convert the obsolete SID's state into anonymous state.
+        if (!(error instanceof TenantAccessError) || b.abort.signal.aborted) throw error;
+        try {
+          await this.fences.retireSid(digest(b.sid));
+          await this.operation(done => req.session.regenerate(done));
+          if (b.abort.signal.aborted) throw new TenantAccessError();
+          b.sid = req.sessionID; delete b.evidence; delete b.state;
+        } catch (failure) { this.abandon(req, b); throw failure; }
+      }
     }
-    if (existing) return existing.csrf;
+    if (existing?.kind === 'anonymous') return existing.csrf;
     const now = Date.now(), csrf = random();
     try {
       await this.save(req, { version: 1, kind: 'anonymous', csrf, issuedAt: now,
         idleExpiresAt: now + this.settings.anonymousMs, absoluteExpiresAt: now + this.settings.anonymousMs });
+      if (b.abort.signal.aborted) throw new TenantAccessError();
     } catch (error) { this.abandon(req, b); throw error; }
     return csrf;
   }

@@ -1,6 +1,6 @@
 # FE-AUTH-01 — Real frontend authentication
 
-Implemented for human review on `feat/fe-auth-01-integration`; not merged, deployed or browser-certified. Exact clean fetched base: `1b619b189f0e7d89fc16f70ba766306354259eb6`, including PR #32 and the roadmap handoff. Final head is recorded in PR metadata. Reviewed backend reports 20–23 and the actual shared Zod/controller/session contracts. Evidence: [verification JSON](evidence/FE-AUTH-01-verification.json). The focused correction section below supersedes the historical initial verification matrix.
+Implemented for human review on `feat/fe-auth-01-integration`; not merged, deployed or production-certified. Exact clean fetched base: `1b619b189f0e7d89fc16f70ba766306354259eb6`, including PR #32 and the roadmap handoff. Final head is recorded in PR metadata. Reviewed backend reports 20–23 and the actual shared Zod/controller/session contracts. Evidence: [verification JSON](evidence/FE-AUTH-01-verification.json). The F4 section below is current; earlier matrices and the revoked-cookie failure remain historical evidence.
 
 ## Audit and scope
 
@@ -71,7 +71,7 @@ Development observations are preserved: initial root reflect-metadata test impor
 
 Actual browser flows and keyboard interaction; 320/390/768/1024/1440 layouts in both themes; HTTPS ingress, Host allowlists and forwarded-header enforcement; SameSite/cross-origin cookie and CORS topology; XSS/CSP and browser storage inspection; mail relay/provider and delivery operations; accessibility/contrast review; rate-limit UX under load; known queue/lifecycle/audit reliability; key/backup restoration and runtime grants remain unresolved. Build retains the existing Vite native-config and large-chunk warnings. No production readiness or launch certification is claimed. Stop at review; no merge or business/frontend data integration follows this change.
 
-## PR #33 focused corrections — current verification
+## PR #33 F1–F3 corrections — historical verification
 
 Reviewed head `f573a985ea591165a031db83de544217588837b6`; one correction commit on the existing branch. Backend production, existing migrations, fixtures, dependency versions, CSS and approved design remain unchanged.
 
@@ -97,3 +97,34 @@ Actual browser passes: anonymous protected-route redirect; keyboard focus and in
 | Browser |Partial, exit1 for retained revoked-cookie same-context reset/login failure; no production certification|
 
 An intermediate backend typecheck detected Bun's fetch.preconnect augmentation on the wrapper type; the transport now specifies only the callable signature and recheck passes. Vite also logged a SessionGuard error during source-edit hot refresh; final navigation/guard checks and captured forms passed, but no general HMR reliability claim is made. Historical three NEXUS failures, queue notification timeout/between-test error, SIGTERM143 and deepmerge-ts advisory remain unresolved; their earlier executions above remain evidence and are not relabelled as passing. HTTPS ingress/proxy, production CORS/SameSite topology, CSP/XSS, browser coverage beyond Chromium, comprehensive accessibility/contrast, operational mail/key/grants/restore and load review remain pending. Local same-origin HTTP evidence is not production TLS certification. Stop at human review; do not merge or start BE-API-00.
+
+
+## PR #33 F4 — revoked-cookie recovery (current)
+
+Reviewed HEAD `cab718ea77ab2ddf943f959feb483e307cd25f87`; final SHA is in PR metadata. Four production files change: API composition, Sessions, bounded Store, and database AuthFences. Frontend production, NEXUS, Workspace APIs, contracts, dependencies, schema and all migrations remain unchanged.
+
+Only the reviewed GET CSRF bootstrap can recover definitively denied authenticated state, after existing Origin/Fetch Metadata checks and endpoint rate admission. It retires the server-verified presented SID digest in PostgreSQL, regenerates, then explicitly saves fresh anonymous state. It never returns the predecessor CSRF token or rewrites the old SID as anonymous. Missing/recognizably expired signed cookies reach only this bootstrap: signature validation is required, express-session generates a distinct SID, and durable retirement precedes its save. `/me` still denies revoked authority. Malformed/extended/future-issued/extra-field state is explicit rejection, distinct from recognizable expiration. Cache/PG outages never become authentication success. All bootstrap responses, including middleware rejection, are no-store/no-cache.
+
+Cache deletion alone is insufficient because PostgreSQL may still authorize a restored cache snapshot. Server-private `retireSid()` closes that gap using bounded SERIALIZABLE transactions, existing user-before-family locks, and durable family revocation. Rotation either changes the old digest first or encounters revocation. Already-admitted protected writes may commit before retirement, which waits on their fence; later authority fails. No immediate cancellation of prior work is claimed.
+
+Regeneration/save failure uses existing terminal response/header hooks: clear the cookie and suppress late callback finalization/cookie delivery. Timeout is not cancellation: late anonymous SET can leave an undelivered orphan that has no authenticated authority. Successful replacement uses the same host-only cookie name/Path with a different SID. Deletion matches configured name, Path=/, HttpOnly, SameSite=Lax, Secure where required, no Domain; real HTTPS proxy tests check __Host deletion attributes.
+
+Real PostgreSQL/Valkey/HTTP regressions cover logout-all from another session, epoch changes, family revocation, deletion, expiry, repeated old snapshot restoration, concurrent bootstrap/stale SET, forbidden origins/navigation, malformed cookies/state, late regeneration/save completion, real cache/PG outages, and protected-write/retirement ordering. Existing ownership/restoration tests now require fresh anonymous token/SID, continued `/me` denial, and non-disclosure of predecessor tokens. The shipped frontend HTTP client logs back in after reset in the same retained-cookie jar.
+
+Actual Chromium passes signup/login → verification through worker/Mailpit → authenticated password reset → retained-cookie `/me`401 → CSRF200/no-store with a different anonymous SID → new-password login200 in the original context. No cookie deletion, context replacement, CSRF disablement or fallback is used for recovery. Another context tests logout-all only. Two 390×900,DPR1 light/dark login captures supplement the earlier retained 16 captures. All 11 main-context mutations carry CSRF and correct Origin. [Browser evidence](evidence/browser-f4/results.json) stores statuses/shape assertions without passwords, proofs or cookie values. Reproduce with the existing runner, installed PLAYWRIGHT_MODULE and local API/worker/web/infra; no install is required.
+
+| F4 gate | Final result (tests/assertions unless stated) |
+| --- | --- |
+| Session security |31/473 passed|
+| Authentication / fences / tenancy |26/827,24/134,34/132 passed|
+| Email / recovery / database integration |16/468,18/421,2/5 passed; migration/schema replay included|
+| Shipped frontend HTTP |1/149 passed|
+| Backend architecture / regression |51/59,99/263 passed|
+| Architecture, typecheck/lint/build, frontend lint/build, diff |Passed;365 sources,1006 edges,zero violations; web lint remains tsc|
+| Full frontend |771 pass,3 existing NEXUS failures|
+| Chromium |Passed local same-context flow; no production certification|
+| Infra / lifecycle / audit |4 pass,1 fail,1 between-test error,14 assertions /1 pass,2 fail,7 assertions /exit1 high deepmerge-ts|
+
+Failed observations remain explicit. Initial auth24/2 and regression98/1 expected the old denied-bootstrap/null-malformed contract; tests now enforce fresh SID/non-disclosure/explicit malformed denial. Initial concurrency assumed two successes; one503 occurred. The test now enforces no successor cookie on503, old SID denial, and a controlled later bootstrap success; no implicit mutation retry or timeout change. Recovery replay initially17/1 with one error at unchanged5000ms; unchanged rerun18/0. A focused cookie run and later full session/HTTP runs hit unchanged6000ms migration child limits; session cleanup also errored on unconnected cache. Serial unchanged rechecks passed31/453 and1/149; final checks are in [F4 JSON](evidence/FE-AUTH-01-F4.json). Sanitized migration status diagnostic: up-to-date,exit0,4095ms; setup timing root cause remains unresolved. Historical queue notification5000ms/error, API/worker SIGTERM143, Prisma advisory, three NEXUS failures and earlier browser/tool failures remain evidence.
+
+Remaining review: SERIALIZABLE contention fails closed and may require a deliberate new bootstrap attempt. Late cache operations are not canceled. The unchanged schema has no SID-digest index: bounded lookup/lock performance at production volume and any indexing change need independent review. Production HTTPS/Host/proxy, cross-origin CORS/SameSite, other browsers, CSP/XSS, comprehensive accessibility, mail/key/restore/runtime grants and abuse/load operations remain unverified. The local blocker is resolved; this is not production certification. Stop at human review; no merge or next phase.

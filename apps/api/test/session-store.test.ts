@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test';
 import session from 'express-session';
 import { AuthUnavailableError } from '@unblok/database';
 import { loadApiConfig } from '@unblok/backend-runtime';
-import { BoundedSessionStore, validState } from '../src/modules/sessions/infrastructure/store';
+import { BoundedSessionStore, InvalidSessionDataError, validState } from '../src/modules/sessions/infrastructure/store';
 import { sessionSettings } from '../src/modules/sessions/infrastructure/settings';
 
 const config = loadApiConfig({ NODE_ENV: 'test', DATABASE_URL: 'postgresql://user:private@localhost/test', REDIS_URL: 'redis://:private@localhost:6379/0', CORS_ORIGINS: 'http://localhost:3000' });
@@ -67,7 +67,11 @@ test('malformed SID and malformed store data never produce usable state; touch c
   underlying.get = (_sid, done) => done(undefined, { cookie: new session.Cookie(), state: undefined } as unknown as session.SessionData);
   underlying.touch = () => { touched = true; };
   const store = new BoundedSessionStore(underlying, 20);
-  const get = (sid: string) => new Promise(resolve => store.get(sid, (_error, data) => resolve(data)));
-  expect(await get('../escape')).toBeNull(); expect(await get('a'.repeat(43))).toBeNull();
+  const get = (sid: string) => new Promise<{error: unknown; data: unknown}>(resolve => store.get(sid, (error, data) => resolve({error, data})));
+  expect((await get('../escape')).data).toBeNull();
+  const invalid = await get('a'.repeat(43)); expect(invalid.error).toBeInstanceOf(InvalidSessionDataError); expect(invalid.data).toBeUndefined();
+  const now = Date.now();
+  underlying.get = (_sid, done) => done(undefined, { cookie: new session.Cookie(), state: { version: 1, kind: 'anonymous', csrf: 'a'.repeat(43), issuedAt: now - 10000, idleExpiresAt: now - 1, absoluteExpiresAt: now + 1000 } });
+  const expired = await get('a'.repeat(43)); expect(expired.error).toBeUndefined(); expect(expired.data).toBeNull();
   store.touch('a'.repeat(43), { cookie: new session.Cookie() }); expect(touched).toBe(false);
 });

@@ -58,7 +58,7 @@ async function fixture(options: { afterConfirmation?: () => Promise<void>; redis
   const authentication = new Authentication({ create: i => credentials.create(i), lookup: e => credentials.lookup(e), confirm: async snapshot => {
     const valid = await credentials.confirm(snapshot); if (valid) await options.afterConfirmation?.(); return valid;
   } }, await Passwords.create(), limits, recovery);
-  const sessions = new Sessions(connection.store, settings, { create: i => fences.create(i), rotate: (e, d, idle) => fences.rotate(e, d, idle), revoke: e => fences.revoke(e), revokeAll: id => fences.revokeAll(id) }, a => authentication.resolveIdentity(a));
+  const sessions = new Sessions(connection.store, settings, { create: i => fences.create(i), rotate: (e, d, idle) => fences.rotate(e, d, idle), revoke: e => fences.revoke(e), retireSid: d => fences.retireSid(d), revokeAll: id => fences.revokeAll(id) }, a => authentication.resolveIdentity(a));
   const tenancy = new Tenancy(database, { verify: async () => null }, denyAll, sessions, options.key ?? verificationKey);
   sessions.bind(tenancy); authentication.bind(sessions, tenancy);
   const coarse = new RedisRateLimiter(rateCache, 120, 60000, settings.prefix + 'coarse:');
