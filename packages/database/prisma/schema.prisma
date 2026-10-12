@@ -58,6 +58,8 @@ model User {
   authDisabled Boolean               @default(false) @map("auth_disabled")
   identities   Identity[]
   memberships  WorkspaceMembership[]
+  discoveryRevision WorkspaceDiscoveryRevision?
+  workspaceCreationResults WorkspaceCreationResult[]
 
   @@map("users")
 }
@@ -122,8 +124,33 @@ model Workspace {
   createdAt   DateTime              @default(now()) @map("created_at") @db.Timestamptz(3)
   memberships WorkspaceMembership[]
   teams       Team[]
+  creationResults WorkspaceCreationResult[]
 
   @@map("workspaces")
+}
+
+model WorkspaceDiscoveryRevision {
+  userId String @id @map("user_id") @db.Uuid
+  revision BigInt @default(1)
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  @@map("workspace_discovery_revisions")
+}
+
+model WorkspaceCreationResult {
+  id String @id @db.Uuid
+  actorId String @map("actor_id") @db.Uuid
+  scopeKey String @map("scope_key") @db.VarChar(44)
+  operation String @default("workspace:create:v1") @db.VarChar(40)
+  requestKey String @map("request_key") @db.Uuid
+  payloadDigest String @map("payload_digest") @db.VarChar(64)
+  workspaceId String? @map("workspace_id") @db.Uuid
+  result Json?
+  completedAt DateTime @default(now()) @map("completed_at") @db.Timestamptz(3)
+  retainUntil DateTime @map("retain_until") @db.Timestamptz(3)
+  actor User @relation(fields: [actorId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  @@unique([actorId, scopeKey, operation, requestKey])
+  @@map("workspace_creation_results")
 }
 
 model WorkspaceMembership {

@@ -32,3 +32,19 @@ export const emailVerificationStatusSchema = z.object({ emailVerified: z.boolean
 
 export const passwordRecoveryRequestSchema = z.object({ email: credentialEmailSchema }).strict();
 export const passwordRecoveryConfirmSchema = z.object({ email: credentialEmailSchema, token: emailVerificationConfirmSchema.shape.token, password: passwordSchema }).strict();
+
+export const createWorkspaceSchema = z.object({ name: z.string().trim().min(1).max(120), slug: z.string().max(63).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/) }).strict();
+export const workspaceQuerySchema = z.object({ limit: z.string().regex(/^[1-9][0-9]{0,2}$/).transform(Number).pipe(z.number().int().max(100)).optional().default(50),
+  sort: z.enum(['workspace_asc', 'workspace_desc']).optional().default('workspace_asc'), after: z.string().min(1).max(2048).optional() }).strict();
+export const workspaceRowSchema = z.object({ id: z.uuid(), slug: z.string().max(63), name: z.string().max(120), status: z.enum(['ACTIVE', 'ARCHIVED']), membershipRole: z.enum(['ADMIN', 'MEMBER', 'OBSERVER']) }).strict();
+export const workspaceSelfSchema = z.object({ workspaceId: z.uuid(), membershipId: z.uuid(), role: z.enum(['ADMIN', 'MEMBER', 'OBSERVER']), membershipStatus: z.literal('ACTIVE'), workspaceStatus: z.enum(['ACTIVE', 'ARCHIVED']),
+  capabilities: z.object({ readWorkspace: z.boolean(), listMembers: z.boolean(), inviteMembers: z.boolean(), createTeam: z.boolean(), writeIssues: z.boolean(), writeDependencies: z.boolean(), completeDependentIssues: z.boolean() }).strict() }).strict();
+export const workspaceDetailSchema = z.object({ workspace: workspaceRowSchema, self: workspaceSelfSchema }).strict();
+export const workspaceCreatedSchema = z.object({ workspace: workspaceRowSchema, initialAdministrator: workspaceSelfSchema }).strict();
+export const workspacePageSchema = z.object({ items: z.array(workspaceRowSchema).max(100), page: z.object({ nextCursor: z.string().max(2048).nullable(), hasMore: z.boolean() }).strict() }).strict();
+export type CreateWorkspaceInput = z.infer<typeof createWorkspaceSchema>;
+export type WorkspaceQuery = z.infer<typeof workspaceQuerySchema>;
+export function workspaceJsonSchemas() {
+  return Object.fromEntries(Object.entries({ CreateWorkspace: createWorkspaceSchema, WorkspaceRow: workspaceRowSchema, WorkspaceSelf: workspaceSelfSchema,
+    WorkspaceDetail: workspaceDetailSchema, WorkspaceCreated: workspaceCreatedSchema, WorkspacePage: workspacePageSchema }).map(([name, schema]) => [name, z.toJSONSchema(schema)]));
+}

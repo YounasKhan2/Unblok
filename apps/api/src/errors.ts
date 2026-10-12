@@ -28,6 +28,12 @@ export class ErrorFilter implements ExceptionFilter {
       : (parserStatus === 413 || parserStatus === 400 || parserStatus === 415) ? parserStatus : 500;
     const requestId = request.requestId ?? 'unavailable';
     if (status >= 500) this.logger.error({ event: 'request_failed', requestId, status });
-    if (!response.headersSent) response.status(status).json(normalizeError(status, requestId));
+    if (!response.headersSent) {
+      const body = normalizeError(status, requestId);
+      const detail = exception instanceof HttpException ? exception.getResponse() : undefined;
+      if (status === 409 && request.path.startsWith('/api/v1/workspaces') && detail && typeof detail === 'object' && 'code' in detail &&
+        ['CURSOR_STALE', 'IDEMPOTENCY_RESULT_EXPIRED'].includes(String(detail.code))) body.error.code = String(detail.code);
+      response.status(status).json(body);
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, type CallHandler, type ExecutionContext, type NestInterceptor, type PipeTransform } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, ServiceUnavailableException, type CallHandler, type ExecutionContext, type NestInterceptor, type PipeTransform } from '@nestjs/common';
 import { map } from 'rxjs';
 import type { z } from 'zod';
 
@@ -12,11 +12,12 @@ export class SchemaPipe<T> implements PipeTransform<unknown, T> {
   }
 }
 export class ResponseSchemaInterceptor<T> implements NestInterceptor {
-  constructor(private readonly schema: z.ZodType<T>) {}
+  constructor(private readonly schema: z.ZodType<T>, private readonly maxBytes = Infinity) {}
   intercept(_context: ExecutionContext, next: CallHandler) {
     return next.handle().pipe(map((value: unknown) => {
       const parsed = this.schema.safeParse(value);
-      if (!parsed.success) throw new InternalServerErrorException();
+      if (!parsed.success) throw this.maxBytes < Infinity ? new ServiceUnavailableException() : new InternalServerErrorException();
+      if (Buffer.byteLength(JSON.stringify(parsed.data), 'utf8') > this.maxBytes) throw new ServiceUnavailableException();
       return parsed.data;
     }));
   }

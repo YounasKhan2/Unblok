@@ -1,0 +1,673 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Unblok Workspace foundation",
+    "version": "1"
+  },
+  "paths": {
+    "/api/v1/workspaces": {
+      "post": {
+        "security": [
+          {
+            "cookieSession": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Bounded server-authorized response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceCreated"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWorkspace"
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "security": [
+          {
+            "cookieSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bounded server-authorized response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspacePage"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "workspace_asc",
+                "workspace_desc"
+              ],
+              "default": "workspace_asc"
+            }
+          },
+          {
+            "in": "query",
+            "name": "after",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/workspaces/{workspaceId}": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "workspaceId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "get": {
+        "security": [
+          {
+            "cookieSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bounded server-authorized response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces/{workspaceId}/me": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "workspaceId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "get": {
+        "security": [
+          {
+            "cookieSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bounded server-authorized response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceSelf"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "cookieSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Host-unblok.sid",
+        "description": "Production cookie; localhost name unblok.sid.dev. Fresh server verification mandatory."
+      }
+    },
+    "schemas": {
+      "CreateWorkspace": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "slug": {
+            "type": "string",
+            "maxLength": 63,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          }
+        },
+        "required": [
+          "name",
+          "slug"
+        ],
+        "additionalProperties": false
+      },
+      "WorkspaceRow": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "slug": {
+            "type": "string",
+            "maxLength": 63
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "ARCHIVED"
+            ]
+          },
+          "membershipRole": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "MEMBER",
+              "OBSERVER"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "status",
+          "membershipRole"
+        ],
+        "additionalProperties": false
+      },
+      "WorkspaceSelf": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "membershipId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "MEMBER",
+              "OBSERVER"
+            ]
+          },
+          "membershipStatus": {
+            "type": "string",
+            "const": "ACTIVE"
+          },
+          "workspaceStatus": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "ARCHIVED"
+            ]
+          },
+          "capabilities": {
+            "type": "object",
+            "properties": {
+              "readWorkspace": {
+                "type": "boolean"
+              },
+              "listMembers": {
+                "type": "boolean"
+              },
+              "inviteMembers": {
+                "type": "boolean"
+              },
+              "createTeam": {
+                "type": "boolean"
+              },
+              "writeIssues": {
+                "type": "boolean"
+              },
+              "writeDependencies": {
+                "type": "boolean"
+              },
+              "completeDependentIssues": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "readWorkspace",
+              "listMembers",
+              "inviteMembers",
+              "createTeam",
+              "writeIssues",
+              "writeDependencies",
+              "completeDependentIssues"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "workspaceId",
+          "membershipId",
+          "role",
+          "membershipStatus",
+          "workspaceStatus",
+          "capabilities"
+        ],
+        "additionalProperties": false
+      },
+      "WorkspaceDetail": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "workspace": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "slug": {
+                "type": "string",
+                "maxLength": 63
+              },
+              "name": {
+                "type": "string",
+                "maxLength": 120
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "ACTIVE",
+                  "ARCHIVED"
+                ]
+              },
+              "membershipRole": {
+                "type": "string",
+                "enum": [
+                  "ADMIN",
+                  "MEMBER",
+                  "OBSERVER"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "slug",
+              "name",
+              "status",
+              "membershipRole"
+            ],
+            "additionalProperties": false
+          },
+          "self": {
+            "type": "object",
+            "properties": {
+              "workspaceId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "membershipId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "ADMIN",
+                  "MEMBER",
+                  "OBSERVER"
+                ]
+              },
+              "membershipStatus": {
+                "type": "string",
+                "const": "ACTIVE"
+              },
+              "workspaceStatus": {
+                "type": "string",
+                "enum": [
+                  "ACTIVE",
+                  "ARCHIVED"
+                ]
+              },
+              "capabilities": {
+                "type": "object",
+                "properties": {
+                  "readWorkspace": {
+                    "type": "boolean"
+                  },
+                  "listMembers": {
+                    "type": "boolean"
+                  },
+                  "inviteMembers": {
+                    "type": "boolean"
+                  },
+                  "createTeam": {
+                    "type": "boolean"
+                  },
+                  "writeIssues": {
+                    "type": "boolean"
+                  },
+                  "writeDependencies": {
+                    "type": "boolean"
+                  },
+                  "completeDependentIssues": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "readWorkspace",
+                  "listMembers",
+                  "inviteMembers",
+                  "createTeam",
+                  "writeIssues",
+                  "writeDependencies",
+                  "completeDependentIssues"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "workspaceId",
+              "membershipId",
+              "role",
+              "membershipStatus",
+              "workspaceStatus",
+              "capabilities"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "workspace",
+          "self"
+        ],
+        "additionalProperties": false
+      },
+      "WorkspaceCreated": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "workspace": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "slug": {
+                "type": "string",
+                "maxLength": 63
+              },
+              "name": {
+                "type": "string",
+                "maxLength": 120
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "ACTIVE",
+                  "ARCHIVED"
+                ]
+              },
+              "membershipRole": {
+                "type": "string",
+                "enum": [
+                  "ADMIN",
+                  "MEMBER",
+                  "OBSERVER"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "slug",
+              "name",
+              "status",
+              "membershipRole"
+            ],
+            "additionalProperties": false
+          },
+          "initialAdministrator": {
+            "type": "object",
+            "properties": {
+              "workspaceId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "membershipId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "ADMIN",
+                  "MEMBER",
+                  "OBSERVER"
+                ]
+              },
+              "membershipStatus": {
+                "type": "string",
+                "const": "ACTIVE"
+              },
+              "workspaceStatus": {
+                "type": "string",
+                "enum": [
+                  "ACTIVE",
+                  "ARCHIVED"
+                ]
+              },
+              "capabilities": {
+                "type": "object",
+                "properties": {
+                  "readWorkspace": {
+                    "type": "boolean"
+                  },
+                  "listMembers": {
+                    "type": "boolean"
+                  },
+                  "inviteMembers": {
+                    "type": "boolean"
+                  },
+                  "createTeam": {
+                    "type": "boolean"
+                  },
+                  "writeIssues": {
+                    "type": "boolean"
+                  },
+                  "writeDependencies": {
+                    "type": "boolean"
+                  },
+                  "completeDependentIssues": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "readWorkspace",
+                  "listMembers",
+                  "inviteMembers",
+                  "createTeam",
+                  "writeIssues",
+                  "writeDependencies",
+                  "completeDependentIssues"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "workspaceId",
+              "membershipId",
+              "role",
+              "membershipStatus",
+              "workspaceStatus",
+              "capabilities"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "workspace",
+          "initialAdministrator"
+        ],
+        "additionalProperties": false
+      },
+      "WorkspacePage": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "slug": {
+                  "type": "string",
+                  "maxLength": 63
+                },
+                "name": {
+                  "type": "string",
+                  "maxLength": 120
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "ACTIVE",
+                    "ARCHIVED"
+                  ]
+                },
+                "membershipRole": {
+                  "type": "string",
+                  "enum": [
+                    "ADMIN",
+                    "MEMBER",
+                    "OBSERVER"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "slug",
+                "name",
+                "status",
+                "membershipRole"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "page": {
+            "type": "object",
+            "properties": {
+              "nextCursor": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 2048
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "hasMore": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "nextCursor",
+              "hasMore"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "items",
+          "page"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

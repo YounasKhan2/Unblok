@@ -1,0 +1,134 @@
+{
+  "reviewedHead": "bfdd844e60af598ecec26146399e0cf15aa08c93",
+  "workspace": {
+    "pass": 29,
+    "fail": 0,
+    "assertions": 671,
+    "durationSeconds": 22.35
+  },
+  "checks": [
+    {
+      "gate": "authentication",
+      "exitCode": 0,
+      "durationSeconds": 18.85,
+      "summary": [
+        " 26 pass",
+        " 0 fail",
+        " 827 expect() calls",
+        "Ran 26 tests across 1 file. [18.76s]"
+      ]
+    },
+    {
+      "gate": "sessions",
+      "exitCode": 0,
+      "durationSeconds": 24.45,
+      "summary": [
+        " 31 pass",
+        " 0 fail",
+        " 473 expect() calls",
+        "Ran 31 tests across 1 file. [24.37s]"
+      ]
+    },
+    {
+      "gate": "auth-fences",
+      "exitCode": 0,
+      "durationSeconds": 10.44,
+      "summary": [
+        "(pass) throwing request expires its principal and preserves the application error [119.44ms]",
+        " 24 pass",
+        " 0 fail",
+        " 134 expect() calls",
+        "Ran 24 tests across 1 file. [10.35s]"
+      ]
+    },
+    {
+      "gate": "tenancy-migrations",
+      "exitCode": 0,
+      "durationSeconds": 13.81,
+      "summary": [
+        " 34 pass",
+        " 0 fail",
+        " 132 expect() calls",
+        "Ran 34 tests across 1 file. [13.75s]"
+      ]
+    },
+    {
+      "gate": "database",
+      "exitCode": 0,
+      "durationSeconds": 1.08,
+      "summary": [
+        " 2 pass",
+        " 0 fail",
+        " 5 expect() calls",
+        "Ran 2 tests across 1 file. [1021.00ms]"
+      ]
+    },
+    {
+      "gate": "backend-regression",
+      "exitCode": 0,
+      "durationSeconds": 10.39,
+      "summary": [
+        " 99 pass",
+        " 0 fail",
+        " 263 expect() calls",
+        "Ran 99 tests across 8 files. [10.30s]"
+      ]
+    },
+    {
+      "gate": "typecheck",
+      "exitCode": 0,
+      "durationSeconds": 11.96,
+      "summary": [
+        "Architecture checked 374 source files and 1028 resolved internal edges; 0 violations."
+      ]
+    },
+    {
+      "gate": "lint",
+      "exitCode": 0,
+      "durationSeconds": 4.9,
+      "summary": []
+    },
+    {
+      "gate": "build",
+      "exitCode": 0,
+      "durationSeconds": 0.22,
+      "summary": []
+    },
+    {
+      "gate": "migration-validation",
+      "exitCode": 0,
+      "durationSeconds": 1.58,
+      "summary": [
+        "The schema at packages\\database\\prisma\\schema.prisma is valid \ud83d\ude80"
+      ]
+    },
+    {
+      "gate": "contracts",
+      "exitCode": 0,
+      "durationSeconds": 0.1,
+      "summary": [
+        " 1 pass",
+        " 0 fail",
+        " 8 expect() calls"
+      ]
+    },
+    {
+      "gate": "diff",
+      "exitCode": 0,
+      "durationSeconds": 0.2,
+      "summary": []
+    },
+    {
+      "gate": "documentation-links",
+      "exitCode": 0,
+      "checkedLocalLinks": 23
+    }
+  ],
+  "historicalFailuresPreserved": [
+    "API/worker SIGTERM exit143",
+    "queue notification timing/between-test errors",
+    "dependency audit DNS failure and prior deepmerge-ts/Prisma advisory",
+    "three historical NEXUS frontend failures",
+    "cold migration deadline"
+  ]
+}

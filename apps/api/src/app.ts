@@ -5,14 +5,16 @@ import express from 'express';
 import helmet from 'helmet';
 import { type ApiConfig, type Logger } from '@unblok/backend-runtime';
 import { AppModule, Readiness, type Resources } from './health';
-import { ErrorFilter } from './errors';
+import { ErrorFilter, normalizeError, type CorrelatedRequest } from './errors';
 import { bodyBoundary, correlation, cors, rateLimit, type RateLimiter } from './security';
 import type { Sessions } from './modules/sessions';
 import type { Authentication } from './modules/auth';
+import type { Workspaces } from './modules/workspaces';
 
-export async function createApp(config: ApiConfig, resources: Resources, limiter: RateLimiter, logger: Logger, sessions?: Sessions, authentication?: Authentication) {
+export async function createApp(config: ApiConfig, resources: Resources, limiter: RateLimiter, logger: Logger, sessions?: Sessions, authentication?: Authentication, workspaces?: Workspaces) {
   if (authentication && !sessions) throw new Error('Authentication requires session infrastructure');
-  const app = await NestFactory.create<NestExpressApplication>(AppModule.register(resources, authentication), {
+  if (workspaces && !sessions) throw new Error('Workspaces require session infrastructure');
+  const app = await NestFactory.create<NestExpressApplication>(AppModule.register(resources, authentication, workspaces), {
     logger: false, bodyParser: false, abortOnError: false,
   });
   app.disable('x-powered-by');
@@ -22,12 +24,22 @@ export async function createApp(config: ApiConfig, resources: Resources, limiter
   app.use(correlation(logger));
   app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (req.path.startsWith('/api/v1/auth/')) { res.setHeader('Cache-Control', 'no-store'); res.setHeader('Pragma', 'no-cache'); }
+    if (req.path === '/api/v1/workspaces' || req.path.startsWith('/api/v1/workspaces/')) res.setHeader('Cache-Control', 'private, no-store');
     next();
   });
   app.use(helmet());
   app.use(cors(config, sessions?.settings.credentials ?? false, !!sessions));
   app.use(rateLimit(limiter));
   app.use(bodyBoundary(config));
+  const workspaceJson = express.json({ limit: 2048, strict: true, inflate: false });
+  app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (req.path === '/api/v1/workspaces' && req.method === 'POST') { workspaceJson(req, res, next); return; }
+    if (req.method === 'GET' && (req.path === '/api/v1/workspaces' || req.path.startsWith('/api/v1/workspaces/')) &&
+      (Number(req.get('content-length') ?? '0') > 0 || req.get('transfer-encoding') !== undefined)) {
+      res.status(400).json(normalizeError(400, (req as CorrelatedRequest).requestId ?? 'unavailable')); return;
+    }
+    next();
+  });
   app.use(express.json({ limit: config.BODY_LIMIT_BYTES, strict: true, inflate: false }));
   app.use(express.urlencoded({ limit: config.BODY_LIMIT_BYTES, extended: false, parameterLimit: 100, inflate: false }));
   if (sessions) app.use(sessions.middleware());
