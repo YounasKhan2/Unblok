@@ -1,0 +1,862 @@
+{
+  "reviewedHead": "bfdd844e60af598ecec26146399e0cf15aa08c93",
+  "observations": [
+    {
+      "scenario": "same-key pre-commit pointer / commit",
+      "wait": "transactionid",
+      "firstHttp": 201,
+      "contenderHttp": 409,
+      "freshSameKeyHttp": 201,
+      "effects": 1,
+      "transactions": [
+        {
+          "transaction": 1,
+          "events": [
+            {
+              "phase": "pointer",
+              "stage": "start"
+            },
+            {
+              "phase": "pointer",
+              "stage": "return",
+              "rows": 0
+            },
+            {
+              "phase": "reserve",
+              "stage": "start"
+            },
+            {
+              "phase": "reserve",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "ledger",
+              "stage": "start"
+            },
+            {
+              "phase": "ledger",
+              "stage": "return",
+              "rows": 1
+            }
+          ],
+          "outcome": "COMMIT confirmed"
+        },
+        {
+          "transaction": 2,
+          "events": [
+            {
+              "phase": "pointer",
+              "stage": "start"
+            },
+            {
+              "phase": "pointer",
+              "stage": "return",
+              "rows": 0
+            },
+            {
+              "phase": "reserve",
+              "stage": "start"
+            }
+          ],
+          "outcome": "transaction rejected / rolled back",
+          "prismaCode": "P2010",
+          "sqlState": "40001"
+        },
+        {
+          "transaction": 3,
+          "events": [
+            {
+              "phase": "pointer",
+              "stage": "start"
+            },
+            {
+              "phase": "pointer",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "workspace",
+              "stage": "start"
+            },
+            {
+              "phase": "workspace",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "revision",
+              "stage": "start"
+            },
+            {
+              "phase": "revision",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "reserve",
+              "stage": "start"
+            },
+            {
+              "phase": "reserve",
+              "stage": "return",
+              "rows": 0
+            },
+            {
+              "phase": "ledger",
+              "stage": "start"
+            },
+            {
+              "phase": "ledger",
+              "stage": "return",
+              "rows": 1
+            }
+          ],
+          "outcome": "COMMIT confirmed"
+        },
+        {
+          "transaction": 4,
+          "events": [
+            {
+              "phase": "pointer",
+              "stage": "start"
+            },
+            {
+              "phase": "pointer",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "workspace",
+              "stage": "start"
+            },
+            {
+              "phase": "workspace",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "revision",
+              "stage": "start"
+            },
+            {
+              "phase": "revision",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "reserve",
+              "stage": "start"
+            },
+            {
+              "phase": "reserve",
+              "stage": "return",
+              "rows": 0
+            },
+            {
+              "phase": "ledger",
+              "stage": "start"
+            },
+            {
+              "phase": "ledger",
+              "stage": "return",
+              "rows": 1
+            }
+          ],
+          "outcome": "transaction rejected / rolled back"
+        }
+      ]
+    },
+    {
+      "scenario": "same-key pre-commit pointer / rollback",
+      "wait": "transactionid",
+      "firstHttp": 503,
+      "contenderHttp": 201,
+      "freshSameKeyHttp": 201,
+      "effects": 1,
+      "transactions": [
+        {
+          "transaction": 1,
+          "events": [
+            {
+              "phase": "pointer",
+              "stage": "start"
+            },
+            {
+              "phase": "pointer",
+              "stage": "return",
+              "rows": 0
+            },
+            {
+              "phase": "reserve",
+              "stage": "start"
+            },
+            {
+              "phase": "reserve",
+              "stage": "return",
+              "rows": 1
+            }
+          ],
+          "outcome": "transaction rejected / rolled back"
+        },
+        {
+          "transaction": 2,
+          "events": [
+            {
+              "phase": "pointer",
+              "stage": "start"
+            },
+            {
+              "phase": "pointer",
+              "stage": "return",
+              "rows": 0
+            },
+            {
+              "phase": "reserve",
+              "stage": "start"
+            },
+            {
+              "phase": "reserve",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "ledger",
+              "stage": "start"
+            },
+            {
+              "phase": "ledger",
+              "stage": "return",
+              "rows": 1
+            }
+          ],
+          "outcome": "COMMIT confirmed"
+        },
+        {
+          "transaction": 3,
+          "events": [
+            {
+              "phase": "pointer",
+              "stage": "start"
+            },
+            {
+              "phase": "pointer",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "workspace",
+              "stage": "start"
+            },
+            {
+              "phase": "workspace",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "revision",
+              "stage": "start"
+            },
+            {
+              "phase": "revision",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "reserve",
+              "stage": "start"
+            },
+            {
+              "phase": "reserve",
+              "stage": "return",
+              "rows": 0
+            },
+            {
+              "phase": "ledger",
+              "stage": "start"
+            },
+            {
+              "phase": "ledger",
+              "stage": "return",
+              "rows": 1
+            }
+          ],
+          "outcome": "COMMIT confirmed"
+        },
+        {
+          "transaction": 4,
+          "events": [
+            {
+              "phase": "pointer",
+              "stage": "start"
+            },
+            {
+              "phase": "pointer",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "workspace",
+              "stage": "start"
+            },
+            {
+              "phase": "workspace",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "revision",
+              "stage": "start"
+            },
+            {
+              "phase": "revision",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "reserve",
+              "stage": "start"
+            },
+            {
+              "phase": "reserve",
+              "stage": "return",
+              "rows": 0
+            },
+            {
+              "phase": "ledger",
+              "stage": "start"
+            },
+            {
+              "phase": "ledger",
+              "stage": "return",
+              "rows": 1
+            }
+          ],
+          "outcome": "transaction rejected / rolled back"
+        }
+      ]
+    },
+    {
+      "scenario": "same-key pre-commit pointer / lock-deadline",
+      "wait": "transactionid",
+      "firstHttp": 201,
+      "contenderHttp": 409,
+      "freshSameKeyHttp": 201,
+      "effects": 1,
+      "transactions": [
+        {
+          "transaction": 1,
+          "events": [
+            {
+              "phase": "pointer",
+              "stage": "start"
+            },
+            {
+              "phase": "pointer",
+              "stage": "return",
+              "rows": 0
+            },
+            {
+              "phase": "reserve",
+              "stage": "start"
+            },
+            {
+              "phase": "reserve",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "ledger",
+              "stage": "start"
+            },
+            {
+              "phase": "ledger",
+              "stage": "return",
+              "rows": 1
+            }
+          ],
+          "outcome": "COMMIT confirmed"
+        },
+        {
+          "transaction": 2,
+          "events": [
+            {
+              "phase": "pointer",
+              "stage": "start"
+            },
+            {
+              "phase": "pointer",
+              "stage": "return",
+              "rows": 0
+            },
+            {
+              "phase": "reserve",
+              "stage": "start"
+            }
+          ],
+          "outcome": "transaction rejected / rolled back",
+          "prismaCode": "P2010",
+          "sqlState": "55P03"
+        },
+        {
+          "transaction": 3,
+          "events": [
+            {
+              "phase": "pointer",
+              "stage": "start"
+            },
+            {
+              "phase": "pointer",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "workspace",
+              "stage": "start"
+            },
+            {
+              "phase": "workspace",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "revision",
+              "stage": "start"
+            },
+            {
+              "phase": "revision",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "reserve",
+              "stage": "start"
+            },
+            {
+              "phase": "reserve",
+              "stage": "return",
+              "rows": 0
+            },
+            {
+              "phase": "ledger",
+              "stage": "start"
+            },
+            {
+              "phase": "ledger",
+              "stage": "return",
+              "rows": 1
+            }
+          ],
+          "outcome": "COMMIT confirmed"
+        },
+        {
+          "transaction": 4,
+          "events": [
+            {
+              "phase": "pointer",
+              "stage": "start"
+            },
+            {
+              "phase": "pointer",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "workspace",
+              "stage": "start"
+            },
+            {
+              "phase": "workspace",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "revision",
+              "stage": "start"
+            },
+            {
+              "phase": "revision",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "reserve",
+              "stage": "start"
+            },
+            {
+              "phase": "reserve",
+              "stage": "return",
+              "rows": 0
+            },
+            {
+              "phase": "ledger",
+              "stage": "start"
+            },
+            {
+              "phase": "ledger",
+              "stage": "return",
+              "rows": 1
+            }
+          ],
+          "outcome": "transaction rejected / rolled back"
+        }
+      ]
+    },
+    {
+      "scenario": "same-key pre-commit pointer / lost-acknowledgement",
+      "wait": "transactionid",
+      "firstHttp": 503,
+      "contenderHttp": 409,
+      "freshSameKeyHttp": 201,
+      "effects": 1,
+      "transactions": [
+        {
+          "transaction": 1,
+          "events": [
+            {
+              "phase": "pointer",
+              "stage": "start"
+            },
+            {
+              "phase": "pointer",
+              "stage": "return",
+              "rows": 0
+            },
+            {
+              "phase": "reserve",
+              "stage": "start"
+            },
+            {
+              "phase": "reserve",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "ledger",
+              "stage": "start"
+            },
+            {
+              "phase": "ledger",
+              "stage": "return",
+              "rows": 1
+            }
+          ],
+          "outcome": "COMMIT confirmed by test; acknowledgement lost to application"
+        },
+        {
+          "transaction": 2,
+          "events": [
+            {
+              "phase": "pointer",
+              "stage": "start"
+            },
+            {
+              "phase": "pointer",
+              "stage": "return",
+              "rows": 0
+            },
+            {
+              "phase": "reserve",
+              "stage": "start"
+            }
+          ],
+          "outcome": "transaction rejected / rolled back",
+          "prismaCode": "P2010",
+          "sqlState": "40001"
+        },
+        {
+          "transaction": 3,
+          "events": [
+            {
+              "phase": "pointer",
+              "stage": "start"
+            },
+            {
+              "phase": "pointer",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "workspace",
+              "stage": "start"
+            },
+            {
+              "phase": "workspace",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "revision",
+              "stage": "start"
+            },
+            {
+              "phase": "revision",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "reserve",
+              "stage": "start"
+            },
+            {
+              "phase": "reserve",
+              "stage": "return",
+              "rows": 0
+            },
+            {
+              "phase": "ledger",
+              "stage": "start"
+            },
+            {
+              "phase": "ledger",
+              "stage": "return",
+              "rows": 1
+            }
+          ],
+          "outcome": "COMMIT confirmed"
+        },
+        {
+          "transaction": 4,
+          "events": [
+            {
+              "phase": "pointer",
+              "stage": "start"
+            },
+            {
+              "phase": "pointer",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "workspace",
+              "stage": "start"
+            },
+            {
+              "phase": "workspace",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "revision",
+              "stage": "start"
+            },
+            {
+              "phase": "revision",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "reserve",
+              "stage": "start"
+            },
+            {
+              "phase": "reserve",
+              "stage": "return",
+              "rows": 0
+            },
+            {
+              "phase": "ledger",
+              "stage": "start"
+            },
+            {
+              "phase": "ledger",
+              "stage": "return",
+              "rows": 1
+            }
+          ],
+          "outcome": "transaction rejected / rolled back"
+        }
+      ]
+    },
+    {
+      "scenario": "replay-first",
+      "wait": "transactionid",
+      "concurrentHttp": 201,
+      "afterRevocationHttp": 404,
+      "transactions": [
+        {
+          "transaction": 1,
+          "events": [
+            {
+              "phase": "pointer",
+              "stage": "start"
+            },
+            {
+              "phase": "pointer",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "workspace",
+              "stage": "start"
+            },
+            {
+              "phase": "workspace",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "revision",
+              "stage": "start"
+            },
+            {
+              "phase": "revision",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "reserve",
+              "stage": "start"
+            },
+            {
+              "phase": "reserve",
+              "stage": "return",
+              "rows": 0
+            },
+            {
+              "phase": "ledger",
+              "stage": "start"
+            },
+            {
+              "phase": "ledger",
+              "stage": "return",
+              "rows": 1
+            }
+          ],
+          "outcome": "COMMIT confirmed"
+        },
+        {
+          "transaction": 2,
+          "events": [
+            {
+              "phase": "pointer",
+              "stage": "start"
+            },
+            {
+              "phase": "pointer",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "workspace",
+              "stage": "start"
+            },
+            {
+              "phase": "workspace",
+              "stage": "return",
+              "rows": 0
+            },
+            {
+              "phase": "revision",
+              "stage": "start"
+            },
+            {
+              "phase": "revision",
+              "stage": "return",
+              "rows": 1
+            }
+          ],
+          "outcome": "transaction rejected / rolled back"
+        }
+      ]
+    },
+    {
+      "scenario": "revocation-first",
+      "wait": "transactionid",
+      "concurrentHttp": 409,
+      "afterRevocationHttp": 404,
+      "transactions": [
+        {
+          "transaction": 1,
+          "events": [
+            {
+              "phase": "pointer",
+              "stage": "start"
+            },
+            {
+              "phase": "pointer",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "workspace",
+              "stage": "start"
+            },
+            {
+              "phase": "workspace",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "revision",
+              "stage": "start"
+            }
+          ],
+          "outcome": "transaction rejected / rolled back",
+          "prismaCode": "P2010",
+          "sqlState": "40001"
+        },
+        {
+          "transaction": 2,
+          "events": [
+            {
+              "phase": "pointer",
+              "stage": "start"
+            },
+            {
+              "phase": "pointer",
+              "stage": "return",
+              "rows": 1
+            },
+            {
+              "phase": "workspace",
+              "stage": "start"
+            },
+            {
+              "phase": "workspace",
+              "stage": "return",
+              "rows": 0
+            },
+            {
+              "phase": "revision",
+              "stage": "start"
+            },
+            {
+              "phase": "revision",
+              "stage": "return",
+              "rows": 1
+            }
+          ],
+          "outcome": "transaction rejected / rolled back"
+        }
+      ]
+    },
+    {
+      "scenario": "membership-deleted",
+      "authenticatedMe": 200,
+      "matchingPayload": 404,
+      "differentPayload": 404,
+      "expired": 404,
+      "tombstone": 404,
+      "disclosedProductFields": false
+    },
+    {
+      "scenario": "membership-suspended",
+      "authenticatedMe": 200,
+      "matchingPayload": 404,
+      "differentPayload": 404,
+      "expired": 404,
+      "tombstone": 404,
+      "disclosedProductFields": false
+    },
+    {
+      "scenario": "inaccessible-ledger-pointer",
+      "authenticatedMe": 200,
+      "matchingPayload": 404,
+      "differentPayload": 404,
+      "expired": 404,
+      "tombstone": 404,
+      "disclosedProductFields": false
+    }
+  ]
+}

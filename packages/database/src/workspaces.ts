@@ -36,7 +36,7 @@ function self(row: Row, membershipId: string) {
   return { workspaceId: row.id, membershipId, role: row.membershipRole, membershipStatus: 'ACTIVE' as const, workspaceStatus: row.status,
     capabilities: { readWorkspace: true, listMembers: false, inviteMembers: false, createTeam: false, writeIssues: false, writeDependencies: false, completeDependentIssues: false } };
 }
-export async function workspaceContext(tx: Prisma.TransactionClient, actor: string, workspaceId: string, lockRevision = true) {
+export async function workspaceContext(tx: Prisma.TransactionClient, actor: string, workspaceId: string) {
   if (!id.test(workspaceId)) throw fault();
   const rows = await tx.$queryRaw<Row[]>`SELECT w.id, w.slug, w.name, w.status, m.role AS "membershipRole"
     FROM workspaces w JOIN workspace_memberships m ON m.workspace_id = w.id AND m.user_id = ${actor}::uuid
@@ -44,7 +44,7 @@ export async function workspaceContext(tx: Prisma.TransactionClient, actor: stri
   // Lock the revision only after workspace locks. A membership transition that
   // committed after this SERIALIZABLE snapshot forces40001 rather than a stale
   // authorization result, even when the workspace tuple itself did not change.
-  if (lockRevision) await tx.$queryRaw`SELECT revision FROM workspace_discovery_revisions WHERE user_id = ${actor}::uuid FOR SHARE`;
+  await tx.$queryRaw`SELECT revision FROM workspace_discovery_revisions WHERE user_id = ${actor}::uuid FOR SHARE`;
   if (!rows[0]) throw new WorkspaceFault('NOT_FOUND');
   const membership = await tx.workspaceMembership.findUniqueOrThrow({ where: { workspaceId_userId: { workspaceId, userId: actor } }, select: { id: true } });
   return { workspace: rows[0], self: self(rows[0], membership.id) };
@@ -88,7 +88,11 @@ export async function createWorkspace(tx: Prisma.TransactionClient, authority: P
   // workspace before the ledger reservation. Re-read under the reservation.
   const pointers = await tx.$queryRaw<{ workspace_id: string }[]>`SELECT workspace_id FROM workspace_creation_results
     WHERE actor_id = ${actor}::uuid AND scope_key = ${scope} AND operation = 'workspace:create:v1' AND request_key = ${input.key}::uuid`;
-  if (pointers[0]) await workspaceContext(tx, actor, pointers[0].workspace_id, false);
+  // Finish scope authorization before taking any ledger lock. The workspace
+  // and revision SHARE locks retain that decision through transaction commit;
+  // a stale SERIALIZABLE membership snapshot is rejected here, before inspecting
+  // stored payload/result/expiry. Never discover or lock another workspace later.
+  if (pointers[0]) await workspaceContext(tx, actor, pointers[0].workspace_id);
   const reservation = randomUUID();
   const inserted = await tx.$queryRaw<{id:string}[]>`INSERT INTO workspace_creation_results(id,actor_id,scope_key,request_key,payload_digest,retain_until)
     VALUES (${reservation}::uuid,${actor}::uuid,${scope},${input.key}::uuid,${digest},statement_timestamp()+interval '24 hours')
@@ -101,7 +105,6 @@ export async function createWorkspace(tx: Prisma.TransactionClient, authority: P
   if (!inserted.length && old) {
     // Fresh membership is mandatory before returning an earlier result.
     if (!pointers[0] || pointers[0].workspace_id !== old.workspace_id) throw new WorkspaceFault('CONFLICT');
-    await workspaceContext(tx, actor, old.workspace_id);
     if (old.payload_digest !== digest) throw new WorkspaceFault('CONFLICT');
     if (old.expired || old.result === null) {
       await tx.$executeRaw`UPDATE workspace_creation_results SET result = NULL WHERE actor_id = ${actor}::uuid AND request_key = ${input.key}::uuid`;
@@ -110,10 +113,12 @@ export async function createWorkspace(tx: Prisma.TransactionClient, authority: P
     }
     return old.result;
   }
+  // A newly visible conflicting result without the pre-authorized pointer is
+  // unresolved, not permission to acquire its workspace after the ledger.
+  if (!inserted.length) throw new WorkspaceFault('CONFLICT');
   const workspace = await tx.workspace.create({ data: { name: input.name, slug: input.slug }, select: { id: true, name: true, slug: true, status: true } });
   const member = await tx.workspaceMembership.create({ data: { workspaceId: workspace.id, userId: actor, role: 'ADMIN', status: 'ACTIVE', joinedAt: new Date() }, select: { id: true } });
   const result = { workspace: { ...workspace, membershipRole: 'ADMIN' as const }, initialAdministrator: self({ ...workspace, membershipRole: 'ADMIN' }, member.id) };
-  if (!inserted.length) throw new WorkspaceFault('CONFLICT');
   await tx.$executeRaw`UPDATE workspace_creation_results SET workspace_id=${workspace.id}::uuid,result=${JSON.stringify(result)}::jsonb WHERE id=${reservation}::uuid`;
   return result;
 }

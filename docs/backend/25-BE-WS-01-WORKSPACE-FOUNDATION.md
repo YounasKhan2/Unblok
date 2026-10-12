@@ -31,7 +31,7 @@ Persistence lives in `packages/database/src/workspaces.ts`, callable only throug
 
 ## Creation, replay and unknown outcomes
 
-Global order remains user→family→existing workspace when replaying→unique ledger→revision/resources. Replay discovers an immutable ledger pointer without locking, authorizes/locks its existing workspace, reserves/re-reads the unique ledger, then validates current membership/revision before returning the original result. New creation skips an existing workspace lock, inserts the transaction-local ledger reservation, creates a new UUID workspace and ACTIVE ADMIN, and completes the ledger in the **same SERIALIZABLE transaction**. Every effect disappears if admin/result insertion or final authority validation fails.
+Replay preserves user→family→existing workspace→ledger order. It discovers an immutable ledger pointer without locking, completes current membership authorization with workspace SHARE then scope-revision SHARE locks, and only afterward reserves/re-reads the unique ledger. These locks retain that decision through commit; replay never acquires or reauthorizes a workspace after locking the ledger. New creation skips an existing workspace lock, inserts the transaction-local ledger reservation, creates a new UUID workspace and ACTIVE ADMIN, and completes the ledger in the **same SERIALIZABLE transaction**. Every effect disappears if admin/result insertion or final authority validation fails.
 
 Concurrent same-key insert waits on PostgreSQL uniqueness; bounded lock/serialization conflict returns409 with Retry-After, then a new fresh request can replay. Same key/different canonical body409. Slug uniqueness yields generic409 and no partial membership. No automatic mutation retry is performed. All transactions retain existing2s acquisition/5s callback,1.5s lock and4s statement limits.
 
@@ -54,6 +54,27 @@ Provision `WORKSPACE_CURSOR_KEY_ID`, `WORKSPACE_CURSOR_KEY`, optional previous I
 Rotation requires stable nonsecret key IDs, new active signer on replicas, previous verify-only key for the last old issuance TTL plus reviewed clock/deployment margin. Immediate removal rejects compromised/retired cursors. Keep the idempotency digest key stable for retained ledger rows; rotating it needs an explicit digest-key migration/versioning plan. No secret values or full cursors/bodies enter logs/evidence. PostgreSQL effect/ledger/revision restoration must be consistent; session restoration still follows BE-00G/H epoch/namespace/key retirement rules. No runtime DDL or disposable credentials are installed.
 
 ## Verification and remaining risks
+
+### PR #35 focused F1/F2 correction
+
+Reviewed HEAD `bfdd844e60af598ecec26146399e0cf15aa08c93`. The correction removes the second workspace authorization call after the ledger lock and completes the revision fence before the ledger. An unresolved reservation cannot attempt a new workspace effect. No schema, migration, frontend, fixture, dependency or endpoint contract changed. Exact correction HEAD is recorded by the PR/commit metadata.
+
+[Controlled concurrency observations](evidence/BE-WS-01-correction-concurrency.json) record actual PostgreSQL calls using test-owned transaction proxies and real HTTP requests, not mocked SQL results. Both same-key requests use the same actor and canonical body; the contender's initial pointer returns zero rows before the held first reservation commits. `pg_stat_activity` observes a `transactionid` wait on unique insertion. Outcomes:
+
+| First transaction outcome | First HTTP | Contender HTTP / PostgreSQL | Fresh authorized same-key retry |
+| --- | --- | --- | --- |
+| Confirmed commit |201|409 / SQLSTATE40001|201, original single effect |
+| Confirmed rollback induced before effect |503|201 / confirmed commit|201, original single effect |
+| Still in progress at contender lock deadline |201 after explicit release|409 / SQLSTATE55P03|201, original single effect |
+| Confirmed commit, acknowledgement lost to application |503|409 / SQLSTATE40001|201, original single effect |
+
+The contender's timeout leaves the first transaction in progress; it does not cancel it. A request-level503 alone cannot identify rollback versus unknown commit. Same-key fresh reconciliation is mandatory; no automatic retry, replacement key or reverse-order authorization is introduced. Fresh authorized mismatched canonical bodies return409. These observations establish behavior for the tested schedules, not every possible deployment interleaving.
+
+Replay-first holds workspace/revision SHARE locks before ledger inspection; concurrent suspension waits (`transactionid`), replay201 completes before suspension commits, and the next replay404. Revocation-first holds workspace UPDATE and changes membership/revision before replay attempts its SHARE fence; replay409/SQLSTATE40001 inspects no ledger result, and the next fresh request404. Earlier delivered authorized bytes cannot be recalled.
+
+Deleted and suspended memberships and a crafted inaccessible durable pointer all return the same generic404 envelope for matching bodies, different bodies, expired results and tombstones. Tests verify absence of workspace ID/name/slug, stored response and expiry details, no Set-Cookie, and `private, no-store`; unauthorized expiry requests do not purge the stored result. Authorized expiration remains the existing409 tombstone behavior.
+
+[Focused final verification](evidence/BE-WS-01-correction-verification.json): Workspace29pass/0fail/671 assertions; authentication26/827; sessions31/473; auth fences24/134; tenancy and migration replay34/132; database2/5; backend regression including architecture99/263; generated contracts1/8. All have zero failures. Architecture374files/1028edges/0violations, backend typecheck, lint, API/worker build, Prisma validation and diff checks pass. Documentation links are checked separately before delivery. The following table retains the initial PR verification history; unrelated infra/lifecycle/audit/frontend gates were not recertified by this focused correction. Their failures remain unresolved.
 
 [Machine-readable observations](evidence/BE-WS-01-verification.json) preserve successful and failed executions; [real query plans](evidence/BE-WS-01-query-plans.json) use an owned105-visible-membership dataset. Actual list output is101 candidates maximum, uses `workspace_memberships_user_id_status_workspace_id_idx` and `workspaces_pkey`; detail uses workspace PK and unique(workspace,user). These submillisecond local plans do **not** measure enterprise capacity, full auth cost, hot-workspace contention or deployment performance. No speculative index or package is added.
 

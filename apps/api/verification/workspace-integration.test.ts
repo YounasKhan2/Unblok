@@ -3,7 +3,7 @@ import { afterAll, beforeAll, expect, test } from 'bun:test';
 import { createHmac, randomBytes, randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
 import { Database, AccountCredentials, AuthFences, Tenancy, TenantAccessError, denyAll, type VerifiedPrincipal } from '@unblok/database';
-import { createLogger, createRedis, loadApiConfig } from '@unblok/backend-runtime';
+import { createLogger, createRedis, loadApiConfig, withDeadline } from '@unblok/backend-runtime';
 import { createApp } from '../src/app';
 import { RedisRateLimiter } from '../src/security';
 import { Sessions, connectSessionStore, sessionSettings } from '../src/modules/sessions';
@@ -93,6 +93,64 @@ async function account() { const f = await fixture(), { email } = await f.signup
 }
 const input = () => ({ name: 'Workspace', slug: 'ws-' + randomUUID() });
 const create = (f: Awaited<ReturnType<typeof fixture>>, client: Client, body = input(), key = randomUUID()) => f.http('/api/v1/workspaces', 'POST', client, body, { 'idempotency-key': key });
+
+// Test-owned transaction proxies observe real PostgreSQL calls; no production
+// hook, mock SQL result, isolation change or deadline change is installed.
+type Phase = 'pointer' | 'workspace' | 'revision' | 'reserve' | 'ledger';
+type Trace = { transaction: number; events: { phase: Phase; stage: 'start' | 'return'; rows?: number }[]; outcome?: string; prismaCode?: string; sqlState?: string };
+const correctionObservations: unknown[] = [];
+function latch() { let release!: () => void; const promise = new Promise<void>(ok => release = ok); return { promise, release }; }
+function interceptTransactions(hook: (phase: Phase, trace: Trace, rows: number) => Promise<void>, loseAcknowledgement = false) {
+  const original = database.transaction.bind(database), traces: Trace[] = []; let sequence = 0;
+  database.transaction = async run => {
+    let trace: Trace | undefined;
+    try {
+      const result = await original(tx => run(new Proxy(tx, { get(target, property) {
+        if (property === '$queryRaw') return async (...args: unknown[]) => {
+          const first = args[0], sql = Array.isArray(first) ? first.join(' ') : String(first && typeof first === 'object' && 'sql' in first ? first.sql : '');
+          const phase: Phase | undefined = /SELECT workspace_id FROM workspace_creation_results/.test(sql) ? 'pointer'
+            : /INSERT INTO workspace_creation_results/.test(sql) ? 'reserve'
+              : /FROM workspace_creation_results/.test(sql) && /FOR UPDATE/.test(sql) ? 'ledger'
+                : /FROM workspaces w JOIN workspace_memberships/.test(sql) ? 'workspace'
+                  : /FROM workspace_discovery_revisions/.test(sql) ? 'revision' : undefined;
+          if (phase === 'pointer') { trace = { transaction: ++sequence, events: [] }; traces.push(trace); }
+          if (phase && trace) trace.events.push({ phase, stage: 'start' });
+          const result = await Reflect.apply(target.$queryRaw, target, args);
+          if (phase && trace) { const rows = Array.isArray(result) ? result.length : 0; trace.events.push({ phase, stage: 'return', rows }); await hook(phase, trace, rows); }
+          return result;
+        };
+        const value = Reflect.get(target, property); return typeof value === 'function' ? value.bind(target) : value;
+      } })));
+      if (trace) {
+        trace.outcome = 'COMMIT confirmed';
+        if (loseAcknowledgement && trace.transaction === 1) { trace.outcome = 'COMMIT confirmed by test; acknowledgement lost to application'; throw new Error('Owned lost acknowledgement'); }
+      }
+      return result;
+    } catch (error) {
+      if (trace && !trace.outcome) {
+        trace.outcome = 'transaction rejected / rolled back';
+        const code = error && typeof error === 'object' && 'code' in error ? error.code : undefined;
+        const meta = error && typeof error === 'object' && 'meta' in error ? error.meta : undefined;
+        const sql = meta && typeof meta === 'object' && 'code' in meta ? meta.code : undefined;
+        if (typeof code === 'string') trace.prismaCode = code;
+        if (typeof sql === 'string') trace.sqlState = sql;
+      }
+      throw error;
+    }
+  };
+  return { traces, restore: () => { database.transaction = original; } };
+}
+async function waitForLock(fragment: string) {
+  for (let i = 0; i < 100; i++) {
+    const rows = await admin.client.$queryRaw<{ wait: string | null }[]>`SELECT wait_event AS wait FROM pg_stat_activity
+      WHERE datname=${name} AND wait_event_type='Lock' AND query LIKE ${'%' + fragment + '%'} LIMIT 1`;
+    if (rows[0]?.wait) return rows[0].wait;
+    await Bun.sleep(5);
+  }
+  throw new Error('Expected real PostgreSQL lock waiter not observed');
+}
+afterAll(async () => { if (process.env.WS_CORRECTION_EVIDENCE_PATH) await Bun.write(process.env.WS_CORRECTION_EVIDENCE_PATH,
+  JSON.stringify({ reviewedHead: 'bfdd844e60af598ecec26146399e0cf15aa08c93', observations: correctionObservations }, null, 2)); });
 
 test('migration replay and complete Prisma schema parity', async () => {
   expect(await prisma(['migrate', 'deploy', '--schema', 'packages/database/prisma/schema.prisma'])).toContain('No pending migrations');
@@ -284,3 +342,125 @@ test('concurrent revocation first rejects stale reads; earlier shared read order
   await Bun.sleep(20); expect(revoked).toBe(false); unlock(); await read; await later;
   expect((await b.f.http('/api/v1/workspaces/'+ws,'GET',b.client)).status).toBe(404);
 });
+
+for (const mode of ['commit', 'rollback', 'lock-deadline', 'lost-acknowledgement'] as const) {
+  test(`controlled same-key pre-commit pointer race: ${mode}`, async () => {
+    const a = await account(), body = input(), key = randomUUID(), reserved = latch(), release = latch(), secondPointer = latch();
+    const control = interceptTransactions(async (phase, trace) => {
+      if (phase === 'pointer' && trace.transaction === 2) secondPointer.release();
+      if (phase === 'reserve' && trace.transaction === 1) {
+        reserved.release(); await release.promise;
+        if (mode === 'rollback') throw new Error('Owned confirmed rollback');
+      }
+    }, mode === 'lost-acknowledgement');
+    const first = create(a.f, a.client, body, key); let second: Promise<Response> | undefined;
+    try {
+      await withDeadline(reserved.promise, 1200);
+      second = create(a.f, a.client, body, key); await withDeadline(secondPointer.promise, 1200);
+      const wait = await waitForLock('INSERT INTO workspace_creation_results');
+      // The second pointer really read absence while the first reservation was
+      // uncommitted; PostgreSQL unique arbitration, not a mocked barrier, waits.
+      expect(control.traces[1]!.events.find(e => e.phase === 'pointer' && e.stage === 'return')?.rows).toBe(0);
+      let timed: Response | undefined;
+      if (mode === 'lock-deadline') { timed = await second; expect(timed.status).toBe(409); expect(control.traces[0]!.outcome).toBeUndefined(); }
+      release.release();
+      const [one, two] = await Promise.all([first, second]);
+      expect(one.status).toBe(mode === 'rollback' || mode === 'lost-acknowledgement' ? 503 : 201);
+      expect(two.status).toBe(mode === 'rollback' ? 201 : 409);
+      const contender = control.traces[1]!;
+      if (mode === 'lock-deadline') expect(contender.sqlState).toBe('55P03');
+      else if (mode !== 'rollback') expect(contender.sqlState ?? contender.prismaCode).toBeOneOf(['40001', 'P2034']);
+      else expect(contender.outcome).toBe('COMMIT confirmed');
+      const fresh = await create(a.f, a.client, body, key); expect(fresh.status).toBe(201);
+      const result = await fresh.json(); expect(result.workspace.slug).toBe(body.slug);
+      expect((await create(a.f, a.client, { ...body, name: 'Different canonical body' }, key)).status).toBe(409);
+      expect(await database.client.workspace.count({ where: { slug: body.slug } })).toBe(1);
+      expect(await database.client.workspaceCreationResult.count({ where: { actorId: a.userId, requestKey: key } })).toBe(1);
+      const replay = control.traces[2]!;
+      const workspace = replay.events.findIndex(e => e.phase === 'workspace' && e.stage === 'start');
+      const ledger = replay.events.findIndex(e => e.phase === 'reserve' && e.stage === 'start');
+      expect(workspace).toBeGreaterThan(-1); expect(workspace).toBeLessThan(ledger);
+      expect(replay.events.slice(ledger).some(e => e.phase === 'workspace')).toBe(false);
+      correctionObservations.push({ scenario: 'same-key pre-commit pointer / ' + mode, wait, firstHttp: one.status, contenderHttp: two.status,
+        freshSameKeyHttp: fresh.status, effects: 1, transactions: control.traces });
+    } finally { release.release(); await Promise.allSettled([first, ...(second ? [second] : [])]); control.restore(); }
+  });
+}
+
+async function expireResult(key: string) {
+  await database.client.$executeRawUnsafe('ALTER TABLE workspace_creation_results DISABLE TRIGGER workspace_creation_immutable');
+  try { await database.client.$executeRaw`UPDATE workspace_creation_results SET completed_at=statement_timestamp()-interval '25 hours',retain_until=statement_timestamp()-interval '1 hour' WHERE request_key=${key}::uuid`; }
+  finally { await database.client.$executeRawUnsafe('ALTER TABLE workspace_creation_results ENABLE TRIGGER workspace_creation_immutable'); }
+}
+
+for (const order of ['replay-first', 'revocation-first'] as const) {
+  test(`controlled replay membership revocation: ${order}`, async () => {
+    const a = await account(), body = input(), key = randomUUID();
+    const first = await create(a.f, a.client, body, key); expect(first.status).toBe(201);
+    const result = await first.json(), ws = result.workspace.id as string; await keeper(ws);
+    const ready = latch(), release = latch();
+    const control = interceptTransactions(async (phase, trace) => {
+      if (order === 'replay-first' && phase === 'ledger' && trace.transaction === 1) { ready.release(); await release.promise; }
+    });
+    let replay: Promise<Response> | undefined, revoke: Promise<unknown> | undefined;
+    try {
+      if (order === 'replay-first') {
+        replay = create(a.f, a.client, body, key); await withDeadline(ready.promise, 1200);
+        revoke = Promise.resolve(database.client.workspaceMembership.update({ where: { workspaceId_userId: { workspaceId: ws, userId: a.userId } }, data: { status: 'SUSPENDED' } }));
+      } else {
+        revoke = database.transaction(async tx => {
+          await tx.$queryRaw`SELECT id FROM workspaces WHERE id=${ws}::uuid FOR UPDATE`;
+          await tx.workspaceMembership.update({ where: { workspaceId_userId: { workspaceId: ws, userId: a.userId } }, data: { status: 'SUSPENDED' } });
+          ready.release(); await release.promise;
+        });
+        await withDeadline(ready.promise, 1200); replay = create(a.f, a.client, body, key);
+      }
+      const wait = await waitForLock(order === 'replay-first' ? 'workspace_memberships' : 'FOR SHARE OF w');
+      release.release(); const response = await replay; await revoke;
+      if (order === 'replay-first') { expect(response.status).toBe(201); expect(await response.json()).toEqual(result); }
+      else {
+        expect(response.status).toBeOneOf([404, 409]); const raw = await response.text();
+        for (const value of Object.values(result.workspace) as string[]) expect(raw).not.toContain(value);
+        expect(control.traces[0]!.events.some(e => e.phase === 'ledger' || e.phase === 'reserve')).toBe(false);
+      }
+      await undisclosed(await create(a.f, a.client, body, key), result.workspace);
+      correctionObservations.push({ scenario: order, wait, concurrentHttp: response.status, afterRevocationHttp: 404, transactions: control.traces });
+    } finally { release.release(); await Promise.allSettled([...(replay ? [replay] : []), ...(revoke ? [revoke] : [])]); control.restore(); }
+  });
+}
+async function keeper(workspaceId: string) {
+  const user = await database.client.user.create({ data: { name: 'Owned alternate administrator' } });
+  await database.client.workspaceMembership.create({ data: { workspaceId, userId: user.id, role: 'ADMIN', status: 'ACTIVE' } });
+}
+async function undisclosed(response: Response, sensitive: { id: string; name: string; slug: string }) {
+  expect(response.status).toBe(404); const raw = await response.text(), data = JSON.parse(raw);
+  expect(Object.keys(data)).toEqual(['error']); expect(Object.keys(data.error).sort()).toEqual(['code', 'message', 'requestId']);
+  expect({ ...data.error, requestId: 'redacted' }).toEqual({ code: 'NOT_FOUND', message: 'Resource not found', requestId: 'redacted' });
+  for (const secret of Object.values(sensitive)) expect(raw).not.toContain(secret);
+  expect(response.headers.has('set-cookie')).toBe(false); expect(response.headers.get('cache-control')).toBe('private, no-store');
+}
+for (const mode of ['membership-deleted', 'membership-suspended', 'inaccessible-ledger-pointer'] as const) {
+  test(`replay cannot disclose body/result/expiry after ${mode}`, async () => {
+    const a = await account(), body = { ...input(), name: 'Private-' + randomUUID() }, key = randomUUID();
+    let result: { workspace: { id: string; name: string; slug: string } };
+    if (mode === 'inaccessible-ledger-pointer') {
+      const b = await account(); result = await (await create(b.f, b.client, body)).json();
+      // Adversarial durable pointer in the owned test DB, not a frontend grant.
+      await database.client.workspaceCreationResult.create({ data: { id: randomUUID(), actorId: a.userId, scopeKey: 'account:' + a.userId,
+        requestKey: key, payloadDigest: 'a'.repeat(64), workspaceId: result.workspace.id, result, retainUntil: new Date(Date.now() + 86401000) } });
+    } else {
+      const first = await create(a.f, a.client, body, key); expect(first.status).toBe(201); result = await first.json(); await keeper(result.workspace.id);
+      if (mode === 'membership-deleted') await database.client.workspaceMembership.delete({ where: { workspaceId_userId: { workspaceId: result.workspace.id, userId: a.userId } } });
+      else await database.client.workspaceMembership.update({ where: { workspaceId_userId: { workspaceId: result.workspace.id, userId: a.userId } }, data: { status: 'SUSPENDED' } });
+    }
+    expect((await a.f.http('/api/v1/auth/me', 'GET', a.client)).status).toBe(200);
+    await undisclosed(await create(a.f, a.client, body, key), result.workspace);
+    await undisclosed(await create(a.f, a.client, { ...body, name: 'Different body' }, key), result.workspace);
+    await expireResult(key); await undisclosed(await create(a.f, a.client, body, key), result.workspace);
+    // Expiry was not exposed or used to purge a result by an unauthorized caller.
+    expect((await database.client.workspaceCreationResult.findFirstOrThrow({ where: { actorId: a.userId, requestKey: key } })).result).not.toBeNull();
+    await database.client.$executeRaw`UPDATE workspace_creation_results SET result=NULL WHERE actor_id=${a.userId}::uuid AND request_key=${key}::uuid`;
+    await undisclosed(await create(a.f, a.client, body, key), result.workspace);
+    correctionObservations.push({ scenario: mode, authenticatedMe: 200, matchingPayload: 404, differentPayload: 404, expired: 404, tombstone: 404, disclosedProductFields: false });
+  });
+}
