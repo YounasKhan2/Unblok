@@ -2,6 +2,7 @@ import type { Prisma, WorkspaceRole, RecordStatus } from '@prisma/client';
 import { verificationAction, type VerificationKey } from './email-verification';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import type { Database } from './index';
+import { createWorkspace, discoverWorkspaces, workspaceContext, validWorkspaceKeys, WorkspaceFault, type WorkspaceKeys } from './workspaces';
 import { AuthFences, AuthDeniedError, AuthUnavailableError, lockAuthority, type PrincipalAuthority, type SessionVerifier } from './auth-fences';
 
 export interface VerifiedIdentity { readonly provider: string; readonly subject: string }
@@ -111,8 +112,9 @@ export class Tenancy {
   #principals = new WeakMap<VerifiedPrincipal, PrincipalAuthority>();
   #sessionRequest = new AsyncLocalStorage<VerifiedPrincipal>();
   #fences: AuthFences;
-  constructor(private readonly database: Database, private readonly verifier: IdentityVerifier, private readonly policy: AuthorizationPolicy = denyAll, private readonly sessions?: SessionVerifier, private readonly verificationKey?: VerificationKey) {
+  constructor(private readonly database: Database, private readonly verifier: IdentityVerifier, private readonly policy: AuthorizationPolicy = denyAll, private readonly sessions?: SessionVerifier, private readonly verificationKey?: VerificationKey, private readonly workspaceKeys?: WorkspaceKeys) {
     this.#fences = new AuthFences(database);
+    if (workspaceKeys) this.workspaceKeys = Object.freeze({ ...workspaceKeys, cursors: Object.freeze({ ...workspaceKeys.cursors }) });
   }
   private mint(authority: PrincipalAuthority): VerifiedPrincipal {
     const principal = Object.freeze({}) as VerifiedPrincipal;
@@ -148,6 +150,45 @@ export class Tenancy {
   }
 
   read<T>(principal: VerifiedPrincipal, workspaceId: string, run: (queries: TenantQueries) => Promise<T>) { return this.scoped(principal, workspaceId, 'read', run); }
+  // Closed account/tenant capabilities, never a transaction or ORM escape hatch.
+  private async workspaceBoundary<T>(principal: VerifiedPrincipal, run: (tx: Prisma.TransactionClient, authority: PrincipalAuthority) => Promise<T>) {
+    const authority = this.#principals.get(principal);
+    if (!authority?.session) throw new TenantAccessError();
+    this.assertPrincipal(principal, authority);
+    try { return await this.database.transaction(async tx => {
+      await tx.$executeRaw`SET LOCAL lock_timeout = '1500ms'`;
+      await tx.$executeRaw`SET LOCAL statement_timeout = '4000ms'`;
+      this.assertPrincipal(principal, authority); await lockAuthority(tx, authority);
+      const result = await run(tx, authority);
+      await lockAuthority(tx, authority); this.assertPrincipal(principal, authority); return result;
+    }); } catch (error) {
+      if (error instanceof WorkspaceFault || error instanceof TenantAccessError) throw error;
+      if (error instanceof AuthDeniedError) throw new TenantAccessError();
+      const code = error && typeof error === 'object' && 'code' in error ? error.code : undefined;
+      const meta = error && typeof error === 'object' && 'meta' in error ? error.meta : undefined;
+      const sql = meta && typeof meta === 'object' && 'code' in meta ? meta.code : undefined;
+      if (code === 'P2002' || code === 'P2034' || (code === 'P2010' && ['23505', '40001', '40P01', '55P03'].includes(String(sql)))) throw new WorkspaceFault('CONFLICT');
+      // Unknown commit outcome remains503; retry only with the same durable key.
+      throw new AuthUnavailableError();
+    }
+  }
+  async createWorkspace(principal: VerifiedPrincipal, input: { name: string; slug: string; key: string }) {
+    const result = await this.workspaceBoundary(principal, (tx, authority) => {
+      if (!this.workspaceKeys || !validWorkspaceKeys(this.workspaceKeys)) throw new AuthUnavailableError();
+      return createWorkspace(tx, authority, input, this.workspaceKeys);
+    });
+    if (result instanceof WorkspaceFault) throw result;
+    return result;
+  }
+  discoverWorkspaces(principal: VerifiedPrincipal, query: { limit: number; sort: 'workspace_asc' | 'workspace_desc'; after?: string }) {
+    return this.workspaceBoundary(principal, (tx, authority) => {
+      if (!this.workspaceKeys || !validWorkspaceKeys(this.workspaceKeys) || !Number.isInteger(query.limit) || query.limit < 1 || query.limit > 100) throw new AuthUnavailableError();
+      return discoverWorkspaces(tx, authority, query, this.workspaceKeys);
+    });
+  }
+  workspaceContext(principal: VerifiedPrincipal, workspaceId: string) {
+    return this.workspaceBoundary(principal, (tx, authority) => workspaceContext(tx, authority.userId, workspaceId));
+  }
   async emailVerification(principal: VerifiedPrincipal, action: 'request' | 'confirm' | 'status', token?: string) {
     const authority = this.#principals.get(principal);
     if (!authority?.session || !this.verificationKey) throw new TenantAccessError();

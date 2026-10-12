@@ -17,7 +17,7 @@ const foundationFiles: Record<string, readonly string[]> = {
   'apps/api': ['access.ts', 'app.ts', 'errors.ts', 'health.ts', 'main.ts', 'security.ts', 'validation.ts'],
   'apps/worker': ['main.ts', 'worker.ts'],
 };
-const databaseNames = new Set(['Tenancy', 'TenantAccessError', 'TenantConflictError', 'AuthUnavailableError', 'SessionEvidence', 'SessionVerifier', 'denyAll', 'VerifiedIdentity', 'VerifiedPrincipal', 'IdentityVerifier', 'AuthorizationPolicy', 'WorkspaceContext', 'ResourceScope', 'TenantAction', 'TenantQueries', 'IssueProjection']);
+const databaseNames = new Set(['WorkspaceFault', 'Tenancy', 'TenantAccessError', 'TenantConflictError', 'AuthUnavailableError', 'SessionEvidence', 'SessionVerifier', 'denyAll', 'VerifiedIdentity', 'VerifiedPrincipal', 'IdentityVerifier', 'AuthorizationPolicy', 'WorkspaceContext', 'ResourceScope', 'TenantAction', 'TenantQueries', 'IssueProjection']);
 const code = /\.[cm]?[jt]sx?$/;
 const testFile = (file: string) => /(?:^|\/)(?:test|tests|__tests__|fixtures)\/|\.(?:test|spec)\.[cm]?[jt]sx?$/.test(file);
 const ownerOf = (file: string) => owners.find(owner => file.startsWith(owner + '/'));

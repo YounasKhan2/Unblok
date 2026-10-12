@@ -55,3 +55,7 @@ FE-AUTH-01 review implementation: [real frontend authentication](../frontend/01-
 ## BE-API-00 proposed enterprise contracts
 
 [24 — Enterprise API architecture and performance contracts](24-BE-API-00-ENTERPRISE-CONTRACTS.md): bounded resources/projections, screen matrix, graph/SQL/index proposals, proposed budgets and reproducible benchmark methodology. Documentation only, pending human review; no Workspace API or measured enterprise capacity.
+
+## BE-WS-01 Workspace foundation
+
+[25 — Workspace foundation](25-BE-WS-01-WORKSPACE-FOUNDATION.md) records the four approved endpoints, additive migration, request/session/tenant fences, durable creation replay, bounded discovery cursors and real database/HTTP evidence. Implemented on the review branch, not merged or deployed. The BE-API-00 proposal is merged at `3fcbc37cfe8eca6a03a1a01f3f7d4926eafa6037`; its historical registry labels remain proposals for later slices.

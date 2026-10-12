@@ -5,6 +5,7 @@ import { ResponseSchemaInterceptor } from './validation';
 import { APP_GUARD } from '@nestjs/core';
 import { FoundationAccessGuard, PublicHealth } from './access';
 import { AuthModule, type Authentication } from './modules/auth';
+import { WorkspacesModule, type Workspaces } from './modules/workspaces';
 
 export const RESOURCES = Symbol('resources');
 export interface Resources { databaseReady(): Promise<boolean>; queueReady(): Promise<boolean>; close(): Promise<void> }
@@ -37,8 +38,8 @@ export class VersionedHealthController extends HealthController {
 }
 @Module({})
 export class AppModule {
-  static register(resources: Resources, authentication?: Authentication) {
-    return { module: AppModule, imports: authentication ? [AuthModule.register(authentication)] : [], controllers: [HealthController, VersionedHealthController],
+  static register(resources: Resources, authentication?: Authentication, workspaces?: Workspaces) {
+    return { module: AppModule, imports: [...(authentication ? [AuthModule.register(authentication)] : []), ...(workspaces ? [WorkspacesModule.register(workspaces)] : [])], controllers: [HealthController, VersionedHealthController],
       providers: [{ provide: RESOURCES, useValue: resources }, Readiness, { provide: APP_GUARD, useClass: FoundationAccessGuard }] };
   }
 }

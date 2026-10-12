@@ -1,7 +1,7 @@
 # Unblok — Backend Status and Delivery Roadmap
 
-**Last updated:** 2026-10-11
-**Repository milestone:** FE-AUTH-01 / PR #33 merged as `48f0607fa89122eaf1f189d87934a00be2b13366` (frontend auth integration and revoked-cookie recovery; production certification pending)  
+**Last updated:** 2026-10-12
+**Repository milestone:** BE-API-00 / PR #34 merged at required baseline `3fcbc37cfe8eca6a03a1a01f3f7d4926eafa6037`; BE-WS-01 implemented on review branch, not merged/deployed
 **Purpose:** Living, repository-grounded backend delivery tracker. Update when an approved backend PR is merged. This is a status tracker, **not** a replacement for the implementation/security/database architecture contracts in this folder.
 
 > **Status rule:** Check actual merge status and current code before editing. Record implemented vs planned vs verified separately. Do not mark a feature complete solely because a schema, interface, design, or proposal exists. Keep known test failures visible. Update this tracker **with every future backend branch merge**, preferably as part of the reviewed PR before merge; if the merge SHA is not known until afterward, follow with a status-only commit on `main` and record it. Record the PR, merge SHA, changes, new gaps, and new test outcomes. For other Unblok branches, update the relevant status section when they change backend deliverables or dependencies.
@@ -54,14 +54,14 @@
 
 **FE-AUTH-01 F4 correction:** Reviewed `cab718ea77ab2ddf943f959feb483e307cd25f87`; narrow session-boundary changes durably retire the signed predecessor before fresh anonymous CSRF state. Same-context Chromium reset/relogin passes without deleting cookies or replacing its context. Request-bound principals, transaction fences and CSRF/cookie protections remain enforced. Frontend production, NEXUS, dependencies and migrations are unchanged. The frontend F4 report/evidence preserves successful and failed observations and deployment limitations. This supersedes the local retained-cookie blocker; PR #33 subsequently merged as recorded in the handoff.
 
-**Next action:** Human review of BE-API-00 proposed enterprise contracts. FE-AUTH-01 including F4 is merged via PR #33; historical review observations below/above are retained. No Workspace API implementation is authorized here. Review runtime grants, ingress/browser/TLS/CSRF, timing/abuse/load, mail notification/deployment, key restoration and outbox reconciliation separately. Merged authentication/recovery is not deployed; OAuth/MFA and business frontend data integration remain planned. Candidate B local evidence is not vendor Bun support or production readiness.
+**Next action:** Human review of BE-WS-01 Workspace foundation ([report](25-BE-WS-01-WORKSPACE-FOUNDATION.md)); BE-API-00 is merged. FE-AUTH-01 including F4 is merged via PR #33; historical review observations below/above are retained. BE-WS-01 enables only creation/discovery/detail/self on its review branch; no further slice is authorized here. Review runtime grants, ingress/browser/TLS/CSRF, timing/abuse/load, mail notification/deployment, key restoration and outbox reconciliation separately. Merged authentication/recovery is not deployed; OAuth/MFA and business frontend data integration remain planned. Candidate B local evidence is not vendor Bun support or production readiness.
 
 ## 3. Remaining production backend capabilities
 
 | Capability | Current state | Priority |
 | --- | --- | --- |
 | Authentication and sessions | Revocation foundation merged; session middleware/verifier/security infrastructure merged and locally verified, not deployed; core credential APIs merged and locally verified, not deployed; broader identity lifecycle and frontend integration still missing | Critical |
-| Workspace membership and invitation APIs | Schema exists; business APIs missing | Critical |
+| Workspace foundation / invitations | BE-WS-01 creation/discovery/detail/self implemented and locally tested on review branch, not merged; member directory/invitations/frontend wiring still absent | Critical |
 | Team and project APIs | Schema exists; business APIs missing | Critical |
 | Issues CRUD/search/filtering | Bounded scoped persistence primitives exist; business APIs missing | Critical |
 | Dependency graph APIs and cycle-safe writes | Database dependency-write gate active; DAG service missing | Critical |
@@ -126,3 +126,7 @@ Base `adbcd125403ca7de6578b1c3b01e39f758abfbc8`, branch `research/be-api-00-ente
 ### BE-API-00 PR #34 F1–F4 correction review (2026-10-12)
 
 Workspace MVP contracts, explicit resource/action matrix, database revision/cursor-key/durable replay contracts and mandatory benchmark acceptance refined on the existing PR. **Proposed only, not merged or implemented; benchmark gate not executed.** Initial administrator and invitations require new scoped ports, approved grants and additive future infrastructure; dependency completion/writes stay denied. Reviewed head `3fd04459138e2f7323156c74807bf717a6cff13c`; exact correction head is in PR metadata and verification JSON records checks separately. Current production/schema/migrations/frontend/NEXUS/dependencies and historical queue/SIGTERM/audit/timing failures preserved. Next action remains human contract review, not Workspace implementation.
+
+## BE-WS-01 review implementation — 2026-10-12
+
+Base `3fcbc37cfe8eca6a03a1a01f3f7d4926eafa6037`; branch `feat/be-ws-01-workspace-foundation`. Four real Workspace endpoints, narrow request-bound database capabilities, additive discovery revisions/creation ledger, bounded signed cursors and atomic creator ADMIN assignment are implemented for human review. [Security/conformance report](25-BE-WS-01-WORKSPACE-FOUNDATION.md) and [verification](evidence/BE-WS-01-verification.json) distinguish local passing gates from historical failures and deployment requirements. Not merged/deployed/enterprise-certified. No Team/Project/Issue/Dependency or invitation APIs, frontend changes or fixture replacement. Stop before BE-WS-02.
