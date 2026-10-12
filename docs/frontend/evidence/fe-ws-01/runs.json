@@ -1,0 +1,576 @@
+[
+  {
+    "base": "73abe14d7101cba58636a2b7acd9b1b9339a5004",
+    "transport": "real Chromium / same-origin Vite proxy / isolated PostgreSQL / Valkey",
+    "productionCertified": false,
+    "passed": [
+      "login discovery and empty state",
+      "create with lost acknowledgement and same-key retry",
+      "restoration and current membership",
+      "pagination and stale cursor",
+      "responsive light dark and keyboard",
+      "membership revocation",
+      "session revocation and same-context recovery",
+      "account switch isolation",
+      "labelled NEXUS separation"
+    ],
+    "visuals": [
+      {
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "workspace-320-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "workspace-320-dark.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "workspace-390-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "workspace-390-dark.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "workspace-768-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "workspace-768-dark.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "workspace-1024-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "workspace-1024-dark.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "workspace-1440-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "workspace-1440-dark.png",
+        "noHorizontalOverflow": true
+      }
+    ],
+    "migration": {
+      "exitCode": 0,
+      "appliedCount": 9,
+      "errorCodes": []
+    },
+    "browser": "151.0.7922.34",
+    "fontMode": "remote fonts blocked; existing system fallback",
+    "uncertainOutcome": {
+      "committedBeforeLostResponse": true,
+      "manualSameKeyRetry": true,
+      "requests": 2,
+      "effects": 1,
+      "csrfAndOrigin": true
+    },
+    "status": "passed",
+    "isolatedFixtures": true
+  },
+  {
+    "base": "73abe14d7101cba58636a2b7acd9b1b9339a5004",
+    "transport": "real Chromium / same-origin Vite proxy / isolated PostgreSQL / Valkey",
+    "productionCertified": false,
+    "passed": [
+      "login discovery and empty state",
+      "create with lost acknowledgement and same-key retry",
+      "restoration and current membership",
+      "pagination and stale cursor",
+      "responsive light dark and keyboard",
+      "membership revocation",
+      "session revocation and same-context recovery",
+      "account switch isolation",
+      "labelled NEXUS separation"
+    ],
+    "visuals": [
+      {
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "workspace-320-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "workspace-320-dark.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "workspace-390-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "workspace-390-dark.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "workspace-768-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "workspace-768-dark.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "workspace-1024-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "workspace-1024-dark.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "workspace-1440-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "workspace-1440-dark.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "scene": "creation validation",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "create-320-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "scene": "creation validation",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "create-320-dark.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "scene": "creation validation",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "create-1440-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "scene": "creation validation",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "create-1440-dark.png",
+        "noHorizontalOverflow": true
+      }
+    ],
+    "migration": {
+      "exitCode": 0,
+      "appliedCount": 9,
+      "errorCodes": []
+    },
+    "browser": "151.0.7922.34",
+    "fontMode": "remote fonts blocked; existing system fallback",
+    "uncertainOutcome": {
+      "committedBeforeLostResponse": true,
+      "manualSameKeyRetry": true,
+      "requests": 2,
+      "effects": 1,
+      "csrfAndOrigin": true
+    },
+    "status": "passed",
+    "isolatedFixtures": true
+  },
+  {
+    "base": "73abe14d7101cba58636a2b7acd9b1b9339a5004",
+    "transport": "real Chromium / same-origin Vite proxy / isolated PostgreSQL / Valkey",
+    "productionCertified": false,
+    "passed": [
+      "login discovery and empty state",
+      "create with lost acknowledgement and same-key retry",
+      "restoration and current membership",
+      "pagination and stale cursor",
+      "responsive light dark and keyboard",
+      "membership revocation",
+      "session revocation and same-context recovery",
+      "account switch isolation",
+      "labelled NEXUS separation"
+    ],
+    "visuals": [
+      {
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "workspace-320-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "workspace-320-dark.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "workspace-390-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "workspace-390-dark.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "workspace-768-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "workspace-768-dark.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "workspace-1024-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "workspace-1024-dark.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "workspace-1440-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "workspace-1440-dark.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "scene": "creation validation",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "create-320-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "scene": "creation validation",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "create-320-dark.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "scene": "creation validation",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "create-1440-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "scene": "creation validation",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "create-1440-dark.png",
+        "noHorizontalOverflow": true
+      }
+    ],
+    "migration": {
+      "exitCode": 0,
+      "appliedCount": 9,
+      "errorCodes": []
+    },
+    "browser": "151.0.7922.34",
+    "fontMode": "remote fonts blocked; existing system fallback",
+    "uncertainOutcome": {
+      "committedBeforeLostResponse": true,
+      "manualSameKeyRetry": true,
+      "requests": 2,
+      "effects": 1,
+      "csrfAndOrigin": true
+    },
+    "crossOriginCreation": {
+      "idempotencyPreflight": 403,
+      "supported": false,
+      "requiresReviewedBackendCorsChange": true
+    },
+    "status": "passed",
+    "isolatedFixtures": true
+  },
+  {
+    "base": "73abe14d7101cba58636a2b7acd9b1b9339a5004",
+    "transport": "real Chromium / same-origin Vite proxy / isolated PostgreSQL / Valkey",
+    "productionCertified": false,
+    "passed": [
+      "login discovery and empty state",
+      "create with lost acknowledgement and same-key retry",
+      "restoration and current membership",
+      "pagination and stale cursor",
+      "responsive light dark and keyboard",
+      "membership revocation",
+      "session revocation and same-context recovery",
+      "account switch isolation",
+      "labelled NEXUS separation"
+    ],
+    "visuals": [
+      {
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "workspace-320-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "workspace-320-dark.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "workspace-390-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "workspace-390-dark.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "workspace-768-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "workspace-768-dark.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "workspace-1024-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "workspace-1024-dark.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "workspace-1440-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "workspace-1440-dark.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "scene": "creation validation",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "create-320-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "scene": "creation validation",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "create-320-dark.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "scene": "creation validation",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "create-1440-light.png",
+        "noHorizontalOverflow": true
+      },
+      {
+        "scene": "creation validation",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "create-1440-dark.png",
+        "noHorizontalOverflow": true
+      }
+    ],
+    "migration": {
+      "exitCode": 0,
+      "appliedCount": 9,
+      "errorCodes": []
+    },
+    "browser": "151.0.7922.34",
+    "fontMode": "remote fonts blocked; existing system fallback",
+    "uncertainOutcome": {
+      "committedBeforeLostResponse": true,
+      "manualSameKeyRetry": true,
+      "requests": 2,
+      "effects": 1,
+      "csrfAndOrigin": true
+    },
+    "crossOriginCreation": {
+      "idempotencyPreflight": 403,
+      "supported": false,
+      "requiresReviewedBackendCorsChange": true
+    },
+    "status": "passed",
+    "isolatedFixtures": true
+  }
+]

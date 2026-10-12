@@ -7,6 +7,7 @@ export class SessionStore {
   private restoring:Promise<void>|undefined;
   constructor(readonly api:AuthApi) {api.onUnauthorized=()=>this.clear();}
   snapshot=()=>this.state;
+  generation=()=>this.version;
   subscribe=(listener:()=>void)=>{this.listeners.add(listener);return()=>{this.listeners.delete(listener);};};
   private publish(state:SessionState) {this.state=state;for(const listener of this.listeners)listener();}
   private advance() {this.version++;this.restoring=undefined;this.api.invalidateRequests();}

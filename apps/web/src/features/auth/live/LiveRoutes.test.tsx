@@ -7,12 +7,13 @@ import {SessionStore} from '../session/SessionStore';
 import {SessionProvider} from '../session/SessionContext';
 import {LiveRoutes} from './LiveRouter';
 import {SessionGuard} from './SessionGuard';
+import {LiveWorkspaceProvider} from '../../workspaces/live/WorkspaceContext';
 const user={id:'12345678-1234-4234-8234-123456789012',name:'Server Account',email:'server@example.com',emailVerified:false};
 async function session(status=200){const s=new SessionStore(new AuthApi('',(async()=>new Response(JSON.stringify({user}),{status})) as typeof fetch));await s.refresh();return s;}
-function page(store:SessionStore,path:string){return renderToString(<SessionProvider store={store}><MemoryRouter initialEntries={[path]}><LiveRoutes/></MemoryRouter></SessionProvider>);}
+function page(store:SessionStore,path:string){return renderToString(<SessionProvider store={store}><LiveWorkspaceProvider><MemoryRouter initialEntries={[path]}><LiveRoutes/></MemoryRouter></LiveWorkspaceProvider></SessionProvider>);}
 describe('real account surfaces and guards',()=>{
   it('renders server identity and honest pending workspace instead of NEXUS',async()=>{
-    const html=page(await session(),'/account');expect(html).toContain('Server Account');expect(html).toContain('server@example.com');expect(html).toContain('Workspace access');expect(html).not.toContain('NEXUS Commerce');expect(html).not.toContain('nav-rail');
+    const html=page(await session(),'/account');expect(html).toContain('Server Account');expect(html).toContain('server@example.com');expect(html).toContain('Your workspaces');expect(html).not.toContain('NEXUS Commerce');expect(html).not.toContain('nav-rail');
   });
   it.each(['/login','/signup','/forgot-password','/reset-password'])('renders accessible anonymous form at %s',async path=>{
     const html=page(await session(401),path);expect(html).toContain('<form');expect(html).toContain('for="real-email"');expect(html).toContain('autoComplete="email"');expect(html).not.toContain('nav-rail');

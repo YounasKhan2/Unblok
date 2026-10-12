@@ -17,6 +17,8 @@ import {CredentialsPage} from './CredentialsPage';
 import {AccountPage} from './AccountPage';
 import {VerificationPage} from './VerificationPage';
 import {AuthCard} from '../components/AuthCard';
+import {LiveWorkspaceProvider} from '../../workspaces/live/WorkspaceContext';
+import {CreateLiveWorkspacePage,LiveWorkspacePage} from '../../workspaces/live/WorkspacePages';
 
 export function LiveRoutes() {
   return <Routes>
@@ -35,6 +37,7 @@ export function LiveRoutes() {
       </Route>
       <Route element={<SessionGuard/>}>
         <Route path="/account" element={<AccountPage/>}/><Route path="/verify-email" element={<VerificationPage/>}/>
+        <Route path="/onboarding/workspace" element={<CreateLiveWorkspacePage/>}/><Route path="/workspaces/:workspaceId" element={<LiveWorkspacePage/>}/>
         {['onboarding','my-work','projects','teams','issues','dependencies','cycles','milestones','roadmap','inbox','insights','settings'].map(path=><Route key={path} path={`/${path}/*`} element={<Navigate to="/account" replace/>}/>)}
       </Route>
       <Route path="/invite/:token" element={<AuthCard appearance="application" title="Workspace invitations" subtitle="Workspace invitations are not connected yet. No access has been granted."><Link to="/account" className="text-accent">Go to your account</Link></AuthCard>}/>
@@ -42,4 +45,4 @@ export function LiveRoutes() {
     <Route element={<PublicLayout/>}><Route path="*" element={<PublicNotFoundPage/>}/></Route>
   </Routes>;
 }
-export function LiveRouter(){return <BrowserRouter><LiveRoutes/></BrowserRouter>;}
+export function LiveRouter(){return <LiveWorkspaceProvider><BrowserRouter><LiveRoutes/></BrowserRouter></LiveWorkspaceProvider>;}
