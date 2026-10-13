@@ -1,4 +1,4 @@
-import type { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 // Server-private evidence from a live session lookup, never a browser DTO.
 export interface SessionEvidence {
@@ -47,20 +47,34 @@ async function user(tx: Prisma.TransactionClient, userId: string, exclusive = fa
 
 // Internal to the database package: never expose raw transactions to handlers.
 // Locks survive until transaction commit; SERIALIZABLE conflicts fail closed.
-export async function lockAuthority(tx: Prisma.TransactionClient, authority: PrincipalAuthority) {
-  const current = await user(tx, authority.userId);
+export async function lockAuthority(tx: Prisma.TransactionClient, authority: PrincipalAuthority, additionalUsers: readonly string[] = []) {
+  const users = [...new Set([authority.userId, ...additionalUsers])].sort();
+  for (const userId of users) id(userId);
+  await tx.$queryRaw(Prisma.sql`SELECT id FROM users WHERE id IN (${Prisma.join(users.map(userId => Prisma.sql`${userId}::uuid`))}) ORDER BY id FOR SHARE`);
+  return checkAuthority(tx, authority, true);
+}
+// Caller must already hold all user and family locks from lockAuthority (or
+// lifecycle's user -> exclusive family locks). Revalidation takes no new locks.
+export async function revalidateAuthority(tx: Prisma.TransactionClient, authority: PrincipalAuthority) {
+  return checkAuthority(tx, authority, false);
+}
+async function checkAuthority(tx: Prisma.TransactionClient, authority: PrincipalAuthority, lockFamily: boolean) {
+  const users = await tx.$queryRaw<{auth_epoch: bigint; auth_disabled: boolean}[]>`SELECT auth_epoch, auth_disabled FROM users WHERE id = ${authority.userId}::uuid`;
+  const current = users[0];
+  if (!current || current.auth_disabled) throw new AuthDeniedError();
   if (current.auth_epoch !== authority.authEpoch) throw new AuthDeniedError();
   const identity = await tx.identity.findUnique({ where: { id_userId: { id: authority.identityId, userId: authority.userId } }, select: { id: true } });
   if (!identity) throw new AuthDeniedError();
   if (authority.session) {
     const s = authority.session; evidence(s);
     if (s.userId !== authority.userId || s.identityId !== authority.identityId || s.authEpoch !== authority.authEpoch) throw new AuthDeniedError();
+    if (lockFamily) await tx.$queryRaw`SELECT id FROM auth_session_families WHERE id = ${s.familyId}::uuid FOR SHARE`;
     const rows = await tx.$queryRaw<{ valid: boolean }[]>`
       SELECT (user_id = ${s.userId}::uuid AND identity_id = ${s.identityId}::uuid
         AND auth_epoch = ${s.authEpoch} AND generation = ${s.generation}
         AND sid_digest = ${s.sidDigest} AND revoked_at IS NULL
         AND absolute_expires_at > statement_timestamp() AND idle_expires_at > statement_timestamp()) AS valid
-      FROM auth_session_families WHERE id = ${s.familyId}::uuid FOR SHARE`;
+      FROM auth_session_families WHERE id = ${s.familyId}::uuid`;
     if (rows[0]?.valid !== true) throw new AuthDeniedError();
   }
 }
@@ -123,8 +137,11 @@ export class AuthFences {
     return this.transaction(async tx => {
       const families = await tx.$queryRaw<{ id: string; user_id: string }[]>`
         SELECT id, user_id FROM auth_session_families WHERE sid_digest = ${sidDigest} ORDER BY user_id, id`;
-      for (const family of families) {
-        await user(tx, family.user_id, false, false);
+      // A digest is not unique in SQL. Lock every discovered user before any
+      // family, rather than interleaving user A/family A/user B/family B.
+      const users = [...new Set(families.map(family => family.user_id))].sort();
+      if (users.length) await tx.$queryRaw(Prisma.sql`SELECT id FROM users WHERE id IN (${Prisma.join(users.map(userId => Prisma.sql`${userId}::uuid`))}) ORDER BY id FOR SHARE`);
+      for (const family of [...families].sort((a,b) => a.id.localeCompare(b.id))) {
         const current = await tx.$queryRaw<{ id: string }[]>`
           SELECT id FROM auth_session_families WHERE id = ${family.id}::uuid AND sid_digest = ${sidDigest} FOR UPDATE`;
         if (current.length) await tx.$executeRaw`
@@ -144,7 +161,7 @@ export class AuthFences {
       evidence(s); await user(tx, s.userId);
       // Acquire exclusive family lock before validation (no SHARE→UPDATE upgrade).
       await tx.$queryRaw`SELECT id FROM auth_session_families WHERE id = ${s.familyId}::uuid FOR UPDATE`;
-      await lockAuthority(tx, { userId: s.userId, identityId: s.identityId, authEpoch: s.authEpoch, session: s });
+      await revalidateAuthority(tx, { userId: s.userId, identityId: s.identityId, authEpoch: s.authEpoch, session: s });
       if (!/^[0-9a-f]{64}$/.test(sidDigest) || sidDigest === s.sidDigest) throw new AuthDeniedError();
       const dates = await tx.$queryRaw<{ valid: boolean }[]>`SELECT (${idleExpiresAt}::timestamptz > statement_timestamp() AND ${idleExpiresAt}::timestamptz <= absolute_expires_at) AS valid FROM auth_session_families WHERE id = ${s.familyId}::uuid`;
       if (dates[0]?.valid !== true) throw new AuthDeniedError();

@@ -8,7 +8,9 @@
     "Expanded suites15/485,20/666,25/789,27/851 passed before final contract/coverage refinements.",
     "Combined API/worker test initially violated package direction; moved new harness into scripts/backend without checker exemption.",
     "Root Zod import failed: JSON schema now generated through neutral contracts export without dependency changes.",
-    "Duplicate test import, narrow keyring test type and unused helpers corrected."
+    "Duplicate test import, narrow keyring test type and unused helpers corrected.",
+    "F1 correction first run31 pass/3 fail: trace included authentication-only transactions and initial concurrency assertion incorrectly required SERIALIZABLE lifecycle waiters to succeed. Scope trace to Workspace transactions; assert one user/family acquisition and record bounded SQLSTATE40001/P2034 rollback with fresh lifecycle reconciliation. Second run34 pass/1136 assertions before strengthening lock trace and multi-family SID retirement.",
+    "Added deliberate legacy membership inversion:35 pass/1 fail because PrismaClientUnknownRequestError wraps PostgreSQL40P01 in its message rather than structured code. Targeted diagnosis withheld raw messages and identity/proof values; extract only allowlisted SQLSTATE into evidence. Targeted inversion then1 pass/33 assertions; rollback/no-effect and inaccessible-state assertions retained. No production error mapping changed: structured conflicts409, unknown outcome503, both fail closed."
   ],
   "historicalFailures": [
     "queue timing/between-test errors",
@@ -331,6 +333,239 @@
       "exitCode": 0,
       "durationSeconds": 5.05,
       "summary": []
+    },
+    {
+      "gate": "F1-F2-workspace-security",
+      "command": "bun run test:backend:workspace-invitations",
+      "exitCode": 0,
+      "durationSeconds": 47.1,
+      "summary": [
+        " 35 pass",
+        " 0 fail",
+        " 1164 expect() calls",
+        "Ran 35 tests across 1 file. [47.02s]"
+      ]
+    },
+    {
+      "gate": "F1-architecture-typecheck",
+      "command": "bun run typecheck:backend",
+      "exitCode": 0,
+      "durationSeconds": 14.43,
+      "summary": [
+        "Architecture checked 391 source files and 1063 resolved internal edges; 0 violations."
+      ]
+    },
+    {
+      "gate": "F1-lint",
+      "command": "bun run lint:backend",
+      "exitCode": 0,
+      "durationSeconds": 5.82,
+      "summary": []
+    },
+    {
+      "gate": "F1-build",
+      "command": "bun run build:backend",
+      "exitCode": 0,
+      "durationSeconds": 0.25,
+      "summary": []
+    },
+    {
+      "gate": "F1-backend-worker-regression",
+      "command": "bun run test:backend",
+      "exitCode": 0,
+      "durationSeconds": 11.45,
+      "summary": [
+        " 101 pass",
+        " 0 fail",
+        " 265 expect() calls",
+        "Ran 101 tests across 8 files. [11.38s]"
+      ]
+    },
+    {
+      "gate": "F1-authentication",
+      "command": "bun run test:backend:authentication",
+      "exitCode": 0,
+      "durationSeconds": 20.05,
+      "summary": [
+        " 26 pass",
+        " 0 fail",
+        " 827 expect() calls",
+        "Ran 26 tests across 1 file. [19.98s]"
+      ]
+    },
+    {
+      "gate": "F1-sessions",
+      "command": "bun run test:backend:sessions",
+      "exitCode": 0,
+      "durationSeconds": 25.45,
+      "summary": [
+        " 31 pass",
+        " 0 fail",
+        " 473 expect() calls",
+        "Ran 31 tests across 1 file. [25.39s]"
+      ]
+    },
+    {
+      "gate": "F1-auth-fences",
+      "command": "bun run test:backend:auth-fences",
+      "exitCode": 0,
+      "durationSeconds": 14.16,
+      "summary": [
+        " 24 pass",
+        " 0 fail",
+        " 134 expect() calls",
+        "Ran 24 tests across 1 file. [14.10s]"
+      ]
+    },
+    {
+      "gate": "F1-tenancy-migration-replay",
+      "command": "bun run test:backend:tenancy",
+      "exitCode": 0,
+      "durationSeconds": 17.39,
+      "summary": [
+        " 34 pass",
+        " 0 fail",
+        " 132 expect() calls",
+        "Ran 34 tests across 1 file. [17.34s]"
+      ]
+    },
+    {
+      "gate": "F1-email-worker",
+      "command": "bun run test:backend:email-verification",
+      "exitCode": 0,
+      "durationSeconds": 26.32,
+      "summary": [
+        " 16 pass",
+        " 0 fail",
+        " 468 expect() calls",
+        "Ran 16 tests across 1 file. [26.22s]"
+      ]
+    },
+    {
+      "gate": "F1-password-recovery",
+      "command": "bun run test:backend:password-recovery",
+      "exitCode": 0,
+      "durationSeconds": 26.07,
+      "summary": [
+        " 18 pass",
+        " 0 fail",
+        " 421 expect() calls",
+        "Ran 18 tests across 1 file. [26.00s]"
+      ]
+    },
+    {
+      "gate": "F1-database-integration",
+      "command": "bun run test:backend:integration",
+      "exitCode": 0,
+      "durationSeconds": 1.03,
+      "summary": [
+        " 2 pass",
+        " 0 fail",
+        " 5 expect() calls",
+        "Ran 2 tests across 1 file. [976.00ms]"
+      ]
+    },
+    {
+      "gate": "F1-diff",
+      "command": "git diff --check",
+      "exitCode": 0,
+      "durationSeconds": 0.1,
+      "summary": []
+    },
+    {
+      "gate": "F1-F2-final-Mailpit-security",
+      "command": "bun run test:backend:workspace-invitations",
+      "exitCode": 0,
+      "durationSeconds": 40.4,
+      "summary": [
+        " 35 pass",
+        " 0 fail",
+        " 1168 expect() calls",
+        "Ran 35 tests across 1 file. [40.33s]"
+      ]
+    },
+    {
+      "gate": "F1-F2-final-typecheck",
+      "command": "bun run typecheck:backend",
+      "exitCode": 0,
+      "durationSeconds": 13.01,
+      "summary": [
+        "Architecture checked 391 source files and 1063 resolved internal edges; 0 violations."
+      ]
+    },
+    {
+      "gate": "F1-F2-final-lint",
+      "command": "bun run lint:backend",
+      "exitCode": 0,
+      "durationSeconds": 4.8,
+      "summary": []
+    },
+    {
+      "gate": "F1-F2-final-inversion-security",
+      "command": "bun run test:backend:workspace-invitations",
+      "exitCode": 1,
+      "durationSeconds": 42.06,
+      "summary": [
+        "error: expect(received).toContain(expected)",
+        " 35 pass",
+        " 1 fail",
+        " 1198 expect() calls",
+        "Ran 36 tests across 1 file. [41.99s]",
+        "error: script \"test:backend:workspace-invitations\" exited with code 1"
+      ]
+    },
+    {
+      "gate": "F1-F2-final-expanded-typecheck",
+      "command": "bun run typecheck:backend",
+      "exitCode": 0,
+      "durationSeconds": 12.42,
+      "summary": [
+        "Architecture checked 391 source files and 1063 resolved internal edges; 0 violations."
+      ]
+    },
+    {
+      "gate": "F1-F2-final-expanded-lint",
+      "command": "bun run lint:backend",
+      "exitCode": 0,
+      "durationSeconds": 4.59,
+      "summary": []
+    },
+    {
+      "gate": "F1-F2-final-security",
+      "command": "bun run test:backend:workspace-invitations",
+      "exitCode": 0,
+      "durationSeconds": 46.19,
+      "summary": [
+        " 36 pass",
+        " 0 fail",
+        " 1201 expect() calls",
+        "Ran 36 tests across 1 file. [46.11s]"
+      ]
+    },
+    {
+      "gate": "F1-F2-final-typecheck-36",
+      "command": "bun run typecheck:backend",
+      "exitCode": 0,
+      "durationSeconds": 27.05,
+      "summary": [
+        "Architecture checked 391 source files and 1063 resolved internal edges; 0 violations."
+      ]
+    },
+    {
+      "gate": "F1-F2-final-lint-36",
+      "command": "bun run lint:backend",
+      "exitCode": 0,
+      "durationSeconds": 7.04,
+      "summary": []
     }
-  ]
+  ],
+  "reviewedHead": "d51f06db9ddc619d1d02daba7e47a22ee9dd493a",
+  "correctionScope": {
+    "reviewedHead": "d51f06db9ddc619d1d02daba7e47a22ee9dd493a",
+    "frontendNexusMigrationsDependenciesUnchanged": true,
+    "documentationLinks": 52,
+    "missingDocumentationLinks": 0,
+    "historicalFailuresRetainedNotRerun": true,
+    "rawInversionNote": "40P01 rollback; trailing unknown is expected generic detail404 after fresh reconciliation, not an identified SQLSTATE"
+  }
 }

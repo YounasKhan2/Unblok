@@ -206,19 +206,19 @@ test('controlled PostgreSQL redemption locks users before family/workspace and s
  const s=await setup(),recipient=await actor(s.f),token=await invitation(s,recipient.email),pause=latch(),entered=latch(),original=database.transaction.bind(database),trace:{events:string[];sqlState?:string}[]=[];let held=false;
  database.transaction=async run=>{const events:string[]=[];let relevant=false;try{return await original(tx=>run(new Proxy(tx,{get(target,property){if(property!=='$queryRaw')return Reflect.get(target,property);return async(...args:unknown[])=>{
   const first=args[0],sql=Array.isArray(first)?first.join(' '):String(first&&typeof first==='object'&&'sql' in first?first.sql:'');
-  const phase=/FROM users WHERE id IN/.test(sql)?'sorted-users':/FROM auth_session_families/.test(sql)?'recipient-family':/FROM workspaces WHERE/.test(sql)&&/FOR UPDATE/.test(sql)?'workspace':/workspace_invitation_results/.test(sql)&&/INSERT/.test(sql)?'ledger':/UPDATE workspace_invitations SET consumed_at/.test(sql)?'consume':undefined;
+  const phase=/FROM users WHERE id IN/.test(sql)?'sorted-users':/FROM auth_session_families/.test(sql)&&/FOR SHARE/.test(sql)?'recipient-family':/FROM workspaces WHERE/.test(sql)&&/FOR UPDATE/.test(sql)?'workspace':/workspace_invitation_results/.test(sql)&&/INSERT/.test(sql)?'ledger':/UPDATE workspace_invitations SET consumed_at/.test(sql)?'consume':undefined;
   if(phase==='sorted-users')relevant=true;if(relevant&&phase)events.push(phase);const result=await Reflect.apply(target.$queryRaw,target,args);if(relevant&&phase==='consume'&&!held){held=true;entered.release();await pause.promise;}return result;
  };}})));}catch(error){const meta=error&&typeof error==='object'&&'meta' in error?error.meta:undefined;const code=meta&&typeof meta==='object'&&'code' in meta?String(meta.code):undefined;if(relevant)trace.push({events,...(code?{sqlState:code}:{})});throw error;}finally{if(relevant&&!trace.some(t=>t.events===events))trace.push({events});}};
  const keys=[randomUUID(),randomUUID()];let responses:Response[]=[];let waited=false;
  try{const first=accept(s.f,recipient.client,token,keys[0]);await entered.promise;const second=accept(s.f,recipient.client,token,keys[1]);for(let i=0;i<60;i++){const rows=await admin.client.$queryRaw<{waiting:boolean}[]>`SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=${name} AND wait_event_type='Lock' AND query LIKE '%FROM workspaces WHERE%') AS waiting`;if(rows[0]?.waiting){waited=true;break;}await new Promise(r=>setTimeout(r,10));}pause.release();responses=await Promise.all([first,second]);}finally{pause.release();database.transaction=original;}
  expect(waited).toBe(true);expect(responses.map(r=>r.status).sort()).toEqual([202,409]);expect(trace.some(t=>t.sqlState==='40001')).toBe(true);
- for(const t of trace){expect(t.events[0]).toBe('sorted-users');expect(t.events.indexOf('recipient-family')).toBeGreaterThan(0);expect(t.events.indexOf('workspace')).toBeGreaterThan(t.events.indexOf('recipient-family'));if(t.events.includes('ledger'))expect(t.events.indexOf('ledger')).toBeGreaterThan(t.events.indexOf('workspace'));}
+ for(const t of trace.filter(t=>t.events.includes('workspace'))){expect(t.events.filter(e=>e==='sorted-users')).toHaveLength(1);expect(t.events.filter(e=>e==='recipient-family')).toHaveLength(1);expect(t.events[0]).toBe('sorted-users');expect(t.events.indexOf('recipient-family')).toBeGreaterThan(0);expect(t.events.indexOf('workspace')).toBeGreaterThan(t.events.indexOf('recipient-family'));if(t.events.includes('ledger'))expect(t.events.indexOf('ledger')).toBeGreaterThan(t.events.indexOf('workspace'));}
  expect((await accept(s.f,recipient.client,token,keys[responses[0]!.status===409?0:1])).status).toBe(202);expect(await database.client.workspaceMembership.count({where:{workspaceId:s.workspace.id,userId:recipient.userId}})).toBe(1);observations.push({case:'controlled redemption boundary',contenderWaitObserved:waited,http:responses.map(r=>r.status),transactions:trace,membershipEffects:1});
 },15000);
 
-function holdQuery(pattern:RegExp){const original=database.transaction.bind(database),entered=latch(),pause=latch();let held=false;
- database.transaction=run=>original(tx=>run(new Proxy(tx,{get(target,property){if(property!=='$queryRaw')return Reflect.get(target,property);return async(...args:unknown[])=>{const first=args[0],sql=Array.isArray(first)?first.join(' '):String(first&&typeof first==='object'&&'sql' in first?first.sql:'');const result=await Reflect.apply(target.$queryRaw,target,args);if(!held&&pattern.test(sql)){held=true;entered.release();await pause.promise;}return result;};}})));
- return {entered:entered.promise,release:pause.release,restore:()=>{pause.release();database.transaction=original;}};
+function holdQuery(pattern:RegExp){const original=database.transaction.bind(database),entered=latch(),pause=latch(),errors:string[]=[];let held=false;
+ database.transaction=async run=>{try{return await original(tx=>run(new Proxy(tx,{get(target,property){if(property!=='$queryRaw')return Reflect.get(target,property);return async(...args:unknown[])=>{const first=args[0],sql=Array.isArray(first)?first.join(' '):String(first&&typeof first==='object'&&'sql' in first?first.sql:'');const result=await Reflect.apply(target.$queryRaw,target,args);if(!held&&pattern.test(sql)){held=true;entered.release();await pause.promise;}return result;};}})));}catch(error){const meta=error&&typeof error==='object'&&'meta' in error?error.meta:undefined;const sql=meta&&typeof meta==='object'&&'code' in meta?String(meta.code):error&&typeof error==='object'&&'code' in error?String(error.code):'unknown';const embedded=error instanceof Error?error.message.match(/\b(40P01|40001|55P03)\b/)?.[1]:undefined;errors.push(sql==='unknown'?(embedded??'unknown'):sql);throw error;}};
+ return {errors,entered:entered.promise,release:pause.release,restore:()=>{pause.release();database.transaction=original;}};
 }
 async function lockWait(pattern:string){for(let i=0;i<60;i++){const rows=await admin.client.$queryRaw<{waiting:boolean}[]>`SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=${name} AND wait_event_type='Lock' AND query LIKE ${pattern}) AS waiting`;if(rows[0]?.waiting)return true;await new Promise(r=>setTimeout(r,10));}return false;}
 test('issuance ordered before archival commits first; archival cancels the proof and prevents redemption',async()=>{
@@ -274,4 +274,121 @@ test('disabled recipient/issuer and sensitive HTTP rate-store outage remain fail
  await database.client.user.update({where:{id:s.admin.userId},data:{authDisabled:true}});expect((await accept(s.f,fresh,token)).status).toBe(202);expect(await membership(s.workspace.id,recipient.userId)).toBeNull();
  const valid=await setup(),target=await actor(valid.f),proof=await invitation(valid,target.email),closed=createRedis(config.REDIS_URL);closed.on('error',()=>{});await closed.connect();const f=await fixture({invitationCache:closed}),client=await f.login(target.email);closed.disconnect();
  expect((await accept(f,client,proof)).status).toBe(503);expect(await membership(valid.workspace.id,target.userId)).toBeNull();expect((await database.client.workspaceInvitation.findUniqueOrThrow({where:{id:proof.split('.')[0]!}})).consumedAt).toBeNull();
+},15000);
+
+async function orderedActors(order:'before'|'after') {
+ const f=await fixture(),pair=[await actor(f),await actor(f)].sort((a,b)=>a.userId.localeCompare(b.userId));
+ const sender=pair[order==='before'?0:1]!,recipient=pair[order==='before'?1:0]!;
+ const response=await create(f,sender.client);expect(response.status).toBe(201);
+ return {s:{f,admin:sender,workspace:(await response.json()).workspace},recipient};
+}
+test.each(['before','after'] as const)('sorted inviter %s: acceptance versus family revocation and ordered membership lifecycle',async order=>{
+ const {s,recipient}=await orderedActors(order),keeper=await actor(s.f);await database.client.workspaceMembership.create({data:{workspaceId:s.workspace.id,userId:keeper.userId,role:'ADMIN',status:'ACTIVE'}});
+ const token=await invitation(s,recipient.email),hold=holdQuery(/UPDATE workspace_invitations SET consumed_at/),started=performance.now();let response:Response|undefined,waited=false;
+ try{
+  const request=accept(s.f,recipient.client,token);await hold.entered;
+  const family=await database.client.authSessionFamily.findFirstOrThrow({where:{userId:recipient.userId,revokedAt:null}});
+  const revoke=fences.revoke({userId:family.userId,identityId:family.identityId,familyId:family.id,authEpoch:family.authEpoch,generation:family.generation,sidDigest:family.sidDigest});
+  const changeMembership=()=>database.transaction(async tx=>{
+   await tx.$executeRaw`SET LOCAL lock_timeout='1500ms'`;await tx.$executeRaw`SET LOCAL statement_timeout='4000ms'`;
+   await tx.$queryRaw`SELECT id FROM users WHERE id=${s.admin.userId}::uuid FOR SHARE`;
+   await tx.$queryRaw`SELECT id FROM workspaces WHERE id=${s.workspace.id}::uuid FOR UPDATE`;
+   await tx.$queryRaw`SELECT id FROM workspace_invitations WHERE workspace_id=${s.workspace.id}::uuid ORDER BY id FOR UPDATE`;
+   await tx.workspaceMembership.update({where:{workspaceId_userId:{workspaceId:s.workspace.id,userId:s.admin.userId}},data:{role:'MEMBER'}});
+  });
+  const demote=changeMembership();waited=await lockWait('%FROM auth_session_families%FOR UPDATE%');hold.release();
+  const outcomes=await Promise.allSettled([request,revoke,demote]);expect(outcomes[0]!.status).toBe('fulfilled');
+  if(outcomes[0]!.status==='fulfilled')response=outcomes[0]!.value;
+  for(const failure of hold.errors)expect(['40001','P2034']).toContain(failure);
+  // A SERIALIZABLE waiter can roll back on the changed membership snapshot.
+  // Retry lifecycle work only after its failure and the earlier transaction settle.
+  if(outcomes[1]!.status==='rejected'){expect(outcomes[1]!.reason).toMatchObject({name:'AuthUnavailableError'});await fences.revoke({userId:family.userId,identityId:family.identityId,familyId:family.id,authEpoch:family.authEpoch,generation:family.generation,sidDigest:family.sidDigest});}
+  if(outcomes[2]!.status==='rejected')await changeMembership();
+  observations.push({case:'F1 lifecycle waiter outcomes',inviterSort:order,outcomes:outcomes.map(o=>o.status),sqlStates:hold.errors});
+ }finally{hold.restore();}
+ expect(waited).toBe(true);expect(response?.status).toBe(202);expect((await s.f.http('/api/v1/auth/me','GET',recipient.client)).status).toBe(401);
+ expect((await membership(s.workspace.id,recipient.userId))?.role).toBe('MEMBER');
+ observations.push({case:'F1 sorted users with family revoke and membership change',inviterSort:order,familyWaitObserved:waited,http:response!.status,durationMs:Math.round(performance.now()-started),effects:1});
+},15000);
+
+test.each(['before','after'] as const)('sorted inviter %s: issuer epoch revocation first rejects stale proof',async order=>{
+ const {s,recipient}=await orderedActors(order),token=await invitation(s,recipient.email),entered=latch(),pause=latch(),started=performance.now();
+ const revoke=database.transaction(async tx=>{
+  await tx.$executeRaw`SET LOCAL lock_timeout='1500ms'`;await tx.$queryRaw`SELECT id FROM users WHERE id=${s.admin.userId}::uuid FOR UPDATE`;
+  await tx.$executeRaw`UPDATE users SET auth_epoch=auth_epoch+1 WHERE id=${s.admin.userId}::uuid`;entered.release();await pause.promise;
+ });await entered.promise;
+ let response:Response;
+ try{const request=accept(s.f,recipient.client,token);expect(await lockWait('%FROM users WHERE id IN%')).toBe(true);pause.release();await revoke;response=await request;}finally{pause.release();}
+ expect([202,409]).toContain(response.status);expect((await accept(s.f,recipient.client,token)).status).toBe(202);expect(await membership(s.workspace.id,recipient.userId)).toBeNull();
+ observations.push({case:'F1 issuer epoch revocation first',inviterSort:order,http:response.status,freshHttp:202,effects:0,durationMs:Math.round(performance.now()-started)});
+},15000);
+
+test.each(['demote','archive'] as const)('F2 leased delivery after %s may send but cannot grant authority',async mode=>{
+ const s=await setup(),recipient=await actor(s.f),keeper=await actor(s.f);await database.client.workspaceMembership.create({data:{workspaceId:s.workspace.id,userId:keeper.userId,role:'ADMIN',status:'ACTIVE'}});
+ expect((await issue(s,recipient.email)).status).toBe(202);
+ const entered=latch(),pause=latch();let token='',sent=false;
+ const worker=new InvitationDelivery(database,invitationKey);
+ const mail=loadVerificationMail({NODE_ENV:'test',EMAIL_MAIL_ENDPOINT:'http://127.0.0.1:8025/api/v1/send',EMAIL_MAIL_FROM:'invite@unblok.local'}),dispatcher=startVerificationDispatcher({once:async()=>false},mail,createLogger('silent'),'invitation');
+ const delivery=worker.once(async(email,value,id)=>{token=value;entered.release();await pause.promise;await dispatcher.send(email,value,id);sent=true;});
+ await entered.promise;
+ try{
+  const id=token.split('.')[0]!;expect((await database.client.workspaceInvitationOutbox.findUniqueOrThrow({where:{invitationId:id}})).leaseId).not.toBeNull();
+  await database.transaction(async tx=>{
+   await tx.$queryRaw`SELECT id FROM workspaces WHERE id=${s.workspace.id}::uuid FOR UPDATE`;
+   await tx.$queryRaw`SELECT id FROM workspace_invitations WHERE workspace_id=${s.workspace.id}::uuid ORDER BY id FOR UPDATE`;
+   if(mode==='archive')await tx.workspace.update({where:{id:s.workspace.id},data:{status:'ARCHIVED'}});
+   else await tx.workspaceMembership.update({where:{workspaceId_userId:{workspaceId:s.workspace.id,userId:s.admin.userId}},data:{role:'MEMBER'}});
+  });
+  expect((await database.client.workspaceInvitation.findUniqueOrThrow({where:{id}})).canceledAt).not.toBeNull();pause.release();expect(await delivery).toBe(true);expect(sent).toBe(true);
+  const messages=await (await fetch('http://127.0.0.1:8025/api/v1/messages?limit=500')).json(),matching=messages.messages.filter((m:{To:{Address:string}[]})=>m.To.some(r=>r.Address===recipient.email));expect(matching).toHaveLength(1);
+  const message=await (await fetch('http://127.0.0.1:8025/api/v1/message/'+matching[0].ID)).json();expect(message.Text).toContain(token);
+  expect((await accept(s.f,recipient.client,token)).status).toBe(202);expect(await membership(s.workspace.id,recipient.userId)).toBeNull();
+  expect(await worker.once(async()=>{throw new Error('Canceled proof must not lease again');})).toBe(false);
+  observations.push({case:'F2 revocation between lease and external send',revocation:mode,leaseCommittedBeforeRevocation:true,mailSentAfterRevocation:sent,acceptHttp:202,effects:0});
+ }finally{pause.release();await delivery;await dispatcher.close();
+  const messages=await (await fetch('http://127.0.0.1:8025/api/v1/messages?limit=500')).json(),matching=messages.messages.filter((m:{To:{Address:string}[]})=>m.To.some(r=>r.Address===recipient.email));
+  await fetch('http://127.0.0.1:8025/api/v1/messages',{method:'DELETE',headers:{'content-type':'application/json'},body:JSON.stringify({IDs:matching.map((m:{ID:string})=>m.ID)})});
+ }
+},15000);
+
+test('SID retirement locks every user before sorted families even when a digest matches multiple users',async()=>{
+ const f=await fixture(),actors=[await actor(f),await actor(f)],sidDigest=randomBytes(32).toString('hex'),expires=new Date(Date.now()+60000);
+ const families=await Promise.all(actors.map(a=>fences.create({userId:a.userId,identityId:a.identityId,sidDigest,absoluteExpiresAt:expires,idleExpiresAt:expires})));
+ const original=database.transaction.bind(database),phases:string[]=[];const familyIds:string[]=[];
+ database.transaction=run=>original(tx=>run(new Proxy(tx,{get(target,property){if(property!=='$queryRaw')return Reflect.get(target,property);return async(...args:unknown[])=>{
+  const first=args[0],sql=Array.isArray(first)?first.join(' '):String(first&&typeof first==='object'&&'sql' in first?first.sql:'');
+  if(/FROM users.*FOR SHARE/s.test(sql)){expect(sql).toContain('ORDER BY id');phases.push('all-users');}
+  if(/FROM auth_session_families.*FOR UPDATE/s.test(sql)){phases.push('family');familyIds.push(String(args[1]));}
+  return Reflect.apply(target.$queryRaw,target,args);
+ };}})));
+ try{await fences.retireSid(sidDigest);}finally{database.transaction=original;}
+ expect(phases).toEqual(['all-users','family','family']);expect(familyIds).toEqual(families.map(f=>f.familyId).sort());
+ expect(await database.client.authSessionFamily.count({where:{sidDigest,revokedAt:{not:null}}})).toBe(2);
+ observations.push({case:'F1 nonunique SID digest retirement',userLocksBeforeAllFamilies:true,familiesSorted:true,revokedFamilies:2});
+},15000);
+
+test('legacy raw membership lock inversion rolls back within existing bounds and never bypasses authority',async()=>{
+ const s=await setup(),recipient=await actor(s.f);await database.client.workspaceMembership.create({data:{workspaceId:s.workspace.id,userId:recipient.userId,role:'OBSERVER',status:'INVITED'}});
+ const token=await invitation(s,recipient.email),hold=holdQuery(/SELECT id FROM workspaces.*FOR UPDATE/s),started=performance.now();let status=0;const outcomes:string[]=[];
+ try{
+  const request=accept(s.f,recipient.client,token);await hold.entered;
+  const legacy=database.transaction(async tx=>{
+   await tx.$executeRaw`SET LOCAL lock_timeout='1500ms'`;await tx.$executeRaw`SET LOCAL statement_timeout='4000ms'`;
+   // Deliberately emulate unsafe maintenance: target tuple before trigger Workspace.
+   await tx.workspaceMembership.update({where:{workspaceId_userId:{workspaceId:s.workspace.id,userId:recipient.userId}},data:{status:'SUSPENDED'}});
+  });
+  expect(await lockWait('%UPDATE%workspace_memberships%')).toBe(true);hold.release();
+  const settled=await Promise.allSettled([request,legacy]);outcomes.push(...settled.map(o=>o.status));expect(settled[0]!.status).toBe('fulfilled');
+  if(settled[0]!.status==='fulfilled')status=settled[0]!.value.status;
+  expect([202,409,503]).toContain(status);if(status!==202){expect((await database.client.workspaceInvitation.findUniqueOrThrow({where:{id:token.split('.')[0]!}})).consumedAt).toBeNull();expect((await membership(s.workspace.id,recipient.userId))?.status).not.toBe('ACTIVE');}expect(hold.errors.length).toBeGreaterThan(0);
+  for(const code of hold.errors)expect(['40001','40P01','55P03','P2034']).toContain(code);
+  if(settled[1]!.status==='rejected')await database.transaction(async tx=>{
+   await tx.$queryRaw`SELECT id FROM workspaces WHERE id=${s.workspace.id}::uuid FOR UPDATE`;
+   await tx.$queryRaw`SELECT id FROM workspace_invitations WHERE workspace_id=${s.workspace.id}::uuid ORDER BY id FOR UPDATE`;
+   await tx.workspaceMembership.update({where:{workspaceId_userId:{workspaceId:s.workspace.id,userId:recipient.userId}},data:{status:'SUSPENDED'}});
+  });
+  expect((await accept(s.f,recipient.client,token)).status).toBe(202);expect((await membership(s.workspace.id,recipient.userId))?.status).toBe('SUSPENDED');
+  expect((await s.f.http('/api/v1/workspaces/'+s.workspace.id,'GET',recipient.client)).status).toBe(404);
+  observations.push({case:'F1 unsafe raw membership inversion',http:status,lifecycleOutcomes:outcomes,sqlStates:hold.errors,durationMs:Math.round(performance.now()-started),finalSuspended:true,freshDetailHttp:404});
+ }finally{hold.restore();}
 },15000);

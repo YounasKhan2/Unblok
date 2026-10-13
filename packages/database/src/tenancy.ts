@@ -5,7 +5,7 @@ import { verificationAction, type VerificationKey } from './email-verification';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import type { Database } from './index';
 import { createWorkspace, discoverWorkspaces, workspaceContext, validWorkspaceKeys, WorkspaceFault, type WorkspaceKeys } from './workspaces';
-import { AuthFences, AuthDeniedError, AuthUnavailableError, lockAuthority, type PrincipalAuthority, type SessionVerifier } from './auth-fences';
+import { AuthFences, AuthDeniedError, AuthUnavailableError, lockAuthority, revalidateAuthority, type PrincipalAuthority, type SessionVerifier } from './auth-fences';
 
 export interface VerifiedIdentity { readonly provider: string; readonly subject: string }
 // The implementation must cryptographically verify its assertion. Never bind a
@@ -161,10 +161,9 @@ export class Tenancy {
       await tx.$executeRaw`SET LOCAL lock_timeout = '1500ms'`;
       await tx.$executeRaw`SET LOCAL statement_timeout = '4000ms'`;
       this.assertPrincipal(principal, authority);
-      if(selectors){const users=[...new Set([authority.userId,...await selectors(tx)])].sort();await tx.$queryRaw(Prisma.sql`SELECT id FROM users WHERE id IN (${Prisma.join(users.map(id=>Prisma.sql`${id}::uuid`))}) ORDER BY id FOR SHARE`);}
-      await lockAuthority(tx, authority);
+      await lockAuthority(tx, authority, selectors ? await selectors(tx) : []);
       const result = await run(tx, authority);
-      await lockAuthority(tx, authority); this.assertPrincipal(principal, authority); return result;
+      await revalidateAuthority(tx, authority); this.assertPrincipal(principal, authority); return result;
     }); } catch (error) {
       if (error instanceof WorkspaceFault || error instanceof TenantAccessError) throw error;
       if (error instanceof AuthDeniedError) throw new TenantAccessError();
@@ -210,7 +209,7 @@ export class Tenancy {
       await tx.$executeRaw`SET LOCAL lock_timeout = '1500ms'`; await tx.$executeRaw`SET LOCAL statement_timeout = '4000ms'`;
       this.assertPrincipal(principal, authority); await lockAuthority(tx, authority);
       const result = await verificationAction(tx, authority, this.verificationKey!, action, token);
-      await lockAuthority(tx, authority); this.assertPrincipal(principal, authority); return result;
+      await revalidateAuthority(tx, authority); this.assertPrincipal(principal, authority); return result;
     }); } catch (error) {
       if (error instanceof AuthDeniedError || error instanceof TenantAccessError) throw new TenantAccessError();
       throw new AuthUnavailableError();
@@ -228,7 +227,7 @@ export class Tenancy {
       const row = await tx.user.findUniqueOrThrow({ where: { id: authority.userId }, select: { id: true, name: true, email: true } });
       this.assertPrincipal(principal, authority);
       const credential = await tx.passwordCredential.findUnique({ where: { identityId: authority.identityId }, select: { email: true, emailVerifiedAt: true } });
-      await lockAuthority(tx, authority); this.assertPrincipal(principal, authority);
+      await revalidateAuthority(tx, authority); this.assertPrincipal(principal, authority);
       return Object.freeze({ ...row, email: credential?.email ?? row.email, emailVerified: credential?.emailVerifiedAt !== null && credential?.emailVerifiedAt !== undefined });
     }); } catch (error) {
       if (error instanceof AuthDeniedError || error instanceof TenantAccessError) throw new TenantAccessError();
@@ -264,7 +263,7 @@ export class Tenancy {
           const result = await run(queries);
           this.assertPrincipal(principal, authority);
           // Recheck DB time after callback: expiry during work rolls back writes.
-          await lockAuthority(tx, authority);
+          await revalidateAuthority(tx, authority);
           this.assertPrincipal(principal, authority);
           return result;
         } finally { queries.expire(); }

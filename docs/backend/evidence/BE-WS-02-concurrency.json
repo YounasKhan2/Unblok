@@ -35,11 +35,34 @@
       {
         "events": [
           "sorted-users",
+          "recipient-family"
+        ]
+      },
+      {
+        "events": [
+          "sorted-users",
+          "recipient-family"
+        ]
+      },
+      {
+        "events": [
+          "sorted-users",
+          "recipient-family"
+        ]
+      },
+      {
+        "events": [
+          "sorted-users",
+          "recipient-family"
+        ]
+      },
+      {
+        "events": [
+          "sorted-users",
           "recipient-family",
           "workspace",
           "ledger",
-          "consume",
-          "recipient-family"
+          "consume"
         ]
       },
       {
@@ -83,12 +106,105 @@
   {
     "case": "concurrent invalid proofs",
     "http": [
-      409,
       202,
+      409,
       409,
       409,
       409
     ],
     "durableAttemptsAfterSameKeyRetries": 5
+  },
+  {
+    "case": "F1 lifecycle waiter outcomes",
+    "inviterSort": "before",
+    "outcomes": [
+      "fulfilled",
+      "fulfilled",
+      "rejected"
+    ],
+    "sqlStates": [
+      "40001"
+    ]
+  },
+  {
+    "case": "F1 sorted users with family revoke and membership change",
+    "inviterSort": "before",
+    "familyWaitObserved": true,
+    "http": 202,
+    "durationMs": 291,
+    "effects": 1
+  },
+  {
+    "case": "F1 lifecycle waiter outcomes",
+    "inviterSort": "after",
+    "outcomes": [
+      "fulfilled",
+      "fulfilled",
+      "rejected"
+    ],
+    "sqlStates": [
+      "40001"
+    ]
+  },
+  {
+    "case": "F1 sorted users with family revoke and membership change",
+    "inviterSort": "after",
+    "familyWaitObserved": true,
+    "http": 202,
+    "durationMs": 242,
+    "effects": 1
+  },
+  {
+    "case": "F1 issuer epoch revocation first",
+    "inviterSort": "before",
+    "http": 409,
+    "freshHttp": 202,
+    "effects": 0,
+    "durationMs": 249
+  },
+  {
+    "case": "F1 issuer epoch revocation first",
+    "inviterSort": "after",
+    "http": 409,
+    "freshHttp": 202,
+    "effects": 0,
+    "durationMs": 251
+  },
+  {
+    "case": "F2 revocation between lease and external send",
+    "revocation": "demote",
+    "leaseCommittedBeforeRevocation": true,
+    "mailSentAfterRevocation": true,
+    "acceptHttp": 202,
+    "effects": 0
+  },
+  {
+    "case": "F2 revocation between lease and external send",
+    "revocation": "archive",
+    "leaseCommittedBeforeRevocation": true,
+    "mailSentAfterRevocation": true,
+    "acceptHttp": 202,
+    "effects": 0
+  },
+  {
+    "case": "F1 nonunique SID digest retirement",
+    "userLocksBeforeAllFamilies": true,
+    "familiesSorted": true,
+    "revokedFamilies": 2
+  },
+  {
+    "case": "F1 unsafe raw membership inversion",
+    "http": 202,
+    "lifecycleOutcomes": [
+      "fulfilled",
+      "rejected"
+    ],
+    "sqlStates": [
+      "40P01",
+      "unknown"
+    ],
+    "durationMs": 1330,
+    "finalSuspended": true,
+    "freshDetailHttp": 404
   }
 ]
