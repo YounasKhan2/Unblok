@@ -24,7 +24,7 @@ export async function createApp(config: ApiConfig, resources: Resources, limiter
   app.use(correlation(logger));
   app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (req.path.startsWith('/api/v1/auth/')) { res.setHeader('Cache-Control', 'no-store'); res.setHeader('Pragma', 'no-cache'); }
-    if (req.path === '/api/v1/workspaces' || req.path.startsWith('/api/v1/workspaces/')) res.setHeader('Cache-Control', 'private, no-store');
+    if (req.path === '/api/v1/workspaces' || req.path.startsWith('/api/v1/workspaces/') || req.path.startsWith('/api/v1/workspace-invitations/')) res.setHeader('Cache-Control', 'private, no-store');
     next();
   });
   app.use(helmet());
@@ -33,7 +33,7 @@ export async function createApp(config: ApiConfig, resources: Resources, limiter
   app.use(bodyBoundary(config));
   const workspaceJson = express.json({ limit: 2048, strict: true, inflate: false });
   app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
-    if (req.path === '/api/v1/workspaces' && req.method === 'POST') { workspaceJson(req, res, next); return; }
+    if ((req.path === '/api/v1/workspaces' || req.path.startsWith('/api/v1/workspaces/') || req.path.startsWith('/api/v1/workspace-invitations/')) && req.method === 'POST') { workspaceJson(req, res, next); return; }
     if (req.method === 'GET' && (req.path === '/api/v1/workspaces' || req.path.startsWith('/api/v1/workspaces/')) &&
       (Number(req.get('content-length') ?? '0') > 0 || req.get('transfer-encoding') !== undefined)) {
       res.status(400).json(normalizeError(400, (req as CorrelatedRequest).requestId ?? 'unavailable')); return;

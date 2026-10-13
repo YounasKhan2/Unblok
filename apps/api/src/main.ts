@@ -1,10 +1,10 @@
 import { PasswordRecovery, AccountCredentials, AuthFences, Database, Tenancy, denyAll } from '@unblok/database';
-import { loadRecoveryKey, loadVerificationKey, closeRedis, createLogger, createRedis, loadApiConfig, registerShutdown, withDeadline } from '@unblok/backend-runtime';
+import { loadInvitationKey, loadRecoveryKey, loadVerificationKey, closeRedis, createLogger, createRedis, loadApiConfig, registerShutdown, withDeadline } from '@unblok/backend-runtime';
 import { createApp } from './app';
 import { RedisRateLimiter } from './security';
 import { connectSessionStore, sessionSettings, Sessions } from './modules/sessions';
 import { Authentication, AuthenticationLimits, Passwords } from './modules/auth';
-import { Workspaces, WorkspaceLimits } from './modules/workspaces';
+import { Workspaces, WorkspaceLimits, InvitationLimits } from './modules/workspaces';
 
 const logger = createLogger();
 async function main() {
@@ -37,9 +37,9 @@ async function main() {
     const independent = [cursorKey, process.env.WORKSPACE_CURSOR_PREVIOUS_KEY, process.env.WORKSPACE_IDEMPOTENCY_KEY].filter(Boolean).every(key => !otherKeys.includes(key));
     const previousConfigured = !process.env.WORKSPACE_CURSOR_PREVIOUS_KEY || (previousId && previousId !== activeId);
     const workspaceKeys = independent && previousConfigured && cursorKey && process.env.WORKSPACE_IDEMPOTENCY_KEY ? { active: activeId, cursors: { [activeId]: cursorKey, ...(process.env.WORKSPACE_CURSOR_PREVIOUS_KEY && previousId ? { [previousId]: process.env.WORKSPACE_CURSOR_PREVIOUS_KEY } : {}) }, idempotency: process.env.WORKSPACE_IDEMPOTENCY_KEY } : undefined;
-    const tenancy = new Tenancy(database, { verify: async () => null }, denyAll, sessions, loadVerificationKey(process.env), workspaceKeys);
+    const tenancy = new Tenancy(database, { verify: async () => null }, denyAll, sessions, loadVerificationKey(process.env), workspaceKeys, (process.env.WORKSPACE_INVITATION_KEY || process.env.WORKSPACE_INVITATION_KEY_ID) ? loadInvitationKey(process.env) : undefined);
     sessions.bind(tenancy); authentication.bind(sessions, tenancy);
-    const server = await createApp(config, resources, new RedisRateLimiter(redis, config.RATE_LIMIT_MAX, config.RATE_LIMIT_WINDOW_MS), logger, sessions, authentication, new Workspaces(sessions, tenancy, new WorkspaceLimits(redis, settings.secrets[0]!, settings.prefix)));
+    const server = await createApp(config, resources, new RedisRateLimiter(redis, config.RATE_LIMIT_MAX, config.RATE_LIMIT_WINDOW_MS), logger, sessions, authentication, new Workspaces(sessions, tenancy, new WorkspaceLimits(redis, settings.secrets[0]!, settings.prefix), new InvitationLimits(redis, settings.secrets[0]!, settings.prefix)));
     registerShutdown(server.close, config.SHUTDOWN_TIMEOUT_MS, logger);
     await server.app.listen(config.API_PORT, config.API_HOST);
     logger.info({ event: 'api_started', port: config.API_PORT });

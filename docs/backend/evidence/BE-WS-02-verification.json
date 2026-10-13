@@ -1,0 +1,336 @@
+{
+  "base": "0ef38121d940e0bbbc37a6d82b8c2f1fa9049564",
+  "environment": "Windows / Bun1.4.2 / real isolated PostgreSQL / Valkey / Mailpit",
+  "productionCertified": false,
+  "approvedPolicy": "User explicitly approved defaults during task",
+  "intermediateObservations": [
+    "First new security run2pass/13fail: older pending fixture outbox claimed; per-case owned cancellation and assertions outside swallowed transport callback corrected.",
+    "Expanded suites15/485,20/666,25/789,27/851 passed before final contract/coverage refinements.",
+    "Combined API/worker test initially violated package direction; moved new harness into scripts/backend without checker exemption.",
+    "Root Zod import failed: JSON schema now generated through neutral contracts export without dependency changes.",
+    "Duplicate test import, narrow keyring test type and unused helpers corrected."
+  ],
+  "historicalFailures": [
+    "queue timing/between-test errors",
+    "API/worker SIGTERM143",
+    "dependency-audit DNS/advisory failures",
+    "three NEXUS tests",
+    "cold6s migration deadlines"
+  ],
+  "checks": [
+    {
+      "gate": "architecture-typecheck",
+      "command": "bun run typecheck:backend",
+      "exitCode": 1,
+      "durationSeconds": 4.02,
+      "summary": [
+        "Architecture checked 391 source files and 1064 resolved internal edges; 1 violations.",
+        "error: script \"check:architecture\" exited with code 1",
+        "error: script \"typecheck:backend\" exited with code 1"
+      ]
+    },
+    {
+      "gate": "lint",
+      "command": "bun run lint:backend",
+      "exitCode": 0,
+      "durationSeconds": 5.39,
+      "summary": []
+    },
+    {
+      "gate": "backend-build",
+      "command": "bun run build:backend",
+      "exitCode": 0,
+      "durationSeconds": 0.24,
+      "summary": []
+    },
+    {
+      "gate": "generated-contracts",
+      "command": "bun test scripts/backend/workspace-contracts.test.ts scripts/backend/workspace-invitation-contracts.test.ts",
+      "exitCode": 0,
+      "durationSeconds": 0.62,
+      "summary": [
+        " 2 pass",
+        " 0 fail",
+        " 22 expect() calls",
+        "Ran 2 tests across 2 files. [589.00ms]"
+      ]
+    },
+    {
+      "gate": "design-contracts",
+      "command": "bun docs/backend/contracts/be-api-00/validate.mjs",
+      "exitCode": 0,
+      "durationSeconds": 0.09,
+      "summary": []
+    },
+    {
+      "gate": "backend-regression",
+      "command": "bun run test:backend",
+      "exitCode": 1,
+      "durationSeconds": 11.4,
+      "summary": [
+        "error: expect(received).toEqual(expected)",
+        "1 tests failed:",
+        " 100 pass",
+        " 1 fail",
+        " 263 expect() calls",
+        "Ran 101 tests across 8 files. [11.32s]",
+        "error: script \"test:backend\" exited with code 1"
+      ]
+    },
+    {
+      "gate": "workspace-memberships-invitations",
+      "command": "bun run test:backend:workspace-invitations",
+      "exitCode": 0,
+      "durationSeconds": 33.81,
+      "summary": [
+        " 28 pass",
+        " 0 fail",
+        " 917 expect() calls",
+        "Ran 28 tests across 1 file. [33.72s]"
+      ]
+    },
+    {
+      "gate": "workspace-foundation",
+      "command": "bun --env-file=apps/api/.env test apps/api/verification/workspace-integration.test.ts",
+      "exitCode": 0,
+      "durationSeconds": 25.64,
+      "summary": [
+        " 29 pass",
+        " 0 fail",
+        " 671 expect() calls",
+        "Ran 29 tests across 1 file. [25.59s]"
+      ]
+    },
+    {
+      "gate": "authentication",
+      "command": "bun run test:backend:authentication",
+      "exitCode": 0,
+      "durationSeconds": 18.12,
+      "summary": [
+        " 26 pass",
+        " 0 fail",
+        " 827 expect() calls",
+        "Ran 26 tests across 1 file. [18.05s]"
+      ]
+    },
+    {
+      "gate": "sessions",
+      "command": "bun run test:backend:sessions",
+      "exitCode": 0,
+      "durationSeconds": 24.59,
+      "summary": [
+        " 31 pass",
+        " 0 fail",
+        " 473 expect() calls",
+        "Ran 31 tests across 1 file. [24.51s]"
+      ]
+    },
+    {
+      "gate": "auth-fences",
+      "command": "bun run test:backend:auth-fences",
+      "exitCode": 0,
+      "durationSeconds": 10.81,
+      "summary": [
+        " 24 pass",
+        " 0 fail",
+        " 134 expect() calls",
+        "Ran 24 tests across 1 file. [10.70s]"
+      ]
+    },
+    {
+      "gate": "tenancy-migration-replay",
+      "command": "bun run test:backend:tenancy",
+      "exitCode": 0,
+      "durationSeconds": 14.1,
+      "summary": [
+        " 34 pass",
+        " 0 fail",
+        " 132 expect() calls",
+        "Ran 34 tests across 1 file. [14.04s]"
+      ]
+    },
+    {
+      "gate": "email-verification",
+      "command": "bun run test:backend:email-verification",
+      "exitCode": 0,
+      "durationSeconds": 20.78,
+      "summary": [
+        " 16 pass",
+        " 0 fail",
+        " 468 expect() calls",
+        "Ran 16 tests across 1 file. [20.70s]"
+      ]
+    },
+    {
+      "gate": "password-recovery",
+      "command": "bun run test:backend:password-recovery",
+      "exitCode": 0,
+      "durationSeconds": 25.3,
+      "summary": [
+        " 18 pass",
+        " 0 fail",
+        " 421 expect() calls",
+        "Ran 18 tests across 1 file. [25.22s]"
+      ]
+    },
+    {
+      "gate": "database-integration",
+      "command": "bun run test:backend:integration",
+      "exitCode": 0,
+      "durationSeconds": 1.12,
+      "summary": [
+        " 2 pass",
+        " 0 fail",
+        " 5 expect() calls",
+        "Ran 2 tests across 1 file. [1047.00ms]"
+      ]
+    },
+    {
+      "gate": "frontend-typecheck",
+      "command": "bun run lint:web",
+      "exitCode": 0,
+      "durationSeconds": 2.97,
+      "summary": []
+    },
+    {
+      "gate": "frontend-build",
+      "command": "bun run build:web",
+      "exitCode": 0,
+      "durationSeconds": 2.7,
+      "summary": [
+        "@unblok/web build: (!) Some chunks are larger than 500 kB after minification. Consider:"
+      ]
+    },
+    {
+      "gate": "infrastructure",
+      "command": "bun run test:backend:infra",
+      "exitCode": 1,
+      "durationSeconds": 5.88,
+      "summary": [
+        "  ^ this test timed out after 5000ms.",
+        "error: expect(received).toThrow(expected)",
+        "Received message: \"Job wait not-supported timed out before finishing, no finish notification arrived after 5000ms (id=4087152069e9782e80637a6484cb79f10e4d5078b3849e5ef0b22d44cba0d375)\"",
+        " 4 pass",
+        " 1 fail",
+        " 14 expect() calls",
+        "Ran 5 tests across 1 file. [5.80s]",
+        "error: script \"test:backend:infra\" exited with code 1"
+      ]
+    },
+    {
+      "gate": "lifecycle",
+      "command": "bun run test:backend:lifecycle",
+      "exitCode": 1,
+      "durationSeconds": 3.89,
+      "summary": [
+        "error: expect(received).toBe(expected)",
+        "error: expect(received).toBe(expected)",
+        " 1 pass",
+        " 2 fail",
+        " 7 expect() calls",
+        "Ran 3 tests across 1 file. [3.83s]",
+        "error: script \"test:backend:lifecycle\" exited with code 1"
+      ]
+    },
+    {
+      "gate": "dependency-audit",
+      "command": "bun audit",
+      "exitCode": 1,
+      "durationSeconds": 1.01,
+      "summary": []
+    },
+    {
+      "gate": "diff",
+      "command": "git diff --check",
+      "exitCode": 0,
+      "durationSeconds": 0.12,
+      "summary": []
+    },
+    {
+      "gate": "architecture-typecheck-final",
+      "command": "bun run typecheck:backend",
+      "exitCode": 0,
+      "durationSeconds": 13.89,
+      "summary": [
+        "Architecture checked 391 source files and 1063 resolved internal edges; 0 violations."
+      ]
+    },
+    {
+      "gate": "lint-final",
+      "command": "bun run lint:backend",
+      "exitCode": 0,
+      "durationSeconds": 5.05,
+      "summary": []
+    },
+    {
+      "gate": "backend-regression-final",
+      "command": "bun run test:backend",
+      "exitCode": 0,
+      "durationSeconds": 10.44,
+      "summary": [
+        " 101 pass",
+        " 0 fail",
+        " 265 expect() calls",
+        "Ran 101 tests across 8 files. [10.33s]"
+      ]
+    },
+    {
+      "gate": "workspace-memberships-invitations-final",
+      "command": "bun run test:backend:workspace-invitations",
+      "exitCode": 0,
+      "durationSeconds": 33.6,
+      "summary": [
+        " 28 pass",
+        " 0 fail",
+        " 917 expect() calls",
+        "Ran 28 tests across 1 file. [33.51s]"
+      ]
+    },
+    {
+      "gate": "dependency-audit-detail",
+      "command": "bun audit",
+      "exitCode": 1,
+      "durationSeconds": 1.18,
+      "summary": [
+        "bun audit v1.4.2 (744846f84)",
+        "",
+        "deepmerge-ts@7.1.5",
+        "  workspace:@unblok/database > prisma > @prisma/config > deepmerge-ts",
+        "  high: DeepmergeTS has stack exhaustion when merging recursive object graphs (<8.0.0) - https://github.com/advisories/GHSA-ggr8-5vv4-36mx",
+        "",
+        "1 vulnerability (1 high)",
+        "",
+        "  bun audit fix           upgrade the vulnerable packages within their ranges",
+        "  bun audit fix --latest  also cross major versions"
+      ]
+    },
+    {
+      "gate": "recipient-boundary-security-final",
+      "command": "bun run test:backend:workspace-invitations",
+      "exitCode": 0,
+      "durationSeconds": 34.13,
+      "summary": [
+        " 28 pass",
+        " 0 fail",
+        " 918 expect() calls",
+        "Ran 28 tests across 1 file. [34.04s]"
+      ]
+    },
+    {
+      "gate": "recipient-boundary-typecheck-final",
+      "command": "bun run typecheck:backend",
+      "exitCode": 0,
+      "durationSeconds": 13.27,
+      "summary": [
+        "Architecture checked 391 source files and 1063 resolved internal edges; 0 violations."
+      ]
+    },
+    {
+      "gate": "recipient-boundary-lint-final",
+      "command": "bun run lint:backend",
+      "exitCode": 0,
+      "durationSeconds": 5.05,
+      "summary": []
+    }
+  ]
+}

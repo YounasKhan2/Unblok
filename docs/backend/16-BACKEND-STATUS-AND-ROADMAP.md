@@ -1,7 +1,7 @@
 # Unblok — Backend Status and Delivery Roadmap
 
-**Last updated:** 2026-10-12
-**Repository milestone:** BE-API-00 / PR #34 merged at required baseline `3fcbc37cfe8eca6a03a1a01f3f7d4926eafa6037`; BE-WS-01 implemented on review branch, not merged/deployed
+**Last updated:** 2026-10-13
+**Repository milestone:** BE-WS-01 merged via PR #35 (`d13b09e40cf1599029eef84a35a55a1c9fbfb29e`); FE-WS-01 merged via PR #36 (`0ef38121d940e0bbbc37a6d82b8c2f1fa9049564`); BE-WS-02 implemented for review, not merged/deployed
 **Purpose:** Living, repository-grounded backend delivery tracker. Update when an approved backend PR is merged. This is a status tracker, **not** a replacement for the implementation/security/database architecture contracts in this folder.
 
 > **Status rule:** Check actual merge status and current code before editing. Record implemented vs planned vs verified separately. Do not mark a feature complete solely because a schema, interface, design, or proposal exists. Keep known test failures visible. Update this tracker **with every future backend branch merge**, preferably as part of the reviewed PR before merge; if the merge SHA is not known until afterward, follow with a status-only commit on `main` and record it. Record the PR, merge SHA, changes, new gaps, and new test outcomes. For other Unblok branches, update the relevant status section when they change backend deliverables or dependencies.
@@ -54,14 +54,14 @@
 
 **FE-AUTH-01 F4 correction:** Reviewed `cab718ea77ab2ddf943f959feb483e307cd25f87`; narrow session-boundary changes durably retire the signed predecessor before fresh anonymous CSRF state. Same-context Chromium reset/relogin passes without deleting cookies or replacing its context. Request-bound principals, transaction fences and CSRF/cookie protections remain enforced. Frontend production, NEXUS, dependencies and migrations are unchanged. The frontend F4 report/evidence preserves successful and failed observations and deployment limitations. This supersedes the local retained-cookie blocker; PR #33 subsequently merged as recorded in the handoff.
 
-**Next action:** Human review of BE-WS-01 Workspace foundation ([report](25-BE-WS-01-WORKSPACE-FOUNDATION.md)); BE-API-00 is merged. FE-AUTH-01 including F4 is merged via PR #33; historical review observations below/above are retained. BE-WS-01 enables only creation/discovery/detail/self on its review branch; no further slice is authorized here. Review runtime grants, ingress/browser/TLS/CSRF, timing/abuse/load, mail notification/deployment, key restoration and outbox reconciliation separately. Merged authentication/recovery is not deployed; OAuth/MFA and business frontend data integration remain planned. Candidate B local evidence is not vendor Bun support or production readiness.
+**Next action:** Human review of BE-WS-02 memberships/invitations ([report](26-BE-WS-02-MEMBERSHIPS-INVITATIONS.md)). Four Workspace foundation APIs and frontend integration are merged. The new three endpoints, additive migration and reviewed invitation defaults are implemented on the review branch only. Production deployment/security, retention/restore/secret operations and historical reliability/audit findings remain open. No next milestone work is authorized.
 
 ## 3. Remaining production backend capabilities
 
 | Capability | Current state | Priority |
 | --- | --- | --- |
 | Authentication and sessions | Revocation foundation merged; session middleware/verifier/security infrastructure merged and locally verified, not deployed; core credential APIs merged and locally verified, not deployed; broader identity lifecycle and frontend integration still missing | Critical |
-| Workspace foundation / invitations | BE-WS-01 creation/discovery/detail/self implemented and locally tested on review branch, not merged; member directory/invitations/frontend wiring still absent | Critical |
+| Workspace foundation / invitations | BE-WS-01 foundation and FE-WS-01 frontend merged; BE-WS-02 admin directory/invitation APIs implemented for review, not merged/deployed; invitation frontend and membership management absent | Critical |
 | Team and project APIs | Schema exists; business APIs missing | Critical |
 | Issues CRUD/search/filtering | Bounded scoped persistence primitives exist; business APIs missing | Critical |
 | Dependency graph APIs and cycle-safe writes | Database dependency-write gate active; DAG service missing | Critical |
@@ -138,3 +138,7 @@ PR #35 F1/F2 correction: reviewed `bfdd844e60af598ecec26146399e0cf15aa08c93`; re
 [PR #35](https://github.com/YounasKhan2/Unblok/pull/35) merged to main as `d13b09e40cf1599029eef84a35a55a1c9fbfb29e` (reviewed HEAD `3261101f85b833f52775e09dd709c060dcbab109`). Four Workspace HTTP endpoints, atomic creator ADMIN membership, durable creation idempotency, signed bounded discovery cursors and revocation-safe reads are now in main. Focused correction evidence records 29 passing Workspace tests/671 assertions. The earlier review-only entries above are historical and superseded as to merge status; runtime deployment and enterprise-scale certification remain pending.
 
 **Next gate: FE-WS-01 Workspace frontend integration.** Integrate existing four endpoints into the frozen compact authenticated frontend, preserving the separately labelled NEXUS demo, request-bound authorization, CSRF/idempotency semantics, bounded pagination and revoked-session recovery. No new Team/Project/Issue/Dependency/invitation APIs or migration changes. Require real-browser integration evidence and human PR review. Historical queue/SIGTERM/audit/frontend/migration-timing limitations remain open.
+
+## FE-WS-01 merged and BE-WS-02 review implementation — 2026-10-13
+
+FE-WS-01 PR #36 merged at `0ef38121d940e0bbbc37a6d82b8c2f1fa9049564`, including interruption-safe same-key reconciliation and optional-cursor typing correction. Existing NEXUS and deployment findings remain open. BE-WS-02 starts from that exact latest-main base on `feat/be-ws-02-memberships-invitations`; admin-only bounded membership listing, independent invitation issuance/outbox and verified-recipient acceptance are implemented for human review. Approved defaults and lock/revocation/replay contracts are in [report26](26-BE-WS-02-MEMBERSHIPS-INVITATIONS.md); [verification](evidence/BE-WS-02-verification.json) separates passing local checks and failures. New tenth migration only; previous migrations, auth/session semantics, frontend/NEXUS and dependency versions preserved. Not merged, deployed, enterprise-benchmarked or production-certified. Invitation frontend, membership administration and other business resources remain planned.

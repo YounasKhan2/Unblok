@@ -48,3 +48,12 @@ export function workspaceJsonSchemas() {
   return Object.fromEntries(Object.entries({ CreateWorkspace: createWorkspaceSchema, WorkspaceRow: workspaceRowSchema, WorkspaceSelf: workspaceSelfSchema,
     WorkspaceDetail: workspaceDetailSchema, WorkspaceCreated: workspaceCreatedSchema, WorkspacePage: workspacePageSchema }).map(([name, schema]) => [name, z.toJSONSchema(schema)]));
 }
+
+export const workspaceMembershipQuerySchema=z.object({limit:workspaceQuerySchema.shape.limit,sort:z.enum(['joined_asc','joined_desc']).optional().default('joined_asc'),status:z.enum(['ACTIVE','INVITED','SUSPENDED','ALL']).optional(),after:z.string().min(1).max(2048).optional()}).strict();
+export const workspaceMembershipPageSchema=z.object({items:z.array(z.object({id:z.uuid(),displayName:z.string().min(1).max(120),role:z.enum(['ADMIN','MEMBER','OBSERVER']),status:z.enum(['ACTIVE','INVITED','SUSPENDED']),joinedAt:z.iso.datetime().nullable()}).strict()).max(100),page:workspacePageSchema.shape.page}).strict();
+export const workspaceInvitationSchema=z.object({email:credentialEmailSchema,role:z.enum(['MEMBER','OBSERVER'])}).strict();
+export const workspaceInvitationAcceptSchema=z.object({token:emailVerificationConfirmSchema.shape.token}).strict();
+export type WorkspaceMembershipQuery=z.infer<typeof workspaceMembershipQuerySchema>;
+export type WorkspaceInvitationInput=z.infer<typeof workspaceInvitationSchema>;
+
+export function workspaceInvitationJsonSchemas(){return Object.fromEntries(Object.entries({MembershipPage:workspaceMembershipPageSchema,InvitationRequest:workspaceInvitationSchema,InvitationAccept:workspaceInvitationAcceptSchema,InvitationAccepted:signupResponseSchema}).map(([name,schema])=>[name,z.toJSONSchema(schema)]));}

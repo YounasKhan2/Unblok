@@ -59,3 +59,7 @@ FE-AUTH-01 review implementation: [real frontend authentication](../frontend/01-
 ## BE-WS-01 Workspace foundation
 
 [25 — Workspace foundation](25-BE-WS-01-WORKSPACE-FOUNDATION.md) records the four approved endpoints, additive migration, request/session/tenant fences, durable creation replay, bounded discovery cursors and real database/HTTP evidence. Implemented on the review branch, not merged or deployed. The BE-API-00 proposal is merged at `3fcbc37cfe8eca6a03a1a01f3f7d4926eafa6037`; its historical registry labels remain proposals for later slices.
+
+## BE-WS-02 Workspace memberships and invitations
+
+[26 — Memberships and invitations](26-BE-WS-02-MEMBERSHIPS-INVITATIONS.md) records approved policy, bounded admin directory, independent invitation proof/outbox, sorted multi-user PostgreSQL fences and real HTTP/concurrency evidence. Implemented for review only; not merged or deployed. Base includes BE-WS-01 and FE-WS-01 merges.

@@ -1,4 +1,6 @@
-import type { Prisma, WorkspaceRole, RecordStatus } from '@prisma/client';
+import {listMemberships,type MembershipQuery} from './workspace-memberships';
+import {issueInvitation,acceptInvitation,invitationSelector,type InvitationKey} from './workspace-invitations';
+import { Prisma, type WorkspaceRole, type RecordStatus } from '@prisma/client';
 import { verificationAction, type VerificationKey } from './email-verification';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import type { Database } from './index';
@@ -112,7 +114,7 @@ export class Tenancy {
   #principals = new WeakMap<VerifiedPrincipal, PrincipalAuthority>();
   #sessionRequest = new AsyncLocalStorage<VerifiedPrincipal>();
   #fences: AuthFences;
-  constructor(private readonly database: Database, private readonly verifier: IdentityVerifier, private readonly policy: AuthorizationPolicy = denyAll, private readonly sessions?: SessionVerifier, private readonly verificationKey?: VerificationKey, private readonly workspaceKeys?: WorkspaceKeys) {
+  constructor(private readonly database: Database, private readonly verifier: IdentityVerifier, private readonly policy: AuthorizationPolicy = denyAll, private readonly sessions?: SessionVerifier, private readonly verificationKey?: VerificationKey, private readonly workspaceKeys?: WorkspaceKeys, private readonly invitationKey?: InvitationKey) {
     this.#fences = new AuthFences(database);
     if (workspaceKeys) this.workspaceKeys = Object.freeze({ ...workspaceKeys, cursors: Object.freeze({ ...workspaceKeys.cursors }) });
   }
@@ -151,14 +153,16 @@ export class Tenancy {
 
   read<T>(principal: VerifiedPrincipal, workspaceId: string, run: (queries: TenantQueries) => Promise<T>) { return this.scoped(principal, workspaceId, 'read', run); }
   // Closed account/tenant capabilities, never a transaction or ORM escape hatch.
-  private async workspaceBoundary<T>(principal: VerifiedPrincipal, run: (tx: Prisma.TransactionClient, authority: PrincipalAuthority) => Promise<T>) {
+  private async workspaceBoundary<T>(principal: VerifiedPrincipal, run: (tx: Prisma.TransactionClient, authority: PrincipalAuthority) => Promise<T>, selectors?: (tx: Prisma.TransactionClient) => Promise<readonly string[]>) {
     const authority = this.#principals.get(principal);
     if (!authority?.session) throw new TenantAccessError();
     this.assertPrincipal(principal, authority);
     try { return await this.database.transaction(async tx => {
       await tx.$executeRaw`SET LOCAL lock_timeout = '1500ms'`;
       await tx.$executeRaw`SET LOCAL statement_timeout = '4000ms'`;
-      this.assertPrincipal(principal, authority); await lockAuthority(tx, authority);
+      this.assertPrincipal(principal, authority);
+      if(selectors){const users=[...new Set([authority.userId,...await selectors(tx)])].sort();await tx.$queryRaw(Prisma.sql`SELECT id FROM users WHERE id IN (${Prisma.join(users.map(id=>Prisma.sql`${id}::uuid`))}) ORDER BY id FOR SHARE`);}
+      await lockAuthority(tx, authority);
       const result = await run(tx, authority);
       await lockAuthority(tx, authority); this.assertPrincipal(principal, authority); return result;
     }); } catch (error) {
@@ -189,6 +193,15 @@ export class Tenancy {
   workspaceContext(principal: VerifiedPrincipal, workspaceId: string) {
     return this.workspaceBoundary(principal, (tx, authority) => workspaceContext(tx, authority.userId, workspaceId));
   }
+  memberships(principal:VerifiedPrincipal,workspaceId:string,query:MembershipQuery){return this.workspaceBoundary(principal,(tx,a)=>{
+    if(!this.workspaceKeys||!validWorkspaceKeys(this.workspaceKeys))throw new AuthUnavailableError();return listMemberships(tx,a.userId,workspaceId,query,this.workspaceKeys);
+  });}
+  issueInvitation(principal:VerifiedPrincipal,workspaceId:string,input:{email:string;role:'MEMBER'|'OBSERVER';key:string}){return this.workspaceBoundary(principal,(tx,a)=>{
+    if(!this.workspaceKeys||!validWorkspaceKeys(this.workspaceKeys)||!this.invitationKey)throw new AuthUnavailableError();return issueInvitation(tx,a,workspaceId,input,this.invitationKey,this.workspaceKeys);
+  });}
+  acceptInvitation(principal:VerifiedPrincipal,token:string,key:string){const selector=invitationSelector(token);return this.workspaceBoundary(principal,(tx,a)=>{
+    if(!this.workspaceKeys||!validWorkspaceKeys(this.workspaceKeys)||!this.invitationKey)throw new AuthUnavailableError();return acceptInvitation(tx,a,selector,token,key,this.invitationKey,this.workspaceKeys);
+  },async tx=>{const row=selector?await tx.workspaceInvitation.findUnique({where:{id:selector},select:{inviterId:true}}):null;return row?[row.inviterId]:[];});}
   async emailVerification(principal: VerifiedPrincipal, action: 'request' | 'confirm' | 'status', token?: string) {
     const authority = this.#principals.get(principal);
     if (!authority?.session || !this.verificationKey) throw new TenantAccessError();
