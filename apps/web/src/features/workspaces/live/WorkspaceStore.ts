@@ -30,6 +30,7 @@ export class WorkspaceStore {
     catch(error){if(this.current(version,controller))this.publish({page:null,error:error instanceof AuthApiError?error.message:'We couldn’t load your workspaces. Please try again.',stale:error instanceof AuthApiError&&error.code==='CURSOR_STALE'});}
     finally{if(this.current(version,controller))this.publish({loading:false});}
   }
+  invalidateSelection(id:string){if(this.state.selected!==id)return;this.selecting?.abort();this.publish({selected:null,context:null,page:null,selecting:false,contextError:'This workspace is no longer available.'});}
   async select(id:string){
     this.sync();if(!this.identity)return;this.listing?.abort();this.selecting?.abort();const controller=this.selecting=new AbortController(),version=this.version;
     this.publish({selected:id,context:null,selecting:true,loading:false,contextError:undefined});

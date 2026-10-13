@@ -1,0 +1,210 @@
+[
+  {
+    "case": "lost commit acknowledgement",
+    "firstHttp": 503,
+    "reconciliationHttp": 202,
+    "membershipEffects": 1,
+    "role": "OBSERVER"
+  },
+  {
+    "case": "overlapping redemption",
+    "http": [
+      409,
+      202
+    ],
+    "membershipEffects": 1
+  },
+  {
+    "case": "delivery exhaustion replacement",
+    "failedDeliveries": 5,
+    "concurrentRequestHttp": [
+      409,
+      202
+    ],
+    "pendingProofs": 1,
+    "lateOldAcknowledgementGranted": false
+  },
+  {
+    "case": "controlled redemption boundary",
+    "contenderWaitObserved": true,
+    "http": [
+      202,
+      409
+    ],
+    "transactions": [
+      {
+        "events": [
+          "sorted-users",
+          "recipient-family"
+        ]
+      },
+      {
+        "events": [
+          "sorted-users",
+          "recipient-family"
+        ]
+      },
+      {
+        "events": [
+          "sorted-users",
+          "recipient-family"
+        ]
+      },
+      {
+        "events": [
+          "sorted-users",
+          "recipient-family"
+        ]
+      },
+      {
+        "events": [
+          "sorted-users",
+          "recipient-family",
+          "workspace",
+          "ledger",
+          "consume"
+        ]
+      },
+      {
+        "events": [
+          "sorted-users",
+          "recipient-family",
+          "workspace",
+          "ledger"
+        ],
+        "sqlState": "40001"
+      }
+    ],
+    "membershipEffects": 1
+  },
+  {
+    "case": "issuance before archival",
+    "revocationWaitObserved": true,
+    "issueHttp": 202,
+    "proofCanceled": true
+  },
+  {
+    "case": "archival before acceptance",
+    "acceptWaitObserved": true,
+    "firstHttp": 409,
+    "freshHttp": 202,
+    "membershipEffects": 0
+  },
+  {
+    "case": "acceptance before logout-all",
+    "revocationWaitObserved": true,
+    "acceptHttp": 202,
+    "subsequentMe": 401,
+    "membershipEffects": 1
+  },
+  {
+    "case": "listing before admin demotion",
+    "revocationWaitObserved": true,
+    "readHttp": 200,
+    "freshCursorHttp": 404
+  },
+  {
+    "case": "concurrent invalid proofs",
+    "http": [
+      202,
+      409,
+      409,
+      409,
+      409
+    ],
+    "durableAttemptsAfterSameKeyRetries": 5
+  },
+  {
+    "case": "F1 lifecycle waiter outcomes",
+    "inviterSort": "before",
+    "outcomes": [
+      "fulfilled",
+      "fulfilled",
+      "rejected"
+    ],
+    "sqlStates": [
+      "40001"
+    ]
+  },
+  {
+    "case": "F1 sorted users with family revoke and membership change",
+    "inviterSort": "before",
+    "familyWaitObserved": true,
+    "http": 202,
+    "durationMs": 216,
+    "effects": 1
+  },
+  {
+    "case": "F1 lifecycle waiter outcomes",
+    "inviterSort": "after",
+    "outcomes": [
+      "fulfilled",
+      "fulfilled",
+      "rejected"
+    ],
+    "sqlStates": [
+      "40001"
+    ]
+  },
+  {
+    "case": "F1 sorted users with family revoke and membership change",
+    "inviterSort": "after",
+    "familyWaitObserved": true,
+    "http": 202,
+    "durationMs": 249,
+    "effects": 1
+  },
+  {
+    "case": "F1 issuer epoch revocation first",
+    "inviterSort": "before",
+    "http": 409,
+    "freshHttp": 202,
+    "effects": 0,
+    "durationMs": 214
+  },
+  {
+    "case": "F1 issuer epoch revocation first",
+    "inviterSort": "after",
+    "http": 409,
+    "freshHttp": 202,
+    "effects": 0,
+    "durationMs": 425
+  },
+  {
+    "case": "F2 revocation between lease and external send",
+    "revocation": "demote",
+    "leaseCommittedBeforeRevocation": true,
+    "mailSentAfterRevocation": true,
+    "acceptHttp": 202,
+    "effects": 0
+  },
+  {
+    "case": "F2 revocation between lease and external send",
+    "revocation": "archive",
+    "leaseCommittedBeforeRevocation": true,
+    "mailSentAfterRevocation": true,
+    "acceptHttp": 202,
+    "effects": 0
+  },
+  {
+    "case": "F1 nonunique SID digest retirement",
+    "userLocksBeforeAllFamilies": true,
+    "familiesSorted": true,
+    "revokedFamilies": 2
+  },
+  {
+    "case": "F1 unsafe raw membership inversion",
+    "http": 202,
+    "lifecycleOutcomes": [
+      "fulfilled",
+      "rejected"
+    ],
+    "sqlStates": [
+      "40P01",
+      "unknown"
+    ],
+    "durationMs": 1298,
+    "finalSuspended": true,
+    "freshDetailHttp": 404
+  }
+]

@@ -1,7 +1,7 @@
 # Unblok — Backend Status and Delivery Roadmap
 
-**Last updated:** 2026-10-13
-**Repository milestone:** BE-WS-01 merged via PR #35 (`d13b09e40cf1599029eef84a35a55a1c9fbfb29e`); FE-WS-01 merged via PR #36 (`0ef38121d940e0bbbc37a6d82b8c2f1fa9049564`); BE-WS-02 implemented for review, not merged/deployed
+**Last updated:** 2026-10-14
+**Repository milestone:** BE-WS-01 merged via PR #35 (`d13b09e40cf1599029eef84a35a55a1c9fbfb29e`); FE-WS-01 merged via PR #36 (`0ef38121d940e0bbbc37a6d82b8c2f1fa9049564`); BE-WS-02 merged via PR #37 (`d473e02487d1a6b40225a54b3105bd8fed05d0aa`); FE-WS-02 implemented for review, not merged/deployed
 **Purpose:** Living, repository-grounded backend delivery tracker. Update when an approved backend PR is merged. This is a status tracker, **not** a replacement for the implementation/security/database architecture contracts in this folder.
 
 > **Status rule:** Check actual merge status and current code before editing. Record implemented vs planned vs verified separately. Do not mark a feature complete solely because a schema, interface, design, or proposal exists. Keep known test failures visible. Update this tracker **with every future backend branch merge**, preferably as part of the reviewed PR before merge; if the merge SHA is not known until afterward, follow with a status-only commit on `main` and record it. Record the PR, merge SHA, changes, new gaps, and new test outcomes. For other Unblok branches, update the relevant status section when they change backend deliverables or dependencies.
@@ -142,3 +142,7 @@ PR #35 F1/F2 correction: reviewed `bfdd844e60af598ecec26146399e0cf15aa08c93`; re
 ## FE-WS-01 merged and BE-WS-02 review implementation — 2026-10-13
 
 FE-WS-01 PR #36 merged at `0ef38121d940e0bbbc37a6d82b8c2f1fa9049564`, including interruption-safe same-key reconciliation and optional-cursor typing correction. Existing NEXUS and deployment findings remain open. BE-WS-02 starts from that exact latest-main base on `feat/be-ws-02-memberships-invitations`; admin-only bounded membership listing, independent invitation issuance/outbox and verified-recipient acceptance are implemented for human review. Approved defaults and lock/revocation/replay contracts are in [report26](26-BE-WS-02-MEMBERSHIPS-INVITATIONS.md); [verification](evidence/BE-WS-02-verification.json) separates passing local checks and failures. New tenth migration only; previous migrations, auth/session semantics, frontend/NEXUS and dependency versions preserved. Not merged, deployed, enterprise-benchmarked or production-certified. Invitation frontend, membership administration and other business resources remain planned.
+
+## FE-WS-02 integration review (2026-10-14)
+
+BE-WS-02 and its focused security correction are merged through PR #37 at `d473e02487d1a6b40225a54b3105bd8fed05d0aa`. Historical implementation/review sections above retain their original observations. FE-WS-02 consumes the three merged endpoints in the existing frontend; it adds no backend production capability or migration. Its [frontend report](../frontend/03-FE-WS-02-MEMBERS-INVITATIONS.md) and [verification evidence](../frontend/evidence/FE-WS-02-verification.json) record local tests, failed observations and deployment limits. Frontend integration is implemented for review only, not merged or production-certified. Previously documented queue, lifecycle, audit and NEXUS findings remain open. No subsequent milestone has started.

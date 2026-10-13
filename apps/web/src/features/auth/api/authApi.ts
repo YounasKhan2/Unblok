@@ -22,10 +22,10 @@ export class AuthApi {
   constructor(private readonly origin='',private readonly transport:Transport=(...args)=>fetch(...args)) {}
   clear() {this.csrf=undefined;this.epoch++;}
   invalidateRequests() {this.epoch++;}
-  private async request<T>(path:string,schema:Schema<T>,body?:unknown,options:{workspace?:boolean;signal?:AbortSignal;key?:string;expectedStatus?:number}={}):Promise<T> {
+  private async request<T>(path:string,schema:Schema<T>,body?:unknown,options:{workspace?:boolean;invitation?:boolean;signal?:AbortSignal;key?:string;expectedStatus?:number}={}):Promise<T> {
     const epoch=this.epoch;
     let response:Response;
-    try {response=await this.transport(this.origin+'/api/v1/'+(options.workspace?'workspaces'+path:'auth/'+path),{
+    try {response=await this.transport(this.origin+'/api/v1/'+(options.invitation?'workspace-invitations/accept':options.workspace?'workspaces'+path:'auth/'+path),{
       method:body===undefined?'GET':'POST',credentials:'include',cache:'no-store',redirect:'error',signal:options.signal?AbortSignal.any([options.signal,AbortSignal.timeout(10000)]):AbortSignal.timeout(10000),
       headers:body===undefined?{}:{'Content-Type':'application/json','X-CSRF-Token':this.csrf!,...(options.key?{'Idempotency-Key':options.key}:{})},
       ...(body===undefined?{}:{body:JSON.stringify(body)})});}
@@ -48,6 +48,8 @@ export class AuthApi {
   workspaceCreate<T>(schema:Schema<T>,body:unknown,key:string,signal:AbortSignal) {return this.mutate(()=>{
     signal.throwIfAborted();return this.request('',schema,body,{workspace:true,key,signal,expectedStatus:201});
   });}
+  workspaceInvite<T>(id:string,schema:Schema<T>,body:unknown,key:string,signal:AbortSignal) {return this.mutate(()=>{signal.throwIfAborted();return this.request('/'+id+'/invitations',schema,body,{workspace:true,key,signal,expectedStatus:202});});}
+  acceptInvitation<T>(schema:Schema<T>,body:unknown,key:string,signal:AbortSignal) {return this.mutate(()=>{signal.throwIfAborted();return this.request('',schema,body,{workspace:true,invitation:true,key,signal,expectedStatus:202});});}
   private async mutate<T>(run:()=>Promise<T>) {
     if(this.busy) throw new AuthApiError(409,'Please wait for your current request to finish.');
     this.busy=true;this.epoch++;
