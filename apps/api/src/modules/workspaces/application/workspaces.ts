@@ -16,7 +16,11 @@ export class Workspaces {
       return this.tenancy.createWorkspace(principal, { ...input, key });
     });
   }
-  list(req: Request, query: WorkspaceQuery) { return this.sessions.withRequest(req, principal => this.tenancy.discoverWorkspaces(principal, { limit: query.limit, sort: query.sort, ...(query.after ? { after: query.after } : {}) })); }
+  list(req: Request, query: WorkspaceQuery) {
+    const discovery: Parameters<Tenancy['discoverWorkspaces']>[1] = { limit: query.limit, sort: query.sort };
+    if (query.after !== undefined) discovery.after = query.after;
+    return this.sessions.withRequest(req, principal => this.tenancy.discoverWorkspaces(principal, discovery));
+  }
   detail(req: Request, id: string) { return this.sessions.withRequest(req, principal => this.tenancy.workspaceContext(principal, id)); }
   me(req: Request, id: string) { return this.sessions.withRequest(req, async principal => (await this.tenancy.workspaceContext(principal, id)).self); }
 }
