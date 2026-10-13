@@ -1,0 +1,280 @@
+{
+  "base": "73abe14d7101cba58636a2b7acd9b1b9339a5004",
+  "environment": "Windows / Bun1.4.2 / bundled Playwright Chromium / real local PostgreSQL and Valkey",
+  "intermediateObservations": [
+    "Initial new runner in scripts/frontend could not resolve API-owned reflect-metadata; moved into apps/api/verification without adding dependencies.",
+    "Three browser preparations hit existing6s migration deadline with exit137 and zero migrations. Explicit repository cwd and deferred Playwright loading allowed successful9-migration preparation without timeout changes; no unique root cause proven.",
+    "Initial Chromium ran discovery/create/retry/restoration/pagination but screenshot timed out waiting for remote Google Fonts. Final runner explicitly blocks only Google Fonts, exercising unchanged CSS system fallback. Deployed Inter typography remains unverified.",
+    "Initial focused tests failed on architecture regex matching LiveWorkspaceProvider and a fixture password violating shared validation; both test defects corrected.",
+    "A later Chromium rerun was killed at the unchanged120s test deadline; Bun reported5043.43s elapsed and one assertion. Host/runtime cause not established. One leftover database matching this runner-specific unblok_fews_UUID namespace was removed after confirming no API4000 listener remained; no cache keys remained. Prior complete browser passes are retained; final rerun recorded separately.",
+    "Visual inspection found one context screenshot while its bounded discovery page was still loading. Final browser capture procedure explicitly waits for the loaded Next page control before each context capture; the same14 screenshots are replaced, without masks or CSS changes."
+  ],
+  "historicalFailures": [
+    "three NEXUS frontend failures",
+    "queue notification timing/between-test errors",
+    "API/worker SIGTERM143",
+    "audit DNS failure and historical deepmerge-ts/Prisma advisory",
+    "cold migration deadlines"
+  ],
+  "checks": [
+    {
+      "gate": "workspace-browser",
+      "command": "bun --env-file=apps/api/.env test apps/api/verification/frontend-workspaces-browser.test.ts",
+      "exitCode": 0,
+      "durationSeconds": 34.2,
+      "summary": [
+        " 1 pass",
+        " 0 fail",
+        " 39 expect() calls"
+      ]
+    },
+    {
+      "gate": "focused-frontend",
+      "command": "bun --filter @unblok/web test src/features/workspaces/live src/features/auth/live src/features/auth/session src/features/auth/api",
+      "exitCode": 0,
+      "durationSeconds": 3.09,
+      "summary": [
+        "@unblok/web test:  Test Files  8 passed (8)",
+        "@unblok/web test:       Tests  63 passed (63)"
+      ]
+    },
+    {
+      "gate": "frontend-full",
+      "command": "bun run test:web",
+      "exitCode": 1,
+      "durationSeconds": 9.31,
+      "summary": [
+        "@unblok/web test:  \u276f src/data/nexusEnterprise.test.ts (8 tests | 2 failed) 92ms",
+        "@unblok/web test:  \u276f src/data/nexus/nexusEnterpriseValidation.test.ts (32 tests | 1 failed) 162ms",
+        "@unblok/web test: \u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 3 \u23af\u23af\u23af\u23af\u23af\u23af\u23af",
+        "@unblok/web test:  FAIL  src/data/nexusEnterprise.test.ts > NEXUS enterprise reference data > has valid entity references, unique IDs, and a directed acyclic dependency graph",
+        "@unblok/web test:  FAIL  src/data/nexusEnterprise.test.ts > NEXUS enterprise reference data > populates milestone dependency graphs and cross-team matrix data",
+        "@unblok/web test:  FAIL  src/data/nexus/nexusEnterpriseValidation.test.ts > NEXUS Enterprise Dataset Validation (UX-15.5) > 5. Dependency Graph Integrity & Completion Guards > preserves five active blocked-work examples while limiting graph fan-in and fan-out",
+        "@unblok/web test:  Test Files  2 failed | 56 passed (58)",
+        "@unblok/web test:       Tests  3 failed | 796 passed (799)",
+        "error: script \"test:web\" exited with code 1"
+      ]
+    },
+    {
+      "gate": "frontend-typecheck-lint",
+      "command": "bun run lint:web",
+      "exitCode": 0,
+      "durationSeconds": 2.54,
+      "summary": []
+    },
+    {
+      "gate": "frontend-build",
+      "command": "bun run build:web",
+      "exitCode": 0,
+      "durationSeconds": 9.03,
+      "summary": [
+        "@unblok/web build: (!) Some chunks are larger than 500 kB after minification. Consider:"
+      ]
+    },
+    {
+      "gate": "backend-typecheck-architecture",
+      "command": "bun run typecheck:backend",
+      "exitCode": 0,
+      "durationSeconds": 13.79,
+      "summary": [
+        "Architecture checked 385 source files and 1052 resolved internal edges; 0 violations."
+      ]
+    },
+    {
+      "gate": "backend-lint",
+      "command": "bun run lint:backend",
+      "exitCode": 0,
+      "durationSeconds": 5.09,
+      "summary": []
+    },
+    {
+      "gate": "backend-regression",
+      "command": "bun run test:backend",
+      "exitCode": 0,
+      "durationSeconds": 11.21,
+      "summary": [
+        " 99 pass",
+        " 0 fail",
+        " 263 expect() calls",
+        "Ran 99 tests across 8 files. [11.13s]"
+      ]
+    },
+    {
+      "gate": "authentication",
+      "command": "bun run test:backend:authentication",
+      "exitCode": 0,
+      "durationSeconds": 19.37,
+      "summary": [
+        " 26 pass",
+        " 0 fail",
+        " 827 expect() calls",
+        "Ran 26 tests across 1 file. [19.29s]"
+      ]
+    },
+    {
+      "gate": "sessions",
+      "command": "bun run test:backend:sessions",
+      "exitCode": 0,
+      "durationSeconds": 24.78,
+      "summary": [
+        " 31 pass",
+        " 0 fail",
+        " 473 expect() calls",
+        "Ran 31 tests across 1 file. [24.71s]"
+      ]
+    },
+    {
+      "gate": "workspace-http",
+      "command": "bun --env-file=apps/api/.env test apps/api/verification/workspace-integration.test.ts",
+      "exitCode": 0,
+      "durationSeconds": 24.13,
+      "summary": [
+        " 29 pass",
+        " 0 fail",
+        " 671 expect() calls",
+        "Ran 29 tests across 1 file. [24.09s]"
+      ]
+    },
+    {
+      "gate": "auth-fences",
+      "command": "bun run test:backend:auth-fences",
+      "exitCode": 0,
+      "durationSeconds": 10.96,
+      "summary": [
+        " 24 pass",
+        " 0 fail",
+        " 134 expect() calls",
+        "Ran 24 tests across 1 file. [10.91s]"
+      ]
+    },
+    {
+      "gate": "tenancy-migrations",
+      "command": "bun run test:backend:tenancy",
+      "exitCode": 0,
+      "durationSeconds": 14.34,
+      "summary": [
+        " 34 pass",
+        " 0 fail",
+        " 132 expect() calls",
+        "Ran 34 tests across 1 file. [14.29s]"
+      ]
+    },
+    {
+      "gate": "backend-build",
+      "command": "bun run build:backend",
+      "exitCode": 0,
+      "durationSeconds": 0.21,
+      "summary": []
+    },
+    {
+      "gate": "diff",
+      "command": "git diff --check",
+      "exitCode": 0,
+      "durationSeconds": 0.07,
+      "summary": []
+    },
+    {
+      "gate": "workspace-browser-final",
+      "exitCode": 0,
+      "durationSeconds": 45.12,
+      "summary": [
+        "1 pass",
+        "0 fail",
+        "40 expect() calls",
+        "14 screenshots; cross-origin Idempotency-Key preflight403 recorded"
+      ]
+    },
+    {
+      "gate": "focused-frontend-final",
+      "command": "bun --filter @unblok/web test src/features/workspaces/live src/features/auth/live src/features/auth/session src/features/auth/api",
+      "exitCode": 0,
+      "durationSeconds": 4.38,
+      "summary": [
+        "@unblok/web test:  Test Files  8 passed (8)",
+        "@unblok/web test:       Tests  68 passed (68)"
+      ]
+    },
+    {
+      "gate": "frontend-full-final",
+      "command": "bun run test:web",
+      "exitCode": 1,
+      "durationSeconds": 11.41,
+      "summary": [
+        "@unblok/web test:  \u276f src/data/nexusEnterprise.test.ts (8 tests | 2 failed) 145ms",
+        "@unblok/web test:  \u276f src/data/nexus/nexusEnterpriseValidation.test.ts (32 tests | 1 failed) 268ms",
+        "@unblok/web test: \u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 3 \u23af\u23af\u23af\u23af\u23af\u23af\u23af",
+        "@unblok/web test:  FAIL  src/data/nexusEnterprise.test.ts > NEXUS enterprise reference data > has valid entity references, unique IDs, and a directed acyclic dependency graph",
+        "@unblok/web test:  FAIL  src/data/nexusEnterprise.test.ts > NEXUS enterprise reference data > populates milestone dependency graphs and cross-team matrix data",
+        "@unblok/web test:  FAIL  src/data/nexus/nexusEnterpriseValidation.test.ts > NEXUS Enterprise Dataset Validation (UX-15.5) > 5. Dependency Graph Integrity & Completion Guards > preserves five active blocked-work examples while limiting graph fan-in and fan-out",
+        "@unblok/web test:  Test Files  2 failed | 56 passed (58)",
+        "@unblok/web test:       Tests  3 failed | 801 passed (804)",
+        "error: script \"test:web\" exited with code 1"
+      ]
+    },
+    {
+      "gate": "frontend-typecheck-lint-final",
+      "command": "bun run lint:web",
+      "exitCode": 0,
+      "durationSeconds": 3.05,
+      "summary": []
+    },
+    {
+      "gate": "frontend-build-final",
+      "command": "bun run build:web",
+      "exitCode": 0,
+      "durationSeconds": 2.56,
+      "summary": [
+        "@unblok/web build: (!) Some chunks are larger than 500 kB after minification. Consider:"
+      ]
+    },
+    {
+      "gate": "backend-typecheck-architecture-final",
+      "command": "bun run typecheck:backend",
+      "exitCode": 0,
+      "durationSeconds": 14.38,
+      "summary": [
+        "Architecture checked 385 source files and 1052 resolved internal edges; 0 violations."
+      ]
+    },
+    {
+      "gate": "backend-lint-final",
+      "command": "bun run lint:backend",
+      "exitCode": 0,
+      "durationSeconds": 4.92,
+      "summary": []
+    },
+    {
+      "gate": "shipped-auth-client-integration",
+      "command": "bun --env-file=apps/api/.env test scripts/backend/frontend-auth.test.ts",
+      "exitCode": 0,
+      "durationSeconds": 7.04,
+      "summary": [
+        " 1 pass",
+        " 0 fail",
+        " 149 expect() calls"
+      ]
+    },
+    {
+      "gate": "documentation-links",
+      "exitCode": 0,
+      "checkedLocalLinks": 7
+    },
+    {
+      "gate": "staged-scope-and-diff",
+      "exitCode": 0,
+      "changedFiles": 36,
+      "frontendFixturesBackendProductionMigrationsDependenciesUnchanged": true
+    },
+    {
+      "gate": "workspace-browser-capture-final",
+      "exitCode": 0,
+      "durationSeconds": 31.52,
+      "summary": [
+        "1 pass",
+        "0 fail",
+        "40 expect() calls",
+        "14 screenshots with loaded page wait and explicit light/dark emulation"
+      ]
+    }
+  ]
+}

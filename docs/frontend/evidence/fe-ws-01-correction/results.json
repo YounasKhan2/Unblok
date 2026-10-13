@@ -1,0 +1,29 @@
+{
+  "base": "73abe14d7101cba58636a2b7acd9b1b9339a5004",
+  "transport": "real Chromium / same-origin Vite proxy / isolated PostgreSQL / Valkey",
+  "productionCertified": false,
+  "passed": [
+    "login discovery and empty state",
+    "committed response loss, session interruption, fresh same-actor reconciliation"
+  ],
+  "visuals": [],
+  "migration": {
+    "exitCode": 0,
+    "appliedCount": 9,
+    "errorCodes": []
+  },
+  "browser": "151.0.7922.34",
+  "fontMode": "remote fonts blocked; existing system fallback",
+  "uncertainOutcome": {
+    "sessionRevokedBeforeRetry": true,
+    "freshMatchingServerIdentity": true,
+    "committedBeforeLostResponse": true,
+    "manualSameKeyRetry": true,
+    "requests": 2,
+    "effects": 1,
+    "csrfAndOrigin": true
+  },
+  "status": "passed",
+  "isolatedFixtures": true,
+  "sameBrowserContext": true
+}

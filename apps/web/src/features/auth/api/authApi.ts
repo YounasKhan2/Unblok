@@ -3,7 +3,7 @@ import { csrfResponseSchema, meResponseSchema, logoutResponseSchema, signupRespo
   passwordRecoveryRequestSchema, passwordRecoveryConfirmSchema } from '@unblok/contracts';
 export type SessionUser = ReturnType<typeof meResponseSchema.parse>['user'];
 export class AuthApiError extends Error {
-  constructor(readonly status:number, message:string, readonly retryAfter?:number) {super(message);}
+  constructor(readonly status:number, message:string, readonly retryAfter?:number, readonly code?:string) {super(message);}
 }
 type Schema<T> = {parse(value:unknown):T};
 type Transport = (...args:Parameters<typeof fetch>)=>ReturnType<typeof fetch>;
@@ -22,24 +22,32 @@ export class AuthApi {
   constructor(private readonly origin='',private readonly transport:Transport=(...args)=>fetch(...args)) {}
   clear() {this.csrf=undefined;this.epoch++;}
   invalidateRequests() {this.epoch++;}
-  private async request<T>(path:string,schema:Schema<T>,body?:unknown):Promise<T> {
+  private async request<T>(path:string,schema:Schema<T>,body?:unknown,options:{workspace?:boolean;signal?:AbortSignal;key?:string;expectedStatus?:number}={}):Promise<T> {
     const epoch=this.epoch;
     let response:Response;
-    try {response=await this.transport(this.origin+'/api/v1/auth/'+path,{
-      method:body===undefined?'GET':'POST',credentials:'include',cache:'no-store',redirect:'error',signal:AbortSignal.timeout(10000),
-      headers:body===undefined?{}:{'Content-Type':'application/json','X-CSRF-Token':this.csrf!},
+    try {response=await this.transport(this.origin+'/api/v1/'+(options.workspace?'workspaces'+path:'auth/'+path),{
+      method:body===undefined?'GET':'POST',credentials:'include',cache:'no-store',redirect:'error',signal:options.signal?AbortSignal.any([options.signal,AbortSignal.timeout(10000)]):AbortSignal.timeout(10000),
+      headers:body===undefined?{}:{'Content-Type':'application/json','X-CSRF-Token':this.csrf!,...(options.key?{'Idempotency-Key':options.key}:{})},
       ...(body===undefined?{}:{body:JSON.stringify(body)})});}
     catch {throw new AuthApiError(0,'We couldn’t confirm the result. Check your account before trying again.');}
     if(!response.ok) {
-      if([401,403].includes(response.status) && epoch===this.epoch) {this.csrf=undefined;if(response.status===401)this.onUnauthorized();}
+      if([401,403].includes(response.status) && epoch===this.epoch && !options.signal?.aborted) {this.csrf=undefined;if(response.status===401)this.onUnauthorized();}
       const retry=Number(response.headers.get('retry-after'));
       const messages:Record<number,string>={400:'Check the information you entered.',401:'Your session ended or the sign-in details were incorrect.',403:'Refresh this page before trying again.',429:'Too many attempts. Please wait before trying again.',503:'Unblok is temporarily unavailable. Please try again later.'};
-      throw new AuthApiError(response.status,messages[response.status]??'We couldn’t complete your request.',Number.isFinite(retry)&&retry>0?retry:undefined);
+      let code:string|undefined;
+      if(options.workspace){try{const value=await response.json();if(['CURSOR_STALE','IDEMPOTENCY_RESULT_EXPIRED'].includes(value?.error?.code))code=value.error.code;}catch{}}
+      const message=options.workspace&&response.status===404?'This workspace is no longer available.':options.workspace&&response.status===409?(code==='CURSOR_STALE'?'Your workspace list changed. Refresh it to continue.':code==='IDEMPOTENCY_RESULT_EXPIRED'?'This request is no longer available. Check your workspaces before creating another.':'We couldn’t confirm this request. Check your workspaces or retry the same request.'):messages[response.status]??'We couldn’t complete your request.';
+      throw new AuthApiError(response.status,message,Number.isFinite(retry)&&retry>0?retry:undefined,code);
     }
+    if(options.expectedStatus&&response.status!==options.expectedStatus)throw new AuthApiError(503,'We couldn’t validate the response. Please try again later.');
     try {return schema.parse(await response.json());} catch {throw new AuthApiError(503,'We couldn’t validate the response. Please try again later.');}
   }
   me() {return this.request('me',meResponseSchema);}
   verificationStatus() {return this.request('email-verification/status',emailVerificationStatusSchema);}
+  workspaceRead<T>(path:string,schema:Schema<T>,signal:AbortSignal) {return this.request(path,schema,undefined,{workspace:true,signal,expectedStatus:200});}
+  workspaceCreate<T>(schema:Schema<T>,body:unknown,key:string,signal:AbortSignal) {return this.mutate(()=>{
+    signal.throwIfAborted();return this.request('',schema,body,{workspace:true,key,signal,expectedStatus:201});
+  });}
   private async mutate<T>(run:()=>Promise<T>) {
     if(this.busy) throw new AuthApiError(409,'Please wait for your current request to finish.');
     this.busy=true;this.epoch++;

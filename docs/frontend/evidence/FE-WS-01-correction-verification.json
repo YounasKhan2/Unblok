@@ -1,0 +1,212 @@
+{
+  "reviewedHead": "517cab4573f386e0507048d94bdf765043a38693",
+  "productionBackendChanged": false,
+  "browserEvidence": "fe-ws-01-correction/results.json",
+  "historicalFailuresPreserved": [
+    "three NEXUS tests",
+    "queue timing/between-test errors",
+    "SIGTERM143",
+    "dependency-audit advisory/DNS failures",
+    "cold migration deadlines"
+  ],
+  "checks": [
+    {
+      "gate": "focused-frontend",
+      "command": "bun --filter @unblok/web test src/features/workspaces/live src/features/auth/live src/features/auth/session src/features/auth/api",
+      "exitCode": 1,
+      "durationSeconds": 15.81,
+      "summary": [
+        "@unblok/web test:  \u276f src/features/workspaces/live/WorkspaceStore.test.ts (29 tests | 1 failed) 522ms",
+        "@unblok/web test: \u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af",
+        "@unblok/web test:  FAIL  src/features/workspaces/live/WorkspaceStore.test.ts > server-owned live workspace state > shows expired-result guidance while retaining the unresolved key",
+        "@unblok/web test:  Test Files  1 failed | 7 passed (8)",
+        "@unblok/web test:       Tests  1 failed | 74 passed (75)"
+      ]
+    },
+    {
+      "gate": "frontend-full",
+      "command": "bun run test:web",
+      "exitCode": 1,
+      "durationSeconds": 18.22,
+      "summary": [
+        "@unblok/web test:  \u276f src/data/nexusEnterprise.test.ts (8 tests | 2 failed) 134ms",
+        "@unblok/web test:  \u276f src/features/workspaces/live/WorkspaceStore.test.ts (29 tests | 1 failed) 383ms",
+        "@unblok/web test:  \u276f src/data/nexus/nexusEnterpriseValidation.test.ts (32 tests | 1 failed) 347ms",
+        "@unblok/web test: \u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 4 \u23af\u23af\u23af\u23af\u23af\u23af\u23af",
+        "@unblok/web test:  FAIL  src/data/nexusEnterprise.test.ts > NEXUS enterprise reference data > has valid entity references, unique IDs, and a directed acyclic dependency graph",
+        "@unblok/web test:  FAIL  src/data/nexusEnterprise.test.ts > NEXUS enterprise reference data > populates milestone dependency graphs and cross-team matrix data",
+        "@unblok/web test:  FAIL  src/data/nexus/nexusEnterpriseValidation.test.ts > NEXUS Enterprise Dataset Validation (UX-15.5) > 5. Dependency Graph Integrity & Completion Guards > preserves five active blocked-work examples while limiting graph fan-in and fan-out",
+        "@unblok/web test:  FAIL  src/features/workspaces/live/WorkspaceStore.test.ts > server-owned live workspace state > shows expired-result guidance while retaining the unresolved key",
+        "@unblok/web test:  Test Files  3 failed | 55 passed (58)",
+        "@unblok/web test:       Tests  4 failed | 807 passed (811)",
+        "error: script \"test:web\" exited with code 1"
+      ]
+    },
+    {
+      "gate": "frontend-typecheck-lint",
+      "command": "bun run lint:web",
+      "exitCode": 0,
+      "durationSeconds": 10.16,
+      "summary": []
+    },
+    {
+      "gate": "frontend-build",
+      "command": "bun run build:web",
+      "exitCode": 0,
+      "durationSeconds": 12.35,
+      "summary": [
+        "@unblok/web build: (!) Some chunks are larger than 500 kB after minification. Consider:"
+      ]
+    },
+    {
+      "gate": "backend-typecheck-architecture",
+      "command": "bun run typecheck:backend",
+      "exitCode": 0,
+      "durationSeconds": 27.76,
+      "summary": [
+        "Architecture checked 385 source files and 1052 resolved internal edges; 0 violations."
+      ]
+    },
+    {
+      "gate": "backend-lint",
+      "command": "bun run lint:backend",
+      "exitCode": 0,
+      "durationSeconds": 25.35,
+      "summary": []
+    },
+    {
+      "gate": "backend-regression",
+      "command": "bun run test:backend",
+      "exitCode": 1,
+      "durationSeconds": 44.52,
+      "summary": [
+        " 98 pass",
+        " 1 fail",
+        " 263 expect() calls",
+        "Ran 99 tests across 8 files. [44.38s]",
+        "error: script \"test:backend\" exited with code 1"
+      ]
+    },
+    {
+      "gate": "workspace-http",
+      "command": "bun --env-file=apps/api/.env test apps/api/verification/workspace-integration.test.ts",
+      "exitCode": 1,
+      "durationSeconds": 8.1,
+      "summary": [
+        "error: Owned migration verification failed; configuration withheld",
+        "error: Stream isn't writeable and enableOfflineQueue options is false",
+        " 0 pass",
+        " 2 fail",
+        "Ran 2 tests across 1 file. [8.05s]"
+      ]
+    },
+    {
+      "gate": "shipped-auth-client",
+      "command": "bun --env-file=apps/api/.env test scripts/backend/frontend-auth.test.ts",
+      "exitCode": 1,
+      "durationSeconds": 7.37,
+      "summary": [
+        "error: expect(received).toBe(expected)",
+        " 0 pass",
+        " 1 fail",
+        " 1 expect() calls"
+      ]
+    },
+    {
+      "gate": "backend-build",
+      "command": "bun run build:backend",
+      "exitCode": 0,
+      "durationSeconds": 0.25,
+      "summary": []
+    },
+    {
+      "gate": "diff",
+      "command": "git diff --check",
+      "exitCode": 0,
+      "durationSeconds": 0.08,
+      "summary": []
+    },
+    {
+      "gate": "focused-frontend-final",
+      "command": "bun --filter @unblok/web test src/features/workspaces/live src/features/auth/live src/features/auth/session src/features/auth/api",
+      "exitCode": 0,
+      "durationSeconds": 3.25,
+      "summary": [
+        "@unblok/web test:  Test Files  8 passed (8)",
+        "@unblok/web test:       Tests  75 passed (75)"
+      ]
+    },
+    {
+      "gate": "frontend-full-final",
+      "command": "bun run test:web",
+      "exitCode": 1,
+      "durationSeconds": 9.88,
+      "summary": [
+        "@unblok/web test:  \u276f src/data/nexusEnterprise.test.ts (8 tests | 2 failed) 130ms",
+        "@unblok/web test:  \u276f src/data/nexus/nexusEnterpriseValidation.test.ts (32 tests | 1 failed) 209ms",
+        "@unblok/web test: \u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 3 \u23af\u23af\u23af\u23af\u23af\u23af\u23af",
+        "@unblok/web test:  FAIL  src/data/nexusEnterprise.test.ts > NEXUS enterprise reference data > has valid entity references, unique IDs, and a directed acyclic dependency graph",
+        "@unblok/web test:  FAIL  src/data/nexusEnterprise.test.ts > NEXUS enterprise reference data > populates milestone dependency graphs and cross-team matrix data",
+        "@unblok/web test:  FAIL  src/data/nexus/nexusEnterpriseValidation.test.ts > NEXUS Enterprise Dataset Validation (UX-15.5) > 5. Dependency Graph Integrity & Completion Guards > preserves five active blocked-work examples while limiting graph fan-in and fan-out",
+        "@unblok/web test:  Test Files  2 failed | 56 passed (58)",
+        "@unblok/web test:       Tests  3 failed | 808 passed (811)",
+        "error: script \"test:web\" exited with code 1"
+      ]
+    },
+    {
+      "gate": "backend-regression-repeat",
+      "command": "bun run test:backend",
+      "exitCode": 0,
+      "durationSeconds": 11.63,
+      "summary": [
+        " 99 pass",
+        " 0 fail",
+        " 263 expect() calls",
+        "Ran 99 tests across 8 files. [11.52s]"
+      ]
+    },
+    {
+      "gate": "workspace-http-repeat",
+      "command": "bun --env-file=apps/api/.env test apps/api/verification/workspace-integration.test.ts",
+      "exitCode": 1,
+      "durationSeconds": 7.9,
+      "summary": [
+        "error: Owned migration verification failed; configuration withheld",
+        "error: Stream isn't writeable and enableOfflineQueue options is false",
+        " 0 pass",
+        " 2 fail",
+        "Ran 2 tests across 1 file. [7.85s]"
+      ]
+    },
+    {
+      "gate": "shipped-auth-client-repeat",
+      "command": "bun --env-file=apps/api/.env test scripts/backend/frontend-auth.test.ts",
+      "exitCode": 0,
+      "durationSeconds": 9.83,
+      "summary": [
+        " 1 pass",
+        " 0 fail",
+        " 149 expect() calls"
+      ]
+    }
+  ],
+  "focusedBrowser": {
+    "exitCode": 0,
+    "testsPassed": 1,
+    "assertions": 11,
+    "testDurationSeconds": 12.685,
+    "totalDurationSeconds": 14.52,
+    "nineMigrationsApplied": true,
+    "sameBrowserContext": true,
+    "cookieDeletionUsed": false,
+    "sameKeyRequests": 2,
+    "workspaceEffects": 1
+  },
+  "documentationLinks": {
+    "resolved": 12,
+    "missing": 0
+  },
+  "scopeCheck": {
+    "forbiddenChanges": []
+  }
+}

@@ -8,7 +8,7 @@ describe('live authentication ownership',()=>{
     for(const folder of ['live','session','api'])for(const name of readdirSync(resolve(root,folder))){
       if(!/\.tsx?$/.test(name)||name.includes('.test.')||name==='DemoExperience.tsx')continue;
       const source=readFileSync(resolve(root,folder,name),'utf8');
-      expect(source,`${folder}/${name}`).not.toMatch(/localStorage|sessionStorage|mockAuthAdapter|useAuth\(|WorkspaceProvider|ProjectProvider|\/data\//);
+      expect(source,`${folder}/${name}`).not.toMatch(/localStorage|sessionStorage|mockAuthAdapter|useAuth\(|\bWorkspaceProvider|ProjectProvider|\/data\//);
     }
   });
   it('mounts prototype providers only inside the explicitly labelled demo',()=>{
