@@ -1,6 +1,6 @@
-import { Database, RecoveryDelivery, VerificationDelivery } from '@unblok/database';
+import { Database, InvitationDelivery, RecoveryDelivery, VerificationDelivery } from '@unblok/database';
 import { startVerificationDispatcher } from './jobs/email-verification';
-import { loadRecoveryKey, loadVerificationKey, loadVerificationMail, createLogger, loadWorkerConfig, registerShutdown } from '@unblok/backend-runtime';
+import { loadInvitationKey, loadRecoveryKey, loadVerificationKey, loadVerificationMail, createLogger, loadWorkerConfig, registerShutdown } from '@unblok/backend-runtime';
 import { startWorker } from './worker';
 
 const logger = createLogger();
@@ -15,6 +15,7 @@ async function main() {
   try { service = await startWorker(config, logger); } catch { await database.close(); throw new Error('Worker dependencies unavailable'); }
   const dispatcher = startVerificationDispatcher(new VerificationDelivery(database, key), mail, logger);
   const recovery = startVerificationDispatcher(new RecoveryDelivery(database,recoveryKey),mail,logger,'recovery');
-  registerShutdown(async () => { try { await Promise.all([service.close(), dispatcher.close(), recovery.close()]); } finally { await database.close(); } }, config.SHUTDOWN_TIMEOUT_MS, logger);
+  const invitations=(process.env.WORKSPACE_INVITATION_KEY||process.env.WORKSPACE_INVITATION_KEY_ID)?startVerificationDispatcher(new InvitationDelivery(database,loadInvitationKey(process.env)),mail,logger,'invitation'):undefined;
+  registerShutdown(async () => { try { await Promise.all([service.close(), dispatcher.close(), recovery.close(), invitations?.close()]); } finally { await database.close(); } }, config.SHUTDOWN_TIMEOUT_MS, logger);
 }
 void main().catch(() => { logger.fatal({ event: 'worker_startup_failed' }); process.exit(1); });

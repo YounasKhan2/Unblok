@@ -1,9 +1,11 @@
-import type { Prisma, WorkspaceRole, RecordStatus } from '@prisma/client';
+import {listMemberships,type MembershipQuery} from './workspace-memberships';
+import {issueInvitation,acceptInvitation,invitationSelector,type InvitationKey} from './workspace-invitations';
+import { Prisma, type WorkspaceRole, type RecordStatus } from '@prisma/client';
 import { verificationAction, type VerificationKey } from './email-verification';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import type { Database } from './index';
 import { createWorkspace, discoverWorkspaces, workspaceContext, validWorkspaceKeys, WorkspaceFault, type WorkspaceKeys } from './workspaces';
-import { AuthFences, AuthDeniedError, AuthUnavailableError, lockAuthority, type PrincipalAuthority, type SessionVerifier } from './auth-fences';
+import { AuthFences, AuthDeniedError, AuthUnavailableError, lockAuthority, revalidateAuthority, type PrincipalAuthority, type SessionVerifier } from './auth-fences';
 
 export interface VerifiedIdentity { readonly provider: string; readonly subject: string }
 // The implementation must cryptographically verify its assertion. Never bind a
@@ -112,7 +114,7 @@ export class Tenancy {
   #principals = new WeakMap<VerifiedPrincipal, PrincipalAuthority>();
   #sessionRequest = new AsyncLocalStorage<VerifiedPrincipal>();
   #fences: AuthFences;
-  constructor(private readonly database: Database, private readonly verifier: IdentityVerifier, private readonly policy: AuthorizationPolicy = denyAll, private readonly sessions?: SessionVerifier, private readonly verificationKey?: VerificationKey, private readonly workspaceKeys?: WorkspaceKeys) {
+  constructor(private readonly database: Database, private readonly verifier: IdentityVerifier, private readonly policy: AuthorizationPolicy = denyAll, private readonly sessions?: SessionVerifier, private readonly verificationKey?: VerificationKey, private readonly workspaceKeys?: WorkspaceKeys, private readonly invitationKey?: InvitationKey) {
     this.#fences = new AuthFences(database);
     if (workspaceKeys) this.workspaceKeys = Object.freeze({ ...workspaceKeys, cursors: Object.freeze({ ...workspaceKeys.cursors }) });
   }
@@ -151,16 +153,17 @@ export class Tenancy {
 
   read<T>(principal: VerifiedPrincipal, workspaceId: string, run: (queries: TenantQueries) => Promise<T>) { return this.scoped(principal, workspaceId, 'read', run); }
   // Closed account/tenant capabilities, never a transaction or ORM escape hatch.
-  private async workspaceBoundary<T>(principal: VerifiedPrincipal, run: (tx: Prisma.TransactionClient, authority: PrincipalAuthority) => Promise<T>) {
+  private async workspaceBoundary<T>(principal: VerifiedPrincipal, run: (tx: Prisma.TransactionClient, authority: PrincipalAuthority) => Promise<T>, selectors?: (tx: Prisma.TransactionClient) => Promise<readonly string[]>) {
     const authority = this.#principals.get(principal);
     if (!authority?.session) throw new TenantAccessError();
     this.assertPrincipal(principal, authority);
     try { return await this.database.transaction(async tx => {
       await tx.$executeRaw`SET LOCAL lock_timeout = '1500ms'`;
       await tx.$executeRaw`SET LOCAL statement_timeout = '4000ms'`;
-      this.assertPrincipal(principal, authority); await lockAuthority(tx, authority);
+      this.assertPrincipal(principal, authority);
+      await lockAuthority(tx, authority, selectors ? await selectors(tx) : []);
       const result = await run(tx, authority);
-      await lockAuthority(tx, authority); this.assertPrincipal(principal, authority); return result;
+      await revalidateAuthority(tx, authority); this.assertPrincipal(principal, authority); return result;
     }); } catch (error) {
       if (error instanceof WorkspaceFault || error instanceof TenantAccessError) throw error;
       if (error instanceof AuthDeniedError) throw new TenantAccessError();
@@ -189,6 +192,15 @@ export class Tenancy {
   workspaceContext(principal: VerifiedPrincipal, workspaceId: string) {
     return this.workspaceBoundary(principal, (tx, authority) => workspaceContext(tx, authority.userId, workspaceId));
   }
+  memberships(principal:VerifiedPrincipal,workspaceId:string,query:MembershipQuery){return this.workspaceBoundary(principal,(tx,a)=>{
+    if(!this.workspaceKeys||!validWorkspaceKeys(this.workspaceKeys))throw new AuthUnavailableError();return listMemberships(tx,a.userId,workspaceId,query,this.workspaceKeys);
+  });}
+  issueInvitation(principal:VerifiedPrincipal,workspaceId:string,input:{email:string;role:'MEMBER'|'OBSERVER';key:string}){return this.workspaceBoundary(principal,(tx,a)=>{
+    if(!this.workspaceKeys||!validWorkspaceKeys(this.workspaceKeys)||!this.invitationKey)throw new AuthUnavailableError();return issueInvitation(tx,a,workspaceId,input,this.invitationKey,this.workspaceKeys);
+  });}
+  acceptInvitation(principal:VerifiedPrincipal,token:string,key:string){const selector=invitationSelector(token);return this.workspaceBoundary(principal,(tx,a)=>{
+    if(!this.workspaceKeys||!validWorkspaceKeys(this.workspaceKeys)||!this.invitationKey)throw new AuthUnavailableError();return acceptInvitation(tx,a,selector,token,key,this.invitationKey,this.workspaceKeys);
+  },async tx=>{const row=selector?await tx.workspaceInvitation.findUnique({where:{id:selector},select:{inviterId:true}}):null;return row?[row.inviterId]:[];});}
   async emailVerification(principal: VerifiedPrincipal, action: 'request' | 'confirm' | 'status', token?: string) {
     const authority = this.#principals.get(principal);
     if (!authority?.session || !this.verificationKey) throw new TenantAccessError();
@@ -197,7 +209,7 @@ export class Tenancy {
       await tx.$executeRaw`SET LOCAL lock_timeout = '1500ms'`; await tx.$executeRaw`SET LOCAL statement_timeout = '4000ms'`;
       this.assertPrincipal(principal, authority); await lockAuthority(tx, authority);
       const result = await verificationAction(tx, authority, this.verificationKey!, action, token);
-      await lockAuthority(tx, authority); this.assertPrincipal(principal, authority); return result;
+      await revalidateAuthority(tx, authority); this.assertPrincipal(principal, authority); return result;
     }); } catch (error) {
       if (error instanceof AuthDeniedError || error instanceof TenantAccessError) throw new TenantAccessError();
       throw new AuthUnavailableError();
@@ -215,7 +227,7 @@ export class Tenancy {
       const row = await tx.user.findUniqueOrThrow({ where: { id: authority.userId }, select: { id: true, name: true, email: true } });
       this.assertPrincipal(principal, authority);
       const credential = await tx.passwordCredential.findUnique({ where: { identityId: authority.identityId }, select: { email: true, emailVerifiedAt: true } });
-      await lockAuthority(tx, authority); this.assertPrincipal(principal, authority);
+      await revalidateAuthority(tx, authority); this.assertPrincipal(principal, authority);
       return Object.freeze({ ...row, email: credential?.email ?? row.email, emailVerified: credential?.emailVerifiedAt !== null && credential?.emailVerifiedAt !== undefined });
     }); } catch (error) {
       if (error instanceof AuthDeniedError || error instanceof TenantAccessError) throw new TenantAccessError();
@@ -251,7 +263,7 @@ export class Tenancy {
           const result = await run(queries);
           this.assertPrincipal(principal, authority);
           // Recheck DB time after callback: expiry during work rolls back writes.
-          await lockAuthority(tx, authority);
+          await revalidateAuthority(tx, authority);
           this.assertPrincipal(principal, authority);
           return result;
         } finally { queries.expire(); }

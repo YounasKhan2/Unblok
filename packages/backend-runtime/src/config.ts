@@ -74,3 +74,9 @@ export function loadRecoveryKey(env: Record<string,string|undefined>) {
   if (key.secret === env.EMAIL_VERIFICATION_KEY || env.SESSION_SECRETS?.split(',').some(value=>value.trim()===key.secret)) throw new Error("Recovery requires an independent key");
   return key;
 }
+
+export function loadInvitationKey(env:Record<string,string|undefined>){
+ const key=loadVerificationKey({EMAIL_VERIFICATION_KEY_ID:env.WORKSPACE_INVITATION_KEY_ID,EMAIL_VERIFICATION_KEY:env.WORKSPACE_INVITATION_KEY});
+ const others=[env.EMAIL_VERIFICATION_KEY,env.PASSWORD_RECOVERY_KEY,env.WORKSPACE_CURSOR_KEY,env.WORKSPACE_CURSOR_PREVIOUS_KEY,env.WORKSPACE_IDEMPOTENCY_KEY,...(env.SESSION_SECRETS?.split(',').map(v=>v.trim())??[])];
+ if(others.includes(key.secret))throw new Error('Invitation requires an independent key');return key;
+}

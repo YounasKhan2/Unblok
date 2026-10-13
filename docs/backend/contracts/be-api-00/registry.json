@@ -1829,7 +1829,7 @@
           ]
         },
         "joinedAt": {
-          "$ref": "#/schemas/Timestamp"
+          "anyOf": [{ "$ref": "#/schemas/Timestamp" }, { "type": "null" }]
         }
       },
       "required": [
