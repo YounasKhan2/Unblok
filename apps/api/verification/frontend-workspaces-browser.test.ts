@@ -25,7 +25,8 @@ test('FE-WS-01 real Chromium / PostgreSQL / Valkey workspace flows',async()=>{
   const config=loadApiConfig(process.env),name='unblok_fews_'+randomUUID().replaceAll('-','');
   const url=new URL(config.DATABASE_URL);url.pathname='/'+name;
   const admin=new Database(config.DATABASE_URL),database=new Database(url.toString()),cache=createRedis(config.REDIS_URL);
-  const prefix='fews:test:'+randomUUID()+':',output=resolve('docs/frontend/evidence/fe-ws-01');await mkdir(output,{recursive:true});
+  const correction=process.env.FE_WS_CORRECTION_ONLY==='1';
+  const prefix='fews:test:'+randomUUID()+':',output=resolve(correction?'docs/frontend/evidence/fe-ws-01-correction':'docs/frontend/evidence/fe-ws-01');await mkdir(output,{recursive:true});
   const evidence:{[key:string]:unknown}={base:'73abe14d7101cba58636a2b7acd9b1b9339a5004',transport:'real Chromium / same-origin Vite proxy / isolated PostgreSQL / Valkey',productionCertified:false,passed:[],visuals:[]};
   const passed=evidence.passed as string[],visuals=evidence.visuals as unknown[];
   let owned=false,browser:Browser|undefined,server:Awaited<ReturnType<typeof createApp>>|undefined,connection:Awaited<ReturnType<typeof connectSessionStore>>|undefined,step='setup';cache.on('error',()=>{});
@@ -58,9 +59,21 @@ test('FE-WS-01 real Chromium / PostgreSQL / Valkey workspace flows',async()=>{
     let lost=true;const keysSeen:string[]=[],headersSeen:{csrfPresent:boolean;originMatches:boolean}[]=[];
     await page.route('**/api/v1/workspaces',async route=>{if(route.request().method()!=='POST')return route.continue();const headers=await route.request().allHeaders();keysSeen.push(headers['idempotency-key']!);headersSeen.push({csrfPresent:!!headers['x-csrf-token'],originMatches:headers.origin===base});if(lost){lost=false;const committed=await route.fetch();expect(committed.status()).toBe(201);await route.abort('failed');}else await route.continue();});
     await page.getByRole('button',{name:'Create workspace',exact:true}).click();await page.getByRole('button',{name:'Retry creation',exact:true}).waitFor();expect(await page.getByRole('heading',{name:'Real Browser Workspace',exact:true}).count()).toBe(0);
-    expect(await page.getByLabel('Workspace name').isDisabled()).toBe(true);await page.reload();await page.getByRole('button',{name:'Retry creation',exact:true}).waitFor();await page.getByRole('button',{name:'Retry creation',exact:true}).click();await heading('Real Browser Workspace');await page.getByRole('heading',{name:'Your workspace is ready'}).waitFor();
+    expect(await page.getByLabel('Workspace name').isDisabled()).toBe(true);
+    if(correction){
+      step='committed response loss, session interruption, fresh same-actor reconciliation';
+      await fences.revokeAll(actor);await page.reload();await heading('Welcome back');
+      expect(await page.getByRole('button',{name:'Retry creation',exact:true}).count()).toBe(0);
+      await login(email);await page.getByRole('link',{name:'Create workspace',exact:true}).click();await heading('Create workspace');
+    }
+    await page.reload();await page.getByRole('button',{name:'Retry creation',exact:true}).waitFor();await page.getByRole('button',{name:'Retry creation',exact:true}).click();await heading('Real Browser Workspace');await page.getByRole('heading',{name:'Your workspace is ready'}).waitFor();
     expect(keysSeen.length).toBe(2);expect(keysSeen[0]).toBe(keysSeen[1]);expect(headersSeen.every(h=>h.csrfPresent&&h.originMatches)).toBe(true);expect(await database.client.workspace.count({where:{slug}})).toBe(1);
-    evidence.uncertainOutcome={committedBeforeLostResponse:true,manualSameKeyRetry:true,requests:2,effects:1,csrfAndOrigin:true};passed.push(step);
+    evidence.uncertainOutcome={sessionRevokedBeforeRetry:correction,freshMatchingServerIdentity:correction,committedBeforeLostResponse:true,manualSameKeyRetry:true,requests:2,effects:1,csrfAndOrigin:true};passed.push(step);
+    if(correction){
+      expect(await page.evaluate(()=>sessionStorage.getItem('unblok.workspace.creation.v1'))).toBeNull();
+      await page.screenshot({path:resolve(output,'reconciled-workspace.png'),fullPage:true,animations:'disabled'});
+      evidence.status='passed';evidence.isolatedFixtures=true;evidence.sameBrowserContext=true;await context.close();return;
+    }
     const preflight=await fetch('http://127.0.0.1:4000/api/v1/workspaces',{method:'OPTIONS',headers:{Origin:config.CORS_ORIGINS[0]!,'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type,x-csrf-token,idempotency-key'}});
     expect(preflight.status).toBe(403);evidence.crossOriginCreation={idempotencyPreflight:403,supported:false,requiresReviewedBackendCorsChange:true};
     const workspace=await database.client.workspace.findUniqueOrThrow({where:{slug}}),liveUrl=page.url();await page.unroute('**/api/v1/workspaces');

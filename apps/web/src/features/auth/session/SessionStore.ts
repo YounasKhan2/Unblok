@@ -4,10 +4,12 @@ export class SessionStore {
   private state:SessionState={status:'loading',user:null,pending:false};
   private listeners=new Set<()=>void>();
   private version=0;
+  private logoutVersion=0;
   private restoring:Promise<void>|undefined;
   constructor(readonly api:AuthApi) {api.onUnauthorized=()=>this.clear();}
   snapshot=()=>this.state;
   generation=()=>this.version;
+  explicitLogoutGeneration=()=>this.logoutVersion;
   subscribe=(listener:()=>void)=>{this.listeners.add(listener);return()=>{this.listeners.delete(listener);};};
   private publish(state:SessionState) {this.state=state;for(const listener of this.listeners)listener();}
   private advance() {this.version++;this.restoring=undefined;this.api.invalidateRequests();}
@@ -36,6 +38,8 @@ export class SessionStore {
     const {user}=await this.api.me();this.publish({status:'authenticated',user,pending:true});
   });}
   async logout(all=false) {return this.submit(async()=>{
+    // Intentional sign-out abandons pending client mutations, even on an unknown response.
+    this.logoutVersion++;this.publish({...this.state});
     try{const result=await this.api.logout(all);this.clear();return result;}
     catch(error){if(error instanceof AuthApiError&&error.status===401){this.clear();return null;}throw error;}
   });}
