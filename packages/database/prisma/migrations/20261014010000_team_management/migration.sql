@@ -8,6 +8,7 @@ CREATE TABLE team_transfer_intents (
  initiator_membership_id uuid NOT NULL, successor_membership_id uuid NOT NULL,
  initiator_user_id uuid NOT NULL, successor_user_id uuid NOT NULL, source_family_id uuid NOT NULL,
  initiator_epoch bigint NOT NULL, successor_epoch bigint NOT NULL, base_version bigint NOT NULL, policy_revision bigint NOT NULL,
+ accepted_transaction bigint, acceptance_receipt_id uuid UNIQUE REFERENCES team_mutation_results(id) ON DELETE RESTRICT ON UPDATE RESTRICT, consumed boolean NOT NULL DEFAULT false,
  revision bigint NOT NULL DEFAULT 1, state varchar(12) NOT NULL, issued_at timestamptz(3) NOT NULL, expires_at timestamptz(3) NOT NULL,
  CONSTRAINT team_transfer_intents_pkey PRIMARY KEY(workspace_id,team_id),
  CONSTRAINT team_transfer_intents_request_id_key UNIQUE(request_id),
@@ -49,18 +50,62 @@ BEGIN
  RETURN CASE WHEN TG_OP='DELETE' THEN OLD ELSE NEW END;
 END $$;
 CREATE TRIGGER b_team_join_management BEFORE INSERT OR UPDATE OR DELETE ON team_memberships FOR EACH ROW EXECUTE FUNCTION guard_team_join_management();
--- SQL ownership transitions require the exact accepted current intent; no role/status CHECK vetoes revocation.
+-- Consume consent synchronously. The database stamps its accepting transaction;
+-- a committed accepted slot cannot authorize another transaction or owner update.
+CREATE FUNCTION consume_team_transfer() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE i team_transfer_intents%ROWTYPE; receipt uuid;
+BEGIN
+ IF NEW.owner_membership_id IS NOT DISTINCT FROM OLD.owner_membership_id THEN RETURN NEW; END IF;
+ SELECT * INTO i FROM team_transfer_intents WHERE workspace_id=OLD.workspace_id AND team_id=OLD.id FOR UPDATE;
+ IF NOT FOUND OR i.state<>'ACCEPTED' OR i.consumed OR i.accepted_transaction IS DISTINCT FROM txid_current()
+ OR i.initiator_membership_id IS DISTINCT FROM OLD.owner_membership_id OR i.successor_membership_id IS DISTINCT FROM NEW.owner_membership_id
+ OR i.base_version<>OLD.version OR NEW.version<>i.base_version+1 THEN
+ RAISE EXCEPTION 'Owner change requires fresh unconsumed consent' USING ERRCODE='23514'; END IF;
+ SELECT id INTO STRICT receipt FROM team_mutation_results WHERE workspace_id=OLD.workspace_id AND team_id=OLD.id
+ AND actor_id=i.successor_user_id AND operation='team:accept:v1' AND intent_revision=i.revision-1 AND result IS NULL AND http_status IS NULL FOR UPDATE;
+ IF NOT FOUND THEN RAISE EXCEPTION 'Transfer requires reserved acceptance receipt' USING ERRCODE='23514'; END IF;
+ UPDATE team_transfer_intents SET consumed=true,acceptance_receipt_id=receipt WHERE workspace_id=OLD.workspace_id AND team_id=OLD.id;
+ RETURN NEW;
+END $$;
+CREATE TRIGGER b_consume_team_transfer BEFORE UPDATE ON teams FOR EACH ROW EXECUTE FUNCTION consume_team_transfer();
 CREATE FUNCTION complete_team_transfer() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
- IF NEW.owner_membership_id IS DISTINCT FROM OLD.owner_membership_id AND NOT EXISTS(SELECT 1 FROM team_transfer_intents i WHERE i.workspace_id=NEW.workspace_id AND i.team_id=NEW.id AND i.state='ACCEPTED' AND i.initiator_membership_id=OLD.owner_membership_id AND i.successor_membership_id=NEW.owner_membership_id AND i.base_version=OLD.version) THEN RAISE EXCEPTION 'Owner change requires accepted consent' USING ERRCODE='23514'; END IF;
+ IF NEW.owner_membership_id IS DISTINCT FROM OLD.owner_membership_id AND NOT EXISTS(
+ SELECT 1 FROM team_transfer_intents i JOIN team_mutation_results r ON r.id=i.acceptance_receipt_id JOIN teams t ON t.workspace_id=i.workspace_id AND t.id=i.team_id
+ WHERE i.workspace_id=NEW.workspace_id AND i.team_id=NEW.id AND i.state='ACCEPTED' AND i.consumed AND i.accepted_transaction=txid_current()
+ AND i.initiator_membership_id=OLD.owner_membership_id AND i.successor_membership_id=NEW.owner_membership_id AND i.base_version=OLD.version
+ AND NEW.version=i.base_version+1 AND t.version=NEW.version AND t.owner_membership_id=NEW.owner_membership_id
+ AND r.workspace_id=i.workspace_id AND r.team_id=i.team_id AND r.actor_id=i.successor_user_id AND r.operation='team:accept:v1'
+ AND r.intent_revision=i.revision-1 AND r.http_status=200 AND r.result->>'requestId'=i.request_id::text
+ AND r.result->>'outcome'='ACCEPTED' AND r.result->>'version'=NEW.version::text
+ ) THEN RAISE EXCEPTION 'Owner transition requires exact consumed consent and receipt' USING ERRCODE='23514'; END IF;
  RETURN NULL;
 END $$;
 CREATE CONSTRAINT TRIGGER team_transfer_complete AFTER UPDATE ON teams DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION complete_team_transfer();
 CREATE FUNCTION guard_transfer_intent() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
+ -- The only accepted-state update is one-way consumption. Preconsuming directly
+ -- cannot grant an owner change: consume_team_transfer rejects consumed slots.
+ IF TG_OP='UPDATE' AND OLD.state='ACCEPTED' AND NEW.request_id=OLD.request_id AND NEW.state='ACCEPTED' THEN
+  IF OLD.consumed OR NOT NEW.consumed OR OLD.acceptance_receipt_id IS NOT NULL OR NEW.acceptance_receipt_id IS NULL
+  OR OLD.accepted_transaction IS DISTINCT FROM txid_current()
+  OR (to_jsonb(NEW)-'consumed'-'acceptance_receipt_id') IS DISTINCT FROM (to_jsonb(OLD)-'consumed'-'acceptance_receipt_id') THEN
+   RAISE EXCEPTION 'Consent consumption immutable' USING ERRCODE='23514'; END IF;
+  RETURN NEW;
+ END IF;
+ IF TG_OP='INSERT' OR NEW.request_id IS DISTINCT FROM OLD.request_id THEN
+  NEW.accepted_transaction:=NULL; NEW.acceptance_receipt_id:=NULL; NEW.consumed:=false;
+ ELSIF TG_OP='UPDATE' AND OLD.state='PENDING' AND NEW.state='ACCEPTED' THEN
+  NEW.accepted_transaction:=txid_current(); NEW.acceptance_receipt_id:=NULL; NEW.consumed:=false;
+ ELSIF (NEW.accepted_transaction,NEW.acceptance_receipt_id,NEW.consumed) IS DISTINCT FROM (OLD.accepted_transaction,OLD.acceptance_receipt_id,OLD.consumed) THEN
+  RAISE EXCEPTION 'Consent consumption binding immutable' USING ERRCODE='23514'; END IF;
  IF TG_OP='INSERT' AND NEW.state<>'PENDING' THEN RAISE EXCEPTION 'Consent begins pending' USING ERRCODE='23514'; END IF;
  IF TG_OP='DELETE' THEN RAISE EXCEPTION 'Intent replaced only by bounded state transition' USING ERRCODE='23514'; END IF;
  IF TG_OP='UPDATE' THEN
+  -- Keep the accepted slot present until this transaction's deferred checks
+  -- have validated the effect and immutable receipt. Replace only next tx.
+  IF OLD.state='ACCEPTED' AND NEW.request_id<>OLD.request_id AND (NOT OLD.consumed OR OLD.accepted_transaction=txid_current()) THEN
+   RAISE EXCEPTION 'Accepted consent cannot be replaced in accepting transaction' USING ERRCODE='23514'; END IF;
   IF (NEW.workspace_id,NEW.team_id) IS DISTINCT FROM (OLD.workspace_id,OLD.team_id) OR NEW.revision<>OLD.revision+1 THEN RAISE EXCEPTION 'Intent revision/binding invalid' USING ERRCODE='23514'; END IF;
   IF NEW.request_id=OLD.request_id THEN
    IF (NEW.initiator_membership_id,NEW.successor_membership_id,NEW.initiator_user_id,NEW.successor_user_id,NEW.source_family_id,NEW.initiator_epoch,NEW.successor_epoch,NEW.base_version,NEW.policy_revision,NEW.issued_at,NEW.expires_at) IS DISTINCT FROM (OLD.initiator_membership_id,OLD.successor_membership_id,OLD.initiator_user_id,OLD.successor_user_id,OLD.source_family_id,OLD.initiator_epoch,OLD.successor_epoch,OLD.base_version,OLD.policy_revision,OLD.issued_at,OLD.expires_at) OR OLD.state<>'PENDING' OR NEW.state NOT IN ('ACCEPTED','REJECTED','EXPIRED','INVALIDATED') THEN RAISE EXCEPTION 'Consent immutable/terminal' USING ERRCODE='23514'; END IF;
@@ -110,11 +155,12 @@ BEGIN
  JOIN auth_session_families f ON f.id=NEW.source_family_id AND f.user_id=iu.id
  JOIN team_memberships it ON it.workspace_id=t.workspace_id AND it.team_id=t.id AND it.membership_id=im.id
  JOIN team_memberships st ON st.workspace_id=t.workspace_id AND st.team_id=t.id AND st.membership_id=sm.id
- JOIN team_mutation_results r ON r.workspace_id=t.workspace_id AND r.team_id=t.id AND r.actor_id=su.id AND r.operation='team:accept:v1'
+ JOIN team_mutation_results r ON r.id=current_intent.acceptance_receipt_id AND r.workspace_id=t.workspace_id AND r.team_id=t.id AND r.actor_id=su.id AND r.operation='team:accept:v1'
  WHERE t.workspace_id=NEW.workspace_id AND t.id=NEW.team_id AND t.owner_membership_id=sm.id AND t.version=NEW.base_version+1
  AND t.status='ACTIVE' AND w.status='ACTIVE' AND im.status='ACTIVE' AND im.role='ADMIN' AND sm.status='ACTIVE' AND sm.role='ADMIN'
  AND it.team_role='MEMBER' AND st.team_role='MEMBER' AND NOT iu.auth_disabled AND NOT su.auth_disabled AND iu.auth_epoch=NEW.initiator_epoch AND su.auth_epoch=NEW.successor_epoch
  AND f.auth_epoch=iu.auth_epoch AND f.revoked_at IS NULL AND f.absolute_expires_at>clock_timestamp() AND f.idle_expires_at>clock_timestamp() AND NEW.expires_at>clock_timestamp()
+ AND current_intent.consumed AND current_intent.accepted_transaction=txid_current() AND r.intent_revision=NEW.revision-1 AND r.http_status=200
  AND r.result->>'requestId'=NEW.request_id::text AND r.result->>'outcome'='ACCEPTED' AND r.result->>'version'=t.version::text
  ) THEN RAISE EXCEPTION 'Accepted intent requires atomic authorized owner/receipt' USING ERRCODE='23514'; END IF;
  RETURN NULL;

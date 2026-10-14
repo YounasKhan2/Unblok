@@ -384,7 +384,8 @@ test('closed metadata port rejects unexpected mutation fields instead of mass as
 });
 test('F1 direct and unrelated nested-trigger writes cannot forge derived budgets or slot changes',async()=>{
  const o=await owned(),t=await make(o),before=await budget('deployment');
- await expect(Promise.resolve(database.client.$executeRawUnsafe('TRUNCATE team_mutation_results'))).rejects.toThrow('Team receipt retained');
+ await expect(Promise.resolve(database.client.$executeRawUnsafe('TRUNCATE team_mutation_results'))).rejects.toThrow('cannot truncate a table referenced');
+ await expect(Promise.resolve(database.client.$executeRawUnsafe('TRUNCATE team_mutation_results CASCADE'))).rejects.toThrow('Team receipt retained');
  for(const sql of ["UPDATE team_receipt_budgets SET used=0 WHERE scope='deployment'","UPDATE team_receipt_budgets SET used=used+1 WHERE scope='deployment'","INSERT INTO team_receipt_budgets(scope,used) VALUES ('forged',1)","DELETE FROM team_receipt_budgets WHERE scope='deployment'"]){await expect(Promise.resolve(database.client.$executeRawUnsafe(sql))).rejects.toThrow();}
  for(const assignment of ['used=0','used=used+1'])await expect(database.transaction(async tx=>{
   await tx.$executeRawUnsafe('CREATE TEMP TABLE f1_outer(id integer);');

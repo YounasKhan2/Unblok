@@ -91,3 +91,59 @@ The existing test fixtures were adapted only for additive migration count/new co
 Workloads at concurrency1/10/50 retain real admission and CAS/conflict errors. The directory objective250ms is exceeded at50; the management objective500ms is also exceeded at50. Results must be interpreted alongside substantial 429/409/412 rejections. Concurrency1 is a single observation, not a robust percentile distribution. Local loopback measurements do not certify production capacity, sustained throughput or global contention freedom. Deadlines and admission limits were not raised to make results pass.
 
 No production deployment, new frontend management, orphan/legacy recovery, self-removal, automatic owner takeover, implicit invitations or Project/Issue API is included. Same-origin frontend compatibility is verified; previously documented cross-origin mutation-header limitations remain. Existing infrastructure/worker shutdown/queue timing, advisory and historical operational findings are retained, not silently declared fixed. Production grants, backups, observability and sustained multi-node load qualification remain operator/security-review work. Human security review is required before merging this implementation.
+
+## PR #43 F1 correction — one-time ownership consent
+
+Security review requested changes at `45c8ee54877255d106ae1a04c8559e91917aa85d`. The verification and performance tables above describe that initial implementation; the current correction evidence below supersedes them where affected. Original artifacts remain preserved. No implementation merge or frontend management is authorized.
+
+`consume_team_transfer()` now runs before an actual owner update. It requires the exact prior owner, successor, base version, resulting version `base+1`, an unconsumed ACCEPTED intent and the same database-stamped accepting transaction (`txid_current()`). It locks the current intent and exactly one still-reserved acceptance receipt, binds that receipt's immutable actor/tenant/Team/operation/original intent revision, and marks consumption one way. Reuse after commit fails the accepting-transaction and consumed checks. A second owner update in the accepting transaction fails; accepted consent cannot be replaced in that transaction to evade deferred validation. Replacement for a later genuine transfer remains possible only in a subsequent transaction.
+
+`complete_team_transfer()` validates the exact OLD/NEW transition against the consumed intent, final committed Team owner/version, and bound immutable acceptance receipt with matching request ID, successor actor, original intent revision, ACCEPTED outcome, resulting version and HTTP200. The intent completion check also requires that exact bound receipt and consumption. Consumption markers are database-owned: callers cannot reset or change the accepted transaction, rearm a terminal request or detach the receipt. Direct preconsumption cannot grant a transition because the owner trigger rejects already-consumed consent. No trigger depth, client role or caller-supplied transaction ID grants authority.
+
+| F1 requirement | Enforcement / proof |
+| --- | --- |
+| Exactly one transition per consent | Synchronous one-way consumption plus deferred exact OLD/NEW/final-Team/receipt binding |
+| Replayed, stale, forged and consumed consent | Direct SQL owner forgery, marker reset/base rewrite/receipt rewrite negatives; two blocked concurrent reuse transactions; same-transaction second transition and premature slot replacement rejected |
+| Atomic rollback | Owned failure after the owner update/consumption restores original owner/version, PENDING intent, null transaction/receipt binding and absent receipt; original-key acceptance then succeeds |
+| Valid explicit sequential transfer | Three real HTTP owner/successor transfers, each with fresh request/version and distinct immutable acceptance receipt; previous former-owner acknowledgement replay remains covered |
+| Migration preservation | Only the unmerged twelfth migration changes; all eleven predecessors byte-identical; fresh deploy/replay/status/diff and actual eleven-migration upgrade/historical receipts retested |
+| Existing security/regression | Revocation in both lock orders, expiry during held completion, accept/reject races, full caps/tombstones, CSRF/CAS/private/foreign/observer authorization remain covered |
+
+The added fields are bounded to the existing single current intent: accepting transaction, consumed bit and optional unique acceptance-receipt FK. No new ledger, admission counter or capacity bypass is added. Expired receipt compaction remains permitted and cannot rearm consent: HTTP status and original revision stay immutable, so a completed/compacted receipt cannot qualify as a new reserved acceptance receipt. Trigger consumption uses the already-locked Team/current intent and this transaction's own reserved receipt; it introduces no new user/family/Workspace/deployment lock acquisition ahead of them. Direct SQL still encounters the existing tenant guard first. Admission limits, timeouts, immutable slot caps and same-key replay allocation are unchanged.
+
+Only the new, unmerged migration was modified. Fresh disposable installations and upgrade from all eleven predecessors validate its final schema and checksums. No applied shared history is rewritten. Once deployed, future fixes require a new forward migration; rollback must retain the additive schema and invariants. Existing privilege/RLS/deployment limitations above remain.
+
+### F1 verification and performance
+
+Final counts, per-status distributions and plans are in [F1 verification](evidence/be-team-02/F1-verification.json), [within-budget measurements](evidence/be-team-02/F1-success-performance.json), [stress per-status measurements](evidence/be-team-02/F1-stress-performance.json) and [contention](evidence/be-team-02/F1-contention.json). Original performance/verification evidence is unchanged.
+
+The within-budget workload uses a fresh legitimate account/Workspace for each independent burst, without clearing admission keys. Directory workloads have 1,001 explicit joins and 120-character member names:50 requests at concurrency1/10/50, within60 reads/min/account. Management workloads use20 inert role requests at concurrency1/10, within20 management/min/account and60/min/Workspace. Inert requests still reserve durable receipts and exercise admission/serialization; they are not a certification of effectful transfer throughput. All outcomes are retained and successful200 percentiles are separate from409/412/429/503. No mutation retries, limit relaxation or timeout increase is used.
+
+Team Valkey admission is timed independently (excluding coarse admission, session resolution and primary authorization). Directory EXPLAIN execution is measured independently from HTTP/admission. PostgreSQL lock sampling uses actual ungranted `pg_locks.waitstart` joined to `pg_stat_activity` to report the longest observed pending wait and waiter/sample counts. Sampling at10ms can miss short waits and does not measure total cumulative wait duration, connection-pool queueing or all CPU time. A reported zero is not proof of no contention. Stress workloads retain separate per-status sample counts/percentiles; successful management sample sizes may be small because serialization/admission rejects many contenders.
+
+The directory latency objective remains unmet at concurrency50 even when all50 requests succeed within admission limits. Management sequential workload is measured against500ms; concurrent success-only latency and the substantial serialization conflict fraction must both be considered. Local finite bursts are not production capacity guarantees. Exact final measurements follow; no caching or unrelated refactoring is introduced.
+
+The first within-budget measurement assumed all concurrent inert management requests would succeed. Real PostgreSQL serialization produced documented409 outcomes, so the measurement now retains those outcomes separately and requires sequential success instead of claiming all concurrent requests succeed. The initial foundation truncate assertion expected the older guard's message; the new receipt FK rejects direct TRUNCATE first. The corrected test verifies that FK rejection and additionally verifies TRUNCATE CASCADE still reaches the immutable-receipt rejection. Both intermediate failures are reported rather than concealed.
+
+| Within-budget operation / concurrency | Successes / offered | Success p95 ms | Other statuses | Team admission p95 ms | Longest sampled PG lock wait ms | Objective |
+| --- | --- | --- | --- | --- | --- | --- |
+| directory / 1 | 50 / 50 | 126.19 | none | 4.22 | 0.00 | met for measured successes (250ms) |
+| directory / 10 | 50 / 50 | 367.58 | none | 8.77 | 0.00 | exceeded (250ms) |
+| directory / 50 | 50 / 50 | 1493.26 | none | 8.41 | 0.00 | exceeded (250ms) |
+| management / 1 | 20 / 20 | 63.89 | none | 0.67 | 0.00 | met for measured successes (500ms) |
+| management / 10 | 4 / 20 | 255.74 | 409: 16 | 3.57 | 51.17 | met for measured successes (500ms) |
+
+Independent directory SQL execution at concurrency1/10/50 datasets: 0.199ms, 0.178ms, 0.546ms. Directory objectives remain unmet at both10 and50 in the final run. Management concurrency10 has only4 successful samples of20; its success-only percentile does not establish reliable workload throughput. Sampling saw19 management lock-positive samples with up to4 waiters; directory waits below10ms could have been missed.
+
+| Final correction gate | Result |
+| --- | --- |
+| Backend lint, architecture/typecheck, API/worker build; Prisma generate/validate | PASS |
+| Backend unit | PASS:101 tests /265 assertions |
+| Real PostgreSQL/Valkey/HTTP management, consent and migration suite | PASS:35 tests /1,031 assertions |
+| Existing foundation (final standalone run) | PASS:33 tests /773 assertions |
+| Tenancy / auth fences / management contracts | PASS:35 /135,24 /134,1 /8 in combined run; original foundation failure corrected separately above |
+| Frontend lint/typecheck/build | PASS |
+| Frontend regression | 857 PASS /3 unchanged NEXUS failures across860 tests/60 files |
+| Eleven predecessor migration bytes, original evidence retention, changed-file scope, documentation links, whitespace | PASS |
+
+The original real Chromium compatibility evidence remains preserved; it was not rerun for this SQL-only correction. Other initial phase suites above are retained historical results, not claimed as newly executed correction gates. Final correction verification records the intermediate failed runs and their concrete resolutions. No frontend/backend route, rate limit, timeout, dependency or caching behavior is changed by this correction.

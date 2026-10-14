@@ -1,0 +1,391 @@
+{
+  "dataset": {
+    "explicitMembers": 1001,
+    "displayNameCharacters": 120
+  },
+  "measurements": [
+    {
+      "limit": 1,
+      "returned": 1,
+      "bytes": 805,
+      "elapsedMs": 46.599224999998114,
+      "memberSelectors": 1,
+      "observedStatementsIncludingModelsAndAuth": 52
+    },
+    {
+      "limit": 20,
+      "returned": 20,
+      "bytes": 6867,
+      "elapsedMs": 48.26724800000375,
+      "memberSelectors": 1,
+      "observedStatementsIncludingModelsAndAuth": 52
+    },
+    {
+      "limit": 100,
+      "returned": 100,
+      "bytes": 32388,
+      "elapsedMs": 48.843743000004906,
+      "memberSelectors": 1,
+      "observedStatementsIncludingModelsAndAuth": 52
+    }
+  ],
+  "projection": [
+    {
+      "QUERY PLAN": [
+        {
+          "Plan": {
+            "Node Type": "Limit",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 0.82,
+            "Total Cost": 26.82,
+            "Plan Rows": 1,
+            "Plan Width": 319,
+            "Actual Startup Time": 0.05,
+            "Actual Total Time": 0.319,
+            "Actual Rows": 101,
+            "Actual Loops": 1,
+            "Shared Hit Blocks": 611,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Nested Loop",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Join Type": "Inner",
+                "Startup Cost": 0.82,
+                "Total Cost": 26.82,
+                "Plan Rows": 1,
+                "Plan Width": 319,
+                "Actual Startup Time": 0.05,
+                "Actual Total Time": 0.311,
+                "Actual Rows": 101,
+                "Actual Loops": 1,
+                "Inner Unique": true,
+                "Shared Hit Blocks": 611,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Nested Loop",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Join Type": "Inner",
+                    "Startup Cost": 0.55,
+                    "Total Cost": 19.27,
+                    "Plan Rows": 1,
+                    "Plan Width": 68,
+                    "Actual Startup Time": 0.033,
+                    "Actual Total Time": 0.184,
+                    "Actual Rows": 101,
+                    "Actual Loops": 1,
+                    "Inner Unique": true,
+                    "Shared Hit Blocks": 308,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0,
+                    "Plans": [
+                      {
+                        "Node Type": "Index Scan",
+                        "Parent Relationship": "Outer",
+                        "Parallel Aware": false,
+                        "Async Capable": false,
+                        "Scan Direction": "Forward",
+                        "Index Name": "team_membership_directory_idx",
+                        "Relation Name": "team_memberships",
+                        "Alias": "tm",
+                        "Startup Cost": 0.28,
+                        "Total Cost": 8.3,
+                        "Plan Rows": 1,
+                        "Plan Width": 44,
+                        "Actual Startup Time": 0.021,
+                        "Actual Total Time": 0.036,
+                        "Actual Rows": 101,
+                        "Actual Loops": 1,
+                        "Index Cond": "((workspace_id = '463e9c45-f15b-40ac-980e-47c2d7d49a57'::uuid) AND (team_id = '58ab7665-ed5b-4064-ba7b-8a1b91615add'::uuid))",
+                        "Rows Removed by Index Recheck": 0,
+                        "Shared Hit Blocks": 5,
+                        "Shared Read Blocks": 0,
+                        "Shared Dirtied Blocks": 0,
+                        "Shared Written Blocks": 0,
+                        "Local Hit Blocks": 0,
+                        "Local Read Blocks": 0,
+                        "Local Dirtied Blocks": 0,
+                        "Local Written Blocks": 0,
+                        "Temp Read Blocks": 0,
+                        "Temp Written Blocks": 0
+                      },
+                      {
+                        "Node Type": "Index Scan",
+                        "Parent Relationship": "Inner",
+                        "Parallel Aware": false,
+                        "Async Capable": false,
+                        "Scan Direction": "Forward",
+                        "Index Name": "workspace_membership_inviter_binding",
+                        "Relation Name": "workspace_memberships",
+                        "Alias": "m",
+                        "Startup Cost": 0.28,
+                        "Total Cost": 8.29,
+                        "Plan Rows": 1,
+                        "Plan Width": 56,
+                        "Actual Startup Time": 0.001,
+                        "Actual Total Time": 0.001,
+                        "Actual Rows": 1,
+                        "Actual Loops": 101,
+                        "Index Cond": "((workspace_id = '463e9c45-f15b-40ac-980e-47c2d7d49a57'::uuid) AND (id = tm.membership_id))",
+                        "Rows Removed by Index Recheck": 0,
+                        "Shared Hit Blocks": 303,
+                        "Shared Read Blocks": 0,
+                        "Shared Dirtied Blocks": 0,
+                        "Shared Written Blocks": 0,
+                        "Local Hit Blocks": 0,
+                        "Local Read Blocks": 0,
+                        "Local Dirtied Blocks": 0,
+                        "Local Written Blocks": 0,
+                        "Temp Read Blocks": 0,
+                        "Temp Written Blocks": 0
+                      }
+                    ]
+                  },
+                  {
+                    "Node Type": "Index Scan",
+                    "Parent Relationship": "Inner",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Scan Direction": "Forward",
+                    "Index Name": "users_pkey",
+                    "Relation Name": "users",
+                    "Alias": "u",
+                    "Startup Cost": 0.27,
+                    "Total Cost": 7.49,
+                    "Plan Rows": 1,
+                    "Plan Width": 274,
+                    "Actual Startup Time": 0.001,
+                    "Actual Total Time": 0.001,
+                    "Actual Rows": 1,
+                    "Actual Loops": 101,
+                    "Index Cond": "(id = m.user_id)",
+                    "Rows Removed by Index Recheck": 0,
+                    "Shared Hit Blocks": 303,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 0,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 0.287,
+          "Triggers": [],
+          "Execution Time": 0.372
+        }
+      ]
+    }
+  ],
+  "loads": [
+    {
+      "byStatus": {
+        "200": {
+          "samples": 1,
+          "p50": 46.06850300000224,
+          "p95": 46.06850300000224,
+          "p99": 46.06850300000224
+        }
+      },
+      "operation": "directory",
+      "concurrency": 1,
+      "samples": 1,
+      "p50": 46.06850300000224,
+      "p95": 46.06850300000224,
+      "p99": 46.06850300000224,
+      "statuses": {
+        "200": 1
+      },
+      "objectiveMs": 250,
+      "withinObjective": true
+    },
+    {
+      "byStatus": {
+        "200": {
+          "samples": 10,
+          "p50": 214.8786770000006,
+          "p95": 238.65950399999565,
+          "p99": 238.65950399999565
+        }
+      },
+      "operation": "directory",
+      "concurrency": 10,
+      "samples": 10,
+      "p50": 214.8786770000006,
+      "p95": 238.65950399999565,
+      "p99": 238.65950399999565,
+      "statuses": {
+        "200": 10
+      },
+      "objectiveMs": 250,
+      "withinObjective": true
+    },
+    {
+      "byStatus": {
+        "200": {
+          "samples": 46,
+          "p50": 756.1908350000012,
+          "p95": 867.3152679999985,
+          "p99": 872.4111740000008
+        },
+        "429": {
+          "samples": 4,
+          "p50": 581.7994160000017,
+          "p95": 583.793488999996,
+          "p99": 583.793488999996
+        }
+      },
+      "operation": "directory",
+      "concurrency": 50,
+      "samples": 50,
+      "p50": 734.682335999998,
+      "p95": 867.3152679999985,
+      "p99": 872.4111740000008,
+      "statuses": {
+        "200": 46,
+        "429": 4
+      },
+      "objectiveMs": 250,
+      "withinObjective": false
+    },
+    {
+      "byStatus": {
+        "200": {
+          "samples": 1,
+          "p50": 58.21929799999634,
+          "p95": 58.21929799999634,
+          "p99": 58.21929799999634
+        }
+      },
+      "operation": "management",
+      "concurrency": 1,
+      "samples": 1,
+      "p50": 58.21929799999634,
+      "p95": 58.21929799999634,
+      "p99": 58.21929799999634,
+      "statuses": {
+        "200": 1
+      },
+      "objectiveMs": 500,
+      "withinObjective": true
+    },
+    {
+      "byStatus": {
+        "200": {
+          "samples": 1,
+          "p50": 127.74977900000522,
+          "p95": 127.74977900000522,
+          "p99": 127.74977900000522
+        },
+        "409": {
+          "samples": 4,
+          "p50": 136.04266199999984,
+          "p95": 143.83436600000277,
+          "p99": 143.83436600000277
+        },
+        "412": {
+          "samples": 5,
+          "p50": 165.38302499999554,
+          "p95": 178.53464099999837,
+          "p99": 178.53464099999837
+        }
+      },
+      "operation": "management",
+      "concurrency": 10,
+      "samples": 10,
+      "p50": 143.83436600000277,
+      "p95": 178.53464099999837,
+      "p99": 178.53464099999837,
+      "statuses": {
+        "200": 1,
+        "409": 4,
+        "412": 5
+      },
+      "objectiveMs": 500,
+      "withinObjective": true
+    },
+    {
+      "byStatus": {
+        "200": {
+          "samples": 2,
+          "p50": 397.97088700000313,
+          "p95": 457.29335499999434,
+          "p99": 457.29335499999434
+        },
+        "409": {
+          "samples": 7,
+          "p50": 433.12780999999814,
+          "p95": 463.4362809999948,
+          "p99": 463.4362809999948
+        },
+        "429": {
+          "samples": 41,
+          "p50": 299.8000580000007,
+          "p95": 365.86757399999624,
+          "p99": 377.0207739999969
+        }
+      },
+      "operation": "management",
+      "concurrency": 50,
+      "samples": 50,
+      "p50": 316.77316599999904,
+      "p95": 459.82315099999687,
+      "p99": 463.4362809999948,
+      "statuses": {
+        "200": 2,
+        "409": 7,
+        "429": 41
+      },
+      "objectiveMs": 500,
+      "withinObjective": true
+    }
+  ],
+  "deadlines": "unchanged2s/5s/1.5s/4s; budgets unchanged",
+  "limitations": "Local loopback CPU/DB/cache. Declared concurrency includes real admission and CAS/serialization errors; no throughput/capacity certification or inference from rejected requests. Percentiles at concurrency1 are one observation, not a robust distribution; objectives un-certified."
+}
