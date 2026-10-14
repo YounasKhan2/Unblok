@@ -153,4 +153,4 @@ Explicitly authorized merge of [PR #38](https://github.com/YounasKhan2/Unblok/pu
 
 ## BE-TEAM-01 architecture proposal — 2026-10-14
 
-[Team proposal](27-BE-TEAM-01-ARCHITECTURE-PROPOSAL.md) prepared from merged FE-WS-02 main. Private Team access requires explicit membership; Workspace ADMIN has no existing-Team bypass. Ownership/delegation, consent/privacy, recovery, metadata and limits remain proposed decisions requiring human approval. No Team implementation or schema change.
+[Team proposal](27-BE-TEAM-01-ARCHITECTURE-PROPOSAL.md) prepared from merged FE-WS-02 main. Private Team access requires explicit membership; Workspace ADMIN has no existing-Team bypass. Security/product defaults are approved: BE-TEAM-01 is atomic foundation/create/private list/detail/metadata only; BE-TEAM-02 retains management/transfer/archive/restore with separately approved orphan recovery. Numeric limits and corrected acceptance matrix await final review. No Team implementation or schema change.
