@@ -1,3 +1,4 @@
+import type { Teams } from './modules/teams';
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
@@ -11,10 +12,11 @@ import type { Sessions } from './modules/sessions';
 import type { Authentication } from './modules/auth';
 import type { Workspaces } from './modules/workspaces';
 
-export async function createApp(config: ApiConfig, resources: Resources, limiter: RateLimiter, logger: Logger, sessions?: Sessions, authentication?: Authentication, workspaces?: Workspaces) {
+export async function createApp(config: ApiConfig, resources: Resources, limiter: RateLimiter, logger: Logger, sessions?: Sessions, authentication?: Authentication, workspaces?: Workspaces, teams?: Teams) {
   if (authentication && !sessions) throw new Error('Authentication requires session infrastructure');
+  if (teams && !sessions) throw new Error('Teams require session infrastructure');
   if (workspaces && !sessions) throw new Error('Workspaces require session infrastructure');
-  const app = await NestFactory.create<NestExpressApplication>(AppModule.register(resources, authentication, workspaces), {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule.register(resources, authentication, workspaces, teams), {
     logger: false, bodyParser: false, abortOnError: false,
   });
   app.disable('x-powered-by');
@@ -33,6 +35,7 @@ export async function createApp(config: ApiConfig, resources: Resources, limiter
   app.use(bodyBoundary(config));
   const workspaceJson = express.json({ limit: 2048, strict: true, inflate: false });
   app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (/^\/api\/v1\/workspaces\/[^/]+\/teams(?:\/[^/]+)?$/.test(req.path) && ['POST','PATCH'].includes(req.method)) { express.json({ limit: 32768, strict:true, inflate:false })(req,res,next); return; }
     if ((req.path === '/api/v1/workspaces' || req.path.startsWith('/api/v1/workspaces/') || req.path.startsWith('/api/v1/workspace-invitations/')) && req.method === 'POST') { workspaceJson(req, res, next); return; }
     if (req.method === 'GET' && (req.path === '/api/v1/workspaces' || req.path.startsWith('/api/v1/workspaces/')) &&
       (Number(req.get('content-length') ?? '0') > 0 || req.get('transfer-encoding') !== undefined)) {

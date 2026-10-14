@@ -1,0 +1,225 @@
+{
+  "dataset": {
+    "visibleTeams": 105
+  },
+  "measurements": [
+    {
+      "totalObservedSelectsIncludingAuth": 38,
+      "limit": 1,
+      "returned": 1,
+      "bytes": 2932,
+      "elapsedMs": 144.38,
+      "teamSelects": 1
+    },
+    {
+      "totalObservedSelectsIncludingAuth": 38,
+      "limit": 100,
+      "returned": 52,
+      "bytes": 125275,
+      "elapsedMs": 234.01,
+      "teamSelects": 1
+    }
+  ],
+  "plan": [
+    {
+      "QUERY PLAN": [
+        {
+          "Plan": {
+            "Node Type": "Limit",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 12.83,
+            "Total Cost": 13.03,
+            "Plan Rows": 81,
+            "Plan Width": 132,
+            "Actual Startup Time": 0.176,
+            "Actual Total Time": 0.187,
+            "Actual Rows": 101,
+            "Actual Loops": 1,
+            "Shared Hit Blocks": 5,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0,
+            "Plans": [
+              {
+                "Node Type": "Sort",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Startup Cost": 12.83,
+                "Total Cost": 13.03,
+                "Plan Rows": 81,
+                "Plan Width": 132,
+                "Actual Startup Time": 0.175,
+                "Actual Total Time": 0.18,
+                "Actual Rows": 101,
+                "Actual Loops": 1,
+                "Sort Key": [
+                  "t.created_at",
+                  "t.id"
+                ],
+                "Sort Method": "quicksort",
+                "Sort Space Used": 52,
+                "Sort Space Type": "Memory",
+                "Shared Hit Blocks": 5,
+                "Shared Read Blocks": 0,
+                "Shared Dirtied Blocks": 0,
+                "Shared Written Blocks": 0,
+                "Local Hit Blocks": 0,
+                "Local Read Blocks": 0,
+                "Local Dirtied Blocks": 0,
+                "Local Written Blocks": 0,
+                "Temp Read Blocks": 0,
+                "Temp Written Blocks": 0,
+                "Plans": [
+                  {
+                    "Node Type": "Hash Join",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Join Type": "Inner",
+                    "Startup Cost": 5.03,
+                    "Total Cost": 10.26,
+                    "Plan Rows": 81,
+                    "Plan Width": 132,
+                    "Actual Startup Time": 0.061,
+                    "Actual Total Time": 0.095,
+                    "Actual Rows": 105,
+                    "Actual Loops": 1,
+                    "Inner Unique": true,
+                    "Hash Cond": "(t.id = tm.team_id)",
+                    "Shared Hit Blocks": 5,
+                    "Shared Read Blocks": 0,
+                    "Shared Dirtied Blocks": 0,
+                    "Shared Written Blocks": 0,
+                    "Local Hit Blocks": 0,
+                    "Local Read Blocks": 0,
+                    "Local Dirtied Blocks": 0,
+                    "Local Written Blocks": 0,
+                    "Temp Read Blocks": 0,
+                    "Temp Written Blocks": 0,
+                    "Plans": [
+                      {
+                        "Node Type": "Seq Scan",
+                        "Parent Relationship": "Outer",
+                        "Parallel Aware": false,
+                        "Async Capable": false,
+                        "Relation Name": "teams",
+                        "Alias": "t",
+                        "Startup Cost": 0,
+                        "Total Cost": 4.95,
+                        "Plan Rows": 103,
+                        "Plan Width": 132,
+                        "Actual Startup Time": 0.01,
+                        "Actual Total Time": 0.028,
+                        "Actual Rows": 105,
+                        "Actual Loops": 1,
+                        "Filter": "((NOT legacy_quarantined) AND (workspace_id = '598ea3ce-0859-4fff-81a2-570b7df43fbe'::uuid) AND (status = 'ACTIVE'::\"RecordStatus\"))",
+                        "Rows Removed by Filter": 25,
+                        "Shared Hit Blocks": 3,
+                        "Shared Read Blocks": 0,
+                        "Shared Dirtied Blocks": 0,
+                        "Shared Written Blocks": 0,
+                        "Local Hit Blocks": 0,
+                        "Local Read Blocks": 0,
+                        "Local Dirtied Blocks": 0,
+                        "Local Written Blocks": 0,
+                        "Temp Read Blocks": 0,
+                        "Temp Written Blocks": 0
+                      },
+                      {
+                        "Node Type": "Hash",
+                        "Parent Relationship": "Inner",
+                        "Parallel Aware": false,
+                        "Async Capable": false,
+                        "Startup Cost": 4,
+                        "Total Cost": 4,
+                        "Plan Rows": 83,
+                        "Plan Width": 32,
+                        "Actual Startup Time": 0.041,
+                        "Actual Total Time": 0.042,
+                        "Actual Rows": 105,
+                        "Actual Loops": 1,
+                        "Hash Buckets": 1024,
+                        "Original Hash Buckets": 1024,
+                        "Hash Batches": 1,
+                        "Original Hash Batches": 1,
+                        "Peak Memory Usage": 15,
+                        "Shared Hit Blocks": 2,
+                        "Shared Read Blocks": 0,
+                        "Shared Dirtied Blocks": 0,
+                        "Shared Written Blocks": 0,
+                        "Local Hit Blocks": 0,
+                        "Local Read Blocks": 0,
+                        "Local Dirtied Blocks": 0,
+                        "Local Written Blocks": 0,
+                        "Temp Read Blocks": 0,
+                        "Temp Written Blocks": 0,
+                        "Plans": [
+                          {
+                            "Node Type": "Seq Scan",
+                            "Parent Relationship": "Outer",
+                            "Parallel Aware": false,
+                            "Async Capable": false,
+                            "Relation Name": "team_memberships",
+                            "Alias": "tm",
+                            "Startup Cost": 0,
+                            "Total Cost": 4,
+                            "Plan Rows": 83,
+                            "Plan Width": 32,
+                            "Actual Startup Time": 0.011,
+                            "Actual Total Time": 0.02,
+                            "Actual Rows": 105,
+                            "Actual Loops": 1,
+                            "Filter": "((workspace_id = '598ea3ce-0859-4fff-81a2-570b7df43fbe'::uuid) AND (membership_id = '3cfe748b-201c-44ad-a0a9-26e0c6bcf959'::uuid))",
+                            "Rows Removed by Filter": 28,
+                            "Shared Hit Blocks": 2,
+                            "Shared Read Blocks": 0,
+                            "Shared Dirtied Blocks": 0,
+                            "Shared Written Blocks": 0,
+                            "Local Hit Blocks": 0,
+                            "Local Read Blocks": 0,
+                            "Local Dirtied Blocks": 0,
+                            "Local Written Blocks": 0,
+                            "Temp Read Blocks": 0,
+                            "Temp Written Blocks": 0
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "Planning": {
+            "Shared Hit Blocks": 122,
+            "Shared Read Blocks": 0,
+            "Shared Dirtied Blocks": 0,
+            "Shared Written Blocks": 0,
+            "Local Hit Blocks": 0,
+            "Local Read Blocks": 0,
+            "Local Dirtied Blocks": 0,
+            "Local Written Blocks": 0,
+            "Temp Read Blocks": 0,
+            "Temp Written Blocks": 0
+          },
+          "Planning Time": 1.271,
+          "Triggers": [],
+          "Execution Time": 0.244
+        }
+      ]
+    }
+  ],
+  "limits": {
+    "candidateLimit": 101,
+    "responseBytes": 131072
+  },
+  "limitations": "Owned local dataset only; no enterprise capacity, deployment throughput or stable timing claim."
+}

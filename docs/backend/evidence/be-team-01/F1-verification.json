@@ -1,0 +1,130 @@
+{
+  "reviewedHead": "4168de9b6141a1947de7e85a76cab1d12700ba15",
+  "finding": "F1: trigger depth is not authorization",
+  "design": "Immutable bounded UNIQUE deployment/Workspace receipt slots; advisory admission after Workspace; read-only aggregate UNION budget view. No writable counters or depth-based authorization. CHECK/UNIQUE cap cardinality unconditionally.",
+  "results": [
+    {
+      "command": "bun run typecheck:backend",
+      "status": "passed"
+    },
+    {
+      "command": "bun run lint:backend",
+      "status": "passed"
+    },
+    {
+      "command": "bun run build:backend",
+      "status": "passed"
+    },
+    {
+      "command": "bun run test:backend",
+      "status": "passed",
+      "passed": 101,
+      "failed": 0,
+      "assertions": 265
+    },
+    {
+      "command": "bun run test:backend:teams",
+      "status": "passed",
+      "passed": 33,
+      "failed": 0,
+      "assertions": 772
+    },
+    {
+      "command": "bun run test:backend:tenancy",
+      "status": "passed",
+      "passed": 34,
+      "failed": 0,
+      "assertions": 132
+    },
+    {
+      "command": "bun --env-file=apps/api/.env test apps/api/verification/workspace-integration.test.ts",
+      "status": "passed",
+      "passed": 29,
+      "failed": 0,
+      "assertions": 671
+    },
+    {
+      "command": "bun run test:backend:auth-fences",
+      "status": "passed",
+      "passed": 24,
+      "failed": 0,
+      "assertions": 134
+    },
+    {
+      "command": "bun run test:backend:authentication",
+      "status": "passed",
+      "passed": 26,
+      "failed": 0,
+      "assertions": 827
+    },
+    {
+      "command": "BE00H_OPENSSL=/usr/bin/openssl bun run test:backend:sessions",
+      "status": "passed",
+      "passed": 31,
+      "failed": 0,
+      "assertions": 473
+    },
+    {
+      "command": "bun test scripts/backend/team-contracts.test.ts scripts/backend/workspace-contracts.test.ts scripts/backend/workspace-invitation-contracts.test.ts",
+      "status": "passed",
+      "passed": 3,
+      "failed": 0,
+      "assertions": 31
+    },
+    {
+      "command": "Prisma generation / validation",
+      "status": "passed"
+    }
+  ],
+  "migrationChecks": {
+    "fresh11DeployStatusReplayDiff": "passed",
+    "originalTenUpgradeDataChecksumsTimestamps": "passed",
+    "originalTwoUpgradeRegression": "passed",
+    "firstTenMigrationFilesUnchanged": true,
+    "selectedDatabaseTeamMigrationApplied": false,
+    "selectedDatabaseModified": false,
+    "onlyNewUnmergedTeamMigrationAmended": true,
+    "externalAppliedReviewedEleventhChecksum": "Separate reviewed forward repair required; never silent checksum rewrite/reset"
+  },
+  "securityEvidence": [
+    "direct budget reset/increment/insert/delete rejected",
+    "two-level nested-trigger writes fail specifically on non-updatable view",
+    "slot reassignment fails immutable receipt binding",
+    "caller slots overridden by allocator",
+    "slot allocation observed before explicit rollback and division-by-zero; no occupied slot or gap remains",
+    "cross-Workspace advisory wait followed by distinct slots/fresh reconciliation",
+    "both caps populated with real retained tombstones; authorized same-key replay still succeeds",
+    "global/scoped MAX allocation uses unique indexes",
+    "direct receipt TRUNCATE rejected by statement-level guard; immutable tombstones cannot be removed to reset derived occupancy"
+  ],
+  "earlierCorrectionObservations": [
+    "Initial30-test replacement run passed704 assertions",
+    "First expanded test source had escaped backticks and failed to parse; no executed test claimed passing",
+    "Expanded33 passed765 assertions; allocation-plan assertions33/767; stronger nested-error/allocated-before-rollback assertions final33/771",
+    "Initial link scan ran before writing this self-referenced report and failed; corrected ordering and final link checks recorded below",
+    "Stronger33/771 run passed; final TRUNCATE regression and guard33/772 passed"
+  ],
+  "limitations": [
+    "Cross-Workspace advisory allocation serializes new receipts; no enterprise contention certification",
+    "Stale SERIALIZABLE snapshots may cause unique/serialization rollback; explicit fresh reconciliation, no automatic mutation retry",
+    "View informational and not public; direct SQL persistence is not HTTP authority",
+    "DDL-owning administrators can alter constraints/triggers; production runtime must lack ownership/DDL",
+    "Externally applied reviewed Team checksum needs separately reviewed forward repair",
+    "No purge/cap increase or BE-TEAM-02 endpoints",
+    "Worker SIGTERM143, three NEXUS failures, existing advisory and historical timing issues remain; untouched frontend/infra/lifecycle/audit gates not recertified"
+  ],
+  "designValidator": {
+    "operations": 21,
+    "schemas": 55,
+    "examples": 27,
+    "negativeChecks": 26,
+    "lifecycleScenarios": 32,
+    "localLinks": 24,
+    "status": "passed",
+    "limitations": "Scoped schema/design-model validation only; no OpenAPI/runtime/crypto/SQL/load certification"
+  },
+  "changedDocumentationLinks": {
+    "checked": 8,
+    "missing": 0
+  }
+}

@@ -49,7 +49,11 @@ async function fixture(target = database, authenticate = true) {
     await tx.workspaceMembership.create({ data: { workspaceId: a, id: member, userId: actor, role: 'MEMBER', status: 'ACTIVE' } });
     await tx.workspaceMembership.create({ data: { workspaceId: b, id: member, userId: userB, role: 'ADMIN', status: 'ACTIVE' } });
     for (const workspaceId of [a, b]) {
-      await tx.team.create({ data: { workspaceId, id: team, key: 'ENG', name: 'Engineering' } });
+      const installed = await tx.$queryRaw<{ present: boolean }[]>`SELECT EXISTS(SELECT 1 FROM information_schema.columns WHERE table_name='teams' AND column_name='owner_membership_id') AS present`;
+      if (installed[0]?.present) {
+        await tx.team.create({ data: { workspaceId, ownerMembershipId: workspaceId === a ? owner : member, id: team, key: 'ENG', name: 'Engineering' } });
+        if (workspaceId === a) await tx.teamMembership.create({data:{workspaceId,teamId:team,membershipId:owner}});
+      } else await tx.$executeRaw`INSERT INTO teams(workspace_id,id,key,name) VALUES(${workspaceId}::uuid,${team}::uuid,'ENG','Engineering')`;
       await tx.teamMembership.create({ data: { workspaceId, teamId: team, membershipId: member } });
       await tx.project.create({ data: { workspaceId, id: project, teamId: team, key: 'APP', name: 'Application', currentSequence: 1 } });
       await tx.issue.create({ data: { workspaceId, id: issue, projectId: project, sequence: 1, title: workspaceId === a ? 'Tenant A' : 'Tenant B', creatorMembershipId: member } });
@@ -70,7 +74,7 @@ describe('fresh additive migrations and canonical constraints', () => {
     expect(diff).toContain('No difference');
     expect(await database.ready()).toBe(true);
     const applied = await database.client.$queryRaw<{ migration_name: string }[]>`SELECT migration_name FROM _prisma_migrations WHERE finished_at IS NOT NULL ORDER BY migration_name`;
-    expect(applied.map(row => row.migration_name)).toEqual(['20261010000000_foundation', '20261010010000_domain_tenancy', '20261010020000_guard_corrections', '20261010030000_auth_revocation_fences', '20261010040000_password_credentials', '20261010050000_credential_email_ownership', '20261010060000_email_verification', '20261011000000_password_recovery', '20261012000000_workspace_foundation', '20261013000000_workspace_memberships_invitations']);
+    expect(applied.map(row => row.migration_name)).toEqual(['20261010000000_foundation', '20261010010000_domain_tenancy', '20261010020000_guard_corrections', '20261010030000_auth_revocation_fences', '20261010040000_password_credentials', '20261010050000_credential_email_ownership', '20261010060000_email_verification', '20261011000000_password_recovery', '20261012000000_workspace_foundation', '20261013000000_workspace_memberships_invitations', '20261014000000_team_foundation']);
   });
   test('identity keys are unique; users have no global role and email is not an authentication key', async () => {
     const f = await fixture();
@@ -96,7 +100,7 @@ describe('fresh additive migrations and canonical constraints', () => {
   });
   test('cross-workspace project/team, issue/project, and issue/membership references fail', async () => {
     const f = await fixture(); const teamB = randomUUID(), projectB = randomUUID();
-    await database.client.team.create({ data: { workspaceId: f.b, id: teamB, key: 'OPS', name: 'Operations' } });
+    await database.transaction(async tx=>{await tx.team.create({data:{workspaceId:f.b,ownerMembershipId:f.member,id:teamB,key:'OPS',name:'Operations'}});await tx.teamMembership.create({data:{workspaceId:f.b,teamId:teamB,membershipId:f.member}});});
     await database.client.project.create({ data: { workspaceId: f.b, id: projectB, teamId: teamB, key: 'OPS', name: 'Operations' } });
     await expect(Promise.resolve(database.client.project.create({ data: { workspaceId: f.a, teamId: teamB, key: 'NEW', name: 'Foreign owner' } }))).rejects.toThrow();
     await expect(Promise.resolve(database.client.teamMembership.create({ data: { workspaceId: f.a, teamId: teamB, membershipId: f.member } }))).rejects.toThrow();
@@ -328,7 +332,7 @@ describe('PR24 PostgreSQL guard regressions', () => {
       await prisma(['migrate', 'deploy', '--schema', 'packages/database/prisma/schema.prisma'], upgradeUrl.toString());
       const after = await upgrade.client.$queryRaw<typeof history>`SELECT migration_name, checksum, finished_at FROM _prisma_migrations ORDER BY migration_name`;
       expect(after.slice(0, 2)).toEqual(history);
-      expect(after).toHaveLength(10);
+      expect(after).toHaveLength(11);
       expect(await upgrade.client.passwordCredential.count()).toBe(0); // No implicit credential/contact-email migration.
       expect((await upgrade.client.user.findUniqueOrThrow({ where: { id: f.actor } })).authEpoch).toBe(1n);
       expect(await upgrade.client.authSessionFamily.count()).toBe(0);
@@ -345,22 +349,24 @@ describe('PR24 PostgreSQL guard regressions', () => {
   }, 60000);
 
   for (const archived of [false, true]) {
-    test(`all five tenant-guarded DELETE operations ${archived ? 'reject archived workspaces' : 'permit unreferenced records in active workspaces'}`, async () => {
+    test(`all five tenant-guarded DELETE operations ${archived ? 'reject archived workspaces' : 'permit unreferenced nonowner records and restrict owned Team graphs'}`, async () => {
       const f = await fixture();
       const user = await database.client.user.create({ data: { name: 'Deletable member' } });
       const membership = await database.client.workspaceMembership.create({ data: { workspaceId: f.a, userId: user.id, role: 'MEMBER' } });
-      const team = await database.client.team.create({ data: { workspaceId: f.a, key: 'OPS', name: 'Operations' } });
+      const team = await database.transaction(async tx=>{const t=await tx.team.create({data:{workspaceId:f.a,ownerMembershipId:f.owner,key:'OPS',name:'Operations'}});await tx.teamMembership.create({data:{workspaceId:f.a,teamId:t.id,membershipId:f.owner}});return t;});
       const project = await database.client.project.create({ data: { workspaceId: f.a, teamId: f.team, key: 'OPS', name: 'Empty project' } });
       if (archived) await database.client.workspace.update({ where: { id: f.a }, data: { status: 'ARCHIVED' } });
       const deletes = [
         () => database.client.issue.delete({ where: { workspaceId_id: { workspaceId: f.a, id: f.issue } } }),
         () => database.client.teamMembership.delete({ where: { workspaceId_teamId_membershipId: { workspaceId: f.a, teamId: f.team, membershipId: f.member } } }),
         () => database.client.project.delete({ where: { workspaceId_id: { workspaceId: f.a, id: project.id } } }),
-        () => database.client.team.delete({ where: { workspaceId_id: { workspaceId: f.a, id: team.id } } }),
+        () => database.client.team.delete({where:{workspaceId_id:{workspaceId:f.a,id:team.id}}}),
         () => database.client.workspaceMembership.delete({ where: { workspaceId_id: { workspaceId: f.a, id: membership.id } } }),
       ];
       for (const remove of deletes) {
         if (archived) await expect(Promise.resolve(remove())).rejects.toThrow('Workspace unavailable for mutation');
+        // An owned Team has a restrictive owner/join graph; purge is not granted.
+        else if(remove === deletes[3]) await expect(Promise.resolve(remove())).rejects.toThrow();
         else expect((await remove()).workspaceId).toBe(f.a);
       }
       expect(await database.client.issue.count({ where: { workspaceId: f.a } })).toBe(archived ? 1 : 0);

@@ -54,7 +54,7 @@
 
 **FE-AUTH-01 F4 correction:** Reviewed `cab718ea77ab2ddf943f959feb483e307cd25f87`; narrow session-boundary changes durably retire the signed predecessor before fresh anonymous CSRF state. Same-context Chromium reset/relogin passes without deleting cookies or replacing its context. Request-bound principals, transaction fences and CSRF/cookie protections remain enforced. Frontend production, NEXUS, dependencies and migrations are unchanged. The frontend F4 report/evidence preserves successful and failed observations and deployment limitations. This supersedes the local retained-cookie blocker; PR #33 subsequently merged as recorded in the handoff.
 
-**Next action:** Review a BE-TEAM-01 architecture and authorization proposal before any Team implementation. PR #38 is merged; there is no remaining FE-WS-02 merge decision. Product ownership/delegation/privacy decisions must be approved explicitly. Production and historical verification risks remain open.
+**Next action:** Human review of BE-TEAM-01 four-route implementation and recorded verification. Architecture PR #39 is merged at `d4b958c74d7383cd269e693745738b3534cd44af`; Team implementation is on its review branch only. No BE-TEAM-02 or implementation-PR merge is authorized.
 
 ## 3. Remaining production backend capabilities
 
@@ -62,7 +62,7 @@
 | --- | --- | --- |
 | Authentication and sessions | Authentication/session fences, credential APIs, verification/recovery and FE-AUTH-01 merged and locally verified; OAuth/MFA and broader lifecycle/deployment remain deferred | Critical |
 | Workspace foundation / invitations | BE-WS-01/FE-WS-01 and BE-WS-02/FE-WS-02 merged; role/removal/suspension and Workspace lifecycle management APIs absent; not deployed | Critical |
-| Team and project APIs | Schema exists; business APIs missing | Critical |
+| Team and project APIs | BE-TEAM-01 private list/detail/create/metadata implemented for review only; Team management/transfer/lifecycle and Project APIs missing | Critical |
 | Issues CRUD/search/filtering | Bounded scoped persistence primitives exist; business APIs missing | Critical |
 | Dependency graph APIs and cycle-safe writes | Database dependency-write gate active; DAG service missing | Critical |
 | Fine-grained permissions | Deny-by-default policy boundary only; approved action grants missing | Critical |
@@ -154,3 +154,7 @@ Explicitly authorized merge of [PR #38](https://github.com/YounasKhan2/Unblok/pu
 ## BE-TEAM-01 architecture proposal — 2026-10-14
 
 [Team proposal](27-BE-TEAM-01-ARCHITECTURE-PROPOSAL.md) prepared from merged FE-WS-02 main. Private Team access requires explicit membership; Workspace ADMIN has no existing-Team bypass. Security/product defaults are approved: BE-TEAM-01 is atomic foundation/create/private list/detail/metadata only; BE-TEAM-02 retains management/transfer/archive/restore with separately approved orphan recovery. Numeric limits and corrected acceptance matrix await final review. No Team implementation or schema change.
+
+## BE-TEAM-01 implementation review — 2026-10-14
+
+Architecture PR #39 merged at `d4b958c74d7383cd269e693745738b3534cd44af` after confirming reviewed HEAD `dbc7a0db6b8972f887521a8ffe8008f85249aa6d` and docs-only scope. Four Team foundation routes implemented on `feat/be-team-01-foundation`, not merged/deployed. [Report](28-BE-TEAM-01-FOUNDATION.md) and [verification](evidence/BE-TEAM-01-verification.json) cover explicit private membership/ownership, legacy quarantine, additive eleventh migration, bounded CAS/receipts/cursors/rates, real SQL/HTTP/concurrency and query plans. Historical NEXUS/queue/shutdown/advisory/timing findings remain; no BE-TEAM-02 or frontend Team work. Stop for human implementation review.

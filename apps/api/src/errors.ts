@@ -8,6 +8,7 @@ const errors: Record<number, [string, string]> = {
   400: ['INVALID_REQUEST', 'Invalid request'], 401: ['UNAUTHENTICATED', 'Authentication required'],
   403: ['FORBIDDEN', 'Request forbidden'], 404: ['NOT_FOUND', 'Resource not found'],
   405: ['METHOD_NOT_ALLOWED', 'Method not allowed'], 409: ['CONFLICT', 'Request conflict'],
+  412: ['PRECONDITION_FAILED', 'Precondition failed'], 428: ['PRECONDITION_REQUIRED', 'Precondition required'],
   413: ['PAYLOAD_TOO_LARGE', 'Request body too large'], 415: ['UNSUPPORTED_MEDIA_TYPE', 'Unsupported media type'],
   429: ['RATE_LIMITED', 'Too many requests'], 503: ['NOT_READY', 'Service unavailable'],
 };

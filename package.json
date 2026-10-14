@@ -37,6 +37,7 @@
     "test:backend:password-recovery": "bun --env-file=apps/api/.env test scripts/backend/password-recovery.test.ts",
     "test:backend:email-verification": "bun --env-file=apps/api/.env test scripts/backend/email-verification.test.ts",
     "test:backend:workspace-invitations": "bun --env-file=apps/api/.env test scripts/backend/workspace-memberships-invitations.test.ts",
+    "test:backend:teams": "bun --env-file=apps/api/.env test scripts/backend/teams.test.ts",
     "test:backend:authentication": "bun --env-file=apps/api/.env test apps/api/verification/authentication-integration.test.ts"
   },
   "packageManager": "bun@1.4.2",

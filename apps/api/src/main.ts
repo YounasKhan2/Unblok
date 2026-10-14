@@ -1,3 +1,4 @@
+import { Teams, TeamLimits } from './modules/teams';
 import { PasswordRecovery, AccountCredentials, AuthFences, Database, Tenancy, denyAll } from '@unblok/database';
 import { loadInvitationKey, loadRecoveryKey, loadVerificationKey, closeRedis, createLogger, createRedis, loadApiConfig, registerShutdown, withDeadline } from '@unblok/backend-runtime';
 import { createApp } from './app';
@@ -39,7 +40,7 @@ async function main() {
     const workspaceKeys = independent && previousConfigured && cursorKey && process.env.WORKSPACE_IDEMPOTENCY_KEY ? { active: activeId, cursors: { [activeId]: cursorKey, ...(process.env.WORKSPACE_CURSOR_PREVIOUS_KEY && previousId ? { [previousId]: process.env.WORKSPACE_CURSOR_PREVIOUS_KEY } : {}) }, idempotency: process.env.WORKSPACE_IDEMPOTENCY_KEY } : undefined;
     const tenancy = new Tenancy(database, { verify: async () => null }, denyAll, sessions, loadVerificationKey(process.env), workspaceKeys, (process.env.WORKSPACE_INVITATION_KEY || process.env.WORKSPACE_INVITATION_KEY_ID) ? loadInvitationKey(process.env) : undefined);
     sessions.bind(tenancy); authentication.bind(sessions, tenancy);
-    const server = await createApp(config, resources, new RedisRateLimiter(redis, config.RATE_LIMIT_MAX, config.RATE_LIMIT_WINDOW_MS), logger, sessions, authentication, new Workspaces(sessions, tenancy, new WorkspaceLimits(redis, settings.secrets[0]!, settings.prefix), new InvitationLimits(redis, settings.secrets[0]!, settings.prefix)));
+    const server = await createApp(config, resources, new RedisRateLimiter(redis, config.RATE_LIMIT_MAX, config.RATE_LIMIT_WINDOW_MS), logger, sessions, authentication, new Workspaces(sessions, tenancy, new WorkspaceLimits(redis, settings.secrets[0]!, settings.prefix), new InvitationLimits(redis, settings.secrets[0]!, settings.prefix)), new Teams(sessions, tenancy, new TeamLimits(redis, settings.secrets[0]!, settings.prefix)));
     registerShutdown(server.close, config.SHUTDOWN_TIMEOUT_MS, logger);
     await server.app.listen(config.API_PORT, config.API_HOST);
     logger.info({ event: 'api_started', port: config.API_PORT });
