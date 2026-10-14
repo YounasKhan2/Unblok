@@ -31,7 +31,8 @@ export function LiveWorkspacePage(){
     <div className="space-y-4 text-sm">{selecting&&<p role="status">Opening workspace…</p>}{contextError&&<p role="alert" className="text-danger">{contextError}</p>}
       {current&&<><p className="text-text-secondary">{current.self.role==='ADMIN'?'Administrator':current.self.role==='MEMBER'?'Member':'Observer'}{current.workspace.status==='ARCHIVED'?' · Archived':''}</p>
         {current.self.role==='ADMIN'&&current.self.membershipStatus==='ACTIVE'&&<Link className="block text-accent" to={'/workspaces/'+current.workspace.id+'/members'}>View members</Link>}
-        <section aria-label="Empty workspace" className="rounded-lg border border-border p-4 space-y-2"><h2 className="font-semibold">Your workspace is ready</h2><p className="text-text-secondary">Teams, projects and issues are not connected yet. This workspace contains no demo data.</p></section></>}
+        <Link className="block text-accent" to={'/workspaces/'+current.workspace.id+'/teams'}>View Teams</Link>
+        <section aria-label="Empty workspace" className="rounded-lg border border-border p-4 space-y-2"><h2 className="font-semibold">Your workspace is ready</h2><p className="text-text-secondary">Projects and issues are not connected yet. Teams are available through the Team directory. This workspace contains no demo data.</p></section></>}
       {workspaceId&&<Button size="sm" disabled={selecting} onClick={()=>void store.select(workspaceId)}>Check workspace access</Button>}
       <WorkspacePicker/><Link to="/account" className="block text-accent">Your account</Link>
     </div>
