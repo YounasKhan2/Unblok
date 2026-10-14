@@ -400,6 +400,8 @@ model WorkspaceInvitationResult {
 }
 
 model TeamMutationResult {
+  deploymentSlot Int @default(0) @unique(map: "team_receipt_deployment_slot_key") @map("deployment_slot")
+  workspaceSlot Int @default(0) @map("workspace_slot")
   id String @id @default(uuid()) @db.Uuid
   workspaceId String @map("workspace_id") @db.Uuid
   actorId String @map("actor_id") @db.Uuid
@@ -413,10 +415,6 @@ model TeamMutationResult {
   team Team @relation(fields: [workspaceId, teamId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
   actor User @relation(fields: [actorId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   @@unique([actorId, workspaceId, operation, requestKey])
+  @@unique([workspaceId, workspaceSlot], map: "team_receipt_workspace_slot_key")
   @@map("team_mutation_results")
-}
-model TeamReceiptBudget {
-  scope String @id @db.VarChar(50)
-  used Int @default(0)
-  @@map("team_receipt_budgets")
 }

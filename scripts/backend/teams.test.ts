@@ -100,6 +100,7 @@ async function owned(options:Parameters<typeof fixture>[0]={}) {
  const membership=await database.client.workspaceMembership.findUniqueOrThrow({where:{workspaceId_userId:{workspaceId:ws,userId:user.identity.userId}}});
  return {f,client,ws,userId:user.identity.userId,member:membership.id};
 }
+async function budget(scope:string){const rows=await database.client.$queryRaw<{used:number}[]>`SELECT used FROM team_receipt_budgets WHERE scope=${scope}`;return rows[0]?.used??0;}
 const teamInput=(suffix='')=>({name:'Team '+randomUUID()+suffix,key:'ENG',description:'Private description',color:'#5645d4'});
 const path=(ws:string,id?:string)=>'/api/v1/workspaces/'+ws+'/teams'+(id?'/'+id:'');
 async function make(o:Awaited<ReturnType<typeof owned>>,body=teamInput(),key=randomUUID()){
@@ -127,7 +128,7 @@ test('durable create retry and changed body conflict do not multiply effects',as
  const retry=await o.f.http(path(o.ws),'POST',o.client,t.body,{'idempotency-key':t.key});expect(retry.status).toBe(201);expect(await retry.json()).toEqual(t.row);
  expect((await o.f.http(path(o.ws),'POST',o.client,{...t.body,name:'Changed'}, {'idempotency-key':t.key})).status).toBe(409);
  expect(await database.client.team.count({where:{workspaceId:o.ws}})).toBe(1);
- expect((await database.client.teamReceiptBudget.findUniqueOrThrow({where:{scope:'workspace:'+o.ws}})).used).toBe(1);
+ expect(await budget('workspace:'+o.ws)).toBe(1);
 });
 test('PATCH strong preconditions, immutable fields and same-key reconciliation',async()=>{
  const o=await owned(),t=await make(o),headers={'idempotency-key':randomUUID(),'if-match':'"team-1"'},body={name:'Updated private metadata'};
@@ -240,11 +241,11 @@ test('SQL enforces deferred owner membership, immutable binding, metadata and re
  const receipt=await database.client.teamMutationResult.findFirstOrThrow({where:{workspaceId:o.ws}});
  await expect(Promise.resolve(database.client.teamMutationResult.delete({where:{id:receipt.id}}))).rejects.toThrow();
  await expect(Promise.resolve(database.client.teamMutationResult.update({where:{id:receipt.id},data:{payloadDigest:'0'.repeat(64)}}))).rejects.toThrow();
- await expect(Promise.resolve(database.client.teamReceiptBudget.update({where:{scope:'deployment'},data:{used:0}}))).rejects.toThrow();
+ await expect(Promise.resolve(database.client.$executeRaw`UPDATE team_receipt_budgets SET used=0 WHERE scope='deployment'`)).rejects.toThrow();
  const count=await database.client.teamMutationResult.count({where:{workspaceId:o.ws}});
  await expect(database.transaction(async tx=>{await tx.teamMutationResult.create({data:{workspaceId:o.ws,actorId:o.userId,operation:'team:create:v1',requestKey:randomUUID(),payloadDigest:'0'.repeat(64),teamId:t.row.id,retainUntil:new Date(Date.now()+86401000)}});})).rejects.toThrow();
  expect(await database.client.teamMutationResult.count({where:{workspaceId:o.ws}})).toBe(count);
- expect((await database.client.teamReceiptBudget.findUniqueOrThrow({where:{scope:'workspace:'+o.ws}})).used).toBe(count);
+ expect(await budget('workspace:'+o.ws)).toBe(count);
 });
 test('read and creation admission enforce real Valkey budgets; outages fail closed',async()=>{
  const o=await owned(),limits=new TeamLimits(cache,o.f.settings.secrets[0]!,o.f.settings.prefix+'isolated:');
@@ -381,6 +382,55 @@ test('closed metadata port rejects unexpected mutation fields instead of mass as
  await tenancy.authenticateSession('test-only',async p=>{await expect(tenancy.updateTeam(p,o.ws,t.row.id,{name:'Forbidden status',status:'ARCHIVED'} as {name:string},randomUUID(),'"team-1"')).rejects.toThrow('INVALID_REQUEST');});
  expect((await database.client.team.findUniqueOrThrow({where:{workspaceId_id:{workspaceId:o.ws,id:t.row.id}}})).status).toBe('ACTIVE');
 });
+test('F1 direct and unrelated nested-trigger writes cannot forge derived budgets or slot changes',async()=>{
+ const o=await owned(),t=await make(o),before=await budget('deployment');
+ await expect(Promise.resolve(database.client.$executeRawUnsafe('TRUNCATE team_mutation_results'))).rejects.toThrow('Team receipt retained');
+ for(const sql of ["UPDATE team_receipt_budgets SET used=0 WHERE scope='deployment'","UPDATE team_receipt_budgets SET used=used+1 WHERE scope='deployment'","INSERT INTO team_receipt_budgets(scope,used) VALUES ('forged',1)","DELETE FROM team_receipt_budgets WHERE scope='deployment'"]){await expect(Promise.resolve(database.client.$executeRawUnsafe(sql))).rejects.toThrow();}
+ for(const assignment of ['used=0','used=used+1'])await expect(database.transaction(async tx=>{
+  await tx.$executeRawUnsafe('CREATE TEMP TABLE f1_outer(id integer);');
+  await tx.$executeRawUnsafe('CREATE TEMP TABLE f1_inner(id integer);');
+  await tx.$executeRawUnsafe(`CREATE FUNCTION pg_temp.f1_outer_write() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN INSERT INTO f1_inner VALUES(NEW.id); RETURN NEW; END $$`);
+  await tx.$executeRawUnsafe(`CREATE FUNCTION pg_temp.f1_inner_write() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN UPDATE public.team_receipt_budgets SET ${assignment} WHERE scope='deployment'; RETURN NEW; END $$`);
+  await tx.$executeRawUnsafe('CREATE TRIGGER outer_write AFTER INSERT ON f1_outer FOR EACH ROW EXECUTE FUNCTION pg_temp.f1_outer_write()');
+  await tx.$executeRawUnsafe('CREATE TRIGGER inner_write AFTER INSERT ON f1_inner FOR EACH ROW EXECUTE FUNCTION pg_temp.f1_inner_write()');
+  await tx.$executeRawUnsafe('INSERT INTO f1_outer VALUES(1)');
+ })).rejects.toThrow('cannot update view "team_receipt_budgets"');
+ const receipt=await database.client.teamMutationResult.findFirstOrThrow({where:{workspaceId:o.ws}});
+ for(const data of [{deploymentSlot:receipt.deploymentSlot+1},{workspaceSlot:receipt.workspaceSlot+1}])await expect(Promise.resolve(database.client.teamMutationResult.update({where:{id:receipt.id},data}))).rejects.toThrow('Receipt binding immutable');
+ expect(await budget('deployment')).toBe(before);expect(await database.client.team.count({where:{workspaceId:o.ws}})).toBe(1);expect(t.row.version).toBe('1');
+});
+test('F1 caller-supplied slots are overridden and rollback/database errors release admission without gaps',async()=>{
+ const o=await owned(),t=await make(o),before=await budget('deployment');
+ const insert=async(tx:Parameters<Parameters<Database['transaction']>[0]>[0],id:string)=>tx.$executeRaw`INSERT INTO team_mutation_results(id,workspace_id,actor_id,operation,request_key,payload_digest,team_id,result,completed_at,retain_until,deployment_slot,workspace_slot)
+ VALUES(${id}::uuid,${o.ws}::uuid,${o.userId}::uuid,'team:create:v1',${randomUUID()}::uuid,${'0'.repeat(64)},${t.row.id}::uuid,NULL,date_trunc('milliseconds',statement_timestamp())-interval '25 hours',date_trunc('milliseconds',statement_timestamp())-interval '1 hour',20000,2000)`;
+ for(const cause of ['rollback','database error'])await expect(database.transaction(async tx=>{
+  await tx.$queryRaw`SELECT id FROM workspaces WHERE id=${o.ws}::uuid FOR UPDATE`;const pending=randomUUID();await insert(tx,pending);
+  const allocated=await tx.teamMutationResult.findUniqueOrThrow({where:{id:pending}});expect(allocated.deploymentSlot).toBe(before+1);expect(allocated.workspaceSlot).toBe(2);
+  if(cause==='rollback')throw new Error('Expected owned rollback');await tx.$queryRawUnsafe('SELECT 1/0');
+ })).rejects.toThrow(cause==='rollback'?'Expected owned rollback':'division by zero');
+ expect(await budget('deployment')).toBe(before);expect(await budget('workspace:'+o.ws)).toBe(1);
+ const id=randomUUID();await database.transaction(async tx=>{await tx.$queryRaw`SELECT id FROM workspaces WHERE id=${o.ws}::uuid FOR UPDATE`;await insert(tx,id);});
+ const receipt=await database.client.teamMutationResult.findUniqueOrThrow({where:{id}});expect(receipt.deploymentSlot).toBe(before+1);expect(receipt.workspaceSlot).toBe(2);expect(await budget('deployment')).toBe(before+1);
+ const deploymentPlan=await database.client.$queryRaw<unknown[]>`EXPLAIN (ANALYZE,BUFFERS,FORMAT JSON) SELECT COALESCE(max(deployment_slot),0)+1 FROM team_mutation_results`;
+ const workspacePlan=await database.client.$queryRaw<unknown[]>`EXPLAIN (ANALYZE,BUFFERS,FORMAT JSON) SELECT COALESCE(max(workspace_slot),0)+1 FROM team_mutation_results WHERE workspace_id=${o.ws}::uuid`;
+ expect(JSON.stringify(deploymentPlan)).toContain('team_receipt_deployment_slot_key');expect(JSON.stringify(workspacePlan)).toContain('team_receipt_workspace_slot_key');
+ await writeFile(resolve(root,'docs/backend/evidence/be-team-01/F1-admission-query-plans.json'),JSON.stringify({deploymentPlan,workspacePlan,limits:{deploymentSlots:20000,workspaceSlots:2000},limitations:'Local owned data; advisory-lock contention and deployment capacity are not benchmark-certified.'},null,2)+'\n');
+
+});
+test('F1 cross-Workspace creation waits on deployment admission and cannot duplicate a slot',async()=>{
+ const held=gate(),entered=gate();let paused=false;
+ const proxy=observeDatabase(async(sql,stage)=>{if(stage==='after'&&!paused&&sql.includes('UPDATE team_mutation_results SET result=')){paused=true;entered.release();await held.wait;}});
+ const o=await owned({database:proxy}),response=await create(o.f,o.client);expect(response.status).toBe(201);const secondWorkspace=(await response.json()).workspace.id as string;
+ const firstKey=randomUUID(),secondKey=randomUUID(),firstBody=teamInput(),secondBody=teamInput();
+ const first=o.f.http(path(o.ws),'POST',o.client,firstBody,{'idempotency-key':firstKey});await withDeadline(entered.wait,2000);
+ const second=o.f.http(path(secondWorkspace),'POST',o.client,secondBody,{'idempotency-key':secondKey});
+ let waitObserved=false;const start=Date.now();
+ try{while(Date.now()-start<900){const rows=await admin.client.$queryRaw<{n:bigint}[]>`SELECT count(*) AS n FROM pg_stat_activity WHERE datname=${name} AND wait_event='advisory'`;if(rows[0]!.n>0n){waitObserved=true;break;}await Bun.sleep(10);}expect(waitObserved).toBe(true);}finally{held.release();}
+ expect((await first).status).toBe(201);const other=await second;expect([201,409,503]).toContain(other.status);
+ const reconcile=await o.f.http(path(secondWorkspace),'POST',o.client,secondBody,{'idempotency-key':secondKey});expect(reconcile.status).toBe(201);
+ const receipts=await database.client.teamMutationResult.findMany({where:{workspaceId:{in:[o.ws,secondWorkspace]}},select:{deploymentSlot:true,workspaceSlot:true}});
+ expect(receipts).toHaveLength(2);expect(new Set(receipts.map(r=>r.deploymentSlot)).size).toBe(2);expect(receipts.every(r=>r.workspaceSlot===1)).toBe(true);
+});
 test('receipt caps include tombstones; full Workspace/deployment capacity preserves authorized replay',async()=>{
  const o=await owned(),t=await make(o);
  const seed=async(workspace:string,team:string,number:number)=>{for(let left=number;left>0;left-=Math.min(left,100)){
@@ -390,20 +440,20 @@ test('receipt caps include tombstones; full Workspace/deployment capacity preser
   });
  }};
  await seed(o.ws,t.row.id,1999);
- expect((await database.client.teamReceiptBudget.findUniqueOrThrow({where:{scope:'workspace:'+o.ws}})).used).toBe(2000);
+ expect(await budget('workspace:'+o.ws)).toBe(2000);
  const full=await o.f.http(path(o.ws),'POST',o.client,{...teamInput(),key:'NEW'},{'idempotency-key':randomUUID()});expect(full.status).toBe(503);expect(await database.client.team.count({where:{workspaceId:o.ws}})).toBe(1);
  const replay=await o.f.http(path(o.ws),'POST',o.client,t.body,{'idempotency-key':t.key});expect(replay.status).toBe(201);expect(await replay.json()).toEqual(t.row);
  let lastWorkspace='',lastTeam='';
- while(true){const used=(await database.client.teamReceiptBudget.findUniqueOrThrow({where:{scope:'deployment'}})).used;if(used===20000)break;
+ while(true){const used=await budget('deployment');if(used===20000)break;
   const workspace=randomUUID(),member=randomUUID(),team=randomUUID();
   await database.transaction(async tx=>{await tx.workspace.create({data:{id:workspace,slug:workspace,name:'Capacity-owned'}});await tx.workspaceMembership.create({data:{workspaceId:workspace,id:member,userId:o.userId,role:'ADMIN',status:'ACTIVE'}});await tx.team.create({data:{workspaceId:workspace,id:team,key:'CAP',name:'Capacity-owned',ownerMembershipId:member}});await tx.teamMembership.create({data:{workspaceId:workspace,teamId:team,membershipId:member}});});
   await seed(workspace,team,Math.min(2000,20000-used));lastWorkspace=workspace;lastTeam=team;
  }
- expect((await database.client.teamReceiptBudget.findUniqueOrThrow({where:{scope:'deployment'}})).used).toBe(20000);
+ expect(await budget('deployment')).toBe(20000);
  const receiptsBefore=await database.client.teamMutationResult.count();
  expect((await o.f.http(path(lastWorkspace),'POST',o.client,teamInput(),{'idempotency-key':randomUUID()})).status).toBe(503);
  expect(await database.client.teamMutationResult.count()).toBe(receiptsBefore);expect(await database.client.team.count({where:{workspaceId:lastWorkspace}})).toBe(1);
  expect((await o.f.http(path(lastWorkspace,lastTeam),'GET',o.client)).status).toBe(200);
- await expect(Promise.resolve(database.client.teamReceiptBudget.delete({where:{scope:'deployment'}}))).rejects.toThrow();
+ await expect(Promise.resolve(database.client.$executeRaw`DELETE FROM team_receipt_budgets WHERE scope='deployment'`)).rejects.toThrow();
  expect((await o.f.http(path(o.ws),'POST',o.client,t.body,{'idempotency-key':t.key})).status).toBe(201);
 },60000);
