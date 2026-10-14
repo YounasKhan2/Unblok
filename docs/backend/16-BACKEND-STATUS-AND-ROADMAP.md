@@ -150,3 +150,7 @@ BE-WS-02 and its focused security correction are merged through PR #37 at `d473e
 ## FE-WS-02 merge checkpoint — 2026-10-14
 
 Explicitly authorized merge of [PR #38](https://github.com/YounasKhan2/Unblok/pull/38), after confirming reviewed HEAD `99404ed60f9f093b92ecba0b1c64a9306f71f8c2` and mergeability. Merge commit: `3deaf88f089cc268cda893b8f3e14ec83d210e8d`. Fetched remote main and clean local main both matched this SHA. Real ADMIN member-directory, invitation issuance and authenticated acceptance frontend flows are now merged. [Report](../frontend/03-FE-WS-02-MEMBERS-INVITATIONS.md) retains its historical verification: focused99 pass, full frontend832 pass/3 historical failures, real Chromium56 assertions and recorded backend gates. These checks were not rerun at this merge checkpoint. Historical review-time sections above remain evidence, superseded only as to merge status. No reliability, security-deployment or capacity claim is added. Next milestone is Team architecture review, not implementation.
+
+## BE-TEAM-01 architecture proposal — 2026-10-14
+
+[Team proposal](27-BE-TEAM-01-ARCHITECTURE-PROPOSAL.md) prepared from merged FE-WS-02 main. Private Team access requires explicit membership; Workspace ADMIN has no existing-Team bypass. Ownership/delegation, consent/privacy, recovery, metadata and limits remain proposed decisions requiring human approval. No Team implementation or schema change.

@@ -67,3 +67,5 @@ FE-AUTH-01 review implementation: [real frontend authentication](../frontend/01-
 ## Current merged state — 2026-10-14
 
 The review-stage descriptions above are historical phase summaries, not current merge status. PRs #24–#37 and FE-WS-02 [PR #38](https://github.com/YounasKhan2/Unblok/pull/38) are merged. Authentication/session infrastructure, core credentials, verification/recovery, frontend authentication, Workspace creation/discovery and memberships/invitations with frontend integration are in main. Latest merge: `3deaf88f089cc268cda893b8f3e14ec83d210e8d`. See [current roadmap](16-BACKEND-STATUS-AND-ROADMAP.md) and [frontend status](../frontend/00-STATUS.md). Deployment, Team/Project/Issue/Dependency APIs and historical verification risks remain incomplete.
+
+[27 — BE-TEAM-01 architecture and authorization proposal](27-BE-TEAM-01-ARCHITECTURE-PROPOSAL.md) defines proposed explicit Team ownership/private membership, policy, lifecycle, additive constraints, bounded contracts and concurrency. Product decisions are pending human approval; no Team implementation is authorized.
