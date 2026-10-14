@@ -41,3 +41,5 @@ export { VerificationDelivery, type VerificationKey } from './email-verification
 export { PasswordRecovery, RecoveryDelivery } from './password-recovery';
 
 export {InvitationDelivery,type InvitationKey} from './workspace-invitations';
+
+export { TeamFault } from './teams';

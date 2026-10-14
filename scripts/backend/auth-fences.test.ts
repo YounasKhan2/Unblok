@@ -55,7 +55,7 @@ async function fixture() {
     await tx.identity.create({ data: { id: identityId, userId, provider: 'test', subject: userId } });
     await tx.workspace.create({ data: { id: workspaceId, name: 'Security test', slug: `test-${workspaceId}` } });
     await tx.workspaceMembership.create({ data: { workspaceId, id: membershipId, userId, role: 'ADMIN', status: 'ACTIVE' } });
-    await tx.team.create({ data: { workspaceId, id: teamId, key: 'ENG', name: 'Security test' } });
+    await tx.team.create({ data: { workspaceId, ownerMembershipId: membershipId, id: teamId, key: 'ENG', name: 'Security test' } });
     await tx.teamMembership.create({ data: { workspaceId, teamId, membershipId } });
     await tx.project.create({ data: { workspaceId, id: projectId, teamId, key: 'APP', name: 'Security test', currentSequence: 1 } });
     await tx.issue.create({ data: { workspaceId, id: issueId, projectId, sequence: 1, title: 'Before', creatorMembershipId: membershipId } });

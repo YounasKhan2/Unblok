@@ -1,0 +1,252 @@
+{
+  "phase": "BE-TEAM-01",
+  "baseCommit": "d4b958c74d7383cd269e693745738b3534cd44af",
+  "reviewedArchitectureHead": "dbc7a0db6b8972f887521a8ffe8008f85249aa6d",
+  "status": "implementation for human review, not merged",
+  "scope": "four Team routes; no BE-TEAM-02 or frontend/dependency/NEXUS changes",
+  "results": [
+    {
+      "command": "bun install --frozen-lockfile",
+      "passed": null,
+      "failed": null,
+      "assertions": null,
+      "status": "passed"
+    },
+    {
+      "command": "bun run typecheck:backend",
+      "passed": null,
+      "failed": null,
+      "assertions": null,
+      "status": "passed"
+    },
+    {
+      "command": "bun run lint:backend",
+      "passed": null,
+      "failed": null,
+      "assertions": null,
+      "status": "passed"
+    },
+    {
+      "command": "bun run build:backend",
+      "passed": null,
+      "failed": null,
+      "assertions": null,
+      "status": "passed"
+    },
+    {
+      "command": "bun run test:backend",
+      "passed": 101,
+      "failed": 0,
+      "assertions": 265,
+      "status": "passed"
+    },
+    {
+      "command": "bun run test:backend:teams",
+      "passed": 30,
+      "failed": 0,
+      "assertions": 704,
+      "status": "passed"
+    },
+    {
+      "command": "bun --env-file=apps/api/.env test apps/api/verification/workspace-integration.test.ts",
+      "passed": 29,
+      "failed": 0,
+      "assertions": 671,
+      "status": "passed"
+    },
+    {
+      "command": "bun run test:backend:workspace-invitations",
+      "passed": 36,
+      "failed": 0,
+      "assertions": 1201,
+      "status": "passed"
+    },
+    {
+      "command": "bun run test:backend:authentication",
+      "passed": 26,
+      "failed": 0,
+      "assertions": 827,
+      "status": "passed"
+    },
+    {
+      "command": "BE00H_OPENSSL=/usr/bin/openssl bun run test:backend:sessions",
+      "passed": 31,
+      "failed": 0,
+      "assertions": 473,
+      "status": "passed"
+    },
+    {
+      "command": "bun run test:backend:auth-fences",
+      "passed": 24,
+      "failed": 0,
+      "assertions": 134,
+      "status": "passed"
+    },
+    {
+      "command": "bun run test:backend:tenancy",
+      "passed": 34,
+      "failed": 0,
+      "assertions": 132,
+      "status": "passed"
+    },
+    {
+      "command": "bun run test:backend:email-verification",
+      "passed": 16,
+      "failed": 0,
+      "assertions": 468,
+      "status": "passed"
+    },
+    {
+      "command": "bun run test:backend:password-recovery",
+      "passed": 18,
+      "failed": 0,
+      "assertions": 421,
+      "status": "passed"
+    },
+    {
+      "command": "bun run test:backend:integration",
+      "passed": 2,
+      "failed": 0,
+      "assertions": 5,
+      "status": "passed"
+    },
+    {
+      "command": "bun run test:backend:infra",
+      "passed": 5,
+      "failed": 0,
+      "assertions": 18,
+      "status": "passed"
+    },
+    {
+      "command": "bun test scripts/backend/workspace-contracts.test.ts scripts/backend/workspace-invitation-contracts.test.ts scripts/backend/team-contracts.test.ts",
+      "passed": 3,
+      "failed": 0,
+      "assertions": 31,
+      "status": "passed"
+    },
+    {
+      "command": "bun --env-file=apps/api/.env run --filter @unblok/database validate",
+      "passed": null,
+      "failed": null,
+      "assertions": null,
+      "status": "passed"
+    },
+    {
+      "command": "bun run lint:web (tsc --noEmit)",
+      "status": "passed"
+    },
+    {
+      "command": "bun run build:web",
+      "status": "passed"
+    },
+    {
+      "command": "bun run test:web",
+      "status": "failed",
+      "passed": 832,
+      "failed": 3,
+      "failures": [
+        "NEXUS resolved blocker missing",
+        "NEXUS milestone graph empty",
+        "NEXUS dependency fan-out3 exceeds2"
+      ]
+    },
+    {
+      "command": "Prisma generate / real fresh migrate deploy/status/replay/diff / original-ten upgrade / original-two upgrade",
+      "status": "passed",
+      "migrations": 11,
+      "configuredApplicationDatabaseChanged": false
+    },
+    {
+      "command": "node docs/backend/contracts/be-api-00/validate.mjs",
+      "status": "passed",
+      "output": {
+        "operations": 21,
+        "schemas": 55,
+        "examples": 27,
+        "negativeChecks": 26,
+        "lifecycleScenarios": 32,
+        "localLinks": 24,
+        "status": "passed",
+        "limitations": "Scoped schema/design-model validation only; no OpenAPI/runtime/crypto/SQL/load certification"
+      }
+    },
+    {
+      "command": "bun audit --json",
+      "status": "failed",
+      "advisory": "GHSA-ggr8-5vv4-36mx",
+      "dependency": "deepmerge-ts <8.0.0 (existing Prisma tooling dependency)",
+      "dependencyChanges": false
+    },
+    {
+      "command": "built lifecycle with owned migrated database and ephemeral independent auth/mail/session keys",
+      "passed": 2,
+      "failed": 1,
+      "assertions": 8,
+      "status": "failed"
+    }
+  ],
+  "earlierObservations": [
+    {
+      "stage": "initial Team integration",
+      "result": "14 pass/1 fail; anonymous POST expected401, actualCSRF403; split anonymous GET401 and token-less POST403, preserved security behavior"
+    },
+    {
+      "stage": "expanded Team suite",
+      "result": "17 pass/3 fail; test key rotation used a different session namespace, overly strict universal concurrency conflict expectation, legacy fixture default INVITED; corrected setup and ordered outcome assertions"
+    },
+    {
+      "stage": "expanded held-concurrency/response-loss suite",
+      "result": "25 pass/3 fail; concurrency WorkspaceFault normalized404, same-key waiter may replay201, response-loss transport may return empty response; fixed fault mapping and outside-catch committed effect assertions"
+    },
+    {
+      "stage": "parallel-heavy gates",
+      "result": "26 pass/2 fail/1 between-test error; session/login timing503 and headers-after-send; later serial unchanged-deadline Team run30/0. Cause not established."
+    },
+    {
+      "stage": "initial architecture regression",
+      "result": "100 pass/1 fail; Windows absolute path not detected on Linux; checker now enforces both platform syntaxes, existing negative assertion preserved"
+    },
+    {
+      "stage": "initial sessions regression",
+      "result": "30 pass/1 fail; Windows OpenSSL path absent; existing BE00H_OPENSSL override yielded31/0 without TLS changes"
+    },
+    {
+      "stage": "initial lifecycle",
+      "result": "1 pass/2 fail before readiness with old local environment; owned full migration/keys yielded2 pass/1 fail, worker SIGTERM143 remains"
+    },
+    {
+      "stage": "attempted web typecheck",
+      "result": "Script absent. lint:web runs tsc --noEmit and passed; absent script is not counted as successful verification"
+    },
+    {
+      "stage": "migration consistency",
+      "result": "Initial two schema-diff regressions failed because long index name was truncated differently; fixed only the new unapplied migration; fresh and both upgrade paths pass"
+    }
+  ],
+  "remainingIssues": [
+    "worker SIGTERM exit143 on owned configured lifecycle run",
+    "existing three NEXUS fixture failures",
+    "existing deepmerge-ts/Prisma high advisory",
+    "historical queue timing/between-test reliability unresolved despite5/5 local infra",
+    "parallel session/login timing and headers-after-send cause unresolved",
+    "production TLS/proxy/mail/grants/restore/monitoring not certified",
+    "coarse Workspace lock and deployment receipt-budget contention not enterprise benchmarked",
+    "hard2000/20000 receipt cap includes tombstones; no unbounded growth or purge; operational capacity/retention review required",
+    "legacy ownerless Teams remain quarantined; no guessed backfill",
+    "BE-TEAM-02 management/transfer/lifecycle/recovery and frontend Team integration deferred",
+    "existing CORS excludes Idempotency-Key/If-Match preflight; future browser mutations require reviewed same-origin delivery"
+  ],
+  "finalArchitecture": {
+    "sources": 411,
+    "edges": 1125,
+    "violations": 0,
+    "negativeTests": 53
+  },
+  "documentationScopeChecks": {
+    "relativeLinks": 59,
+    "originalMigrationsUnchanged": 10,
+    "frontendSourceAndNexusUnchanged": true,
+    "lockfileUnchanged": true,
+    "exactTeamHandlers": 4
+  }
+}

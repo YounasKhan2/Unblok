@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, readdirSync, realpathSync } from 'node:fs';
 import { builtinModules } from 'node:module';
-import { dirname, isAbsolute, relative, resolve } from 'node:path';
+import { dirname, isAbsolute, win32, relative, resolve } from 'node:path';
 import ts from 'typescript';
 
 export interface Finding { rule: string; file: string; line: number; message: string }
@@ -17,7 +17,7 @@ const foundationFiles: Record<string, readonly string[]> = {
   'apps/api': ['access.ts', 'app.ts', 'errors.ts', 'health.ts', 'main.ts', 'security.ts', 'validation.ts'],
   'apps/worker': ['main.ts', 'worker.ts'],
 };
-const databaseNames = new Set(['WorkspaceFault', 'Tenancy', 'TenantAccessError', 'TenantConflictError', 'AuthUnavailableError', 'SessionEvidence', 'SessionVerifier', 'denyAll', 'VerifiedIdentity', 'VerifiedPrincipal', 'IdentityVerifier', 'AuthorizationPolicy', 'WorkspaceContext', 'ResourceScope', 'TenantAction', 'TenantQueries', 'IssueProjection']);
+const databaseNames = new Set(['TeamFault', 'WorkspaceFault', 'Tenancy', 'TenantAccessError', 'TenantConflictError', 'AuthUnavailableError', 'SessionEvidence', 'SessionVerifier', 'denyAll', 'VerifiedIdentity', 'VerifiedPrincipal', 'IdentityVerifier', 'AuthorizationPolicy', 'WorkspaceContext', 'ResourceScope', 'TenantAction', 'TenantQueries', 'IssueProjection']);
 const code = /\.[cm]?[jt]sx?$/;
 const testFile = (file: string) => /(?:^|\/)(?:test|tests|__tests__|fixtures)\/|\.(?:test|spec)\.[cm]?[jt]sx?$/.test(file);
 const ownerOf = (file: string) => owners.find(owner => file.startsWith(owner + '/'));
@@ -146,7 +146,7 @@ export function auditArchitecture(directory: string) {
     const localNames = new Map<string, string>();
     function record(specifier: string, node: ts.Node, names: string[] = [], typeOnly = false) {
       const line = source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1;
-      if (isAbsolute(specifier) || /^(?:https?|file):/.test(specifier)) note('external-load', file, line, 'Absolute/URL module paths bypass repository package boundaries');
+      if (isAbsolute(specifier) || win32.isAbsolute(specifier) || /^(?:https?|file):/.test(specifier)) note('external-load', file, line, 'Absolute/URL module paths bypass repository package boundaries');
       const workspace = workspaceNames.get(packageName(specifier));
       if (workspace && specifier !== manifests.get(workspace)?.name) note('package-entry', file, line, 'Workspace packages expose only their declared public root entry');
       const configKey = file.startsWith('apps/web/') ? 'web' : 'backend';

@@ -1,3 +1,4 @@
+import { TeamsModule, type Teams } from './modules/teams';
 import { Controller, Get, Inject, Injectable, Module, ServiceUnavailableException, UseInterceptors } from '@nestjs/common';
 import { healthSchema, type HealthResponse } from '@unblok/contracts';
 import { withDeadline } from '@unblok/backend-runtime';
@@ -38,8 +39,8 @@ export class VersionedHealthController extends HealthController {
 }
 @Module({})
 export class AppModule {
-  static register(resources: Resources, authentication?: Authentication, workspaces?: Workspaces) {
-    return { module: AppModule, imports: [...(authentication ? [AuthModule.register(authentication)] : []), ...(workspaces ? [WorkspacesModule.register(workspaces)] : [])], controllers: [HealthController, VersionedHealthController],
+  static register(resources: Resources, authentication?: Authentication, workspaces?: Workspaces, teams?: Teams) {
+    return { module: AppModule, imports: [...(authentication ? [AuthModule.register(authentication)] : []), ...(workspaces ? [WorkspacesModule.register(workspaces)] : []), ...(teams ? [TeamsModule.register(teams)] : [])], controllers: [HealthController, VersionedHealthController],
       providers: [{ provide: RESOURCES, useValue: resources }, Readiness, { provide: APP_GUARD, useClass: FoundationAccessGuard }] };
   }
 }

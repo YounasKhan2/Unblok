@@ -1,3 +1,4 @@
+import { TeamFault, listTeams, detailTeam, mutateTeam, type TeamQuery, type TeamInput, type TeamPatch } from './teams';
 import {listMemberships,type MembershipQuery} from './workspace-memberships';
 import {issueInvitation,acceptInvitation,invitationSelector,type InvitationKey} from './workspace-invitations';
 import { Prisma, type WorkspaceRole, type RecordStatus } from '@prisma/client';
@@ -56,7 +57,7 @@ class ScopedQueries {
     if (action !== 'issue:read' && (this.#mode !== 'write' || this.context.status !== 'ACTIVE' || this.context.role === 'OBSERVER')) throw new TenantAccessError();
     const project = await this.#tx.project.findFirst({
       where: { workspaceId: this.context.workspaceId, id: projectId, status: 'ACTIVE', team: {
-        status: 'ACTIVE', memberships: { some: { workspaceId: this.context.workspaceId, membershipId: this.context.membershipId } },
+        status: 'ACTIVE', legacyQuarantined: false, memberships: { some: { workspaceId: this.context.workspaceId, membershipId: this.context.membershipId } },
       } }, select: { id: true, teamId: true },
     });
     if (!project) throw new TenantAccessError();
@@ -153,7 +154,7 @@ export class Tenancy {
 
   read<T>(principal: VerifiedPrincipal, workspaceId: string, run: (queries: TenantQueries) => Promise<T>) { return this.scoped(principal, workspaceId, 'read', run); }
   // Closed account/tenant capabilities, never a transaction or ORM escape hatch.
-  private async workspaceBoundary<T>(principal: VerifiedPrincipal, run: (tx: Prisma.TransactionClient, authority: PrincipalAuthority) => Promise<T>, selectors?: (tx: Prisma.TransactionClient) => Promise<readonly string[]>) {
+  private async workspaceBoundary<T>(principal: VerifiedPrincipal, run: (tx: Prisma.TransactionClient, authority: PrincipalAuthority) => Promise<T>, selectors?: (tx: Prisma.TransactionClient) => Promise<readonly string[]>, teamOperation = false) {
     const authority = this.#principals.get(principal);
     if (!authority?.session) throw new TenantAccessError();
     this.assertPrincipal(principal, authority);
@@ -165,16 +166,25 @@ export class Tenancy {
       const result = await run(tx, authority);
       await revalidateAuthority(tx, authority); this.assertPrincipal(principal, authority); return result;
     }); } catch (error) {
-      if (error instanceof WorkspaceFault || error instanceof TenantAccessError) throw error;
+      if (error instanceof TeamFault || error instanceof WorkspaceFault || error instanceof TenantAccessError) throw error;
       if (error instanceof AuthDeniedError) throw new TenantAccessError();
       const code = error && typeof error === 'object' && 'code' in error ? error.code : undefined;
       const meta = error && typeof error === 'object' && 'meta' in error ? error.meta : undefined;
       const sql = meta && typeof meta === 'object' && 'code' in meta ? meta.code : undefined;
+      if(teamOperation && code==='P2010' && sql==='55P03') throw new AuthUnavailableError();
       if (code === 'P2002' || code === 'P2034' || (code === 'P2010' && ['23505', '40001', '40P01', '55P03'].includes(String(sql)))) throw new WorkspaceFault('CONFLICT');
       // Unknown commit outcome remains503; retry only with the same durable key.
       throw new AuthUnavailableError();
     }
   }
+  private async teamBoundary<T>(principal:VerifiedPrincipal,run:(tx:Prisma.TransactionClient,a:PrincipalAuthority)=>Promise<T>) {
+    try{return await this.workspaceBoundary(principal,run,undefined,true);}catch(error){if(error instanceof WorkspaceFault)throw new TeamFault(error.reason);throw error;}
+  }
+  private teamKeys() { if(!this.workspaceKeys || !validWorkspaceKeys(this.workspaceKeys)) throw new AuthUnavailableError(); return this.workspaceKeys; }
+  listTeams(principal:VerifiedPrincipal, workspace:string, query:TeamQuery) { return this.teamBoundary(principal,(tx,a)=>listTeams(tx,a.userId,workspace,query,this.teamKeys())); }
+  detailTeam(principal:VerifiedPrincipal, workspace:string, id:string) { return this.teamBoundary(principal,(tx,a)=>detailTeam(tx,a.userId,workspace,id)); }
+  async createTeam(principal:VerifiedPrincipal, workspace:string, input:TeamInput, key:string) { const result=await this.teamBoundary(principal,(tx,a)=>mutateTeam(tx,a.userId,workspace,input,key,this.teamKeys())); if(result instanceof TeamFault) throw result; return result; }
+  async updateTeam(principal:VerifiedPrincipal, workspace:string, id:string, input:TeamPatch, key:string, match?:string) { const result=await this.teamBoundary(principal,(tx,a)=>mutateTeam(tx,a.userId,workspace,input,key,this.teamKeys(),id,match)); if(result instanceof TeamFault) throw result; return result; }
   async createWorkspace(principal: VerifiedPrincipal, input: { name: string; slug: string; key: string }) {
     const result = await this.workspaceBoundary(principal, (tx, authority) => {
       if (!this.workspaceKeys || !validWorkspaceKeys(this.workspaceKeys)) throw new AuthUnavailableError();

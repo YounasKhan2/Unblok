@@ -57,3 +57,5 @@ export type WorkspaceMembershipQuery=z.infer<typeof workspaceMembershipQuerySche
 export type WorkspaceInvitationInput=z.infer<typeof workspaceInvitationSchema>;
 
 export function workspaceInvitationJsonSchemas(){return Object.fromEntries(Object.entries({MembershipPage:workspaceMembershipPageSchema,InvitationRequest:workspaceInvitationSchema,InvitationAccept:workspaceInvitationAcceptSchema,InvitationAccepted:signupResponseSchema}).map(([name,schema])=>[name,z.toJSONSchema(schema)]));}
+
+export { createTeamSchema, patchTeamSchema, teamQuerySchema, teamDetailSchema, teamPageSchema, teamJsonSchemas, type CreateTeamInput, type PatchTeamInput, type TeamListQuery } from "./teams";
