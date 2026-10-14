@@ -206,6 +206,14 @@ export class Tenancy {
       return discoverWorkspaces(tx, authority, query, this.workspaceKeys);
     });
   }
+  // Directory admission metadata is server-owned and request-bound. It grants
+  // no Team access; the private directory boundary must still reauthorize.
+  teamDirectoryAdmission(principal: VerifiedPrincipal, workspaceId: string) {
+    return this.workspaceBoundary(principal, async (tx, authority) => Object.freeze({
+      actorId: authority.userId,
+      workspace: Object.freeze(await workspaceContext(tx, authority.userId, workspaceId)),
+    }));
+  }
   workspaceContext(principal: VerifiedPrincipal, workspaceId: string) {
     return this.workspaceBoundary(principal, (tx, authority) => workspaceContext(tx, authority.userId, workspaceId));
   }

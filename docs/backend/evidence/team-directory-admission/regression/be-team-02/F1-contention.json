@@ -1,0 +1,7 @@
+{
+  "observedPrimaryLockWait": true,
+  "secondStatus": 409,
+  "elapsedMs": 145.87236100000155,
+  "uniqueSlots": true,
+  "limitations": "One held cross-Workspace schedule; no global throughput/deadlock-free certification."
+}

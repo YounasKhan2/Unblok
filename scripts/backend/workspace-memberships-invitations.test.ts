@@ -152,7 +152,8 @@ test.each(['cancel','archive','demote','epoch','expired'])('fresh inviter and pr
  if(mode==='epoch')await fences.revokeAll(s.admin.userId);
  if(mode==='expired'){
    const old=await database.client.workspaceInvitation.findUniqueOrThrow({where:{id}});await database.client.workspaceInvitation.update({where:{id},data:{canceledAt:new Date()}});
-   const row={...old,id:randomUUID(),issuedAt:new Date(Date.now()-90000000),expiresAt:new Date(Date.now()-3600000),canceledAt:null,consumedAt:null};
+   const fixtureNow=Date.now();
+  const row={...old,id:randomUUID(),issuedAt:new Date(fixtureNow-90000000),expiresAt:new Date(fixtureNow-3600000),canceledAt:null,consumedAt:null};
    token=row.id+'.'+createHmac('sha256',Buffer.from(invitationKey.secret,'hex')).update('unblok-invitation-proof-v1\0'+JSON.stringify([invitationKey.id,row.id,row.workspaceId,row.inviterId,row.inviterEpoch.toString(),row.email,row.role])).digest('base64url');
    row.tokenDigest=createHmac('sha256',Buffer.from(invitationKey.secret,'hex')).update('unblok-invitation-digest-v1\0'+token).digest('hex');await database.client.workspaceInvitation.create({data:row});
  }
