@@ -1,0 +1,211 @@
+{
+  "reviewedHead": "45c8ee54877255d106ae1a04c8559e91917aa85d",
+  "architectureBase": "41502c012e263a384748e432157f84f09b3cde32",
+  "gates": {
+    "final-management": {
+      "counts": [
+        [
+          "35",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "1031"
+      ],
+      "tail": [
+        "(pass) F1 valid sequential transfers require new consent and distinct immutable acceptance receipts [1016.70ms]",
+        "(pass) F1 within-budget workload separates successes, admission, SQL and sampled lock waits [13687.47ms]",
+        "(pass) Workspace2000/deployment20000 caps preserve authorized management replay and immutable tombstone status [5847.54ms]",
+        "",
+        " 35 pass",
+        " 0 fail",
+        " 1031 expect() calls",
+        "Ran 35 tests across 1 file. [70.67s]"
+      ]
+    },
+    "foundation-final": {
+      "counts": [
+        [
+          "33",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "773"
+      ],
+      "tail": [
+        "(pass) F1 caller-supplied slots are overridden and rollback/database errors release admission without gaps [510.76ms]",
+        "(pass) F1 cross-Workspace creation waits on deployment admission and cannot duplicate a slot [604.24ms]",
+        "(pass) receipt caps include tombstones; full Workspace/deployment capacity preserves authorized replay [7018.10ms]",
+        "",
+        " 33 pass",
+        " 0 fail",
+        " 773 expect() calls",
+        "Ran 33 tests across 1 file. [35.73s]"
+      ]
+    },
+    "regression": {
+      "counts": [
+        [
+          "92",
+          "pass"
+        ],
+        [
+          "1",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "1038"
+      ],
+      "tail": [
+        "",
+        "1 tests failed:",
+        "(fail) F1 direct and unrelated nested-trigger writes cannot forge derived budgets or slot changes [246.46ms]",
+        "",
+        " 92 pass",
+        " 1 fail",
+        " 1038 expect() calls",
+        "Ran 93 tests across 4 files. [94.11s]"
+      ]
+    },
+    "unit": {
+      "counts": [
+        [
+          "101",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "265"
+      ],
+      "tail": [
+        "(pass) logging and lifecycle > logger applies redaction before serialization [0.30ms]",
+        "(pass) logging and lifecycle > deadlines reject hanging work and preserve completed results [10.23ms]",
+        "(pass) logging and lifecycle > bounded retries and deterministic idempotency keys [0.21ms]",
+        "",
+        " 101 pass",
+        " 0 fail",
+        " 265 expect() calls",
+        "Ran 101 tests across 8 files. [6.97s]"
+      ]
+    },
+    "lint": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "$ eslint apps/api apps/worker packages/backend-runtime packages/database packages/contracts scripts/backend"
+      ]
+    },
+    "typecheck": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "$ bun run check:architecture && tsc -p tsconfig.backend.json",
+        "$ bun scripts/backend/check-architecture.ts",
+        "Preserved infrastructure: BE-00C type-only Database backlink: tenancy.ts \u2192 index.ts (no runtime cycle)",
+        "Architecture checked 423 source files and 1156 resolved internal edges; 0 violations."
+      ]
+    },
+    "build": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "@unblok/api build:   main.js  97.22 KB  (entry point)",
+        "@unblok/api build: ",
+        "@unblok/api build: Exited with code 0",
+        "@unblok/worker build: Bundled 4 modules in 5ms",
+        "@unblok/worker build: ",
+        "@unblok/worker build:   main.js  5.36 KB  (entry point)",
+        "@unblok/worker build: ",
+        "@unblok/worker build: Exited with code 0"
+      ]
+    },
+    "generate": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "@unblok/database generate: ",
+        "@unblok/database generate: \u2714 Generated Prisma Client (v6.19.3) to ./../../node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client in 645ms",
+        "@unblok/database generate: ",
+        "@unblok/database generate: Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)",
+        "@unblok/database generate: ",
+        "@unblok/database generate: Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate",
+        "@unblok/database generate: ",
+        "@unblok/database generate: Exited with code 0"
+      ]
+    },
+    "validate": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "@unblok/database validate: Prisma schema loaded from prisma/schema.prisma",
+        "@unblok/database validate: The schema at prisma/schema.prisma is valid \ud83d\ude80",
+        "@unblok/database validate: Exited with code 0"
+      ]
+    },
+    "web-lint": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "$ bun --filter @unblok/web lint",
+        "@unblok/web lint: Exited with code 0"
+      ]
+    },
+    "web-tests": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "@unblok/web test:    Duration  12.15s (transform 42%, import 35%, tests 20%, worker 2%)",
+        "@unblok/web test: ",
+        "@unblok/web test:   Transform  transforming modules took 9.70s \u00b7 42% of tracked time, re-done on every run",
+        "@unblok/web test:              persist transforms across runs with fsModuleCache: true",
+        "@unblok/web test:              learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns",
+        "@unblok/web test: ",
+        "@unblok/web test: Exited with code 1",
+        "error: script \"test:web\" exited with code 1"
+      ]
+    },
+    "web-build": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "@unblok/web build: ",
+        "@unblok/web build: [plugin builtin:vite-reporter] ",
+        "@unblok/web build: (!) Some chunks are larger than 500 kB after minification. Consider:",
+        "@unblok/web build: - Using dynamic import() to code-split the application",
+        "@unblok/web build: - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting",
+        "@unblok/web build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.",
+        "@unblok/web build: \u2713 built in 1.07s",
+        "@unblok/web build: Exited with code 0"
+      ]
+    }
+  },
+  "historicalMigrationFilesByteIdentical": true,
+  "initialEvidenceUnchanged": true,
+  "intermediateFailures": [
+    "TypeScript ES2022 target rejects toSorted; used ordinary copied-array sort",
+    "Within-budget concurrent management produced documented409 serialization conflicts; measured separate outcomes and sequential success, did not raise limits/timeouts",
+    "Foundation expected old truncate message; new FK rejects direct truncate first; final test asserts both FK and cascade immutable-receipt guard"
+  ],
+  "limitations": [
+    "Directory250ms objective exceeded at concurrency10 and50",
+    "Management concurrency10 only4 successes/20;16serialization conflicts",
+    "10ms sampled PostgreSQL lock waits are not total cumulative waits",
+    "No new Chromium run for SQL correction; initial compatibility evidence retained",
+    "Three unchanged NEXUS fixture failures",
+    "Not deployed; renewed security review required"
+  ]
+}

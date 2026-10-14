@@ -111,7 +111,7 @@ test('fresh migration, replay and schema parity',async()=>{
  expect(await prisma(['migrate','deploy','--schema','packages/database/prisma/schema.prisma'])).toContain('No pending migrations');
  expect(await prisma(['migrate','status','--schema','packages/database/prisma/schema.prisma'])).toContain('Database schema is up to date');
  expect(await prisma(['migrate','diff','--from-schema-datasource','packages/database/prisma/schema.prisma','--to-schema-datamodel','packages/database/prisma/schema.prisma','--exit-code'])).toContain('No difference');
- expect(await database.client.$queryRaw<{count:bigint}[]>`SELECT count(*) FROM _prisma_migrations WHERE finished_at IS NOT NULL`).toEqual([{count:11n}]);
+ expect(await database.client.$queryRaw<{count:bigint}[]>`SELECT count(*) FROM _prisma_migrations WHERE finished_at IS NOT NULL`).toEqual([{count:12n}]);
 },15000);
 test('atomic creation creates one owner, one join, one bounded receipt and no resource grants',async()=>{
  const o=await owned(),t=await make(o);
@@ -176,7 +176,7 @@ test('demotion and durable epoch revocation are not blocked by ownership',async(
 });
 test('archived Team/Workspace metadata reads remain scoped; all foundation writes reject',async()=>{
  const o=await owned(),t=await make(o);
- await database.client.team.update({where:{workspaceId_id:{workspaceId:o.ws,id:t.row.id}},data:{status:'ARCHIVED'}});
+ await database.client.team.update({where:{workspaceId_id:{workspaceId:o.ws,id:t.row.id}},data:{status:'ARCHIVED',version:{increment:1},directoryRevision:{increment:1}}});
  expect((await o.f.http(path(o.ws,t.row.id),'GET',o.client)).status).toBe(200);
  expect((await o.f.http(path(o.ws)+'?status=ARCHIVED','GET',o.client)).status).toBe(200);
  expect((await o.f.http(path(o.ws,t.row.id),'PATCH',o.client,{name:'No'},{'idempotency-key':randomUUID(),'if-match':'"team-1"'})).status).toBe(403);
@@ -199,9 +199,9 @@ test('metadata byte/color bounds and duplicate/unsupported query fields reject',
  for(const query of ['limit=0','limit=101','limit=1&limit=2','sort=name','expand=all'])expect((await o.f.http(path(o.ws)+'?'+query,'GET',o.client)).status).toBe(400);
  const t=await make(o,{...teamInput(),name:'🎯'.repeat(120),description:'🎯'.repeat(2000)});expect(t.row.description.length).toBe(4000);
 });
-test('unimplemented BE-TEAM-02 routes stay denied',async()=>{
+test('unapproved recovery, leave and immediate transfer routes stay denied',async()=>{
  const o=await owned(),t=await make(o);
- for(const suffix of ['/memberships','/ownership-transfer','/archive','/restore']){const response=await o.f.http(path(o.ws,t.row.id)+suffix,'POST',o.client,{}, {'idempotency-key':randomUUID()});expect([403,404]).toContain(response.status);}
+ for(const suffix of ['/recovery','/legacy-repair','/leave','/ownership-transfer']){const response=await o.f.http(path(o.ws,t.row.id)+suffix,'POST',o.client,{}, {'idempotency-key':randomUUID()});expect([403,404]).toContain(response.status);}
 });
 
 test('signed bounded paging binds actor/scope/query/revision; retired keys reject',async()=>{
@@ -215,7 +215,7 @@ test('signed bounded paging binds actor/scope/query/revision; retired keys rejec
  const other=await another(o,'ADMIN');expect((await o.f.http(path(o.ws)+'?limit=1&after='+token,'GET',other.client)).status).toBe(400);
  // Team insertion and explicit joins invalidate the server policy revision.
  expect((await o.f.http(path(o.ws)+'?limit=1&after='+token,'GET',o.client)).status).toBe(409);
- await database.client.team.update({where:{workspaceId_id:{workspaceId:o.ws,id:a.row.id}},data:{status:'ARCHIVED'}});
+ await database.client.team.update({where:{workspaceId_id:{workspaceId:o.ws,id:a.row.id}},data:{status:'ARCHIVED',version:{increment:1},directoryRevision:{increment:1}}});
  expect((await o.f.http(path(o.ws)+'?status=ARCHIVED','GET',o.client)).status).toBe(200);
  const retired=await fixture({settings:o.f.settings,keys:{active:'v2',cursors:{v2:randomBytes(32).toString('hex')},idempotency:workspaceKeys.idempotency}});
  expect((await retired.http(path(o.ws)+'?limit=1&after='+token,'GET',o.client)).status).toBe(400);
@@ -261,17 +261,17 @@ test('original ten-migration upgrade quarantines legacy ownerless Teams with dat
  const up=new Database(upgradeUrl.toString()),directory=await mkdtemp(resolve(tmpdir(),'team-upgrade-'));let exists=false;
  try{
   const schema=Bun.spawn(['git','show','d4b958c74d7383cd269e693745738b3534cd44af:packages/database/prisma/schema.prisma'],{cwd:root,stdout:'pipe'});await writeFile(resolve(directory,'schema.prisma'),await new Response(schema.stdout).text());expect(await schema.exited).toBe(0);
-  const original=(await admin.client.$queryRaw<{migration_name:string}[]>`SELECT migration_name FROM _prisma_migrations ORDER BY migration_name`).map(r=>r.migration_name).filter(m=>m!=='20261014000000_team_foundation');
+  const original=(await admin.client.$queryRaw<{migration_name:string}[]>`SELECT migration_name FROM _prisma_migrations ORDER BY migration_name`).map(r=>r.migration_name).filter(m=>m!=='20261014000000_team_foundation'&&m!=='20261014010000_team_management');
   // Selected application DB may have fewer migrations; the checked-in history is authoritative.
-  const {readdir}=await import('node:fs/promises');const migrations=(await readdir(resolve(root,'packages/database/prisma/migrations'))).filter(m=>/^2026/.test(m)&&m!=='20261014000000_team_foundation');expect(migrations).toHaveLength(10);void original;
+  const {readdir}=await import('node:fs/promises');const migrations=(await readdir(resolve(root,'packages/database/prisma/migrations'))).filter(m=>/^2026/.test(m)&&m!=='20261014000000_team_foundation'&&m!=='20261014010000_team_management');expect(migrations).toHaveLength(10);void original;
   for(const migration of ['migration_lock.toml',...migrations])await cp(resolve(root,'packages/database/prisma/migrations',migration),resolve(directory,'migrations',migration),{recursive:true});
   await admin.client.$executeRawUnsafe(`CREATE DATABASE "${upgradeName}"`);exists=true;
   await prisma(['migrate','deploy','--schema',resolve(directory,'schema.prisma')],upgradeUrl.toString());await up.connect();
   const user=randomUUID(),identity=randomUUID(),ws=randomUUID(),member=randomUUID(),team=randomUUID();
-  await up.transaction(async tx=>{await tx.user.create({data:{id:user,name:'Legacy owner candidate'}});await tx.identity.create({data:{id:identity,userId:user,provider:'test-legacy',subject:user}});await tx.workspace.create({data:{id:ws,name:'Legacy workspace',slug:ws}});await tx.workspaceMembership.create({data:{workspaceId:ws,id:member,userId:user,role:'ADMIN',status:'ACTIVE'}});await tx.$executeRaw`INSERT INTO teams(workspace_id,id,key,name) VALUES(${ws}::uuid,${team}::uuid,'OLD','Legacy retained')`;await tx.teamMembership.create({data:{workspaceId:ws,teamId:team,membershipId:member}});});
+  await up.transaction(async tx=>{await tx.user.create({data:{id:user,name:'Legacy owner candidate'}});await tx.identity.create({data:{id:identity,userId:user,provider:'test-legacy',subject:user}});await tx.workspace.create({data:{id:ws,name:'Legacy workspace',slug:ws}});await tx.workspaceMembership.create({data:{workspaceId:ws,id:member,userId:user,role:'ADMIN',status:'ACTIVE'}});await tx.$executeRaw`INSERT INTO teams(workspace_id,id,key,name) VALUES(${ws}::uuid,${team}::uuid,'OLD','Legacy retained')`;await tx.$executeRaw`INSERT INTO team_memberships(workspace_id,team_id,membership_id) VALUES(${ws}::uuid,${team}::uuid,${member}::uuid)`;});
   const history=await up.client.$queryRaw<{migration_name:string;checksum:string;finished_at:Date}[]>`SELECT migration_name,checksum,finished_at FROM _prisma_migrations ORDER BY migration_name`;
   await prisma(['migrate','deploy','--schema','packages/database/prisma/schema.prisma'],upgradeUrl.toString());
-  const after=await up.client.$queryRaw<typeof history>`SELECT migration_name,checksum,finished_at FROM _prisma_migrations ORDER BY migration_name`;expect(after.slice(0,10)).toEqual(history);expect(after).toHaveLength(11);
+  const after=await up.client.$queryRaw<typeof history>`SELECT migration_name,checksum,finished_at FROM _prisma_migrations ORDER BY migration_name`;expect(after.slice(0,10)).toEqual(history);expect(after).toHaveLength(12);
   const legacy=await up.client.team.findUniqueOrThrow({where:{workspaceId_id:{workspaceId:ws,id:team}}});expect(legacy.name).toBe('Legacy retained');expect(legacy.legacyQuarantined).toBe(true);expect(legacy.ownerMembershipId).toBeNull();
   const f=new AuthFences(up),session=await f.create({userId:user,identityId:identity,sidDigest:randomBytes(32).toString('hex'),absoluteExpiresAt:new Date(Date.now()+60000),idleExpiresAt:new Date(Date.now()+60000)});
   const tenancy=new Tenancy(up,{verify:async()=>null},denyAll,{verify:async()=>session},undefined,workspaceKeys);
@@ -384,7 +384,8 @@ test('closed metadata port rejects unexpected mutation fields instead of mass as
 });
 test('F1 direct and unrelated nested-trigger writes cannot forge derived budgets or slot changes',async()=>{
  const o=await owned(),t=await make(o),before=await budget('deployment');
- await expect(Promise.resolve(database.client.$executeRawUnsafe('TRUNCATE team_mutation_results'))).rejects.toThrow('Team receipt retained');
+ await expect(Promise.resolve(database.client.$executeRawUnsafe('TRUNCATE team_mutation_results'))).rejects.toThrow('cannot truncate a table referenced');
+ await expect(Promise.resolve(database.client.$executeRawUnsafe('TRUNCATE team_mutation_results CASCADE'))).rejects.toThrow('Team receipt retained');
  for(const sql of ["UPDATE team_receipt_budgets SET used=0 WHERE scope='deployment'","UPDATE team_receipt_budgets SET used=used+1 WHERE scope='deployment'","INSERT INTO team_receipt_budgets(scope,used) VALUES ('forged',1)","DELETE FROM team_receipt_budgets WHERE scope='deployment'"]){await expect(Promise.resolve(database.client.$executeRawUnsafe(sql))).rejects.toThrow();}
  for(const assignment of ['used=0','used=used+1'])await expect(database.transaction(async tx=>{
   await tx.$executeRawUnsafe('CREATE TEMP TABLE f1_outer(id integer);');

@@ -1,0 +1,440 @@
+{
+  "base": "41502c012e263a384748e432157f84f09b3cde32",
+  "architectureReviewedHead": "111b44a36533f8062ea7f02106cecdadcdd07555",
+  "gates": {
+    "auth": {
+      "counts": [
+        [
+          "26",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "827"
+      ],
+      "tail": [
+        "(pass) overlapping real HTTP signup/login consumes account budgets even on bounded password admission failures [261.61ms]",
+        "(pass) late Valkey rate operation after acknowledgement timeout still consumes its original atomic budget [813.15ms]",
+        "(pass) overlapping HTTP requests cannot evade IP budgets with different accounts or untrusted forwarded addresses [321.39ms]",
+        "",
+        " 26 pass",
+        " 0 fail",
+        " 827 expect() calls",
+        "Ran 26 tests across 1 file. [16.79s]"
+      ]
+    },
+    "browser": {
+      "counts": [
+        [
+          "1",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "57"
+      ],
+      "tail": [
+        "",
+        "scripts/backend/frontend-teams-browser.test.ts:",
+        "(pass) FE-TEAM-01 real Chromium private Team integration [91087.58ms]",
+        "",
+        " 1 pass",
+        " 0 fail",
+        " 57 expect() calls",
+        "Ran 1 test across 1 file. [92.38s]"
+      ]
+    },
+    "build": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "@unblok/api build:   main.js  97.22 KB  (entry point)",
+        "@unblok/api build: ",
+        "@unblok/api build: Exited with code 0",
+        "@unblok/worker build: Bundled 4 modules in 4ms",
+        "@unblok/worker build: ",
+        "@unblok/worker build:   main.js  5.36 KB  (entry point)",
+        "@unblok/worker build: ",
+        "@unblok/worker build: Exited with code 0"
+      ]
+    },
+    "contracts": {
+      "counts": [
+        [
+          "4",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "39"
+      ],
+      "tail": [
+        "",
+        "scripts/backend/workspace-invitation-contracts.test.ts:",
+        "(pass) live invitation contracts match approved field vocabulary, reject grants and require independent keys [7.52ms]",
+        "",
+        " 4 pass",
+        " 0 fail",
+        " 39 expect() calls",
+        "Ran 4 tests across 4 files. [246.00ms]"
+      ]
+    },
+    "email": {
+      "counts": [
+        [
+          "16",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "468"
+      ],
+      "tail": [
+        "(pass) overlapping wrong HTTP attempts persist exactly the committed accepted attempts, then exhaust durably [1605.64ms]",
+        "(pass) five failed delivery claims recover transactionally; final live lease and late acknowledgement cannot revive old proof [1073.71ms]",
+        "(pass) acknowledged five transport failures permit a bounded replacement without waiting for proof expiry [625.34ms]",
+        "",
+        " 16 pass",
+        " 0 fail",
+        " 468 expect() calls",
+        "Ran 16 tests across 1 file. [21.46s]"
+      ]
+    },
+    "fences": {
+      "counts": [
+        [
+          "24",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "134"
+      ],
+      "tail": [
+        "(pass) expiry during protected work rolls the mutation back before completion [1156.52ms]",
+        "(pass) SQL guards retain fences, bind identities and prevent epoch/revocation rollback [58.78ms]",
+        "(pass) real PostgreSQL outage denies authentication and prevents protected callback execution [99.50ms]",
+        "",
+        " 24 pass",
+        " 0 fail",
+        " 134 expect() calls",
+        "Ran 24 tests across 1 file. [7.33s]"
+      ]
+    },
+    "foundation": {
+      "counts": [
+        [
+          "33",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "772"
+      ],
+      "tail": [
+        "(pass) F1 caller-supplied slots are overridden and rollback/database errors release admission without gaps [263.51ms]",
+        "(pass) F1 cross-Workspace creation waits on deployment admission and cannot duplicate a slot [449.10ms]",
+        "(pass) receipt caps include tombstones; full Workspace/deployment capacity preserves authorized replay [5361.54ms]",
+        "",
+        " 33 pass",
+        " 0 fail",
+        " 772 expect() calls",
+        "Ran 33 tests across 1 file. [37.15s]"
+      ]
+    },
+    "generate": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "Prisma schema loaded from packages/database/prisma/schema.prisma",
+        "",
+        "\u2714 Generated Prisma Client (v6.19.3) to ./node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client in 300ms",
+        "",
+        "Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)",
+        "",
+        "Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints",
+        ""
+      ]
+    },
+    "install": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "bun install v1.4.2 (744846f84)",
+        "",
+        "Checked 389 installs across 506 packages (no changes) [44.00ms]"
+      ]
+    },
+    "integration": {
+      "counts": [
+        [
+          "2",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "5"
+      ],
+      "tail": [
+        "scripts/backend/database.test.ts:",
+        "(pass) Prisma sees the applied migration and rolls back serializable transactions [13.25ms]",
+        "(pass) API readiness uses real Prisma and Valkey lifecycles [91.38ms]",
+        "",
+        " 2 pass",
+        " 0 fail",
+        " 5 expect() calls",
+        "Ran 2 tests across 1 file. [693.00ms]"
+      ]
+    },
+    "lint": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "$ eslint apps/api apps/worker packages/backend-runtime packages/database packages/contracts scripts/backend"
+      ]
+    },
+    "recovery": {
+      "counts": [
+        [
+          "18",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "421"
+      ],
+      "tail": [
+        "(pass) anonymous request uniform timing floor applies to both eligible and absent credential paths [861.18ms]",
+        "(pass) verification-domain MAC cannot redeem recovery even with identical metadata and key; other email cannot consume proof [1124.22ms]",
+        "(pass) an already-minted session principal loses authority when password reset commits before its protected read [675.00ms]",
+        "",
+        " 18 pass",
+        " 0 fail",
+        " 421 expect() calls",
+        "Ran 18 tests across 1 file. [24.27s]"
+      ]
+    },
+    "sessions": {
+      "counts": [
+        [
+          "31",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "473"
+      ],
+      "tail": [
+        "(pass) bootstrap regeneration and anonymous-save timeouts terminalize late callbacks without successor cookie delivery [348.59ms]",
+        "(pass) real cache and PostgreSQL outages prevent revoked-cookie bootstrap recovery [397.03ms]",
+        "(pass) cache-missing bootstrap SID retirement orders after an already-admitted protected write [175.70ms]",
+        "",
+        " 31 pass",
+        " 0 fail",
+        " 473 expect() calls",
+        "Ran 31 tests across 1 file. [18.08s]"
+      ]
+    },
+    "tenancy": {
+      "counts": [
+        [
+          "35",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "135"
+      ],
+      "tail": [
+        "(pass) PR24 PostgreSQL guard regressions > unchanged SUSPENDED assignees retain history; new assignments on INSERT and UPDATE are denied [65.89ms]",
+        "(pass) PR24 PostgreSQL guard regressions > unchanged INVITED assignees retain history; new assignments on INSERT and UPDATE are denied [63.97ms]",
+        "(pass) PR24 PostgreSQL guard regressions > issue restoration requires both active project and active team [42.36ms]",
+        "",
+        " 35 pass",
+        " 0 fail",
+        " 135 expect() calls",
+        "Ran 35 tests across 1 file. [14.88s]"
+      ]
+    },
+    "tests": {
+      "counts": [
+        [
+          "30",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "803"
+      ],
+      "tail": [
+        "(pass) Team archive vs Project restore: child-first enforces active-parent integrity [298.19ms]",
+        "(pass) Team archive vs Project restore: archive-first enforces active-parent integrity [375.86ms]",
+        "(pass) Workspace2000/deployment20000 caps preserve authorized management replay and immutable tombstone status [26362.96ms]",
+        "",
+        " 30 pass",
+        " 0 fail",
+        " 803 expect() calls",
+        "Ran 30 tests across 1 file. [59.29s]"
+      ]
+    },
+    "typecheck": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "$ bun run check:architecture && tsc -p tsconfig.backend.json",
+        "$ bun scripts/backend/check-architecture.ts",
+        "Preserved infrastructure: BE-00C type-only Database backlink: tenancy.ts \u2192 index.ts (no runtime cycle)",
+        "Architecture checked 423 source files and 1156 resolved internal edges; 0 violations."
+      ]
+    },
+    "unit": {
+      "counts": [
+        [
+          "101",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "265"
+      ],
+      "tail": [
+        "(pass) logging and lifecycle > logger applies redaction before serialization [0.35ms]",
+        "(pass) logging and lifecycle > deadlines reject hanging work and preserve completed results [10.24ms]",
+        "(pass) logging and lifecycle > bounded retries and deterministic idempotency keys [0.14ms]",
+        "",
+        " 101 pass",
+        " 0 fail",
+        " 265 expect() calls",
+        "Ran 101 tests across 8 files. [6.88s]"
+      ]
+    },
+    "validate": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "@unblok/database validate: Prisma schema loaded from prisma/schema.prisma",
+        "@unblok/database validate: The schema at prisma/schema.prisma is valid \ud83d\ude80",
+        "@unblok/database validate: Exited with code 0"
+      ]
+    },
+    "web-build": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "@unblok/web build: ",
+        "@unblok/web build: [plugin builtin:vite-reporter] ",
+        "@unblok/web build: (!) Some chunks are larger than 500 kB after minification. Consider:",
+        "@unblok/web build: - Using dynamic import() to code-split the application",
+        "@unblok/web build: - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting",
+        "@unblok/web build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.",
+        "@unblok/web build: \u2713 built in 905ms",
+        "@unblok/web build: Exited with code 0"
+      ]
+    },
+    "web-lint": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "$ bun --filter @unblok/web lint",
+        "@unblok/web lint: Exited with code 0"
+      ]
+    },
+    "web-tests": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "@unblok/web test:    Duration  9.83s (transform 44%, import 33%, tests 21%, worker 2%)",
+        "@unblok/web test: ",
+        "@unblok/web test:   Transform  transforming modules took 8.32s \u00b7 44% of tracked time, re-done on every run",
+        "@unblok/web test:              persist transforms across runs with fsModuleCache: true",
+        "@unblok/web test:              learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns",
+        "@unblok/web test: ",
+        "@unblok/web test: Exited with code 1",
+        "error: script \"test:web\" exited with code 1"
+      ]
+    },
+    "workspaces": {
+      "counts": [
+        [
+          "65",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "1871"
+      ],
+      "tail": [
+        "(pass) replay cannot disclose body/result/expiry after membership-deleted [421.74ms]",
+        "(pass) replay cannot disclose body/result/expiry after membership-suspended [499.97ms]",
+        "(pass) replay cannot disclose body/result/expiry after inaccessible-ledger-pointer [927.38ms]",
+        "",
+        " 65 pass",
+        " 0 fail",
+        " 1871 expect() calls",
+        "Ran 65 tests across 2 files. [34.27s]"
+      ]
+    }
+  },
+  "scopeChecks": {
+    "elevenPredecessorsByteIdentical": true,
+    "frontendSourceAndLockfileUnchanged": true,
+    "documentationRelativeLinksValid": true
+  },
+  "limitations": [
+    "Local measurements only; see performance statuses and objectives",
+    "Three unchanged NEXUS frontend fixture failures",
+    "Not deployed; security review required; no frontend management"
+  ]
+}

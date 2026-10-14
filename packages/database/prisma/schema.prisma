@@ -16,6 +16,11 @@ model BackendFoundation {
 }
 
 // Roles belong to workspace membership, never to the global user.
+enum TeamRole {
+  MEMBER
+  OBSERVER
+}
+
 enum WorkspaceRole {
   ADMIN
   MEMBER
@@ -103,6 +108,7 @@ model PasswordCredential {
 
 // Durable authority, never session payload or credentials. Retain revoked rows.
 model AuthSessionFamily {
+  initiatedTransfers TeamTransferIntent[]
   id                String    @id @default(uuid()) @db.Uuid
   userId            String    @map("user_id") @db.Uuid
   identityId        String    @map("identity_id") @db.Uuid
@@ -159,6 +165,8 @@ model WorkspaceCreationResult {
 }
 
 model WorkspaceMembership {
+  initiatedTransfers TeamTransferIntent[] @relation("TransferInitiator")
+  addressedTransfers TeamTransferIntent[] @relation("TransferSuccessor")
   workspaceId    String           @map("workspace_id") @db.Uuid
   id             String           @default(uuid()) @db.Uuid
   userId         String           @map("user_id") @db.Uuid
@@ -195,6 +203,8 @@ model Team {
   description String @default("") @db.VarChar(2000)
   color String @default("#5645d4") @db.VarChar(7)
   owner TeamMembership? @relation("TeamOwner", fields: [workspaceId, id, ownerMembershipId], references: [workspaceId, teamId, membershipId], onDelete: Restrict, onUpdate: Restrict)
+  directoryRevision BigInt @default(1) @map("directory_revision")
+  transferIntent TeamTransferIntent?
   mutationResults TeamMutationResult[]
   workspace   Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   memberships TeamMembership[]
@@ -211,6 +221,8 @@ model TeamMembership {
   workspaceId  String              @map("workspace_id") @db.Uuid
   teamId       String              @map("team_id") @db.Uuid
   membershipId String              @map("membership_id") @db.Uuid
+  teamRole TeamRole @default(MEMBER) @map("team_role")
+  joinedAt DateTime? @default(now()) @map("joined_at") @db.Timestamptz(3)
   ownedTeams Team[] @relation("TeamOwner")
   team         Team                @relation(fields: [workspaceId, teamId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
   membership   WorkspaceMembership @relation(fields: [workspaceId, membershipId], references: [workspaceId, id], onDelete: Restrict, onUpdate: Restrict)
@@ -400,6 +412,9 @@ model WorkspaceInvitationResult {
 }
 
 model TeamMutationResult {
+  acceptedIntent TeamTransferIntent?
+  httpStatus Int? @map("http_status")
+  intentRevision BigInt? @map("intent_revision")
   deploymentSlot Int @default(0) @unique(map: "team_receipt_deployment_slot_key") @map("deployment_slot")
   workspaceSlot Int @default(0) @map("workspace_slot")
   id String @id @default(uuid()) @db.Uuid
@@ -417,4 +432,33 @@ model TeamMutationResult {
   @@unique([actorId, workspaceId, operation, requestKey])
   @@unique([workspaceId, workspaceSlot], map: "team_receipt_workspace_slot_key")
   @@map("team_mutation_results")
+}
+
+model TeamTransferIntent {
+ acceptedTransaction BigInt? @map("accepted_transaction")
+ acceptanceReceiptId String? @unique @map("acceptance_receipt_id") @db.Uuid
+ consumed Boolean @default(false)
+ acceptanceReceipt TeamMutationResult? @relation(fields:[acceptanceReceiptId],references:[id],onDelete:Restrict,onUpdate:Restrict)
+ workspaceId String @map("workspace_id") @db.Uuid
+ teamId String @map("team_id") @db.Uuid
+ requestId String @unique @map("request_id") @db.Uuid
+ initiatorMembershipId String @map("initiator_membership_id") @db.Uuid
+ successorMembershipId String @map("successor_membership_id") @db.Uuid
+ initiatorUserId String @map("initiator_user_id") @db.Uuid
+ successorUserId String @map("successor_user_id") @db.Uuid
+ sourceFamilyId String @map("source_family_id") @db.Uuid
+ initiatorEpoch BigInt @map("initiator_epoch")
+ successorEpoch BigInt @map("successor_epoch")
+ baseVersion BigInt @map("base_version")
+ policyRevision BigInt @map("policy_revision")
+ revision BigInt @default(1)
+ state String @db.VarChar(12)
+ issuedAt DateTime @map("issued_at") @db.Timestamptz(3)
+ expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+ team Team @relation(fields:[workspaceId,teamId],references:[workspaceId,id],onDelete:Restrict,onUpdate:Restrict)
+ initiator WorkspaceMembership @relation("TransferInitiator",map:"transfer_initiator_fk",fields:[workspaceId,initiatorMembershipId,initiatorUserId],references:[workspaceId,id,userId],onDelete:Restrict,onUpdate:Restrict)
+ successor WorkspaceMembership @relation("TransferSuccessor",map:"transfer_successor_fk",fields:[workspaceId,successorMembershipId,successorUserId],references:[workspaceId,id,userId],onDelete:Restrict,onUpdate:Restrict)
+ sourceFamily AuthSessionFamily @relation(fields:[sourceFamilyId],references:[id],onDelete:Restrict,onUpdate:Restrict)
+ @@id([workspaceId,teamId])
+ @@map("team_transfer_intents")
 }

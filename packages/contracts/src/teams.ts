@@ -11,3 +11,22 @@ export type CreateTeamInput=z.infer<typeof createTeamSchema>;
 export type PatchTeamInput=z.infer<typeof patchTeamSchema>;
 export type TeamListQuery=z.infer<typeof teamQuerySchema>;
 export function teamJsonSchemas(){return Object.fromEntries(Object.entries({TeamCreated:createTeamSchema,TeamPatch:patchTeamSchema,TeamDetail:teamDetailSchema,TeamPage:teamPageSchema}).map(([name,schema])=>[name,z.toJSONSchema(schema)]));}
+
+// Separate management DTOs preserve the existing v1 literal-false capability vocabulary.
+export const teamRoleSchema=z.enum(['MEMBER','OBSERVER']);
+export const teamMemberQuerySchema=z.object({limit:z.string().regex(/^[1-9][0-9]{0,2}$/).transform(Number).pipe(z.number().int().max(100)).optional().default(20),status:z.enum(['ACTIVE','SUSPENDED','INVITED','ALL']).optional().default('ALL'),after:z.string().min(1).max(2048).optional()}).strict();
+export const teamMemberAddSchema=z.object({membershipId:z.uuid(),teamRole:teamRoleSchema}).strict();
+export const teamMemberRoleSchema=z.object({teamRole:teamRoleSchema}).strict();
+export const transferRequestSchema=z.object({successorMembershipId:z.uuid()}).strict();
+export const teamMemberSchema=z.object({membershipId:z.uuid(),displayName:z.string().min(1).max(120),workspaceRole:z.enum(['ADMIN','MEMBER','OBSERVER']),workspaceStatus:z.enum(['ACTIVE','SUSPENDED','INVITED']),teamRole:teamRoleSchema,isOwner:z.boolean(),joinedAt:z.iso.datetime().nullable()}).strict();
+export const teamMemberPageSchema=z.object({items:z.array(teamMemberSchema).max(100),page:teamPageSchema.shape.page}).strict();
+const version=z.string().regex(/^[1-9][0-9]{0,18}$/);
+export const teamMemberMutationSchema=z.object({membershipId:z.uuid(),outcome:z.enum(['ADDED','UPDATED','REMOVED','UNCHANGED']),version,teamRole:teamRoleSchema.optional()}).strict();
+export const transferRecordedSchema=z.object({requestId:z.uuid(),outcome:z.literal('RECORDED')}).strict();
+export const transferAcceptedSchema=z.object({requestId:z.uuid(),outcome:z.literal('ACCEPTED'),version}).strict();
+export const transferRejectedSchema=z.object({requestId:z.uuid(),outcome:z.literal('REJECTED')}).strict();
+export const transferDetailSchema=z.object({requestId:z.uuid(),teamId:z.uuid(),state:z.enum(['PENDING','ACCEPTED','REJECTED','EXPIRED','INVALIDATED']),expiresAt:z.iso.datetime(),baseTeamVersion:version,revision:version,initiatorMembershipId:z.uuid(),successorMembershipId:z.uuid()}).strict();
+export type TeamMemberQuery=z.infer<typeof teamMemberQuerySchema>;
+export type TeamManagementAction='add'|'remove'|'role'|'request'|'accept'|'reject'|'archive'|'restore';
+export type TeamManagementInput={membershipId?:string;teamRole?:'MEMBER'|'OBSERVER';successorMembershipId?:string};
+export function teamManagementJsonSchemas(){return Object.fromEntries(Object.entries({TeamMemberAdd:teamMemberAddSchema,TeamMemberRole:teamMemberRoleSchema,TeamMemberPage:teamMemberPageSchema,TeamMemberMutation:teamMemberMutationSchema,TransferRequest:transferRequestSchema,TransferRecorded:transferRecordedSchema,TransferAccepted:transferAcceptedSchema,TransferRejected:transferRejectedSchema,TransferDetail:transferDetailSchema}).map(([name,schema])=>[name,z.toJSONSchema(schema)]));}

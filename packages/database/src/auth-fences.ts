@@ -47,11 +47,14 @@ async function user(tx: Prisma.TransactionClient, userId: string, exclusive = fa
 
 // Internal to the database package: never expose raw transactions to handlers.
 // Locks survive until transaction commit; SERIALIZABLE conflicts fail closed.
-export async function lockAuthority(tx: Prisma.TransactionClient, authority: PrincipalAuthority, additionalUsers: readonly string[] = []) {
+export async function lockAuthority(tx: Prisma.TransactionClient, authority: PrincipalAuthority, additionalUsers: readonly string[] = [], additionalFamilies: readonly string[] = []) {
   const users = [...new Set([authority.userId, ...additionalUsers])].sort();
   for (const userId of users) id(userId);
   await tx.$queryRaw(Prisma.sql`SELECT id FROM users WHERE id IN (${Prisma.join(users.map(userId => Prisma.sql`${userId}::uuid`))}) ORDER BY id FOR SHARE`);
-  return checkAuthority(tx, authority, true);
+  const families=[...new Set([...(authority.session?[authority.session.familyId]:[]),...additionalFamilies])].sort();
+  for(const familyId of families)id(familyId);
+  if(families.length)await tx.$queryRaw(Prisma.sql`SELECT id FROM auth_session_families WHERE id IN (${Prisma.join(families.map(familyId=>Prisma.sql`${familyId}::uuid`))}) ORDER BY id FOR SHARE`);
+  return checkAuthority(tx, authority, false);
 }
 // Caller must already hold all user and family locks from lockAuthority (or
 // lifecycle's user -> exclusive family locks). Revalidation takes no new locks.

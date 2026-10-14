@@ -1,0 +1,1524 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Unblok BE-TEAM-02 management",
+    "version": "1"
+  },
+  "paths": {
+    "/api/v1/workspaces/{workspaceId}/teams/{teamId}/memberships": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "workspaceId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        {
+          "in": "path",
+          "name": "teamId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "get": {
+        "operationId": "listTeamMembers",
+        "security": [
+          {
+            "cookieSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bounded current-authorized response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamMemberPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "401": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "403": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "404": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "409": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "412": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "413": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "428": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "429": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "503": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ACTIVE",
+                "SUSPENDED",
+                "INVITED",
+                "ALL"
+              ],
+              "default": "ALL"
+            }
+          },
+          {
+            "in": "query",
+            "name": "after",
+            "schema": {
+              "type": "string",
+              "maxLength": 2048
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "addTeamMember",
+        "security": [
+          {
+            "cookieSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bounded current-authorized response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamMemberMutation"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Bounded current-authorized response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamMemberMutation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "401": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "403": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "404": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "409": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "412": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "413": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "428": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "429": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "503": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}$"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\"team-[1-9][0-9]{0,18}\"$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamMemberAdd"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces/{workspaceId}/teams/{teamId}/memberships/{membershipId}": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "workspaceId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        {
+          "in": "path",
+          "name": "teamId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        {
+          "in": "path",
+          "name": "membershipId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "patch": {
+        "operationId": "updateTeamRole",
+        "security": [
+          {
+            "cookieSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bounded current-authorized response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamMemberMutation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "401": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "403": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "404": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "409": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "412": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "413": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "428": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "429": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "503": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}$"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\"team-[1-9][0-9]{0,18}\"$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamMemberRole"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "removeTeamMember",
+        "security": [
+          {
+            "cookieSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bounded current-authorized response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamMemberMutation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "401": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "403": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "404": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "409": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "412": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "413": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "428": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "429": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "503": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}$"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\"team-[1-9][0-9]{0,18}\"$"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/workspaces/{workspaceId}/teams/{teamId}/ownership-transfer-requests": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "workspaceId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        {
+          "in": "path",
+          "name": "teamId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "post": {
+        "operationId": "requestTeamTransfer",
+        "security": [
+          {
+            "cookieSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bounded current-authorized response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferRecorded"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Bounded current-authorized response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferRecorded"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "401": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "403": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "404": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "409": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "412": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "413": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "428": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "429": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "503": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}$"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\"team-[1-9][0-9]{0,18}\"$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces/{workspaceId}/teams/{teamId}/ownership-transfer-requests/{requestId}": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "workspaceId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        {
+          "in": "path",
+          "name": "teamId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        {
+          "in": "path",
+          "name": "requestId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "get": {
+        "operationId": "detailTeamTransfer",
+        "security": [
+          {
+            "cookieSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bounded current-authorized response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "401": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "403": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "404": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "409": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "412": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "413": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "428": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "429": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "503": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces/{workspaceId}/teams/{teamId}/ownership-transfer-requests/{requestId}/accept": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "workspaceId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        {
+          "in": "path",
+          "name": "teamId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        {
+          "in": "path",
+          "name": "requestId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "post": {
+        "operationId": "acceptTeamTransfer",
+        "security": [
+          {
+            "cookieSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bounded current-authorized response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferAccepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "401": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "403": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "404": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "409": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "412": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "413": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "428": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "429": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "503": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}$"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\"team-[1-9][0-9]{0,18}\"$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Empty"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces/{workspaceId}/teams/{teamId}/ownership-transfer-requests/{requestId}/reject": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "workspaceId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        {
+          "in": "path",
+          "name": "teamId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        {
+          "in": "path",
+          "name": "requestId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "post": {
+        "operationId": "rejectTeamTransfer",
+        "security": [
+          {
+            "cookieSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bounded current-authorized response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferRejected"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "401": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "403": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "404": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "409": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "412": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "413": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "428": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "429": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "503": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}$"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\"team-[1-9][0-9]{0,18}\"$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Empty"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces/{workspaceId}/teams/{teamId}/archive": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "workspaceId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        {
+          "in": "path",
+          "name": "teamId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "post": {
+        "operationId": "archiveTeam",
+        "security": [
+          {
+            "cookieSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bounded current-authorized response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "401": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "403": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "404": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "409": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "412": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "413": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "428": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "429": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "503": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}$"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\"team-[1-9][0-9]{0,18}\"$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Empty"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces/{workspaceId}/teams/{teamId}/restore": {
+      "parameters": [
+        {
+          "in": "path",
+          "name": "workspaceId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        {
+          "in": "path",
+          "name": "teamId",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "post": {
+        "operationId": "restoreTeam",
+        "security": [
+          {
+            "cookieSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bounded current-authorized response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "401": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "403": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "404": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "409": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "412": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "413": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "428": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "429": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          },
+          "503": {
+            "description": "Existing generic error envelope; current scope precedes domain disclosure"
+          }
+        },
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}$"
+            }
+          },
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\"team-[1-9][0-9]{0,18}\"$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Empty"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "cookieSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "__Host-unblok.sid",
+        "description": "Development unblok.sid.dev; live primary fences and Origin/CSRF required"
+      }
+    },
+    "schemas": {
+      "TeamMemberAdd": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "membershipId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "teamRole": {
+            "type": "string",
+            "enum": [
+              "MEMBER",
+              "OBSERVER"
+            ]
+          }
+        },
+        "required": [
+          "membershipId",
+          "teamRole"
+        ],
+        "additionalProperties": false
+      },
+      "TeamMemberRole": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "teamRole": {
+            "type": "string",
+            "enum": [
+              "MEMBER",
+              "OBSERVER"
+            ]
+          }
+        },
+        "required": [
+          "teamRole"
+        ],
+        "additionalProperties": false
+      },
+      "TeamMemberPage": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "membershipId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "displayName": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 120
+                },
+                "workspaceRole": {
+                  "type": "string",
+                  "enum": [
+                    "ADMIN",
+                    "MEMBER",
+                    "OBSERVER"
+                  ]
+                },
+                "workspaceStatus": {
+                  "type": "string",
+                  "enum": [
+                    "ACTIVE",
+                    "SUSPENDED",
+                    "INVITED"
+                  ]
+                },
+                "teamRole": {
+                  "type": "string",
+                  "enum": [
+                    "MEMBER",
+                    "OBSERVER"
+                  ]
+                },
+                "isOwner": {
+                  "type": "boolean"
+                },
+                "joinedAt": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "membershipId",
+                "displayName",
+                "workspaceRole",
+                "workspaceStatus",
+                "teamRole",
+                "isOwner",
+                "joinedAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "page": {
+            "type": "object",
+            "properties": {
+              "nextCursor": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 2048
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "hasMore": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "nextCursor",
+              "hasMore"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "items",
+          "page"
+        ],
+        "additionalProperties": false
+      },
+      "TeamMemberMutation": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "membershipId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "ADDED",
+              "UPDATED",
+              "REMOVED",
+              "UNCHANGED"
+            ]
+          },
+          "version": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "teamRole": {
+            "type": "string",
+            "enum": [
+              "MEMBER",
+              "OBSERVER"
+            ]
+          }
+        },
+        "required": [
+          "membershipId",
+          "outcome",
+          "version"
+        ],
+        "additionalProperties": false
+      },
+      "TransferRequest": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "successorMembershipId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "successorMembershipId"
+        ],
+        "additionalProperties": false
+      },
+      "TransferRecorded": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "outcome": {
+            "type": "string",
+            "const": "RECORDED"
+          }
+        },
+        "required": [
+          "requestId",
+          "outcome"
+        ],
+        "additionalProperties": false
+      },
+      "TransferAccepted": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "outcome": {
+            "type": "string",
+            "const": "ACCEPTED"
+          },
+          "version": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          }
+        },
+        "required": [
+          "requestId",
+          "outcome",
+          "version"
+        ],
+        "additionalProperties": false
+      },
+      "TransferRejected": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "outcome": {
+            "type": "string",
+            "const": "REJECTED"
+          }
+        },
+        "required": [
+          "requestId",
+          "outcome"
+        ],
+        "additionalProperties": false
+      },
+      "TransferDetail": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "teamId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "ACCEPTED",
+              "REJECTED",
+              "EXPIRED",
+              "INVALIDATED"
+            ]
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "baseTeamVersion": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "revision": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "initiatorMembershipId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "successorMembershipId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "requestId",
+          "teamId",
+          "state",
+          "expiresAt",
+          "baseTeamVersion",
+          "revision",
+          "initiatorMembershipId",
+          "successorMembershipId"
+        ],
+        "additionalProperties": false
+      },
+      "TeamDetail": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "key": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{2,6}$"
+          },
+          "name": {
+            "type": "string",
+            "description": "Unicode characters 1–120; UTF-8 bytes <=480; no NUL."
+          },
+          "description": {
+            "type": "string",
+            "description": "Unicode characters 0–2000; UTF-8 bytes <=8000; no NUL."
+          },
+          "color": {
+            "type": "string",
+            "enum": [
+              "#5645d4",
+              "#0ea5e9",
+              "#10b981",
+              "#f59e0b",
+              "#ef4444",
+              "#8b5cf6",
+              "#ec4899",
+              "#64748b"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ACTIVE",
+              "ARCHIVED"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "version": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "capabilities": {
+            "type": "object",
+            "properties": {
+              "updateMetadata": {
+                "type": "boolean"
+              },
+              "manageMembers": {
+                "type": "boolean",
+                "const": false
+              },
+              "transferOwnership": {
+                "type": "boolean",
+                "const": false
+              },
+              "archive": {
+                "type": "boolean",
+                "const": false
+              },
+              "restore": {
+                "type": "boolean",
+                "const": false
+              },
+              "readProjects": {
+                "type": "boolean",
+                "const": false
+              },
+              "writeIssues": {
+                "type": "boolean",
+                "const": false
+              }
+            },
+            "required": [
+              "updateMetadata",
+              "manageMembers",
+              "transferOwnership",
+              "archive",
+              "restore",
+              "readProjects",
+              "writeIssues"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "workspaceId",
+          "id",
+          "key",
+          "name",
+          "description",
+          "color",
+          "status",
+          "createdAt",
+          "version",
+          "capabilities"
+        ],
+        "additionalProperties": false
+      },
+      "Empty": {
+        "type": "object",
+        "additionalProperties": false
+      }
+    }
+  }
+}

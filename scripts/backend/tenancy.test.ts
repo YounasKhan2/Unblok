@@ -54,7 +54,7 @@ async function fixture(target = database, authenticate = true) {
         await tx.team.create({ data: { workspaceId, ownerMembershipId: workspaceId === a ? owner : member, id: team, key: 'ENG', name: 'Engineering' } });
         if (workspaceId === a) await tx.teamMembership.create({data:{workspaceId,teamId:team,membershipId:owner}});
       } else await tx.$executeRaw`INSERT INTO teams(workspace_id,id,key,name) VALUES(${workspaceId}::uuid,${team}::uuid,'ENG','Engineering')`;
-      await tx.teamMembership.create({ data: { workspaceId, teamId: team, membershipId: member } });
+      await tx.$executeRaw`INSERT INTO team_memberships(workspace_id,team_id,membership_id) VALUES(${workspaceId}::uuid,${team}::uuid,${member}::uuid)`;
       await tx.project.create({ data: { workspaceId, id: project, teamId: team, key: 'APP', name: 'Application', currentSequence: 1 } });
       await tx.issue.create({ data: { workspaceId, id: issue, projectId: project, sequence: 1, title: workspaceId === a ? 'Tenant A' : 'Tenant B', creatorMembershipId: member } });
     }
@@ -74,7 +74,7 @@ describe('fresh additive migrations and canonical constraints', () => {
     expect(diff).toContain('No difference');
     expect(await database.ready()).toBe(true);
     const applied = await database.client.$queryRaw<{ migration_name: string }[]>`SELECT migration_name FROM _prisma_migrations WHERE finished_at IS NOT NULL ORDER BY migration_name`;
-    expect(applied.map(row => row.migration_name)).toEqual(['20261010000000_foundation', '20261010010000_domain_tenancy', '20261010020000_guard_corrections', '20261010030000_auth_revocation_fences', '20261010040000_password_credentials', '20261010050000_credential_email_ownership', '20261010060000_email_verification', '20261011000000_password_recovery', '20261012000000_workspace_foundation', '20261013000000_workspace_memberships_invitations', '20261014000000_team_foundation']);
+    expect(applied.map(row => row.migration_name)).toEqual(['20261010000000_foundation', '20261010010000_domain_tenancy', '20261010020000_guard_corrections', '20261010030000_auth_revocation_fences', '20261010040000_password_credentials', '20261010050000_credential_email_ownership', '20261010060000_email_verification', '20261011000000_password_recovery', '20261012000000_workspace_foundation', '20261013000000_workspace_memberships_invitations', '20261014000000_team_foundation', '20261014010000_team_management']);
   });
   test('identity keys are unique; users have no global role and email is not an authentication key', async () => {
     const f = await fixture();
@@ -176,6 +176,7 @@ describe('server-owned tenancy and negative authorization', () => {
     });
     await expect(escaped!.issue(f.issue)).rejects.toBeInstanceOf(TenantAccessError);
   });
+  test('Team OBSERVER ceiling permits explicitly authorized reads but denies writes despite Workspace MEMBER and test policy',async()=>{const f=await fixture();await database.client.teamMembership.update({where:{workspaceId_teamId_membershipId:{workspaceId:f.a,teamId:f.team,membershipId:f.member}},data:{teamRole:'OBSERVER'}});expect((await f.tenancy.read(f.principal,f.a,q=>q.issue(f.issue))).id).toBe(f.issue);await expect(f.tenancy.write(f.principal,f.a,q=>q.compareAndSetIssueTitle(f.issue,1,'Must not write'))).rejects.toBeInstanceOf(TenantAccessError);expect((await database.client.issue.findUniqueOrThrow({where:{workspaceId_id:{workspaceId:f.a,id:f.issue}}})).title).toBe('Tenant A');});
   test('authorized optimistic writes update only the scoped row and reject stale versions', async () => {
     const f = await fixture(); await f.tenancy.write(f.principal, f.a, queries => queries.compareAndSetIssueTitle(f.issue, 1, 'Changed A'));
     await expect(f.tenancy.write(f.principal, f.a, queries => queries.compareAndSetIssueTitle(f.issue, 1, 'Stale'))).rejects.toBeInstanceOf(TenantConflictError);
@@ -201,9 +202,9 @@ describe('archival, deletion, and concurrent integrity', () => {
   });
   test('team archival rejects active owned projects; archived project is not visible or writable', async () => {
     const f = await fixture();
-    await expect(Promise.resolve(database.client.team.update({ where: { workspaceId_id: { workspaceId: f.a, id: f.team } }, data: { status: 'ARCHIVED' } }))).rejects.toThrow();
+    await expect(Promise.resolve(database.client.team.update({ where: { workspaceId_id: { workspaceId: f.a, id: f.team } }, data: { status: 'ARCHIVED', version: { increment: 1 }, directoryRevision: { increment: 1 } } }))).rejects.toThrow();
     await database.client.project.update({ where: { workspaceId_id: { workspaceId: f.a, id: f.project } }, data: { status: 'ARCHIVED' } });
-    await database.client.team.update({ where: { workspaceId_id: { workspaceId: f.a, id: f.team } }, data: { status: 'ARCHIVED' } });
+    await database.client.team.update({ where: { workspaceId_id: { workspaceId: f.a, id: f.team } }, data: { status: 'ARCHIVED', version: { increment: 1 }, directoryRevision: { increment: 1 } } });
     await expect(f.tenancy.read(f.principal, f.a, queries => queries.issue(f.issue))).rejects.toBeInstanceOf(TenantAccessError);
     await expect(Promise.resolve(database.client.project.update({ where: { workspaceId_id: { workspaceId: f.a, id: f.project } }, data: { status: 'ACTIVE' } }))).rejects.toThrow();
     await expect(Promise.resolve(database.client.issue.update({ where: { workspaceId_id: { workspaceId: f.a, id: f.issue } }, data: { title: 'Direct attack' } }))).rejects.toThrow();
@@ -332,7 +333,7 @@ describe('PR24 PostgreSQL guard regressions', () => {
       await prisma(['migrate', 'deploy', '--schema', 'packages/database/prisma/schema.prisma'], upgradeUrl.toString());
       const after = await upgrade.client.$queryRaw<typeof history>`SELECT migration_name, checksum, finished_at FROM _prisma_migrations ORDER BY migration_name`;
       expect(after.slice(0, 2)).toEqual(history);
-      expect(after).toHaveLength(11);
+      expect(after).toHaveLength(12);
       expect(await upgrade.client.passwordCredential.count()).toBe(0); // No implicit credential/contact-email migration.
       expect((await upgrade.client.user.findUniqueOrThrow({ where: { id: f.actor } })).authEpoch).toBe(1n);
       expect(await upgrade.client.authSessionFamily.count()).toBe(0);
@@ -399,7 +400,7 @@ describe('PR24 PostgreSQL guard regressions', () => {
     await database.client.issue.update({ where, data: { status: 'ARCHIVED' } });
     await database.client.project.update({ where: { workspaceId_id: { workspaceId: f.a, id: f.project } }, data: { status: 'ARCHIVED' } });
     await expect(Promise.resolve(database.client.issue.update({ where, data: { status: 'ACTIVE' } }))).rejects.toThrow('Issue requires active owning project and team');
-    await database.client.team.update({ where: { workspaceId_id: { workspaceId: f.a, id: f.team } }, data: { status: 'ARCHIVED' } });
+    await database.client.team.update({ where: { workspaceId_id: { workspaceId: f.a, id: f.team } }, data: { status: 'ARCHIVED', version: { increment: 1 }, directoryRevision: { increment: 1 } } });
     await expect(Promise.resolve(database.client.issue.update({ where, data: { status: 'ACTIVE' } }))).rejects.toThrow('Issue requires active owning project and team');
     expect((await database.client.issue.findUniqueOrThrow({ where })).status).toBe('ARCHIVED');
   });
