@@ -1,0 +1,781 @@
+{
+  "base": "d0fbdf9d338b22570ef53028174e046bb63349f4",
+  "samplingIntervalRequestedUs": 1000,
+  "windows": "Unix-microsecond HTTP workload windows matched to Bun/JSC CPU-profile sample timestamps; excludes signup/seeding/calibration.",
+  "loads": [
+    {
+      "detailed": false,
+      "concurrency": 1,
+      "samples": 874,
+      "sampledIntervalMs": 4927.606,
+      "topSelfFrames": [
+        {
+          "function": "query",
+          "source": "(native/host)",
+          "sampledIntervalMs": 891.889,
+          "weightedSamplePercent": 18.099844021620235
+        },
+        {
+          "function": "(anonymous)",
+          "source": "(native/host)",
+          "sampledIntervalMs": 191.68,
+          "weightedSamplePercent": 3.889921393877676
+        },
+        {
+          "function": "getTraceParent",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 101.784,
+          "weightedSamplePercent": 2.0655872243032416
+        },
+        {
+          "function": "parse",
+          "source": "(native/host)",
+          "sampledIntervalMs": 101.72,
+          "weightedSamplePercent": 2.0642884191633826
+        },
+        {
+          "function": "_request",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 81.835,
+          "weightedSamplePercent": 1.6607456034431325
+        },
+        {
+          "function": "dispatchBatches",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 61.333,
+          "weightedSamplePercent": 1.244681494421429
+        },
+        {
+          "function": "startTransaction",
+          "source": "(native/host)",
+          "sampledIntervalMs": 54.13,
+          "weightedSamplePercent": 1.0985050346963616
+        },
+        {
+          "function": "(host)",
+          "source": "(native/host)",
+          "sampledIntervalMs": 53.715,
+          "weightedSamplePercent": 1.0900830951175886
+        },
+        {
+          "function": "writeBuffered",
+          "source": "(native/host)",
+          "sampledIntervalMs": 52.01,
+          "weightedSamplePercent": 1.0554821144385327
+        },
+        {
+          "function": "(anonymous)",
+          "source": "node_modules/.bun/@nestjs+core@11.2.7+29d09f58b31fab2f/node_modules/@nestjs/core/interceptors/interceptors-consumer.js",
+          "sampledIntervalMs": 51.744,
+          "weightedSamplePercent": 1.0500839555759938
+        },
+        {
+          "function": "request",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 50.405,
+          "weightedSamplePercent": 1.0229105167905064
+        },
+        {
+          "function": "parse",
+          "source": "(native/host)",
+          "sampledIntervalMs": 50.351,
+          "weightedSamplePercent": 1.0218146499537504
+        },
+        {
+          "function": "(anonymous)",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 48.209,
+          "weightedSamplePercent": 0.9783452654290947
+        },
+        {
+          "function": "metrics",
+          "source": "(native/host)",
+          "sampledIntervalMs": 44.002,
+          "weightedSamplePercent": 0.8929691213136765
+        },
+        {
+          "function": "parse",
+          "source": "(native/host)",
+          "sampledIntervalMs": 41.141,
+          "weightedSamplePercent": 0.8349084727959175
+        },
+        {
+          "function": "stringify",
+          "source": "(native/host)",
+          "sampledIntervalMs": 38.801,
+          "weightedSamplePercent": 0.7874209098698232
+        },
+        {
+          "function": "onRSDefaultControllerPullFulfilled",
+          "source": "(native/host)",
+          "sampledIntervalMs": 35.945,
+          "weightedSamplePercent": 0.7294617305036157
+        },
+        {
+          "function": "nestArgument",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 35.392,
+          "weightedSamplePercent": 0.7182392423420216
+        },
+        {
+          "function": "then",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 33.807,
+          "weightedSamplePercent": 0.6860735213002014
+        },
+        {
+          "function": "cloneObject",
+          "source": "(native/host)",
+          "sampledIntervalMs": 32.89,
+          "weightedSamplePercent": 0.6674640789056593
+        }
+      ]
+    },
+    {
+      "detailed": false,
+      "concurrency": 10,
+      "samples": 521,
+      "sampledIntervalMs": 1605.551,
+      "topSelfFrames": [
+        {
+          "function": "vr",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 206.749,
+          "weightedSamplePercent": 12.87713688322576
+        },
+        {
+          "function": "query",
+          "source": "(native/host)",
+          "sampledIntervalMs": 185.668,
+          "weightedSamplePercent": 11.56412969753063
+        },
+        {
+          "function": "(anonymous)",
+          "source": "(native/host)",
+          "sampledIntervalMs": 48.889,
+          "weightedSamplePercent": 3.0449982591646108
+        },
+        {
+          "function": "stringify",
+          "source": "(native/host)",
+          "sampledIntervalMs": 25.873,
+          "weightedSamplePercent": 1.6114717003695305
+        },
+        {
+          "function": "parse",
+          "source": "(native/host)",
+          "sampledIntervalMs": 24.449,
+          "weightedSamplePercent": 1.5227794071941658
+        },
+        {
+          "function": "cpuUsage",
+          "source": "(native/host)",
+          "sampledIntervalMs": 23.9,
+          "weightedSamplePercent": 1.4885855385472029
+        },
+        {
+          "function": "wf",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 22.835,
+          "weightedSamplePercent": 1.4222531704069195
+        },
+        {
+          "function": "stringify",
+          "source": "(native/host)",
+          "sampledIntervalMs": 17.985,
+          "weightedSamplePercent": 1.1201761887352069
+        },
+        {
+          "function": "(unknown)",
+          "source": "(native/host)",
+          "sampledIntervalMs": 17.294,
+          "weightedSamplePercent": 1.077138004336206
+        },
+        {
+          "function": "am",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 16.705,
+          "weightedSamplePercent": 1.0404527791393734
+        },
+        {
+          "function": "dispatchBatches",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 16.039,
+          "weightedSamplePercent": 0.9989716925840413
+        },
+        {
+          "function": "am",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 15.464,
+          "weightedSamplePercent": 0.963158442179663
+        },
+        {
+          "function": "parse",
+          "source": "(native/host)",
+          "sampledIntervalMs": 15.36,
+          "weightedSamplePercent": 0.9566809151500014
+        },
+        {
+          "function": "Error",
+          "source": "(native/host)",
+          "sampledIntervalMs": 14.484,
+          "weightedSamplePercent": 0.902120206707853
+        },
+        {
+          "function": "(anonymous)",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 13.898,
+          "weightedSamplePercent": 0.8656218332522604
+        },
+        {
+          "function": "performProxyObjectGet",
+          "source": "(native/host)",
+          "sampledIntervalMs": 13.404,
+          "weightedSamplePercent": 0.8348535798613684
+        },
+        {
+          "function": "stringify",
+          "source": "(native/host)",
+          "sampledIntervalMs": 11.51,
+          "weightedSamplePercent": 0.7168878472250336
+        },
+        {
+          "function": "copyDataProperties",
+          "source": "(native/host)",
+          "sampledIntervalMs": 11.502,
+          "weightedSamplePercent": 0.7163895759150597
+        },
+        {
+          "function": "getGlobalTracingHelper",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 11.453,
+          "weightedSamplePercent": 0.7133376641414692
+        },
+        {
+          "function": "_executeRequest",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 10.788,
+          "weightedSamplePercent": 0.6719188614998839
+        }
+      ]
+    },
+    {
+      "detailed": false,
+      "concurrency": 50,
+      "samples": 474,
+      "sampledIntervalMs": 3549.276,
+      "topSelfFrames": [
+        {
+          "function": "spawn",
+          "source": "(native/host)",
+          "sampledIntervalMs": 1315.32,
+          "weightedSamplePercent": 37.05882551821836
+        },
+        {
+          "function": "query",
+          "source": "(native/host)",
+          "sampledIntervalMs": 277.357,
+          "weightedSamplePercent": 7.814466950442851
+        },
+        {
+          "function": "(anonymous)",
+          "source": "(native/host)",
+          "sampledIntervalMs": 54.627,
+          "weightedSamplePercent": 1.5391026226193736
+        },
+        {
+          "function": "dispatchBatches",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 50.935,
+          "weightedSamplePercent": 1.4350814081519725
+        },
+        {
+          "function": "request",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 49.441,
+          "weightedSamplePercent": 1.3929883164904617
+        },
+        {
+          "function": "get",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 40.875,
+          "weightedSamplePercent": 1.1516433210604078
+        },
+        {
+          "function": "#onClose",
+          "source": "node:_http_server",
+          "sampledIntervalMs": 32.547,
+          "weightedSamplePercent": 0.9170039185456414
+        },
+        {
+          "function": "values",
+          "source": "(native/host)",
+          "sampledIntervalMs": 32.35,
+          "weightedSamplePercent": 0.9114534907964329
+        },
+        {
+          "function": "Error",
+          "source": "(native/host)",
+          "sampledIntervalMs": 32.174,
+          "weightedSamplePercent": 0.9064947330103379
+        },
+        {
+          "function": "writeBuffered",
+          "source": "(native/host)",
+          "sampledIntervalMs": 32.075,
+          "weightedSamplePercent": 0.9037054317556594
+        },
+        {
+          "function": "e",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 30.655,
+          "weightedSamplePercent": 0.8636972723451205
+        },
+        {
+          "function": "request",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 28.754,
+          "weightedSamplePercent": 0.8101370533032652
+        },
+        {
+          "function": "asyncFunctionDrive",
+          "source": "(native/host)",
+          "sampledIntervalMs": 27.069,
+          "weightedSamplePercent": 0.7626625824534355
+        },
+        {
+          "function": "Error",
+          "source": "(native/host)",
+          "sampledIntervalMs": 26.434,
+          "weightedSamplePercent": 0.7447716097592861
+        },
+        {
+          "function": "request",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 24.359,
+          "weightedSamplePercent": 0.6863089824516324
+        },
+        {
+          "function": "(anonymous)",
+          "source": "apps/api/src/modules/sessions/application/sessions.ts",
+          "sampledIntervalMs": 21.686,
+          "weightedSamplePercent": 0.610997848575315
+        },
+        {
+          "function": "handleProxyGetTrapResult",
+          "source": "(native/host)",
+          "sampledIntervalMs": 20.958,
+          "weightedSamplePercent": 0.5904866231873768
+        },
+        {
+          "function": "bound safeParse",
+          "source": "(native/host)",
+          "sampledIntervalMs": 20.2,
+          "weightedSamplePercent": 0.5691301549949905
+        },
+        {
+          "function": "(anonymous)",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 20.022,
+          "weightedSamplePercent": 0.564115047688599
+        },
+        {
+          "function": "writeBuffered",
+          "source": "(native/host)",
+          "sampledIntervalMs": 19.032,
+          "weightedSamplePercent": 0.5362220351418149
+        }
+      ]
+    },
+    {
+      "detailed": true,
+      "concurrency": 1,
+      "samples": 696,
+      "sampledIntervalMs": 6610.328,
+      "topSelfFrames": [
+        {
+          "function": "all",
+          "source": "(native/host)",
+          "sampledIntervalMs": 1767.585,
+          "weightedSamplePercent": 26.73974725611195
+        },
+        {
+          "function": "query",
+          "source": "(native/host)",
+          "sampledIntervalMs": 895.466,
+          "weightedSamplePercent": 13.546468495965707
+        },
+        {
+          "function": "(anonymous)",
+          "source": "(native/host)",
+          "sampledIntervalMs": 194.166,
+          "weightedSamplePercent": 2.9373126416722437
+        },
+        {
+          "function": "metrics",
+          "source": "(native/host)",
+          "sampledIntervalMs": 108.536,
+          "weightedSamplePercent": 1.6419154995032017
+        },
+        {
+          "function": "copyDataProperties",
+          "source": "(native/host)",
+          "sampledIntervalMs": 92.609,
+          "weightedSamplePercent": 1.4009743540713864
+        },
+        {
+          "function": "So",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 74.885,
+          "weightedSamplePercent": 1.132848475900137
+        },
+        {
+          "function": "some",
+          "source": "(native/host)",
+          "sampledIntervalMs": 73.69,
+          "weightedSamplePercent": 1.114770704267625
+        },
+        {
+          "function": "dispatchBatches",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 57.04,
+          "weightedSamplePercent": 0.8628921288020807
+        },
+        {
+          "function": "set",
+          "source": "(native/host)",
+          "sampledIntervalMs": 56.386,
+          "weightedSamplePercent": 0.8529985198919025
+        },
+        {
+          "function": "e",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 51.718,
+          "weightedSamplePercent": 0.7823817517073283
+        },
+        {
+          "function": "abort",
+          "source": "(native/host)",
+          "sampledIntervalMs": 51.559,
+          "weightedSamplePercent": 0.7799764247704501
+        },
+        {
+          "function": "Command",
+          "source": "node_modules/.bun/ioredis@5.11.1+759ce506b1ed1a42/node_modules/ioredis/built/Command.js",
+          "sampledIntervalMs": 48.518,
+          "weightedSamplePercent": 0.7339726561223588
+        },
+        {
+          "function": "parse",
+          "source": "(native/host)",
+          "sampledIntervalMs": 47.183,
+          "weightedSamplePercent": 0.7137769865580044
+        },
+        {
+          "function": "copyDataProperties",
+          "source": "(native/host)",
+          "sampledIntervalMs": 45.961,
+          "weightedSamplePercent": 0.6952907631814942
+        },
+        {
+          "function": "(anonymous)",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 43.893,
+          "weightedSamplePercent": 0.6640063851597077
+        },
+        {
+          "function": "stringify",
+          "source": "(native/host)",
+          "sampledIntervalMs": 41.927,
+          "weightedSamplePercent": 0.634265047059692
+        },
+        {
+          "function": "(anonymous)",
+          "source": "internal:streams/readable",
+          "sampledIntervalMs": 41.27,
+          "weightedSamplePercent": 0.624326054622403
+        },
+        {
+          "function": "Error",
+          "source": "(native/host)",
+          "sampledIntervalMs": 39.675,
+          "weightedSamplePercent": 0.6001971460417698
+        },
+        {
+          "function": "parse",
+          "source": "(native/host)",
+          "sampledIntervalMs": 39.051,
+          "weightedSamplePercent": 0.5907573724027008
+        },
+        {
+          "function": "BigInt",
+          "source": "(native/host)",
+          "sampledIntervalMs": 38.397,
+          "weightedSamplePercent": 0.5808637634925226
+        }
+      ]
+    },
+    {
+      "detailed": true,
+      "concurrency": 10,
+      "samples": 517,
+      "sampledIntervalMs": 4200.671,
+      "topSelfFrames": [
+        {
+          "function": "onRSDefaultControllerStartFulfilled",
+          "source": "(native/host)",
+          "sampledIntervalMs": 1262.484,
+          "weightedSamplePercent": 30.054341318327477
+        },
+        {
+          "function": "query",
+          "source": "(native/host)",
+          "sampledIntervalMs": 386.929,
+          "weightedSamplePercent": 9.211123651435686
+        },
+        {
+          "function": "(anonymous)",
+          "source": "(native/host)",
+          "sampledIntervalMs": 139.799,
+          "weightedSamplePercent": 3.3280159288837425
+        },
+        {
+          "function": "copyDataProperties",
+          "source": "(native/host)",
+          "sampledIntervalMs": 74.983,
+          "weightedSamplePercent": 1.785024344920133
+        },
+        {
+          "function": "metrics",
+          "source": "(native/host)",
+          "sampledIntervalMs": 54.765,
+          "weightedSamplePercent": 1.3037202865923088
+        },
+        {
+          "function": "dispatchBatches",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 53.615,
+          "weightedSamplePercent": 1.2763437079457067
+        },
+        {
+          "function": "(anonymous)",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 45.326,
+          "weightedSamplePercent": 1.0790180902051125
+        },
+        {
+          "function": "emitCloseNT",
+          "source": "internal:http",
+          "sampledIntervalMs": 40.411,
+          "weightedSamplePercent": 0.962012973641592
+        },
+        {
+          "function": "run",
+          "source": "node:async_hooks",
+          "sampledIntervalMs": 37.499,
+          "weightedSamplePercent": 0.8926907153642835
+        },
+        {
+          "function": "writeBuffered",
+          "source": "(native/host)",
+          "sampledIntervalMs": 37.322,
+          "weightedSamplePercent": 0.888477102824763
+        },
+        {
+          "function": "get",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 36.604,
+          "weightedSamplePercent": 0.8713845954610585
+        },
+        {
+          "function": "parse",
+          "source": "(native/host)",
+          "sampledIntervalMs": 35.137,
+          "weightedSamplePercent": 0.8364616033962193
+        },
+        {
+          "function": "onNodeHTTPRequest",
+          "source": "node:_http_server",
+          "sampledIntervalMs": 34.034,
+          "weightedSamplePercent": 0.8102038936160437
+        },
+        {
+          "function": "Error",
+          "source": "(native/host)",
+          "sampledIntervalMs": 33.704,
+          "weightedSamplePercent": 0.802348005830497
+        },
+        {
+          "function": "_executeRequest",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 33.52,
+          "weightedSamplePercent": 0.7979677532470407
+        },
+        {
+          "function": "get",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 32.704,
+          "weightedSamplePercent": 0.7785422852682345
+        },
+        {
+          "function": "getOwnPropertyDescriptor",
+          "source": "(native/host)",
+          "sampledIntervalMs": 30.91,
+          "weightedSamplePercent": 0.7358348225795355
+        },
+        {
+          "function": "handlePositiveProxySetTrapResult",
+          "source": "(native/host)",
+          "sampledIntervalMs": 30.862,
+          "weightedSamplePercent": 0.7346921479925469
+        },
+        {
+          "function": "parse",
+          "source": "(native/host)",
+          "sampledIntervalMs": 30.618,
+          "weightedSamplePercent": 0.7288835521753548
+        },
+        {
+          "function": "writeHeadAndEnd",
+          "source": "(native/host)",
+          "sampledIntervalMs": 29.914,
+          "weightedSamplePercent": 0.712124324899522
+        }
+      ]
+    },
+    {
+      "detailed": true,
+      "concurrency": 50,
+      "samples": 501,
+      "sampledIntervalMs": 1657.934,
+      "topSelfFrames": [
+        {
+          "function": "query",
+          "source": "(native/host)",
+          "sampledIntervalMs": 256.841,
+          "weightedSamplePercent": 15.491629944255923
+        },
+        {
+          "function": "parse",
+          "source": "(native/host)",
+          "sampledIntervalMs": 60.872,
+          "weightedSamplePercent": 3.6715574926384282
+        },
+        {
+          "function": "parse",
+          "source": "(native/host)",
+          "sampledIntervalMs": 36.005,
+          "weightedSamplePercent": 2.1716787278625085
+        },
+        {
+          "function": "dispatchBatches",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 32.603,
+          "weightedSamplePercent": 1.966483587404565
+        },
+        {
+          "function": "(anonymous)",
+          "source": "(native/host)",
+          "sampledIntervalMs": 32.036,
+          "weightedSamplePercent": 1.932284397328241
+        },
+        {
+          "function": "(host)",
+          "source": "(native/host)",
+          "sampledIntervalMs": 29.892,
+          "weightedSamplePercent": 1.802966824976145
+        },
+        {
+          "function": "metric",
+          "source": "scripts/backend/.team-directory-profile-run.ts",
+          "sampledIntervalMs": 28.891,
+          "weightedSamplePercent": 1.7425904770636225
+        },
+        {
+          "function": "BigInt",
+          "source": "(native/host)",
+          "sampledIntervalMs": 26.263,
+          "weightedSamplePercent": 1.584079945281296
+        },
+        {
+          "function": "_executeRequest",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 24.32,
+          "weightedSamplePercent": 1.4668858953372088
+        },
+        {
+          "function": "writeBuffered",
+          "source": "(native/host)",
+          "sampledIntervalMs": 23.803,
+          "weightedSamplePercent": 1.435702506854917
+        },
+        {
+          "function": "Error",
+          "source": "(native/host)",
+          "sampledIntervalMs": 20.018,
+          "weightedSamplePercent": 1.2074063261866879
+        },
+        {
+          "function": "am",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 19.606,
+          "weightedSamplePercent": 1.1825561210518634
+        },
+        {
+          "function": "processTicksAndRejections",
+          "source": "(native/host)",
+          "sampledIntervalMs": 19.477,
+          "weightedSamplePercent": 1.1747753529392606
+        },
+        {
+          "function": "metrics",
+          "source": "(native/host)",
+          "sampledIntervalMs": 18.077,
+          "weightedSamplePercent": 1.090332908306362
+        },
+        {
+          "function": "(anonymous)",
+          "source": "scripts/backend/.team-directory-profile-run.ts",
+          "sampledIntervalMs": 16.826,
+          "weightedSamplePercent": 1.014877552423679
+        },
+        {
+          "function": "parse",
+          "source": "(native/host)",
+          "sampledIntervalMs": 15.934,
+          "weightedSamplePercent": 0.9610756519861466
+        },
+        {
+          "function": "commitTransaction",
+          "source": "(native/host)",
+          "sampledIntervalMs": 15.379,
+          "weightedSamplePercent": 0.9276002542923905
+        },
+        {
+          "function": "request",
+          "source": "node_modules/.bun/@prisma+client@6.19.3+ba29487a8124bac9/node_modules/@prisma/client/runtime/library.js",
+          "sampledIntervalMs": 15.294,
+          "weightedSamplePercent": 0.9224733915825358
+        },
+        {
+          "function": "getOwnPropertyDescriptor",
+          "source": "(native/host)",
+          "sampledIntervalMs": 14.56,
+          "weightedSamplePercent": 0.8782014241821448
+        },
+        {
+          "function": "handle",
+          "source": "node_modules/.bun/router@2.2.0+759ce506b1ed1a42/node_modules/router/index.js",
+          "sampledIntervalMs": 13.886,
+          "weightedSamplePercent": 0.8375484186945922
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Weighted sampled VM intervals are not exact CPU milliseconds or database execution time.",
+    "Native Rust query-engine worker stacks and kernel CPU are not resolved by JSC profile.",
+    "Polling and profiler/harness overhead are included; separate process.cpuUsage captures aggregate server/native CPU.",
+    "CPU profiler enabled for final run only; unprofiled initial and repeat measurements retained."
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "base": "d0fbdf9d338b22570ef53028174e046bb63349f4",
+  "approvedHead": "027594b30d4e84ce8af61d8f09ea067ba6daebf4",
+  "merge": "MERGED; local main/origin synchronized clean before investigation",
+  "gates": {
+    "postgresValkeyHttpProfile": {
+      "pass": 1,
+      "fail": 0,
+      "assertions": 102,
+      "requestsPerRun": 300,
+      "statuses": "all200"
+    },
+    "backendLint": "PASS",
+    "backendArchitectureAndTypecheck": "PASS;425sources/1156edges/0violations",
+    "productionAndAllPriorEvidenceByteIdentical": true,
+    "documentationLinks": "PASS",
+    "diffWhitespace": "PASS"
+  },
+  "limitations": [
+    "Finite local bursts;concurrency50 objective unmet;10variable across unprofiled runs",
+    "Native metrics use private pinned6.19.3 constructor configuration only in disposable fixture",
+    "Sampled PG transaction ages/lock waits are not full completed-lifetime distributions",
+    "Bun eventLoopUtilization unavailable;CPU includes native engine/polling;VM samples not exact CPU milliseconds",
+    "Full frontend/security regressions not rerun;approved original evidence preserved",
+    "No production optimization/cache/infrastructure/rate/timeout change"
+  ]
+}
