@@ -63,3 +63,7 @@ FE-AUTH-01 review implementation: [real frontend authentication](../frontend/01-
 ## BE-WS-02 Workspace memberships and invitations
 
 [26 — Memberships and invitations](26-BE-WS-02-MEMBERSHIPS-INVITATIONS.md) records approved policy, bounded admin directory, independent invitation proof/outbox, sorted multi-user PostgreSQL fences and real HTTP/concurrency evidence. Implemented for review only; not merged or deployed. Base includes BE-WS-01 and FE-WS-01 merges.
+
+## Current merged state — 2026-10-14
+
+The review-stage descriptions above are historical phase summaries, not current merge status. PRs #24–#37 and FE-WS-02 [PR #38](https://github.com/YounasKhan2/Unblok/pull/38) are merged. Authentication/session infrastructure, core credentials, verification/recovery, frontend authentication, Workspace creation/discovery and memberships/invitations with frontend integration are in main. Latest merge: `3deaf88f089cc268cda893b8f3e14ec83d210e8d`. See [current roadmap](16-BACKEND-STATUS-AND-ROADMAP.md) and [frontend status](../frontend/00-STATUS.md). Deployment, Team/Project/Issue/Dependency APIs and historical verification risks remain incomplete.
