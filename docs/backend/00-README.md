@@ -72,4 +72,6 @@ The review-stage descriptions above are historical phase summaries, not current 
 
 [28 — BE-TEAM-01 private Team foundation](28-BE-TEAM-01-FOUNDATION.md) records implementation of the four approved routes, additive owner/quarantine/receipt constraints, real security/concurrency/migration tests and query evidence. Merged through PR #40 at `7ac1c39543d7057642db56f99bbd8a070f37a746`; not deployed. The phase report retains its original review-time evidence and operational limitations. BE-TEAM-02 remains deferred.
 
-[FE-TEAM-01 live Team integration](../frontend/04-FE-TEAM-01-INTEGRATION.md) is implemented for human review; not merged or deployed. No backend authorization or migration changes are introduced by that frontend slice.
+[FE-TEAM-01 live Team integration](../frontend/04-FE-TEAM-01-INTEGRATION.md) merged through PR #41 at `f65d9b0603cd76c243afb34cf59155bfa0c32a64`; not deployed. No backend authorization or migration changes are introduced by that frontend slice.
+
+[29 — BE-TEAM-02 architecture proposal](29-BE-TEAM-02-ARCHITECTURE-PROPOSAL.md) proposes explicit membership/role ceilings, transfer, lifecycle, revocation/concurrency and approval-gated owner recovery. Documentation-only draft; no implementation or merge authorized.
