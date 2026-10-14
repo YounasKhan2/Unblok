@@ -1,7 +1,7 @@
 # Unblok — Backend Status and Delivery Roadmap
 
 **Last updated:** 2026-10-14
-**Repository milestone:** BE-WS-01 merged via PR #35 (`d13b09e40cf1599029eef84a35a55a1c9fbfb29e`); FE-WS-01 merged via PR #36 (`0ef38121d940e0bbbc37a6d82b8c2f1fa9049564`); BE-WS-02 merged via PR #37 (`d473e02487d1a6b40225a54b3105bd8fed05d0aa`); FE-WS-02 implemented for review, not merged/deployed
+**Repository milestone:** BE-WS-02 merged through PR #37; FE-WS-02 merged through PR #38 at `3deaf88f089cc268cda893b8f3e14ec83d210e8d`. Authentication, Workspace foundation, directory/invitation APIs and their frontend integrations are merged; not deployed or production-certified.
 **Purpose:** Living, repository-grounded backend delivery tracker. Update when an approved backend PR is merged. This is a status tracker, **not** a replacement for the implementation/security/database architecture contracts in this folder.
 
 > **Status rule:** Check actual merge status and current code before editing. Record implemented vs planned vs verified separately. Do not mark a feature complete solely because a schema, interface, design, or proposal exists. Keep known test failures visible. Update this tracker **with every future backend branch merge**, preferably as part of the reviewed PR before merge; if the merge SHA is not known until afterward, follow with a status-only commit on `main` and record it. Record the PR, merge SHA, changes, new gaps, and new test outcomes. For other Unblok branches, update the relevant status section when they change backend deliverables or dependencies.
@@ -17,7 +17,7 @@
 | BE-00B | NestJS API, worker, infrastructure, configuration, logging, security foundation | Merged | [PR #23](https://github.com/YounasKhan2/Unblok/pull/23); `13-BE-00B-FOUNDATION.md` |
 | BE-00C | PostgreSQL domain schema, tenant isolation, scoped persistence and constraints | Merged | [PR #24](https://github.com/YounasKhan2/Unblok/pull/24), merge `66d419e6c058208605f895b74da77ab37995df21`; `14-BE-00C-DOMAIN-TENANCY.md` |
 | BE-00D | Reusable module conventions, static architecture enforcement and verification investigation | **Merged** | [PR #25](https://github.com/YounasKhan2/Unblok/pull/25), merge `e70d295c19e85161f2601fcf5fc3527ec2d56820`; `15-BE-00D-MODULE-ARCHITECTURE.md` |
-| BE-00E | Authentication, Valkey session and authorization architecture **planning only** | **Merged — implementation not started** | [PR #26](https://github.com/YounasKhan2/Unblok/pull/26), merge `83a52e3d230659dc612ebb9591985649c7f79ef4`; `17-BE-00E-AUTH-SESSION-AUTHORIZATION.md` |
+| BE-00E | Authentication, Valkey session and authorization architecture **planning only** | **Merged planning baseline; subsequent authentication phases are implemented below** | [PR #26](https://github.com/YounasKhan2/Unblok/pull/26), merge `83a52e3d230659dc612ebb9591985649c7f79ef4`; `17-BE-00E-AUTH-SESSION-AUTHORIZATION.md` |
 | BE-00F | Isolated NestJS/Bun/Valkey session compatibility harness and security characterization | **Merged — research only; not production-certified** | [PR #27](https://github.com/YounasKhan2/Unblok/pull/27), merge `f4fc4e1ef1ae18a5dfc7dab94645bccde1d937bf`; `18-BE-00F-SESSION-COMPATIBILITY.md` |
 | BE-00G | Durable PostgreSQL auth epochs/session-family fences and request-bound principal revalidation | **Merged — locally verified; not deployed or production auth-certified** | [PR #28](https://github.com/YounasKhan2/Unblok/pull/28), merge `0059c18a9b16ea1c2e9fc4049f0a2642eaafb799`; [implementation and evidence](19-BE-00G-AUTH-REVOCATION-FENCES.md) |
 | BE-00H | Real bounded Valkey cookie-session infrastructure, request verifier and browser-security boundaries | **Merged; locally verified, not deployed or production-certified** | [PR #29](https://github.com/YounasKhan2/Unblok/pull/29), merge `6499ccbe587a1eb8c1d39826f1b840a634a91f8a`; [security report and evidence](20-BE-00H-SESSION-INFRASTRUCTURE.md); no auth endpoints or frontend integration |
@@ -54,21 +54,21 @@
 
 **FE-AUTH-01 F4 correction:** Reviewed `cab718ea77ab2ddf943f959feb483e307cd25f87`; narrow session-boundary changes durably retire the signed predecessor before fresh anonymous CSRF state. Same-context Chromium reset/relogin passes without deleting cookies or replacing its context. Request-bound principals, transaction fences and CSRF/cookie protections remain enforced. Frontend production, NEXUS, dependencies and migrations are unchanged. The frontend F4 report/evidence preserves successful and failed observations and deployment limitations. This supersedes the local retained-cookie blocker; PR #33 subsequently merged as recorded in the handoff.
 
-**Next action:** Human review of BE-WS-02 memberships/invitations ([report](26-BE-WS-02-MEMBERSHIPS-INVITATIONS.md)). Four Workspace foundation APIs and frontend integration are merged. The new three endpoints, additive migration and reviewed invitation defaults are implemented on the review branch only. Production deployment/security, retention/restore/secret operations and historical reliability/audit findings remain open. No next milestone work is authorized.
+**Next action:** Review a BE-TEAM-01 architecture and authorization proposal before any Team implementation. PR #38 is merged; there is no remaining FE-WS-02 merge decision. Product ownership/delegation/privacy decisions must be approved explicitly. Production and historical verification risks remain open.
 
 ## 3. Remaining production backend capabilities
 
 | Capability | Current state | Priority |
 | --- | --- | --- |
-| Authentication and sessions | Revocation foundation merged; session middleware/verifier/security infrastructure merged and locally verified, not deployed; core credential APIs merged and locally verified, not deployed; broader identity lifecycle and frontend integration still missing | Critical |
-| Workspace foundation / invitations | BE-WS-01 foundation and FE-WS-01 frontend merged; BE-WS-02 admin directory/invitation APIs implemented for review, not merged/deployed; invitation frontend and membership management absent | Critical |
+| Authentication and sessions | Authentication/session fences, credential APIs, verification/recovery and FE-AUTH-01 merged and locally verified; OAuth/MFA and broader lifecycle/deployment remain deferred | Critical |
+| Workspace foundation / invitations | BE-WS-01/FE-WS-01 and BE-WS-02/FE-WS-02 merged; role/removal/suspension and Workspace lifecycle management APIs absent; not deployed | Critical |
 | Team and project APIs | Schema exists; business APIs missing | Critical |
 | Issues CRUD/search/filtering | Bounded scoped persistence primitives exist; business APIs missing | Critical |
 | Dependency graph APIs and cycle-safe writes | Database dependency-write gate active; DAG service missing | Critical |
 | Fine-grained permissions | Deny-by-default policy boundary only; approved action grants missing | Critical |
-| Frontend integration with real APIs | FE-AUTH-01 authentication review implementation; local Chromium verified, production/browser deployment review pending. Business APIs/data integration missing; NEXUS remains a separate demo | Critical |
+| Frontend integration with real APIs | FE-AUTH-01, FE-WS-01 and FE-WS-02 merged; local Chromium evidence exists. Team/Project/Issue/Dependency integration and production/multi-browser acceptance remain missing; NEXUS remains separate | Critical |
 | Audit logs and activity history | Not implemented | High |
-| Notifications and business background jobs | Diagnostic worker only | High |
+| Notifications and business background jobs | Verification, recovery and invitation durable outbox delivery implemented; notifications and other business jobs absent | High |
 | Attachments and file storage workflows | Development infrastructure available; business workflows missing | High |
 | Cycles, milestones and roadmap | Not implemented | High |
 | WebSockets and realtime collaboration | Not implemented | High |
@@ -85,7 +85,7 @@
 6. **Extended functionality.** Audit/activity, notifications, attachments, cycles/milestones, realtime and other approved features with verified worker/authorization design.
 7. **Production readiness.** Resolve infrastructure/shutdown reliability, security, observability, load/lock performance, backup/PITR and deployment requirements with measured evidence.
 
-**Bottom line:** The backend foundation and module architecture are in place, but Unblok does not yet have a production business backend or real-data-driven frontend. Continue with controlled vertical slices while preserving security and existing UX.
+**Bottom line:** The backend foundation and module architecture are in place, but Unblok has real authentication and Workspace APIs/frontend integration, but Team/Project/Issue/Dependency workflows and production readiness remain incomplete. Continue with controlled vertical slices while preserving security and existing UX.
 
 ## 5. Mandatory merge-time maintenance
 
@@ -146,3 +146,11 @@ FE-WS-01 PR #36 merged at `0ef38121d940e0bbbc37a6d82b8c2f1fa9049564`, including 
 ## FE-WS-02 integration review (2026-10-14)
 
 BE-WS-02 and its focused security correction are merged through PR #37 at `d473e02487d1a6b40225a54b3105bd8fed05d0aa`. Historical implementation/review sections above retain their original observations. FE-WS-02 consumes the three merged endpoints in the existing frontend; it adds no backend production capability or migration. Its [frontend report](../frontend/03-FE-WS-02-MEMBERS-INVITATIONS.md) and [verification evidence](../frontend/evidence/FE-WS-02-verification.json) record local tests, failed observations and deployment limits. Frontend integration is implemented for review only, not merged or production-certified. Previously documented queue, lifecycle, audit and NEXUS findings remain open. No subsequent milestone has started.
+
+## FE-WS-02 merge checkpoint — 2026-10-14
+
+Explicitly authorized merge of [PR #38](https://github.com/YounasKhan2/Unblok/pull/38), after confirming reviewed HEAD `99404ed60f9f093b92ecba0b1c64a9306f71f8c2` and mergeability. Merge commit: `3deaf88f089cc268cda893b8f3e14ec83d210e8d`. Fetched remote main and clean local main both matched this SHA. Real ADMIN member-directory, invitation issuance and authenticated acceptance frontend flows are now merged. [Report](../frontend/03-FE-WS-02-MEMBERS-INVITATIONS.md) retains its historical verification: focused99 pass, full frontend832 pass/3 historical failures, real Chromium56 assertions and recorded backend gates. These checks were not rerun at this merge checkpoint. Historical review-time sections above remain evidence, superseded only as to merge status. No reliability, security-deployment or capacity claim is added. Next milestone is Team architecture review, not implementation.
+
+## BE-TEAM-01 architecture proposal — 2026-10-14
+
+[Team proposal](27-BE-TEAM-01-ARCHITECTURE-PROPOSAL.md) prepared from merged FE-WS-02 main. Private Team access requires explicit membership; Workspace ADMIN has no existing-Team bypass. Security/product defaults are approved: BE-TEAM-01 is atomic foundation/create/private list/detail/metadata only; BE-TEAM-02 retains management/transfer/archive/restore with separately approved orphan recovery. Numeric limits and corrected acceptance matrix await final review. No Team implementation or schema change.
