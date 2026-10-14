@@ -81,3 +81,8 @@ The review-stage descriptions above are historical phase summaries, not current 
 Approved PR #43 merged at `d0fbdf9d338b22570ef53028174e046bb63349f4`, reviewed HEAD `027594b30d4e84ce8af61d8f09ea067ba6daebf4`. Backend management is merged, not deployed. [31 — directory latency investigation](31-TEAM-DIRECTORY-PERFORMANCE-INVESTIGATION.md) profiles the complete request path and proposes remediation for review. No performance production change or frontend Team management is authorized. Original evidence is preserved.
 
 [32 — Team directory admission correction](32-TEAM-DIRECTORY-ADMISSION-CORRECTION.md) implements the approved first closed preflight correction for a separate draft review. Three acquisitions/request are proved; the250ms objective remains unmet at50. No implementation merge, further optimization or frontend management is authorized.
+
+
+## Current checkpoint — PR #45 merged
+
+PR #45 merged at `df6c65875fc48a3521cac2754935bb0e04c57a77`; BE-TEAM-02 backend is already merged through PR #43. Earlier review labels above retain historical context. [Living roadmap](16-BACKEND-STATUS-AND-ROADMAP.md) records the approved MVP deferral of the250ms directory objective and retained performance limitations. [FE-TEAM-02 frontend architecture](../frontend/05-FE-TEAM-02-ARCHITECTURE-PROPOSAL.md) is documentation-only for review; no frontend implementation or further optimization is authorized.
