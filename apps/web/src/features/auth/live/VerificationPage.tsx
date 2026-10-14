@@ -1,5 +1,5 @@
 import React,{useRef,useState} from 'react';
-import {Link,useNavigate} from 'react-router-dom';
+import {Link,useNavigate,useSearchParams} from 'react-router-dom';
 import {emailVerificationConfirmSchema} from '@unblok/contracts';
 import {useSession} from '../session/SessionContext';
 import {AuthApiError} from '../api/authApi';
@@ -7,12 +7,12 @@ import {AuthCard} from '../components/AuthCard';
 import {Button} from '../../../components/ui/Button';
 import {AuthField} from './AuthField';
 export function VerificationPage() {
-  const {store,pending,user}=useSession();const navigate=useNavigate();const [code,setCode]=useState(''),[notice,setNotice]=useState(''),[error,setError]=useState('');const submitting=useRef(false);
+  const [params]=useSearchParams();const {store,pending,user}=useSession();const navigate=useNavigate();const [code,setCode]=useState(''),[notice,setNotice]=useState(''),[error,setError]=useState('');const submitting=useRef(false);
   const perform=async(confirm:boolean)=>{
     if(submitting.current)return;setNotice('');setError('');
     if(confirm&&!emailVerificationConfirmSchema.safeParse({token:code}).success){setError('Paste the complete code from your email.');return;}
     submitting.current=true;
-    try{if(confirm){await store.verify(code);setCode('');navigate('/account',{replace:true});}else{await store.submit(()=>store.api.requestVerification());setNotice('Request received. Check your inbox and spam folder for the code.');}}
+    try{if(confirm){await store.verify(code);setCode('');navigate(params.get('returnTo')==='/invite'?'/invite':'/account',{replace:true});}else{await store.submit(()=>store.api.requestVerification());setNotice('Request received. Check your inbox and spam folder for the code.');}}
     catch(cause){setError(cause instanceof AuthApiError?cause.message:'We couldn’t complete your request.');}
     finally{submitting.current=false;}
   };

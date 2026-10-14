@@ -1,5 +1,5 @@
 import React from 'react';
-import {BrowserRouter,Routes,Route,Navigate,Link} from 'react-router-dom';
+import {BrowserRouter,Routes,Route,Navigate} from 'react-router-dom';
 import {PublicLayout} from '../../../app/layouts/PublicLayout';
 import {HomePage} from '../../../pages/public/HomePage';
 import {ProductPage} from '../../../pages/public/ProductPage';
@@ -16,12 +16,14 @@ import {SessionGuard} from './SessionGuard';
 import {CredentialsPage} from './CredentialsPage';
 import {AccountPage} from './AccountPage';
 import {VerificationPage} from './VerificationPage';
-import {AuthCard} from '../components/AuthCard';
+import {MembersProvider} from '../../workspaces/live/MembersContext';
+import {MembersPage} from '../../workspaces/live/MembersPage';
+import {InvitationPage} from '../../workspaces/live/InvitationPage';
 import {LiveWorkspaceProvider} from '../../workspaces/live/WorkspaceContext';
 import {CreateLiveWorkspacePage,LiveWorkspacePage} from '../../workspaces/live/WorkspacePages';
 
 export function LiveRoutes() {
-  return <Routes>
+  return <MembersProvider><Routes>
     <Route element={<PublicLayout/>}>
       <Route path="/" element={<HomePage/>}/><Route path="/product" element={<ProductPage/>}/>
       <Route path="/features" element={<FeaturesPage/>}/><Route path="/solutions" element={<SolutionsPage/>}/>
@@ -30,19 +32,19 @@ export function LiveRoutes() {
     </Route>
     <Route element={<AccountLayout/>}>
       <Route element={<SessionGuard anonymous/>}>
-        <Route path="/login" element={<CredentialsPage mode="login"/>}/><Route path="/signup" element={<CredentialsPage mode="signup"/>}/>
+        <Route path="/login" element={<CredentialsPage key="login" mode="login"/>}/><Route path="/signup" element={<CredentialsPage key="signup" mode="signup"/>}/>
       </Route>
       <Route element={<SessionGuard open/>}>
-        <Route path="/forgot-password" element={<CredentialsPage mode="forgot"/>}/><Route path="/reset-password" element={<CredentialsPage mode="reset"/>}/>
+        <Route path="/forgot-password" element={<CredentialsPage key="forgot" mode="forgot"/>}/><Route path="/reset-password" element={<CredentialsPage key="reset" mode="reset"/>}/>
       </Route>
       <Route element={<SessionGuard/>}>
         <Route path="/account" element={<AccountPage/>}/><Route path="/verify-email" element={<VerificationPage/>}/>
-        <Route path="/onboarding/workspace" element={<CreateLiveWorkspacePage/>}/><Route path="/workspaces/:workspaceId" element={<LiveWorkspacePage/>}/>
+        <Route path="/workspaces/:workspaceId/members" element={<MembersPage/>}/><Route path="/onboarding/workspace" element={<CreateLiveWorkspacePage/>}/><Route path="/workspaces/:workspaceId" element={<LiveWorkspacePage/>}/>
         {['onboarding','my-work','projects','teams','issues','dependencies','cycles','milestones','roadmap','inbox','insights','settings'].map(path=><Route key={path} path={`/${path}/*`} element={<Navigate to="/account" replace/>}/>)}
       </Route>
-      <Route path="/invite/:token" element={<AuthCard appearance="application" title="Workspace invitations" subtitle="Workspace invitations are not connected yet. No access has been granted."><Link to="/account" className="text-accent">Go to your account</Link></AuthCard>}/>
+      <Route path="/invite" element={<InvitationPage/>}/><Route path="/invite/:token" element={<Navigate to="/invite" replace/>}/>
     </Route>
     <Route element={<PublicLayout/>}><Route path="*" element={<PublicNotFoundPage/>}/></Route>
-  </Routes>;
+  </Routes></MembersProvider>;
 }
 export function LiveRouter(){return <LiveWorkspaceProvider><BrowserRouter><LiveRoutes/></BrowserRouter></LiveWorkspaceProvider>;}

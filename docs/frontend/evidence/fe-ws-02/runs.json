@@ -1,0 +1,1279 @@
+[
+  {
+    "base": "d473e02487d1a6b40225a54b3105bd8fed05d0aa",
+    "transport": "real Chromium / same-origin Vite proxy / isolated PostgreSQL / Valkey",
+    "productionCertified": false,
+    "passed": [],
+    "visuals": [],
+    "migration": {
+      "exitCode": 137,
+      "appliedCount": 0,
+      "errorCodes": []
+    },
+    "status": "failed",
+    "failedStep": "setup",
+    "errorType": "Error"
+  },
+  {
+    "base": "d473e02487d1a6b40225a54b3105bd8fed05d0aa",
+    "transport": "real Chromium / same-origin Vite proxy / isolated PostgreSQL / Valkey",
+    "productionCertified": false,
+    "passed": [],
+    "visuals": [],
+    "migration": {
+      "exitCode": 137,
+      "appliedCount": 0,
+      "errorCodes": []
+    },
+    "status": "failed",
+    "failedStep": "setup",
+    "errorType": "Error"
+  },
+  {
+    "base": "d473e02487d1a6b40225a54b3105bd8fed05d0aa",
+    "transport": "real Chromium / same-origin Vite proxy / isolated PostgreSQL / Valkey",
+    "productionCertified": false,
+    "passed": [
+      "real admin signup login verification and workspace"
+    ],
+    "visuals": [],
+    "migration": {
+      "cliRuntime": "Node (existing installed runtime)",
+      "exitCode": 0,
+      "appliedCount": 10,
+      "errorCodes": []
+    },
+    "browser": "151.0.7922.34",
+    "fontMode": "remote fonts blocked; existing system fallback",
+    "status": "failed",
+    "failedStep": "bounded pagination filtering stale cursor",
+    "errorType": "TimeoutError"
+  },
+  {
+    "base": "d473e02487d1a6b40225a54b3105bd8fed05d0aa",
+    "transport": "real Chromium / same-origin Vite proxy / isolated PostgreSQL / Valkey",
+    "productionCertified": false,
+    "passed": [
+      "real admin signup login verification and workspace"
+    ],
+    "visuals": [],
+    "migration": {
+      "cliRuntime": "Node (existing installed runtime)",
+      "exitCode": 0,
+      "appliedCount": 10,
+      "errorCodes": []
+    },
+    "browser": "151.0.7922.34",
+    "fontMode": "remote fonts blocked; existing system fallback",
+    "status": "failed",
+    "failedStep": "bounded pagination filtering stale cursor",
+    "errorType": "TimeoutError"
+  },
+  {
+    "base": "d473e02487d1a6b40225a54b3105bd8fed05d0aa",
+    "transport": "real Chromium / same-origin Vite proxy / isolated PostgreSQL / Valkey",
+    "productionCertified": false,
+    "passed": [
+      "real admin signup login verification and workspace",
+      "bounded pagination filtering stale cursor",
+      "responsive light dark table and dialog keyboard",
+      "committed issuance response loss refresh same-key retry"
+    ],
+    "visuals": [
+      {
+        "scene": "members",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-320-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-320-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-390-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-390-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-768-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-768-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-1024-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-1024-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-1440-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-1440-dark.png"
+      },
+      {
+        "scene": "invitation dialog",
+        "width": 320,
+        "theme": "dark",
+        "file": "invite-dialog-320.png"
+      },
+      {
+        "scene": "invitation dialog",
+        "width": 1440,
+        "theme": "dark",
+        "file": "invite-dialog-1440.png"
+      }
+    ],
+    "migration": {
+      "cliRuntime": "Node (existing installed runtime)",
+      "exitCode": 0,
+      "appliedCount": 10,
+      "errorCodes": []
+    },
+    "browser": "151.0.7922.34",
+    "fontMode": "remote fonts blocked; existing system fallback",
+    "status": "failed",
+    "failedStep": "fragment proof signup login verification acceptance confirmed server context",
+    "errorType": "TimeoutError"
+  },
+  {
+    "base": "d473e02487d1a6b40225a54b3105bd8fed05d0aa",
+    "transport": "real Chromium / same-origin Vite proxy / isolated PostgreSQL / Valkey",
+    "productionCertified": false,
+    "passed": [
+      "real admin signup login verification and workspace",
+      "bounded pagination filtering stale cursor",
+      "responsive light dark table and dialog keyboard",
+      "committed issuance response loss refresh same-key retry",
+      "fragment proof signup login verification acceptance confirmed server context"
+    ],
+    "visuals": [
+      {
+        "scene": "members",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-320-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-320-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-390-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-390-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-768-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-768-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-1024-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-1024-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-1440-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-1440-dark.png"
+      },
+      {
+        "scene": "invitation dialog",
+        "width": 320,
+        "theme": "dark",
+        "file": "invite-dialog-320.png"
+      },
+      {
+        "scene": "invitation dialog",
+        "width": 1440,
+        "theme": "dark",
+        "file": "invite-dialog-1440.png"
+      }
+    ],
+    "migration": {
+      "cliRuntime": "Node (existing installed runtime)",
+      "exitCode": 0,
+      "appliedCount": 10,
+      "errorCodes": []
+    },
+    "browser": "151.0.7922.34",
+    "fontMode": "remote fonts blocked; existing system fallback",
+    "status": "failed",
+    "failedStep": "member denied directory and proof cleared on reload",
+    "errorType": "TimeoutError"
+  },
+  {
+    "base": "d473e02487d1a6b40225a54b3105bd8fed05d0aa",
+    "transport": "real Chromium / same-origin Vite proxy / isolated PostgreSQL / Valkey",
+    "productionCertified": false,
+    "passed": [
+      "real admin signup login verification and workspace",
+      "bounded pagination filtering stale cursor",
+      "responsive light dark table and dialog keyboard",
+      "committed issuance response loss refresh same-key retry",
+      "fragment proof signup login verification acceptance confirmed server context",
+      "member denied directory and proof cleared on reload"
+    ],
+    "visuals": [
+      {
+        "scene": "members",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-320-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-320-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-390-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-390-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-768-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-768-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-1024-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-1024-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-1440-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-1440-dark.png"
+      },
+      {
+        "scene": "invitation dialog",
+        "width": 320,
+        "theme": "dark",
+        "file": "invite-dialog-320.png"
+      },
+      {
+        "scene": "invitation dialog",
+        "width": 1440,
+        "theme": "dark",
+        "file": "invite-dialog-1440.png"
+      }
+    ],
+    "migration": {
+      "cliRuntime": "Node (existing installed runtime)",
+      "exitCode": 0,
+      "appliedCount": 10,
+      "errorCodes": []
+    },
+    "browser": "151.0.7922.34",
+    "fontMode": "remote fonts blocked; existing system fallback",
+    "status": "failed",
+    "failedStep": "revoked session same-tab auth interruption and safe proof retry",
+    "errorType": "TimeoutError"
+  },
+  {
+    "base": "d473e02487d1a6b40225a54b3105bd8fed05d0aa",
+    "transport": "real Chromium / same-origin Vite proxy / isolated PostgreSQL / Valkey",
+    "productionCertified": false,
+    "passed": [
+      "real admin signup login verification and workspace",
+      "bounded pagination filtering stale cursor",
+      "responsive light dark table and dialog keyboard",
+      "committed issuance response loss refresh same-key retry",
+      "fragment proof signup login verification acceptance confirmed server context",
+      "member denied directory and proof cleared on reload"
+    ],
+    "visuals": [
+      {
+        "scene": "members",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-320-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-320-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-390-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-390-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-768-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-768-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-1024-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-1024-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-1440-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-1440-dark.png"
+      },
+      {
+        "scene": "invitation dialog",
+        "width": 320,
+        "theme": "dark",
+        "file": "invite-dialog-320.png"
+      },
+      {
+        "scene": "invitation dialog",
+        "width": 1440,
+        "theme": "dark",
+        "file": "invite-dialog-1440.png"
+      }
+    ],
+    "migration": {
+      "cliRuntime": "Node (existing installed runtime)",
+      "exitCode": 0,
+      "appliedCount": 10,
+      "errorCodes": []
+    },
+    "browser": "151.0.7922.34",
+    "fontMode": "remote fonts blocked; existing system fallback",
+    "status": "failed",
+    "failedStep": "revoked session same-tab auth interruption and safe proof retry",
+    "errorType": "TimeoutError"
+  },
+  {
+    "base": "d473e02487d1a6b40225a54b3105bd8fed05d0aa",
+    "transport": "real Chromium / same-origin Vite proxy / isolated PostgreSQL / Valkey",
+    "productionCertified": false,
+    "passed": [
+      "real admin signup login verification and workspace",
+      "bounded pagination filtering stale cursor",
+      "responsive light dark table and dialog keyboard",
+      "committed issuance response loss refresh same-key retry",
+      "fragment proof signup login verification acceptance confirmed server context",
+      "member denied directory and proof cleared on reload"
+    ],
+    "visuals": [
+      {
+        "scene": "members",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-320-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-320-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-390-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-390-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-768-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-768-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-1024-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-1024-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-1440-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-1440-dark.png"
+      },
+      {
+        "scene": "invitation dialog",
+        "width": 320,
+        "theme": "dark",
+        "file": "invite-dialog-320.png"
+      },
+      {
+        "scene": "invitation dialog",
+        "width": 1440,
+        "theme": "dark",
+        "file": "invite-dialog-1440.png"
+      }
+    ],
+    "migration": {
+      "cliRuntime": "Node (existing installed runtime)",
+      "exitCode": 0,
+      "appliedCount": 10,
+      "errorCodes": []
+    },
+    "browser": "151.0.7922.34",
+    "fontMode": "remote fonts blocked; existing system fallback",
+    "status": "failed",
+    "failedStep": "revoked session same-tab auth interruption and safe proof retry",
+    "errorType": "TimeoutError",
+    "page": {
+      "path": "/login",
+      "alerts": [
+        "Too many attempts. Please wait before trying again."
+      ],
+      "heading": "Welcome back"
+    }
+  },
+  {
+    "base": "d473e02487d1a6b40225a54b3105bd8fed05d0aa",
+    "transport": "real Chromium / same-origin Vite proxy / isolated PostgreSQL / Valkey",
+    "productionCertified": false,
+    "passed": [
+      "real admin signup login verification and workspace",
+      "bounded pagination filtering stale cursor",
+      "responsive light dark table and dialog keyboard",
+      "committed issuance response loss refresh same-key retry",
+      "fragment proof signup login verification acceptance confirmed server context",
+      "member denied directory and proof cleared on reload",
+      "revoked session same-tab auth interruption and safe proof retry"
+    ],
+    "visuals": [
+      {
+        "scene": "members",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-320-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-320-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-390-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-390-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-768-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-768-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-1024-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-1024-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-1440-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-1440-dark.png"
+      },
+      {
+        "scene": "invitation dialog",
+        "width": 320,
+        "theme": "dark",
+        "file": "invite-dialog-320.png"
+      },
+      {
+        "scene": "invitation dialog",
+        "width": 1440,
+        "theme": "dark",
+        "file": "invite-dialog-1440.png"
+      }
+    ],
+    "migration": {
+      "cliRuntime": "Node (existing installed runtime)",
+      "exitCode": 0,
+      "appliedCount": 10,
+      "errorCodes": []
+    },
+    "browser": "151.0.7922.34",
+    "fontMode": "remote fonts blocked; existing system fallback",
+    "coarseRateLimit": {
+      "observed": true,
+      "retryAfter": 23
+    },
+    "status": "failed",
+    "failedStep": "archived workspace read-only and admin demotion",
+    "errorType": "TimeoutError",
+    "page": {
+      "path": "/invite",
+      "alerts": [],
+      "heading": "Workspace invitation"
+    }
+  },
+  {
+    "base": "d473e02487d1a6b40225a54b3105bd8fed05d0aa",
+    "transport": "real Chromium / same-origin Vite proxy / isolated PostgreSQL / Valkey",
+    "productionCertified": false,
+    "passed": [
+      "real admin signup login verification and workspace",
+      "bounded pagination filtering stale cursor",
+      "responsive light dark table and dialog keyboard",
+      "committed issuance response loss refresh same-key retry",
+      "fragment proof signup login verification acceptance confirmed server context",
+      "member denied directory and proof cleared on reload",
+      "revoked session same-tab auth interruption and safe proof retry"
+    ],
+    "visuals": [
+      {
+        "scene": "members",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-320-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-320-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-390-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-390-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-768-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-768-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-1024-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-1024-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-1440-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-1440-dark.png"
+      },
+      {
+        "scene": "invitation dialog",
+        "width": 320,
+        "theme": "dark",
+        "file": "invite-dialog-320.png"
+      },
+      {
+        "scene": "invitation dialog",
+        "width": 1440,
+        "theme": "dark",
+        "file": "invite-dialog-1440.png"
+      }
+    ],
+    "migration": {
+      "cliRuntime": "Node (existing installed runtime)",
+      "exitCode": 0,
+      "appliedCount": 10,
+      "errorCodes": []
+    },
+    "browser": "151.0.7922.34",
+    "fontMode": "remote fonts blocked; existing system fallback",
+    "coarseRateLimit": {
+      "observed": true,
+      "retryAfter": 25
+    },
+    "status": "failed",
+    "failedStep": "archived workspace read-only and admin demotion",
+    "errorType": "TimeoutError",
+    "page": {
+      "path": "/workspaces/41bfbab0-bfae-4aac-bdb0-5b2ecbfc2105/members",
+      "alerts": [
+        "Too many attempts. Please wait before trying again."
+      ]
+    }
+  },
+  {
+    "base": "d473e02487d1a6b40225a54b3105bd8fed05d0aa",
+    "transport": "real Chromium / same-origin Vite proxy / isolated PostgreSQL / Valkey",
+    "productionCertified": false,
+    "passed": [
+      "real admin signup login verification and workspace",
+      "bounded pagination filtering stale cursor",
+      "responsive light dark table and dialog keyboard",
+      "committed issuance response loss refresh same-key retry",
+      "fragment proof signup login verification acceptance confirmed server context",
+      "member denied directory and proof cleared on reload"
+    ],
+    "visuals": [
+      {
+        "scene": "members",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-320-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-320-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-390-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-390-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-768-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-768-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-1024-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-1024-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-1440-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-1440-dark.png"
+      },
+      {
+        "scene": "invitation dialog",
+        "width": 320,
+        "theme": "dark",
+        "file": "invite-dialog-320.png"
+      },
+      {
+        "scene": "invitation dialog",
+        "width": 1440,
+        "theme": "dark",
+        "file": "invite-dialog-1440.png"
+      }
+    ],
+    "migration": {
+      "cliRuntime": "Node (existing installed runtime)",
+      "exitCode": 0,
+      "appliedCount": 10,
+      "errorCodes": []
+    },
+    "browser": "151.0.7922.34",
+    "fontMode": "remote fonts blocked; existing system fallback",
+    "coarseRateLimit": {
+      "observed": true,
+      "retryAfter": 28
+    },
+    "status": "failed",
+    "failedStep": "revoked session same-tab auth interruption and safe proof retry",
+    "errorType": "TimeoutError",
+    "page": {
+      "path": "/invite",
+      "alerts": [
+        "Too many attempts. Please wait before trying again."
+      ],
+      "heading": "Workspace invitation"
+    }
+  },
+  {
+    "base": "d473e02487d1a6b40225a54b3105bd8fed05d0aa",
+    "transport": "real Chromium / same-origin Vite proxy / isolated PostgreSQL / Valkey",
+    "productionCertified": false,
+    "passed": [
+      "real admin signup login verification and workspace",
+      "bounded pagination filtering stale cursor"
+    ],
+    "visuals": [
+      {
+        "scene": "members",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-320-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-320-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-390-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-390-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-768-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-768-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-1024-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-1024-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-1440-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-1440-dark.png"
+      }
+    ],
+    "migration": {
+      "cliRuntime": "Node (existing installed runtime)",
+      "exitCode": 0,
+      "appliedCount": 10,
+      "errorCodes": []
+    },
+    "browser": "151.0.7922.34",
+    "fontMode": "remote fonts blocked; existing system fallback",
+    "status": "failed",
+    "failedStep": "responsive light dark table and dialog keyboard",
+    "errorType": "Error"
+  },
+  {
+    "base": "d473e02487d1a6b40225a54b3105bd8fed05d0aa",
+    "transport": "real Chromium / same-origin Vite proxy / isolated PostgreSQL / Valkey",
+    "productionCertified": false,
+    "passed": [
+      "real admin signup login verification and workspace",
+      "bounded pagination filtering stale cursor",
+      "responsive light dark table and dialog keyboard",
+      "committed issuance response loss refresh same-key retry",
+      "fragment proof signup login verification acceptance confirmed server context",
+      "member denied directory and proof cleared on reload",
+      "revoked session same-tab auth interruption and safe proof retry",
+      "archived workspace read-only and admin demotion",
+      "labelled NEXUS separation"
+    ],
+    "visuals": [
+      {
+        "scene": "members",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-320-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 320,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-320-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-390-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 390,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-390-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-768-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 768,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-768-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-1024-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 1024,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-1024-dark.png"
+      },
+      {
+        "scene": "members",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "light",
+        "file": "members-1440-light.png"
+      },
+      {
+        "scene": "members",
+        "width": 1440,
+        "height": 900,
+        "dpr": 1,
+        "theme": "dark",
+        "file": "members-1440-dark.png"
+      },
+      {
+        "scene": "invitation dialog",
+        "width": 320,
+        "theme": "dark",
+        "file": "invite-dialog-320.png"
+      },
+      {
+        "scene": "invitation dialog",
+        "width": 1440,
+        "theme": "dark",
+        "file": "invite-dialog-1440.png"
+      }
+    ],
+    "migration": {
+      "cliRuntime": "Node (existing installed runtime)",
+      "exitCode": 0,
+      "appliedCount": 10,
+      "errorCodes": []
+    },
+    "browser": "151.0.7922.34",
+    "fontMode": "remote fonts blocked; existing system fallback",
+    "coarseRateLimit": {
+      "observed": true,
+      "retryAfter": 27
+    },
+    "status": "passed",
+    "isolatedFixtures": true,
+    "proofPersistence": "memory only; fragment scrubbed; no proof in evidence/screenshots"
+  }
+]

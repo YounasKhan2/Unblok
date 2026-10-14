@@ -13,6 +13,7 @@ export function CredentialsPage({mode}:{mode:Mode}) {
   const {store,pending}=useSession();const navigate=useNavigate();const [params]=useSearchParams();
   const [name,setName]=useState(''),[email,setEmail]=useState(''),[password,setPassword]=useState(''),[confirmation,setConfirmation]=useState(''),[token,setToken]=useState('');
   const [errors,setErrors]=useState<Record<string,string>>({}),[error,setError]=useState(''),[accepted,setAccepted]=useState(false);
+  const returnTo=params.get('returnTo')==='/invite'?'/invite':'/account',authSuffix=returnTo==='/invite'?'?returnTo=%2Finvite':'';
   const submitting=useRef(false),form=useRef<HTMLFormElement>(null);
   const submit=async(event:React.FormEvent)=>{
     event.preventDefault();if(submitting.current)return;setError('');setErrors({});
@@ -25,14 +26,14 @@ export function CredentialsPage({mode}:{mode:Mode}) {
     if(Object.keys(invalid).length){setErrors(invalid);form.current?.querySelector<HTMLInputElement>(`[name="${Object.keys(invalid)[0]}"]`)?.focus();return;}
     submitting.current=true;
     try{
-      if(mode==='login'){await store.login({email,password});setPassword('');navigate('/account',{replace:true});}
+      if(mode==='login'){await store.login({email,password});setPassword('');navigate(returnTo,{replace:true});}
       else if(mode==='signup'){await store.submit(()=>store.api.signup({name,email,password}));setPassword('');setAccepted(true);}
       else if(mode==='forgot'){await store.submit(()=>store.api.requestRecovery(email));setAccepted(true);}
       else{await store.reset({email,token,password});setToken('');setPassword('');setConfirmation('');setAccepted(true);}
     }catch(cause){setError(cause instanceof AuthApiError?cause.message:'Check your information before trying again.');}
     finally{submitting.current=false;}
   };
-  const footer=<div className="flex flex-wrap justify-center gap-x-4 gap-y-2"><Link to="/login">Sign in</Link><Link to="/signup">Create account</Link>{mode==='login'&&<Link to="/forgot-password">Forgot password?</Link>}</div>;
+  const footer=<div className="flex flex-wrap justify-center gap-x-4 gap-y-2"><Link to={"/login"+authSuffix}>Sign in</Link><Link to={"/signup"+authSuffix}>Create account</Link>{mode==='login'&&<Link to="/forgot-password">Forgot password?</Link>}</div>;
   if(accepted)return <AuthCard appearance="application" title={mode==='forgot'?'Check your email':'Request received'} footer={footer}>
     <p role="status" className="text-sm text-text-secondary">{mode==='reset'?'Your reset request was received. Try signing in with the new password. If it doesn’t work, request a new email. If you are still signed in, return to your account and sign out first.':mode==='signup'?'Your registration request was received. Sign in to continue. An existing account is left unchanged.':'If this email belongs to an account with verified email ownership, you’ll receive a code. Check your inbox and spam folder.'}</p>
     {mode==='reset'&&<div className="mt-4 flex flex-wrap gap-4 text-sm text-accent"><Link to="/account">Your account</Link><Link to="/forgot-password">Request another email</Link></div>}
