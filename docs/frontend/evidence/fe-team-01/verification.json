@@ -1,0 +1,252 @@
+{
+  "base": "7ac1c39543d7057642db56f99bbd8a070f37a746",
+  "branch": "feat/fe-team-01-integration",
+  "implementationHead": "Pinned by the delivery PR; self-referential commit SHA is not embedded in this committed file.",
+  "verifiedAt": "2026-10-14T10:35:44.302354+00:00",
+  "gates": [
+    {
+      "gate": "frozen install",
+      "command": "bun install --frozen-lockfile",
+      "exitCode": 0
+    },
+    {
+      "gate": "frontend typecheck/lint",
+      "command": "bun run lint:web",
+      "exitCode": 0
+    },
+    {
+      "gate": "frontend unit/regression",
+      "command": "bun run test:web",
+      "exitCode": 1,
+      "passed": 857,
+      "failed": 3
+    },
+    {
+      "gate": "frontend build",
+      "command": "bun run build:web",
+      "exitCode": 0
+    },
+    {
+      "gate": "Team frontend focused tests",
+      "command": "bun --filter @unblok/web test -- src/features/teams/live/Teams.test.tsx",
+      "exitCode": 0,
+      "passed": 25,
+      "failed": 0
+    },
+    {
+      "gate": "backend architecture/typecheck",
+      "command": "bun run typecheck:backend",
+      "exitCode": 0
+    },
+    {
+      "gate": "backend lint",
+      "command": "bun run lint:backend",
+      "exitCode": 0
+    },
+    {
+      "gate": "backend unit/architecture serial",
+      "command": "bun run test:backend",
+      "exitCode": 0,
+      "passed": 101,
+      "failed": 0
+    },
+    {
+      "gate": "backend API/worker builds",
+      "command": "bun run build:backend",
+      "exitCode": 0
+    },
+    {
+      "gate": "Team PostgreSQL/Valkey/HTTP + concurrent admission + migration",
+      "command": "bun run test:backend:teams",
+      "exitCode": 0,
+      "passed": 33,
+      "failed": 0
+    },
+    {
+      "gate": "PostgreSQL integration",
+      "command": "bun run test:backend:integration",
+      "exitCode": 0,
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "gate": "tenancy/original-two upgrade",
+      "command": "bun run test:backend:tenancy",
+      "exitCode": 0,
+      "passed": 34,
+      "failed": 0
+    },
+    {
+      "gate": "auth revocation fences",
+      "command": "bun run test:backend:auth-fences",
+      "exitCode": 0,
+      "passed": 24,
+      "failed": 0
+    },
+    {
+      "gate": "Workspace HTTP regression",
+      "command": "bun --env-file=apps/api/.env test apps/api/verification/workspace-integration.test.ts",
+      "exitCode": 0,
+      "passed": 29,
+      "failed": 0
+    },
+    {
+      "gate": "memberships/invitations HTTP",
+      "command": "bun run test:backend:workspace-invitations",
+      "exitCode": 0,
+      "passed": 36,
+      "failed": 0
+    },
+    {
+      "gate": "sessions HTTP/TLS",
+      "command": "BE00H_OPENSSL=/usr/bin/openssl bun run test:backend:sessions",
+      "exitCode": 0,
+      "passed": 31,
+      "failed": 0
+    },
+    {
+      "gate": "authentication HTTP",
+      "command": "bun run test:backend:authentication",
+      "exitCode": 0,
+      "passed": 26,
+      "failed": 0
+    },
+    {
+      "gate": "runtime contract parity",
+      "command": "bun --env-file=apps/api/.env test scripts/backend/workspace-contracts.test.ts scripts/backend/workspace-invitation-contracts.test.ts scripts/backend/team-contracts.test.ts",
+      "exitCode": 0,
+      "passed": 3,
+      "failed": 0
+    },
+    {
+      "gate": "Prisma validation",
+      "command": "node --env-file=apps/api/.env packages/database/node_modules/prisma/build/index.js validate --schema packages/database/prisma/schema.prisma",
+      "exitCode": 0
+    },
+    {
+      "gate": "Chromium real-service flow",
+      "command": "CHROMIUM_EXECUTABLE=/usr/bin/chromium PLAYWRIGHT_MODULE=/opt/codex/cua_node/lib/node_modules/playwright bun --env-file=apps/api/.env test scripts/backend/frontend-teams-browser.test.ts",
+      "exitCode": 0,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "gate": "enterprise design contract check",
+      "command": "node docs/backend/contracts/be-api-00/validate.mjs",
+      "exitCode": 0
+    },
+    {
+      "gate": "scope/documentation links and whitespace",
+      "command": "focused git scope and local Markdown-link checks; git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "architecture": {
+    "sources": 419,
+    "resolvedEdges": 1151,
+    "violations": 0
+  },
+  "migrationEvidence": {
+    "newMigrations": 0,
+    "priorHistoryChanged": false,
+    "freshApplied": 11,
+    "prismaValidation": "passed",
+    "replayStatusDiff": "passed in Team suite",
+    "originalTenUpgrade": "passed in Team suite; retained rows/checksums/timestamps, legacy quarantine",
+    "originalTwoUpgrade": "passed in tenancy suite",
+    "existingDatabasesReset": false
+  },
+  "browser": {
+    "testPassed": 1,
+    "assertions": 57,
+    "scenarios": 12,
+    "captures": 18,
+    "version": "151.0.7922.173",
+    "coarseRateLimit": {
+      "observed": true,
+      "retryAfter": 24
+    },
+    "responseLossReplay": {
+      "creationRequests": 2,
+      "sameCreationKey": true,
+      "sameCreationBody": true,
+      "metadataRequests": 2,
+      "sameMetadataKey": true,
+      "sameMetadataBody": true,
+      "originalIfMatch": [
+        "\"team-1\"",
+        "\"team-1\""
+      ]
+    },
+    "fontMode": "remote fonts blocked; existing system fallback"
+  },
+  "performance": {
+    "fixtureVisibleTeams": 105,
+    "teamSelectorQueries": 1,
+    "observedSelectsIncludingAuth": 38,
+    "limit1": {
+      "returned": 1,
+      "bytes": 2932,
+      "elapsedMs": 128.91
+    },
+    "limit100": {
+      "returned": 52,
+      "bytes": 125275,
+      "elapsedMs": 94.27
+    },
+    "certification": "Local query plan/byte bounds only; no production/load/capacity certification."
+  },
+  "existingFrontendFailures": [
+    {
+      "file": "apps/web/src/data/nexusEnterprise.test.ts",
+      "line": 94,
+      "failure": "Missing resolved blocker (undefined)"
+    },
+    {
+      "file": "apps/web/src/data/nexusEnterprise.test.ts",
+      "line": 152,
+      "failure": "Milestone graph node count 0, expected >=12"
+    },
+    {
+      "file": "apps/web/src/data/nexus/nexusEnterpriseValidation.test.ts",
+      "line": 301,
+      "failure": "Maximum graph fan-out3, expected <=2"
+    }
+  ],
+  "intermediateObservations": [
+    "Initial browser launcher lacked bundled Chromium; existing /usr/bin/chromium151 used without dependency changes.",
+    "Initial accessible tab selector had incorrect case; corrected the harness.",
+    "Repeated navigation reached unchanged coarse120/minute limit. Test waits observed Retry-After then explicitly repeats the read or sign-in; no limit reset/increase.",
+    "Concurrent frontend build/test load caused one backend architecture assertion timeout at its unchanged5s deadline:100 passed/1 failed; serial unchanged rerun101/0.",
+    "Initial Workspace test command used a nonexistent filter and ran zero tests; corrected real integration path29/0.",
+    "Initial frontend typecheck findings in new test fixtures and null narrowing corrected before final gates."
+  ],
+  "preservedKnownRisks": [
+    "same-origin mutations required; existing CORS excludes Idempotency-Key/If-Match",
+    "immutable receipt/tombstone capacity and deployment admission contention",
+    "worker SIGTERM143 and historical queue/intermediate timing/headers-after-send observations",
+    "existing Prisma/deepmerge-ts high advisory",
+    "browser tab journal loss/denial can block reconciliation; pending/expired receipts never auto-rekey",
+    "system fallback fonts, Chromium-only local evidence; production deployment/TLS/mail/proxy/backup/load unverified"
+  ],
+  "notRerun": [
+    "built lifecycle",
+    "infrastructure queue reliability suite",
+    "dependency audit",
+    "production/multi-browser/load certification"
+  ],
+  "scope": {
+    "apiEndpointsUsed": [
+      "GET list",
+      "GET detail",
+      "POST creation",
+      "PATCH metadata"
+    ],
+    "backendProductionChanged": false,
+    "databaseSchemaMigrationsChanged": false,
+    "dependenciesLockChanged": false,
+    "nexusChanged": false,
+    "beTeam02Implemented": false
+  },
+  "mergeAuthorized": false
+}

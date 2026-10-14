@@ -4,7 +4,7 @@ import {Layers} from 'lucide-react';
 import {Button} from '../../../components/ui/Button';
 import './account.css';
 export function AccountLayout() {
-  const members=/^\/workspaces\/[^/]+\/members$/.test(useLocation().pathname);
+  const members=/^\/workspaces\/[^/]+\/(members|teams(?:\/[^/]+)?)$/.test(useLocation().pathname);
   const [dark,setDark]=useState(()=>typeof window!=='undefined'&&window.matchMedia('(prefers-color-scheme: dark)').matches);
   useEffect(()=>{
     const media=window.matchMedia('(prefers-color-scheme: dark)');const update=()=>setDark(media.matches);

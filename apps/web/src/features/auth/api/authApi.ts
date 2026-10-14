@@ -22,12 +22,12 @@ export class AuthApi {
   constructor(private readonly origin='',private readonly transport:Transport=(...args)=>fetch(...args)) {}
   clear() {this.csrf=undefined;this.epoch++;}
   invalidateRequests() {this.epoch++;}
-  private async request<T>(path:string,schema:Schema<T>,body?:unknown,options:{workspace?:boolean;invitation?:boolean;signal?:AbortSignal;key?:string;expectedStatus?:number}={}):Promise<T> {
+  private async request<T>(path:string,schema:Schema<T>,body?:unknown,options:{workspace?:boolean;invitation?:boolean;signal?:AbortSignal;key?:string;expectedStatus?:number;team?:boolean;method?:'PATCH';match?:string}={}):Promise<T> {
     const epoch=this.epoch;
     let response:Response;
     try {response=await this.transport(this.origin+'/api/v1/'+(options.invitation?'workspace-invitations/accept':options.workspace?'workspaces'+path:'auth/'+path),{
-      method:body===undefined?'GET':'POST',credentials:'include',cache:'no-store',redirect:'error',signal:options.signal?AbortSignal.any([options.signal,AbortSignal.timeout(10000)]):AbortSignal.timeout(10000),
-      headers:body===undefined?{}:{'Content-Type':'application/json','X-CSRF-Token':this.csrf!,...(options.key?{'Idempotency-Key':options.key}:{})},
+      method:options.method??(body===undefined?'GET':'POST'),credentials:'include',cache:'no-store',redirect:'error',signal:options.signal?AbortSignal.any([options.signal,AbortSignal.timeout(10000)]):AbortSignal.timeout(10000),
+      headers:body===undefined?{}:{'Content-Type':'application/json','X-CSRF-Token':this.csrf!,...(options.key?{'Idempotency-Key':options.key}:{}),...(options.match?{'If-Match':options.match}:{})},
       ...(body===undefined?{}:{body:JSON.stringify(body)})});}
     catch {throw new AuthApiError(0,'We couldn’t confirm the result. Check your account before trying again.');}
     if(!response.ok) {
@@ -36,7 +36,8 @@ export class AuthApi {
       const messages:Record<number,string>={400:'Check the information you entered.',401:'Your session ended or the sign-in details were incorrect.',403:'Refresh this page before trying again.',429:'Too many attempts. Please wait before trying again.',503:'Unblok is temporarily unavailable. Please try again later.'};
       let code:string|undefined;
       if(options.workspace){try{const value=await response.json();if(['CURSOR_STALE','IDEMPOTENCY_RESULT_EXPIRED'].includes(value?.error?.code))code=value.error.code;}catch{}}
-      const message=options.workspace&&response.status===404?'This workspace is no longer available.':options.workspace&&response.status===409?(code==='CURSOR_STALE'?'Your workspace list changed. Refresh it to continue.':code==='IDEMPOTENCY_RESULT_EXPIRED'?'This request is no longer available. Check your workspaces before creating another.':'We couldn’t confirm this request. Check your workspaces or retry the same request.'):messages[response.status]??'We couldn’t complete your request.';
+      const teamMessages:Record<number,string>={403:'You cannot change this Team. Reload its access before continuing.',404:'This Team is unavailable.',409:code==='CURSOR_STALE'?'The Team list changed. Reload it to continue.':code==='IDEMPOTENCY_RESULT_EXPIRED'?'This request has expired. Check the current Team before starting another.':'The result is uncertain. Retry the same Team request.',412:'The Team changed. Review its current metadata before submitting another edit.',428:'Reload the Team to obtain its current version.'};
+      const message=options.team?(teamMessages[response.status]??messages[response.status]??'We couldn’t complete this Team request.'):options.workspace&&response.status===404?'This workspace is no longer available.':options.workspace&&response.status===409?(code==='CURSOR_STALE'?'Your workspace list changed. Refresh it to continue.':code==='IDEMPOTENCY_RESULT_EXPIRED'?'This request is no longer available. Check your workspaces before creating another.':'We couldn’t confirm this request. Check your workspaces or retry the same request.'):messages[response.status]??'We couldn’t complete your request.';
       throw new AuthApiError(response.status,message,Number.isFinite(retry)&&retry>0?retry:undefined,code);
     }
     if(options.expectedStatus&&response.status!==options.expectedStatus)throw new AuthApiError(503,'We couldn’t validate the response. Please try again later.');
@@ -50,6 +51,9 @@ export class AuthApi {
   });}
   workspaceInvite<T>(id:string,schema:Schema<T>,body:unknown,key:string,signal:AbortSignal) {return this.mutate(()=>{signal.throwIfAborted();return this.request('/'+id+'/invitations',schema,body,{workspace:true,key,signal,expectedStatus:202});});}
   acceptInvitation<T>(schema:Schema<T>,body:unknown,key:string,signal:AbortSignal) {return this.mutate(()=>{signal.throwIfAborted();return this.request('',schema,body,{workspace:true,invitation:true,key,signal,expectedStatus:202});});}
+  teamRead<T>(path:string,schema:Schema<T>,signal:AbortSignal){return this.request(path,schema,undefined,{workspace:true,team:true,signal,expectedStatus:200});}
+  teamCreate<T>(path:string,schema:Schema<T>,body:unknown,key:string,signal:AbortSignal){return this.mutate(()=>{signal.throwIfAborted();return this.request(path,schema,body,{workspace:true,team:true,key,signal,expectedStatus:201});});}
+  teamUpdate<T>(path:string,schema:Schema<T>,body:unknown,key:string,match:string,signal:AbortSignal){return this.mutate(()=>{signal.throwIfAborted();return this.request(path,schema,body,{workspace:true,team:true,key,match,method:'PATCH',signal,expectedStatus:200});});}
   private async mutate<T>(run:()=>Promise<T>) {
     if(this.busy) throw new AuthApiError(409,'Please wait for your current request to finish.');
     this.busy=true;this.epoch++;

@@ -1,3 +1,5 @@
+import {TeamsProvider} from '../../teams/live/TeamsContext';
+import {TeamDirectoryPage,LiveTeamHubPage} from '../../teams/live/TeamsPages';
 import React from 'react';
 import {BrowserRouter,Routes,Route,Navigate} from 'react-router-dom';
 import {PublicLayout} from '../../../app/layouts/PublicLayout';
@@ -23,7 +25,7 @@ import {LiveWorkspaceProvider} from '../../workspaces/live/WorkspaceContext';
 import {CreateLiveWorkspacePage,LiveWorkspacePage} from '../../workspaces/live/WorkspacePages';
 
 export function LiveRoutes() {
-  return <MembersProvider><Routes>
+  return <TeamsProvider><MembersProvider><Routes>
     <Route element={<PublicLayout/>}>
       <Route path="/" element={<HomePage/>}/><Route path="/product" element={<ProductPage/>}/>
       <Route path="/features" element={<FeaturesPage/>}/><Route path="/solutions" element={<SolutionsPage/>}/>
@@ -39,12 +41,13 @@ export function LiveRoutes() {
       </Route>
       <Route element={<SessionGuard/>}>
         <Route path="/account" element={<AccountPage/>}/><Route path="/verify-email" element={<VerificationPage/>}/>
+        <Route path="/workspaces/:workspaceId/teams" element={<TeamDirectoryPage/>}/><Route path="/workspaces/:workspaceId/teams/:teamId" element={<LiveTeamHubPage/>}/>
         <Route path="/workspaces/:workspaceId/members" element={<MembersPage/>}/><Route path="/onboarding/workspace" element={<CreateLiveWorkspacePage/>}/><Route path="/workspaces/:workspaceId" element={<LiveWorkspacePage/>}/>
         {['onboarding','my-work','projects','teams','issues','dependencies','cycles','milestones','roadmap','inbox','insights','settings'].map(path=><Route key={path} path={`/${path}/*`} element={<Navigate to="/account" replace/>}/>)}
       </Route>
       <Route path="/invite" element={<InvitationPage/>}/><Route path="/invite/:token" element={<Navigate to="/invite" replace/>}/>
     </Route>
     <Route element={<PublicLayout/>}><Route path="*" element={<PublicNotFoundPage/>}/></Route>
-  </Routes></MembersProvider>;
+  </Routes></MembersProvider></TeamsProvider>;
 }
 export function LiveRouter(){return <LiveWorkspaceProvider><BrowserRouter><LiveRoutes/></BrowserRouter></LiveWorkspaceProvider>;}

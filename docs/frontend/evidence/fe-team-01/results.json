@@ -1,0 +1,176 @@
+{
+  "base": "7ac1c39543d7057642db56f99bbd8a070f37a746",
+  "transport": "real Chromium / same-origin Vite proxy / isolated PostgreSQL / Valkey",
+  "productionCertified": false,
+  "passed": [
+    "real account authentication and Workspace creation",
+    "lost creation response and reload preserve body and key",
+    "lost metadata acknowledgement replays original key and If-Match",
+    "CAS conflict retains draft and requires explicit fresh-version submission",
+    "same-account Workspace switching clears Team state and foreign detail",
+    "private pagination and signed cursor invalidation",
+    "responsive light dark directory dialog and hub; keyboard focus",
+    "archived Workspace preserves private read-only metadata",
+    "Workspace ADMIN cannot discover or fetch other private Teams",
+    "owner demotion and membership suspension revoke edit and private reads",
+    "session revocation and different-account same-tab isolation",
+    "NEXUS demonstration remains separate"
+  ],
+  "visuals": [
+    {
+      "scene": "CAS conflict retained draft",
+      "width": 320,
+      "theme": "light",
+      "file": "conflict-320-light.png"
+    },
+    {
+      "scene": "CAS conflict retained draft",
+      "width": 1440,
+      "theme": "dark",
+      "file": "conflict-1440-dark.png"
+    },
+    {
+      "scene": "directory",
+      "width": 320,
+      "height": 900,
+      "dpr": 1,
+      "theme": "light",
+      "file": "teams-320-light.png"
+    },
+    {
+      "scene": "directory",
+      "width": 320,
+      "height": 900,
+      "dpr": 1,
+      "theme": "dark",
+      "file": "teams-320-dark.png"
+    },
+    {
+      "scene": "directory",
+      "width": 390,
+      "height": 900,
+      "dpr": 1,
+      "theme": "light",
+      "file": "teams-390-light.png"
+    },
+    {
+      "scene": "directory",
+      "width": 390,
+      "height": 900,
+      "dpr": 1,
+      "theme": "dark",
+      "file": "teams-390-dark.png"
+    },
+    {
+      "scene": "directory",
+      "width": 768,
+      "height": 900,
+      "dpr": 1,
+      "theme": "light",
+      "file": "teams-768-light.png"
+    },
+    {
+      "scene": "directory",
+      "width": 768,
+      "height": 900,
+      "dpr": 1,
+      "theme": "dark",
+      "file": "teams-768-dark.png"
+    },
+    {
+      "scene": "directory",
+      "width": 1024,
+      "height": 900,
+      "dpr": 1,
+      "theme": "light",
+      "file": "teams-1024-light.png"
+    },
+    {
+      "scene": "directory",
+      "width": 1024,
+      "height": 900,
+      "dpr": 1,
+      "theme": "dark",
+      "file": "teams-1024-dark.png"
+    },
+    {
+      "scene": "directory",
+      "width": 1440,
+      "height": 900,
+      "dpr": 1,
+      "theme": "light",
+      "file": "teams-1440-light.png"
+    },
+    {
+      "scene": "directory",
+      "width": 1440,
+      "height": 900,
+      "dpr": 1,
+      "theme": "dark",
+      "file": "teams-1440-dark.png"
+    },
+    {
+      "scene": "create dialog",
+      "width": 320,
+      "theme": "dark",
+      "file": "create-320-dark.png"
+    },
+    {
+      "scene": "create dialog",
+      "width": 1440,
+      "theme": "dark",
+      "file": "create-1440-dark.png"
+    },
+    {
+      "scene": "hub",
+      "width": 320,
+      "theme": "light",
+      "file": "hub-320-light.png"
+    },
+    {
+      "scene": "hub",
+      "width": 320,
+      "theme": "dark",
+      "file": "hub-320-dark.png"
+    },
+    {
+      "scene": "hub",
+      "width": 1440,
+      "theme": "light",
+      "file": "hub-1440-light.png"
+    },
+    {
+      "scene": "hub",
+      "width": 1440,
+      "theme": "dark",
+      "file": "hub-1440-dark.png"
+    }
+  ],
+  "migration": {
+    "cliRuntime": "Node (existing installed runtime)",
+    "exitCode": 0,
+    "appliedCount": 11,
+    "errorCodes": []
+  },
+  "browser": "151.0.7922.173",
+  "fontMode": "remote fonts blocked; existing system fallback",
+  "coarseRateLimit": {
+    "observed": true,
+    "retryAfter": 24
+  },
+  "status": "passed",
+  "isolatedFixtures": true,
+  "journal": "tab-scoped, max8 requests / 128KiB; no auth proofs",
+  "lostResponseReplay": {
+    "creationRequests": 2,
+    "sameCreationKey": true,
+    "sameCreationBody": true,
+    "metadataRequests": 2,
+    "sameMetadataKey": true,
+    "sameMetadataBody": true,
+    "originalIfMatch": [
+      "\"team-1\"",
+      "\"team-1\""
+    ]
+  }
+}

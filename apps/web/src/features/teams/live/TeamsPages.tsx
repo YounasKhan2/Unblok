@@ -1,0 +1,44 @@
+import React, { useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { Users, Search, Plus } from 'lucide-react';
+import { Button } from '../../../components/ui/Button';
+import { useSession } from '../../auth/session/SessionContext';
+import { useLiveWorkspace } from '../../workspaces/live/WorkspaceContext';
+import { useTeams } from './TeamsContext';
+import { TeamDialog } from './TeamDialog';
+import type { TeamFilter } from './TeamsApi';
+function useScope() {
+    const { workspaceId, teamId } = useParams(), w = useLiveWorkspace(), s = useSession(), t = useTeams(), generation = s.store.generation();
+    useEffect(() => { if (workspaceId && s.status === 'authenticated' && !s.pending)
+        void w.store.select(workspaceId); }, [workspaceId, w.store, s.status, s.pending, generation]);
+    useEffect(() => { t.store.route(teamId); }, [teamId, t.store]);
+    return { workspaceId, teamId, w, s, t, current: w.selected === workspaceId ? w.context : null };
+}
+export function TeamDirectoryPage() {
+    const { workspaceId, w, s, t, current } = useScope(), [open, setOpen] = useState(false);
+    useEffect(() => setOpen(false), [workspaceId, s.store.generation(), t.canCreate]);
+    const ready = !!current && t.workspace === workspaceId;
+    return <section className="flex flex-col min-w-0 rounded-lg border border-border bg-surface-base" aria-label="Live Team directory">
+ <header className="flex flex-wrap justify-between gap-3 border-b border-border px-4 py-2.5"><div><h1 className="flex items-center gap-2 text-sm font-bold"><Users size={16}/>Teams</h1><p className="text-xs text-text-secondary">{current?.workspace.name ?? 'Workspace'} · Only Teams you can access{current?.workspace.status === 'ARCHIVED' ? ' · Read only' : ''}</p></div>{ready && t.canCreate && <Button size="sm" variant="primary" icon={<Plus size={14}/>} onClick={() => setOpen(true)}>Create team</Button>}</header>
+ <div className="flex flex-wrap items-center gap-3 border-b border-border p-3"><label className="relative min-w-0 flex-1"><Search className="absolute left-2 top-2 text-text-muted" size={14}/><input aria-label="Search teams" placeholder="Search teams…" disabled aria-describedby="team-search-note" className="w-full rounded-md border border-border bg-surface-subtle py-1.5 pl-7 text-xs"/></label><div className="flex rounded-md border border-border p-0.5">{(['ACTIVE', 'ARCHIVED', 'ALL'] as TeamFilter[]).map(filter => <button key={filter} className={'px-2 py-1 text-xs rounded ' + (t.filter === filter ? 'bg-surface-elevated font-semibold' : 'text-text-muted')} aria-pressed={t.filter === filter} onClick={() => t.store.filter(filter)} disabled={!ready}>{filter[0] + filter.slice(1).toLowerCase()}</button>)}</div><p id="team-search-note" className="w-full text-xs text-text-muted">Search is unavailable until server-side Team search is supported.</p></div>
+ <div className="p-4 space-y-3">{w.selecting && <p role="status" className="text-xs">Checking Workspace access…</p>}{w.contextError && <p role="alert" className="text-xs text-danger">{w.contextError}</p>}{ready && t.loading && <p role="status" className="text-xs">Loading Teams…</p>}{ready && t.error && <p role="alert" className="text-xs text-danger">{t.error}</p>}
+ {ready && t.page && <><div className="overflow-x-auto" role="region" aria-label="Team table" tabIndex={0}><table className="w-full text-left text-xs"><caption className="sr-only">Your authorized Teams, one server page</caption><thead className="text-text-muted border-b border-border"><tr><th className="py-2">Team</th><th className="hidden sm:table-cell">Members</th><th className="hidden sm:table-cell">Projects / Active work</th><th>Status</th></tr></thead><tbody className="divide-y divide-border">{t.page.items.map(team => <tr key={team.id}><td className="py-3 pr-3"><Link className="flex items-start gap-2" to={'/workspaces/' + workspaceId + '/teams/' + team.id}><span style={{ backgroundColor: team.color }} className="shrink-0 rounded-md p-1.5 text-[10px] font-bold text-white">{team.key.slice(0, 2)}</span><span className="min-w-0"><span className="font-semibold break-words">{team.name}</span><span className="ml-2 font-mono text-text-muted">{team.key}</span>{team.description && <span className="block text-text-secondary break-words line-clamp-2 max-w-sm">{team.description}</span>}</span></Link></td><td className="hidden sm:table-cell text-text-muted">Unavailable</td><td className="hidden sm:table-cell text-text-muted">Unavailable</td><td className="text-text-secondary">{team.status === 'ACTIVE' ? 'Active' : 'Archived'}</td></tr>)}</tbody></table></div>{!t.page.items.length && <p role="status" className="text-xs text-text-secondary">No accessible Teams match this filter.</p>}{t.page.page.hasMore && <Button size="sm" disabled={t.loading} onClick={() => void t.store.load(true)}>Next Teams</Button>}</>}
+ {w.contextError && workspaceId && <Button size="sm" disabled={w.selecting} onClick={() => void w.store.select(workspaceId)}>Recheck Workspace access</Button>}{ready && <Button size="sm" disabled={t.loading} onClick={() => void t.store.load()}>Reload Teams</Button>}<Link className="block text-xs text-accent" to={'/workspaces/' + workspaceId}>Back to Workspace</Link>
+ </div>{open && ready && t.canCreate && <TeamDialog key={s.user?.id + ':' + workspaceId} mode="create" close={() => setOpen(false)}/>}
+ </section>;
+}
+export function LiveTeamHubPage() {
+    const { workspaceId, teamId, w, s, t, current } = useScope(), [tab, setTab] = useState('overview'), [edit, setEdit] = useState(false);
+    useEffect(() => { setEdit(false); setTab('overview'); }, [workspaceId, teamId, s.store.generation()]);
+    const ready = !!current && t.workspace === workspaceId, team = ready && t.team?.id === teamId ? t.team : null;
+    useEffect(() => { if (!ready || t.detailError || team && !team.capabilities.updateMetadata)
+        setEdit(false); }, [ready, t.detailError, team]);
+    return <section className="rounded-lg border border-border bg-surface-base" aria-label="Live Team hub"><header className="border-b border-border p-4 space-y-3"><div className="flex justify-between flex-wrap gap-3"><div><h1 className="text-sm font-bold break-words">{team?.name ?? 'Team'}</h1>{team && <p className="text-xs font-mono text-text-secondary">{team.key} · {team.status === 'ARCHIVED' ? 'Archived · Read only' : 'Active'}</p>}</div>{team?.capabilities.updateMetadata && <Button size="sm" onClick={() => { if (t.opening)
+        return; const generation = s.store.generation(); void t.store.open(team.id, true).then(() => { const fresh = t.store.snapshot().team; if (s.store.generation() === generation && fresh && fresh.id === teamId && fresh.workspaceId === workspaceId && fresh.capabilities.updateMetadata)
+        setEdit(true); }); }}>Edit metadata</Button>}</div><div className="flex gap-4 overflow-x-auto">{['overview', 'issues', 'projects', 'planning'].map(name => <button key={name} className={'text-xs pb-2 border-b-2 capitalize ' + (tab === name ? 'border-accent text-accent' : 'border-transparent text-text-secondary')} aria-pressed={tab === name} onClick={() => setTab(name)}>{name}</button>)}</div></header>
+ <div className="p-4 space-y-4">{(w.selecting || t.opening) && <p role="status" className="text-xs">Checking Team access…</p>}{(w.contextError || ready && t.detailError) && <p role="alert" className="text-xs text-danger">{w.contextError || t.detailError}</p>}
+ {team && <>{tab === 'overview' ? <><p className="text-xs whitespace-pre-wrap break-words">{team.description || 'No description provided.'}</p><div className="grid sm:grid-cols-3 gap-2">{['Members', 'Projects', 'Active work'].map(metric => <div className="border border-border rounded-md p-3 text-xs" key={metric}><h2 className="font-medium">{metric}</h2><p className="text-text-muted mt-1">Unavailable</p></div>)}</div><p className="text-xs text-text-secondary">Team membership counts and Project/Issue metrics are not connected. Team access does not grant access to those resources.</p></> : <p role="status" className="text-xs text-text-secondary">{tab[0].toUpperCase() + tab.slice(1)} are unavailable until their server capabilities are implemented.</p>}</>}
+ {w.contextError && workspaceId && <Button size="sm" disabled={w.selecting} onClick={() => void w.store.select(workspaceId)}>Recheck Workspace access</Button>}{ready && teamId && <Button size="sm" disabled={t.opening} onClick={() => void t.store.open(teamId)}>Reload Team</Button>}<Link className="block text-xs text-accent" to={'/workspaces/' + workspaceId + '/teams'}>Back to Teams</Link>
+ </div>{edit && ready && (team?.capabilities.updateMetadata || t.conflict && t.opening) && <TeamDialog key={s.user?.id + ':' + workspaceId + ':' + teamId} mode="edit" close={() => setEdit(false)}/>}
+ </section>;
+}

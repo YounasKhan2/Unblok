@@ -1,7 +1,7 @@
 # Unblok — Backend Status and Delivery Roadmap
 
 **Last updated:** 2026-10-14
-**Repository milestone:** BE-WS-02 merged through PR #37; FE-WS-02 merged through PR #38 at `3deaf88f089cc268cda893b8f3e14ec83d210e8d`. Authentication, Workspace foundation, directory/invitation APIs and their frontend integrations are merged; not deployed or production-certified.
+**Repository milestone:** BE-TEAM-01 merged through PR #40 at `7ac1c39543d7057642db56f99bbd8a070f37a746`; FE-TEAM-01 implemented for review only. Authentication, Workspace foundation, directory/invitation APIs and their frontend integrations are merged; not deployed or production-certified.
 **Purpose:** Living, repository-grounded backend delivery tracker. Update when an approved backend PR is merged. This is a status tracker, **not** a replacement for the implementation/security/database architecture contracts in this folder.
 
 > **Status rule:** Check actual merge status and current code before editing. Record implemented vs planned vs verified separately. Do not mark a feature complete solely because a schema, interface, design, or proposal exists. Keep known test failures visible. Update this tracker **with every future backend branch merge**, preferably as part of the reviewed PR before merge; if the merge SHA is not known until afterward, follow with a status-only commit on `main` and record it. Record the PR, merge SHA, changes, new gaps, and new test outcomes. For other Unblok branches, update the relevant status section when they change backend deliverables or dependencies.
@@ -54,7 +54,7 @@
 
 **FE-AUTH-01 F4 correction:** Reviewed `cab718ea77ab2ddf943f959feb483e307cd25f87`; narrow session-boundary changes durably retire the signed predecessor before fresh anonymous CSRF state. Same-context Chromium reset/relogin passes without deleting cookies or replacing its context. Request-bound principals, transaction fences and CSRF/cookie protections remain enforced. Frontend production, NEXUS, dependencies and migrations are unchanged. The frontend F4 report/evidence preserves successful and failed observations and deployment limitations. This supersedes the local retained-cookie blocker; PR #33 subsequently merged as recorded in the handoff.
 
-**Next action:** Human review of BE-TEAM-01 four-route implementation and recorded verification. Architecture PR #39 is merged at `d4b958c74d7383cd269e693745738b3534cd44af`; Team implementation is on its review branch only. No BE-TEAM-02 or implementation-PR merge is authorized.
+**Next action:** Human review of FE-TEAM-01 live integration and evidence. Architecture PR #39 merged at `d4b958c74d7383cd269e693745738b3534cd44af`; approved Team foundation PR #40 merged at `7ac1c39543d7057642db56f99bbd8a070f37a746`. No FE-TEAM-01 merge or BE-TEAM-02 implementation is authorized.
 
 ## 3. Remaining production backend capabilities
 
@@ -62,11 +62,11 @@
 | --- | --- | --- |
 | Authentication and sessions | Authentication/session fences, credential APIs, verification/recovery and FE-AUTH-01 merged and locally verified; OAuth/MFA and broader lifecycle/deployment remain deferred | Critical |
 | Workspace foundation / invitations | BE-WS-01/FE-WS-01 and BE-WS-02/FE-WS-02 merged; role/removal/suspension and Workspace lifecycle management APIs absent; not deployed | Critical |
-| Team and project APIs | BE-TEAM-01 private list/detail/create/metadata implemented for review only; Team management/transfer/lifecycle and Project APIs missing | Critical |
+| Team and project APIs | BE-TEAM-01 private list/detail/create/metadata merged through PR #40; Team management/transfer/lifecycle and Project APIs missing | Critical |
 | Issues CRUD/search/filtering | Bounded scoped persistence primitives exist; business APIs missing | Critical |
 | Dependency graph APIs and cycle-safe writes | Database dependency-write gate active; DAG service missing | Critical |
 | Fine-grained permissions | Deny-by-default policy boundary only; approved action grants missing | Critical |
-| Frontend integration with real APIs | FE-AUTH-01, FE-WS-01 and FE-WS-02 merged; local Chromium evidence exists. Team/Project/Issue/Dependency integration and production/multi-browser acceptance remain missing; NEXUS remains separate | Critical |
+| Frontend integration with real APIs | FE-AUTH-01, FE-WS-01 and FE-WS-02 merged; local Chromium evidence exists. FE-TEAM-01 live Team integration is implemented for review only; Project/Issue/Dependency integration and production/multi-browser acceptance remain missing; NEXUS remains separate | Critical |
 | Audit logs and activity history | Not implemented | High |
 | Notifications and business background jobs | Verification, recovery and invitation durable outbox delivery implemented; notifications and other business jobs absent | High |
 | Attachments and file storage workflows | Development infrastructure available; business workflows missing | High |
@@ -158,3 +158,5 @@ Explicitly authorized merge of [PR #38](https://github.com/YounasKhan2/Unblok/pu
 ## BE-TEAM-01 implementation review — 2026-10-14
 
 Architecture PR #39 merged at `d4b958c74d7383cd269e693745738b3534cd44af` after confirming reviewed HEAD `dbc7a0db6b8972f887521a8ffe8008f85249aa6d` and docs-only scope. Four Team foundation routes implemented on `feat/be-team-01-foundation`, not merged/deployed. [Report](28-BE-TEAM-01-FOUNDATION.md) and [verification](evidence/BE-TEAM-01-verification.json) cover explicit private membership/ownership, legacy quarantine, additive eleventh migration, bounded CAS/receipts/cursors/rates, real SQL/HTTP/concurrency and query plans. Historical NEXUS/queue/shutdown/advisory/timing findings remain; no BE-TEAM-02 or frontend Team work. Stop for human implementation review.
+
+2026-10-14 merge checkpoint: BE-TEAM-01 [PR #40](https://github.com/YounasKhan2/Unblok/pull/40), merge `7ac1c39543d7057642db56f99bbd8a070f37a746`, followed approval of reviewed HEAD `1d5c4adeb7c702bd63b8d4a81e9d2c11f7f31a3a`. Four private Team routes, explicit atomic ownership, legacy quarantine and immutable bounded receipt admission are merged. Original evidence and lifecycle/queue/audit/deployment limitations are retained. FE-TEAM-01 is implemented for separate human review; no BE-TEAM-02 or implementation merge is authorized.
