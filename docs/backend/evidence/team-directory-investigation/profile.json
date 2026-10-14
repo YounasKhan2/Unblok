@@ -1,0 +1,1153 @@
+{
+  "base": "d0fbdf9d338b22570ef53028174e046bb63349f4",
+  "calibration": {
+    "configuredConnections": 5,
+    "heldMs": 80,
+    "contenderCallToCallbackMs": 82.08679000000029,
+    "nativePoolWaitSumMs": 81.067238
+  },
+  "workload": "Separate Bun HTTP client process;50 requests per fresh legitimate account/Workspace at concurrency1/10/50,1,001 explicit joins,120-character names,limit20. No pool/rate/timeout changes or cache. Baseline uses same native metrics but no method spans; detailed harness adds observational spans only.",
+  "loads": [
+    {
+      "detailed": false,
+      "concurrency": 1,
+      "success": {
+        "samples": 50,
+        "sumMs": 2409.3893669999993,
+        "p50": 46.19212599999997,
+        "p95": 65.19748699999991,
+        "max": 70.501595
+      },
+      "server": {
+        "samples": 50,
+        "sumMs": 2376.354408000001,
+        "p50": 45.600504999999885,
+        "p95": 64.8667719999994,
+        "max": 69.08472099999972
+      },
+      "statuses": {
+        "200": 50
+      },
+      "bytes": 6867,
+      "phases": {},
+      "transactionStages": {},
+      "nativePool": {
+        "connections": 5,
+        "waitAcquisitions": 200,
+        "totalWaitMs": 0.08574499999997443,
+        "maxBusy": 1,
+        "maxQueued": 0,
+        "meanWaitMsPerSuccessfulRequest": 0.0017148999999994886
+      },
+      "sql": {
+        "count": 3200,
+        "directory": {
+          "samples": 50,
+          "sumMs": 11,
+          "p50": 0,
+          "p95": 2,
+          "max": 3
+        },
+        "transactionControl": {
+          "samples": 600,
+          "sumMs": 27,
+          "p50": 0,
+          "p95": 0,
+          "max": 3
+        },
+        "authorizationAndOther": {
+          "samples": 2550,
+          "sumMs": 85,
+          "p50": 0,
+          "p95": 0,
+          "max": 4
+        }
+      },
+      "serverProcess": {
+        "windowStartUnixUs": 1791990775871000,
+        "windowEndUnixUs": 1791990778307000,
+        "wallMs": 2433.6063679999997,
+        "userCpuMs": 1666.565,
+        "systemCpuMs": 402.037,
+        "cpuCoreEquivalent": 0.8500150341486944,
+        "eventLoopUtilizationReported": 0,
+        "eventLoopUtilizationUsable": false,
+        "timerLagMs": {
+          "samples": 239,
+          "sumMs": 42.792930000000524,
+          "p50": 0.08884100000022954,
+          "p95": 0.7511100000001534,
+          "max": 3.830821000000469
+        },
+        "eventLoopDelayP95Ms": 0.679423,
+        "eventLoopDelayMaxMs": 1.837092
+      },
+      "postgresLockSampling": {
+        "intervalMs": 10,
+        "pgSamples": 204,
+        "lockSamples": 0,
+        "maxPgWaitMs": 0,
+        "serverTransactionObservations": {
+          "maxPgTransactions": 1,
+          "maxPgIdleTransactions": 1,
+          "oldestTransactionAgeMs": {
+            "samples": 182,
+            "sumMs": 1205.8280000000002,
+            "p50": 5.611,
+            "p95": 16.818,
+            "max": 22.874
+          },
+          "note": "Sampled server xact_start ages, not a distribution of completed transaction lifetimes; callback/commit lifetimes reported independently."
+        }
+      }
+    },
+    {
+      "detailed": false,
+      "concurrency": 10,
+      "success": {
+        "samples": 50,
+        "sumMs": 8496.587952000002,
+        "p50": 172.11776199999997,
+        "p95": 208.620791,
+        "max": 209.46038
+      },
+      "server": {
+        "samples": 50,
+        "sumMs": 8367.052411000004,
+        "p50": 170.10311199999978,
+        "p95": 205.5529459999998,
+        "max": 207.0192879999995
+      },
+      "statuses": {
+        "200": 50
+      },
+      "bytes": 6867,
+      "phases": {},
+      "transactionStages": {},
+      "nativePool": {
+        "connections": 5,
+        "waitAcquisitions": 200,
+        "totalWaitMs": 3422.9651189999995,
+        "maxBusy": 5,
+        "maxQueued": 5,
+        "meanWaitMsPerSuccessfulRequest": 68.45930238
+      },
+      "sql": {
+        "count": 3200,
+        "directory": {
+          "samples": 50,
+          "sumMs": 53,
+          "p50": 1,
+          "p95": 4,
+          "max": 6
+        },
+        "transactionControl": {
+          "samples": 600,
+          "sumMs": 300,
+          "p50": 0,
+          "p95": 2,
+          "max": 7
+        },
+        "authorizationAndOther": {
+          "samples": 2550,
+          "sumMs": 559,
+          "p50": 0,
+          "p95": 1,
+          "max": 9
+        }
+      },
+      "serverProcess": {
+        "windowStartUnixUs": 1791990779865000,
+        "windowEndUnixUs": 1791990780874000,
+        "wallMs": 1006.9488229999988,
+        "userCpuMs": 1180.517,
+        "systemCpuMs": 361.139,
+        "cpuCoreEquivalent": 1.5310172322431939,
+        "eventLoopUtilizationReported": 0,
+        "eventLoopUtilizationUsable": false,
+        "timerLagMs": {
+          "samples": 93,
+          "sumMs": 57.92662399999972,
+          "p50": 0.12881100000049628,
+          "p95": 3.2602179999994405,
+          "max": 14.63226399999985
+        },
+        "eventLoopDelayP95Ms": 2.084863,
+        "eventLoopDelayMaxMs": 14.607266
+      },
+      "postgresLockSampling": {
+        "intervalMs": 10,
+        "pgSamples": 73,
+        "lockSamples": 0,
+        "maxPgWaitMs": 0,
+        "serverTransactionObservations": {
+          "maxPgTransactions": 5,
+          "maxPgIdleTransactions": 5,
+          "oldestTransactionAgeMs": {
+            "samples": 68,
+            "sumMs": 1431.5219999999997,
+            "p50": 21.228,
+            "p95": 40.539,
+            "max": 48.522
+          },
+          "note": "Sampled server xact_start ages, not a distribution of completed transaction lifetimes; callback/commit lifetimes reported independently."
+        }
+      }
+    },
+    {
+      "detailed": false,
+      "concurrency": 50,
+      "success": {
+        "samples": 50,
+        "sumMs": 46228.361713000006,
+        "p50": 921.494512,
+        "p95": 1074.679893,
+        "max": 1081.65767
+      },
+      "server": {
+        "samples": 50,
+        "sumMs": 45493.53948500001,
+        "p50": 905.3933990000005,
+        "p95": 1057.0528939999986,
+        "max": 1063.7729830000007
+      },
+      "statuses": {
+        "200": 50
+      },
+      "bytes": 6867,
+      "phases": {},
+      "transactionStages": {},
+      "nativePool": {
+        "connections": 5,
+        "waitAcquisitions": 200,
+        "totalWaitMs": 39161.599693,
+        "maxBusy": 5,
+        "maxQueued": 45,
+        "meanWaitMsPerSuccessfulRequest": 783.2319938599999
+      },
+      "sql": {
+        "count": 3200,
+        "directory": {
+          "samples": 50,
+          "sumMs": 23,
+          "p50": 0,
+          "p95": 2,
+          "max": 2
+        },
+        "transactionControl": {
+          "samples": 600,
+          "sumMs": 497,
+          "p50": 0,
+          "p95": 4,
+          "max": 12
+        },
+        "authorizationAndOther": {
+          "samples": 2550,
+          "sumMs": 870,
+          "p50": 0,
+          "p95": 2,
+          "max": 13
+        }
+      },
+      "serverProcess": {
+        "windowStartUnixUs": 1791990782369000,
+        "windowEndUnixUs": 1791990783500000,
+        "wallMs": 1129.4405900000002,
+        "userCpuMs": 1315.778,
+        "systemCpuMs": 393.08,
+        "cpuCoreEquivalent": 1.5130127384566547,
+        "eventLoopUtilizationReported": 0,
+        "eventLoopUtilizationUsable": false,
+        "timerLagMs": {
+          "samples": 103,
+          "sumMs": 87.75545899999997,
+          "p50": 0.17642799999885028,
+          "p95": 2.5229920000001584,
+          "max": 17.943129000001136
+        },
+        "eventLoopDelayP95Ms": 2.523135,
+        "eventLoopDelayMaxMs": 17.918571
+      },
+      "postgresLockSampling": {
+        "intervalMs": 10,
+        "pgSamples": 77,
+        "lockSamples": 0,
+        "maxPgWaitMs": 0,
+        "serverTransactionObservations": {
+          "maxPgTransactions": 5,
+          "maxPgIdleTransactions": 5,
+          "oldestTransactionAgeMs": {
+            "samples": 74,
+            "sumMs": 1798.1659999999995,
+            "p50": 24.51,
+            "p95": 39.94,
+            "max": 61.436
+          },
+          "note": "Sampled server xact_start ages, not a distribution of completed transaction lifetimes; callback/commit lifetimes reported independently."
+        }
+      }
+    },
+    {
+      "detailed": true,
+      "concurrency": 1,
+      "success": {
+        "samples": 50,
+        "sumMs": 2668.0869610000004,
+        "p50": 48.61777800000027,
+        "p95": 78.75733200000002,
+        "max": 118.77551399999999
+      },
+      "server": {
+        "samples": 50,
+        "sumMs": 2638.236949999995,
+        "p50": 48.31865900000048,
+        "p95": 78.24900700000035,
+        "max": 118.08511200000066
+      },
+      "statuses": {
+        "200": 50
+      },
+      "bytes": 6867,
+      "phases": {
+        "coarse-admission": {
+          "samples": 50,
+          "sumMs": 24.865401000010024,
+          "p50": 0.41590200000064215,
+          "p95": 0.9615409999987605,
+          "max": 1.9677750000009837
+        },
+        "session-store-get": {
+          "samples": 100,
+          "sumMs": 66.65585600002487,
+          "p50": 0.42843700000048557,
+          "p95": 2.4471470000007685,
+          "max": 4.235138999998526
+        },
+        "session-verify": {
+          "samples": 50,
+          "sumMs": 38.9442369999997,
+          "p50": 0.4693280000010418,
+          "p95": 2.7907410000007076,
+          "max": 4.714566000000559
+        },
+        "session-primary-fence": {
+          "samples": 50,
+          "sumMs": 353.12455399999635,
+          "p50": 5.88028999999915,
+          "p95": 12.487872000001516,
+          "max": 18.52761399999872
+        },
+        "self-profile-authorization": {
+          "samples": 50,
+          "sumMs": 529.0946140000087,
+          "p50": 9.547034000001076,
+          "p95": 17.13391799999954,
+          "max": 22.77729399999953
+        },
+        "workspace-authorization": {
+          "samples": 50,
+          "sumMs": 613.006822000003,
+          "p50": 10.82942600000024,
+          "p95": 17.271531000000323,
+          "max": 33.521505000000616
+        },
+        "team-admission": {
+          "samples": 50,
+          "sumMs": 33.44936799999232,
+          "p50": 0.4457880000009027,
+          "p95": 0.7983139999996638,
+          "max": 6.860184999999547
+        },
+        "private-team-directory": {
+          "samples": 50,
+          "sumMs": 928.2541809999966,
+          "p50": 17.289934999998877,
+          "p95": 27.421155,
+          "max": 37.80414500000006
+        },
+        "response-schema-validation": {
+          "samples": 50,
+          "sumMs": 6.2478529999934835,
+          "p50": 0.10319699999854492,
+          "p95": 0.23393399999986286,
+          "max": 0.5043679999998858
+        },
+        "response-json-and-send": {
+          "samples": 50,
+          "sumMs": 19.648954000005688,
+          "p50": 0.2955789999996341,
+          "p95": 0.6752849999993487,
+          "max": 3.3230640000001586
+        }
+      },
+      "transactionStages": {
+        "session-primary-fence": {
+          "admissionCallToCallback": {
+            "samples": 50,
+            "sumMs": 48.325882000001,
+            "p50": 0.7375449999999546,
+            "p95": 2.357025999999678,
+            "max": 4.0527339999989636
+          },
+          "callbackLifetime": {
+            "samples": 50,
+            "sumMs": 239.59726299999784,
+            "p50": 4.0619040000001405,
+            "p95": 9.793073000000732,
+            "max": 15.317813999999998
+          },
+          "commit": {
+            "samples": 50,
+            "sumMs": 64.36908399998902,
+            "p50": 0.9245749999990949,
+            "p95": 3.571404000000257,
+            "max": 5.834619000001112
+          },
+          "totalLifetime": {
+            "samples": 50,
+            "sumMs": 352.29222899998786,
+            "p50": 5.870632999998634,
+            "p95": 12.476775999999518,
+            "max": 18.457546999999977
+          }
+        },
+        "self-profile-authorization": {
+          "admissionCallToCallback": {
+            "samples": 50,
+            "sumMs": 32.28396199999406,
+            "p50": 0.5548250000010739,
+            "p95": 0.9836159999995289,
+            "max": 2.99687399999857
+          },
+          "callbackLifetime": {
+            "samples": 50,
+            "sumMs": 441.31376299999647,
+            "p50": 7.826157000001331,
+            "p95": 14.993053999998665,
+            "max": 21.329069999999774
+          },
+          "commit": {
+            "samples": 50,
+            "sumMs": 54.53293500000109,
+            "p50": 0.896866000000955,
+            "p95": 2.604591999999684,
+            "max": 3.9129900000007183
+          },
+          "totalLifetime": {
+            "samples": 50,
+            "sumMs": 528.1306599999916,
+            "p50": 9.511916999999812,
+            "p95": 17.119509000000107,
+            "max": 22.755535999998756
+          }
+        },
+        "workspace-authorization": {
+          "admissionCallToCallback": {
+            "samples": 50,
+            "sumMs": 32.44072899999992,
+            "p50": 0.5278049999997165,
+            "p95": 0.9527639999996609,
+            "max": 4.576811000000816
+          },
+          "callbackLifetime": {
+            "samples": 50,
+            "sumMs": 523.5732430000025,
+            "p50": 9.18805699999939,
+            "p95": 15.768470999999408,
+            "max": 31.289413000000422
+          },
+          "commit": {
+            "samples": 50,
+            "sumMs": 55.76847199999611,
+            "p50": 0.9032920000008744,
+            "p95": 3.3403119999984483,
+            "max": 3.781938000000082
+          },
+          "totalLifetime": {
+            "samples": 50,
+            "sumMs": 611.7824439999986,
+            "p50": 10.815490999999383,
+            "p95": 17.247160999999323,
+            "max": 33.42738500000087
+          }
+        },
+        "private-team-directory": {
+          "admissionCallToCallback": {
+            "samples": 50,
+            "sumMs": 41.03010399999221,
+            "p50": 0.563600999999835,
+            "p95": 1.664136999999755,
+            "max": 5.682189000001017
+          },
+          "callbackLifetime": {
+            "samples": 50,
+            "sumMs": 828.9252279999982,
+            "p50": 15.58078199999909,
+            "p95": 25.753913000000466,
+            "max": 34.92511999999988
+          },
+          "commit": {
+            "samples": 50,
+            "sumMs": 57.2224490000026,
+            "p50": 0.9710610000001907,
+            "p95": 2.072011999998722,
+            "max": 3.1753909999988537
+          },
+          "totalLifetime": {
+            "samples": 50,
+            "sumMs": 927.177780999993,
+            "p50": 17.275175000000672,
+            "p95": 27.40712699999858,
+            "max": 37.70982600000025
+          }
+        }
+      },
+      "nativePool": {
+        "connections": 5,
+        "waitAcquisitions": 200,
+        "totalWaitMs": 0.16067800000018906,
+        "maxBusy": 1,
+        "maxQueued": 0,
+        "meanWaitMsPerSuccessfulRequest": 0.003213560000003781
+      },
+      "sql": {
+        "count": 3200,
+        "directory": {
+          "samples": 50,
+          "sumMs": 6,
+          "p50": 0,
+          "p95": 1,
+          "max": 2
+        },
+        "transactionControl": {
+          "samples": 600,
+          "sumMs": 83,
+          "p50": 0,
+          "p95": 1,
+          "max": 5
+        },
+        "authorizationAndOther": {
+          "samples": 2550,
+          "sumMs": 118,
+          "p50": 0,
+          "p95": 0,
+          "max": 5
+        }
+      },
+      "serverProcess": {
+        "windowStartUnixUs": 1791990784875000,
+        "windowEndUnixUs": 1791990787586000,
+        "wallMs": 2703.6358550000004,
+        "userCpuMs": 1560.358,
+        "systemCpuMs": 458.354,
+        "cpuCoreEquivalent": 0.7466656414792959,
+        "eventLoopUtilizationReported": 0,
+        "eventLoopUtilizationUsable": false,
+        "timerLagMs": {
+          "samples": 260,
+          "sumMs": 88.01552300000003,
+          "p50": 0.09845499999937601,
+          "p95": 1.5865689999991446,
+          "max": 7.250260000000708
+        },
+        "eventLoopDelayP95Ms": 1.587199,
+        "eventLoopDelayMaxMs": 7.241059
+      },
+      "postgresLockSampling": {
+        "intervalMs": 10,
+        "pgSamples": 219,
+        "lockSamples": 0,
+        "maxPgWaitMs": 0,
+        "serverTransactionObservations": {
+          "maxPgTransactions": 1,
+          "maxPgIdleTransactions": 1,
+          "oldestTransactionAgeMs": {
+            "samples": 200,
+            "sumMs": 1495.9609999999998,
+            "p50": 6.401,
+            "p95": 17.358,
+            "max": 36.142
+          },
+          "note": "Sampled server xact_start ages, not a distribution of completed transaction lifetimes; callback/commit lifetimes reported independently."
+        }
+      }
+    },
+    {
+      "detailed": true,
+      "concurrency": 10,
+      "success": {
+        "samples": 50,
+        "sumMs": 8839.675066999998,
+        "p50": 170.80147399999998,
+        "p95": 228.96611800000005,
+        "max": 236.547234
+      },
+      "server": {
+        "samples": 50,
+        "sumMs": 8659.464658000004,
+        "p50": 167.4638249999989,
+        "p95": 227.07345500000156,
+        "max": 227.6339939999998
+      },
+      "statuses": {
+        "200": 50
+      },
+      "bytes": 6867,
+      "phases": {
+        "coarse-admission": {
+          "samples": 50,
+          "sumMs": 102.78607700001521,
+          "p50": 1.2825259999990521,
+          "p95": 4.967330999999831,
+          "max": 6.917547000000923
+        },
+        "session-store-get": {
+          "samples": 100,
+          "sumMs": 203.30863499997577,
+          "p50": 0.983922999999777,
+          "p95": 7.802942999998777,
+          "max": 7.837547999999515
+        },
+        "session-verify": {
+          "samples": 50,
+          "sumMs": 53.19059899998683,
+          "p50": 1.038752000000386,
+          "p95": 1.4332419999991544,
+          "max": 1.5434800000002724
+        },
+        "session-primary-fence": {
+          "samples": 50,
+          "sumMs": 978.1539349999985,
+          "p50": 18.83060800000021,
+          "p95": 35.92655899999954,
+          "max": 37.019902
+        },
+        "self-profile-authorization": {
+          "samples": 50,
+          "sumMs": 1763.2568199999805,
+          "p50": 34.80051100000128,
+          "p95": 54.79780600000231,
+          "max": 57.498187999997754
+        },
+        "workspace-authorization": {
+          "samples": 50,
+          "sumMs": 2175.6012930000143,
+          "p50": 40.40073499999926,
+          "p95": 63.859426999999414,
+          "max": 71.34588300000178
+        },
+        "team-admission": {
+          "samples": 50,
+          "sumMs": 93.75861699998859,
+          "p50": 1.5965069999983825,
+          "p95": 3.8246870000002673,
+          "max": 6.291889000000083
+        },
+        "private-team-directory": {
+          "samples": 50,
+          "sumMs": 3194.2499700000117,
+          "p50": 60.43928099999903,
+          "p95": 90.82624800000121,
+          "max": 94.8203330000033
+        },
+        "response-schema-validation": {
+          "samples": 50,
+          "sumMs": 6.515043000006699,
+          "p50": 0.08953900000051362,
+          "p95": 0.37177800000063144,
+          "max": 0.5564459999986866
+        },
+        "response-json-and-send": {
+          "samples": 50,
+          "sumMs": 17.00689500000226,
+          "p50": 0.2515080000011949,
+          "p95": 0.7355680000000575,
+          "max": 2.6817879999980505
+        }
+      },
+      "transactionStages": {
+        "session-primary-fence": {
+          "admissionCallToCallback": {
+            "samples": 50,
+            "sumMs": 405.59051099999124,
+            "p50": 7.1974779999982275,
+            "p95": 23.122604000000138,
+            "max": 27.388426000001346
+          },
+          "callbackLifetime": {
+            "samples": 50,
+            "sumMs": 460.31386300000304,
+            "p50": 7.464303000000655,
+            "p95": 20.621116000002075,
+            "max": 21.425708999999188
+          },
+          "commit": {
+            "samples": 50,
+            "sumMs": 111.74353100000008,
+            "p50": 2.030180999998265,
+            "p95": 3.9542639999999665,
+            "max": 4.453758999999991
+          },
+          "totalLifetime": {
+            "samples": 50,
+            "sumMs": 977.6479049999944,
+            "p50": 18.8283279999996,
+            "p95": 35.922898000000714,
+            "max": 37.01542800000243
+          }
+        },
+        "self-profile-authorization": {
+          "admissionCallToCallback": {
+            "samples": 50,
+            "sumMs": 856.6927199999955,
+            "p50": 17.131313999998383,
+            "p95": 27.33496600000217,
+            "max": 30.48703200000091
+          },
+          "callbackLifetime": {
+            "samples": 50,
+            "sumMs": 794.8947169999992,
+            "p50": 15.235106000000087,
+            "p95": 24.357672999998613,
+            "max": 26.139909999998054
+          },
+          "commit": {
+            "samples": 50,
+            "sumMs": 110.3149409999969,
+            "p50": 1.9648919999999634,
+            "p95": 4.2568369999971765,
+            "max": 5.457620000001043
+          },
+          "totalLifetime": {
+            "samples": 50,
+            "sumMs": 1761.9023779999916,
+            "p50": 34.79362200000105,
+            "p95": 54.78570700000273,
+            "max": 57.485216000000946
+          }
+        },
+        "workspace-authorization": {
+          "admissionCallToCallback": {
+            "samples": 50,
+            "sumMs": 1091.8682160000099,
+            "p50": 20.17045500000313,
+            "p95": 37.962037000001146,
+            "max": 39.41294299999936
+          },
+          "callbackLifetime": {
+            "samples": 50,
+            "sumMs": 965.4748359999903,
+            "p50": 17.606057000000874,
+            "p95": 32.821350999998685,
+            "max": 36.59688300000198
+          },
+          "commit": {
+            "samples": 50,
+            "sumMs": 116.20738499998333,
+            "p50": 1.9069830000007642,
+            "p95": 4.474865000000136,
+            "max": 4.757545000000391
+          },
+          "totalLifetime": {
+            "samples": 50,
+            "sumMs": 2173.5504369999835,
+            "p50": 40.36807000000044,
+            "p95": 63.850102000000334,
+            "max": 71.33866299999863
+          }
+        },
+        "private-team-directory": {
+          "admissionCallToCallback": {
+            "samples": 50,
+            "sumMs": 1525.0470239999995,
+            "p50": 27.19096200000058,
+            "p95": 58.34246599999824,
+            "max": 62.68111299999873
+          },
+          "callbackLifetime": {
+            "samples": 50,
+            "sumMs": 1552.227855000012,
+            "p50": 28.815279000002192,
+            "p95": 48.401873999999225,
+            "max": 58.59620599999835
+          },
+          "commit": {
+            "samples": 50,
+            "sumMs": 115.8045889999994,
+            "p50": 1.8210960000033083,
+            "p95": 4.5828699999983655,
+            "max": 10.119748000000982
+          },
+          "totalLifetime": {
+            "samples": 50,
+            "sumMs": 3193.079468000011,
+            "p50": 60.423563000000286,
+            "p95": 90.76774700000169,
+            "max": 94.72831900000165
+          }
+        }
+      },
+      "nativePool": {
+        "connections": 5,
+        "waitAcquisitions": 200,
+        "totalWaitMs": 3502.0484480000014,
+        "maxBusy": 5,
+        "maxQueued": 5,
+        "meanWaitMsPerSuccessfulRequest": 70.04096896000003
+      },
+      "sql": {
+        "count": 3205,
+        "directory": {
+          "samples": 50,
+          "sumMs": 21,
+          "p50": 0,
+          "p95": 1,
+          "max": 2
+        },
+        "transactionControl": {
+          "samples": 600,
+          "sumMs": 238,
+          "p50": 0,
+          "p95": 2,
+          "max": 5
+        },
+        "authorizationAndOther": {
+          "samples": 2555,
+          "sumMs": 426,
+          "p50": 0,
+          "p95": 1,
+          "max": 9
+        }
+      },
+      "serverProcess": {
+        "windowStartUnixUs": 1791990788873000,
+        "windowEndUnixUs": 1791990789903000,
+        "wallMs": 1027.3630819999998,
+        "userCpuMs": 1343.282,
+        "systemCpuMs": 347.11,
+        "cpuCoreEquivalent": 1.6453696162697038,
+        "eventLoopUtilizationReported": 0,
+        "eventLoopUtilizationUsable": false,
+        "timerLagMs": {
+          "samples": 89,
+          "sumMs": 119.87943999999698,
+          "p50": 0.41716599999926984,
+          "p95": 6.385276000000886,
+          "max": 12.453396000000794
+        },
+        "eventLoopDelayP95Ms": 6.389759,
+        "eventLoopDelayMaxMs": 12.443408
+      },
+      "postgresLockSampling": {
+        "intervalMs": 10,
+        "pgSamples": 68,
+        "lockSamples": 0,
+        "maxPgWaitMs": 0,
+        "serverTransactionObservations": {
+          "maxPgTransactions": 5,
+          "maxPgIdleTransactions": 5,
+          "oldestTransactionAgeMs": {
+            "samples": 62,
+            "sumMs": 1218.7110000000005,
+            "p50": 17.933,
+            "p95": 38.309,
+            "max": 59.921
+          },
+          "note": "Sampled server xact_start ages, not a distribution of completed transaction lifetimes; callback/commit lifetimes reported independently."
+        }
+      }
+    },
+    {
+      "detailed": true,
+      "concurrency": 50,
+      "success": {
+        "samples": 50,
+        "sumMs": 46116.245766999986,
+        "p50": 919.892548,
+        "p95": 1071.343225,
+        "max": 1088.253284
+      },
+      "server": {
+        "samples": 50,
+        "sumMs": 44939.70211599999,
+        "p50": 888.2181009999986,
+        "p95": 1053.0750509999998,
+        "max": 1063.8574000000008
+      },
+      "statuses": {
+        "200": 50
+      },
+      "bytes": 6867,
+      "phases": {
+        "coarse-admission": {
+          "samples": 50,
+          "sumMs": 511.67654999999286,
+          "p50": 8.491562000002887,
+          "p95": 21.925906000000396,
+          "max": 25.425954999998794
+        },
+        "session-store-get": {
+          "samples": 100,
+          "sumMs": 1295.3496129999912,
+          "p50": 6.382005999999819,
+          "p95": 25.873898999998346,
+          "max": 25.95379800000228
+        },
+        "session-verify": {
+          "samples": 50,
+          "sumMs": 320.55323500000304,
+          "p50": 6.830547999998089,
+          "p95": 7.284352999999101,
+          "max": 7.382940999999846
+        },
+        "session-primary-fence": {
+          "samples": 50,
+          "sumMs": 3747.905606999997,
+          "p50": 72.01082399999723,
+          "p95": 119.50906699999905,
+          "max": 225.74069099999906
+        },
+        "self-profile-authorization": {
+          "samples": 50,
+          "sumMs": 12253.832511999994,
+          "p50": 237.24544999999853,
+          "p95": 280.8990620000004,
+          "max": 284.14821499999744
+        },
+        "workspace-authorization": {
+          "samples": 50,
+          "sumMs": 11207.317667999989,
+          "p50": 236.9323000000004,
+          "p95": 262.99642200000017,
+          "max": 267.3654660000029
+        },
+        "team-admission": {
+          "samples": 50,
+          "sumMs": 102.61435099998562,
+          "p50": 1.3179689999997208,
+          "p95": 8.62944300000163,
+          "max": 9.579483999998047
+        },
+        "private-team-directory": {
+          "samples": 50,
+          "sumMs": 15266.174038000016,
+          "p50": 300.54701099999875,
+          "p95": 344.1813880000009,
+          "max": 355.57167299999855
+        },
+        "response-schema-validation": {
+          "samples": 50,
+          "sumMs": 5.4064999999973224,
+          "p50": 0.07983900000181166,
+          "p95": 0.24798899999950663,
+          "max": 0.39009900000019115
+        },
+        "response-json-and-send": {
+          "samples": 50,
+          "sumMs": 17.218691999998555,
+          "p50": 0.2574079999976675,
+          "p95": 0.637323999999353,
+          "max": 1.8871579999977257
+        }
+      },
+      "transactionStages": {
+        "session-primary-fence": {
+          "admissionCallToCallback": {
+            "samples": 50,
+            "sumMs": 3132.2445100000077,
+            "p50": 64.69043200000306,
+            "p95": 109.33025300000008,
+            "max": 112.11015300000145
+          },
+          "callbackLifetime": {
+            "samples": 50,
+            "sumMs": 512.4063879999994,
+            "p50": 7.463497000000643,
+            "p95": 15.516859999999724,
+            "max": 110.76946899999894
+          },
+          "commit": {
+            "samples": 50,
+            "sumMs": 101.47764200000529,
+            "p50": 1.845218999998906,
+            "p95": 3.8579830000016955,
+            "max": 4.9227759999994305
+          },
+          "totalLifetime": {
+            "samples": 50,
+            "sumMs": 3746.1285400000124,
+            "p50": 72.00709600000118,
+            "p95": 119.50360700000238,
+            "max": 225.7350710000028
+          }
+        },
+        "self-profile-authorization": {
+          "admissionCallToCallback": {
+            "samples": 50,
+            "sumMs": 11297.953634000009,
+            "p50": 225.08749299999909,
+            "p95": 265.41069300000163,
+            "max": 270.59472599999935
+          },
+          "callbackLifetime": {
+            "samples": 50,
+            "sumMs": 850.0740330000117,
+            "p50": 14.487596999999369,
+            "p95": 24.759799999999814,
+            "max": 123.5586860000003
+          },
+          "commit": {
+            "samples": 50,
+            "sumMs": 105.19141499997568,
+            "p50": 1.929149999999936,
+            "p95": 4.543634999998176,
+            "max": 7.238004000002547
+          },
+          "totalLifetime": {
+            "samples": 50,
+            "sumMs": 12253.219081999996,
+            "p50": 237.2369890000009,
+            "p95": 280.89058300000033,
+            "max": 284.14158300000054
+          }
+        },
+        "workspace-authorization": {
+          "admissionCallToCallback": {
+            "samples": 50,
+            "sumMs": 9956.400128000001,
+            "p50": 202.54209600000104,
+            "p95": 235.49605899999733,
+            "max": 237.5525009999983
+          },
+          "callbackLifetime": {
+            "samples": 50,
+            "sumMs": 1066.2331099999828,
+            "p50": 18.417864999999438,
+            "p95": 31.48179700000037,
+            "max": 57.195315000000846
+          },
+          "commit": {
+            "samples": 50,
+            "sumMs": 183.94571400002678,
+            "p50": 2.6236510000017006,
+            "p95": 11.222712000002502,
+            "max": 15.215347999997903
+          },
+          "totalLifetime": {
+            "samples": 50,
+            "sumMs": 11206.57895200001,
+            "p50": 236.92573600000105,
+            "p95": 262.9905669999971,
+            "max": 267.35543400000097
+          }
+        },
+        "private-team-directory": {
+          "admissionCallToCallback": {
+            "samples": 50,
+            "sumMs": 13631.92820100001,
+            "p50": 268.2370520000004,
+            "p95": 322.75777700000253,
+            "max": 324.09618000000046
+          },
+          "callbackLifetime": {
+            "samples": 50,
+            "sumMs": 1505.2163789999868,
+            "p50": 28.466950999998517,
+            "p95": 47.06423399999767,
+            "max": 52.081099999999424
+          },
+          "commit": {
+            "samples": 50,
+            "sumMs": 128.0174740000075,
+            "p50": 2.395055000000866,
+            "p95": 4.573416999999608,
+            "max": 6.4573400000008405
+          },
+          "totalLifetime": {
+            "samples": 50,
+            "sumMs": 15265.162054000004,
+            "p50": 300.53565900000103,
+            "p95": 344.13595200000054,
+            "max": 355.17651099999784
+          }
+        }
+      },
+      "nativePool": {
+        "connections": 5,
+        "waitAcquisitions": 200,
+        "totalWaitMs": 37085.669867,
+        "maxBusy": 5,
+        "maxQueued": 45,
+        "meanWaitMsPerSuccessfulRequest": 741.7133973399999
+      },
+      "sql": {
+        "count": 3200,
+        "directory": {
+          "samples": 50,
+          "sumMs": 22,
+          "p50": 0,
+          "p95": 1,
+          "max": 3
+        },
+        "transactionControl": {
+          "samples": 600,
+          "sumMs": 656,
+          "p50": 0,
+          "p95": 3,
+          "max": 103
+        },
+        "authorizationAndOther": {
+          "samples": 2550,
+          "sumMs": 593,
+          "p50": 0,
+          "p95": 1,
+          "max": 101
+        }
+      },
+      "serverProcess": {
+        "windowStartUnixUs": 1791990791259000,
+        "windowEndUnixUs": 1791990792422000,
+        "wallMs": 1158.6504770000029,
+        "userCpuMs": 1393.797,
+        "systemCpuMs": 307.884,
+        "cpuCoreEquivalent": 1.468675009227995,
+        "eventLoopUtilizationReported": 0,
+        "eventLoopUtilizationUsable": false,
+        "timerLagMs": {
+          "samples": 93,
+          "sumMs": 211.17526700000235,
+          "p50": 0.3658800000011979,
+          "p95": 6.031601999999111,
+          "max": 93.59594500000094
+        },
+        "eventLoopDelayP95Ms": 5.009407,
+        "eventLoopDelayMaxMs": 93.550136
+      },
+      "postgresLockSampling": {
+        "intervalMs": 10,
+        "pgSamples": 68,
+        "lockSamples": 0,
+        "maxPgWaitMs": 0,
+        "serverTransactionObservations": {
+          "maxPgTransactions": 5,
+          "maxPgIdleTransactions": 5,
+          "oldestTransactionAgeMs": {
+            "samples": 64,
+            "sumMs": 1650.585,
+            "p50": 20.944,
+            "p95": 56.34,
+            "max": 121.979
+          },
+          "note": "Sampled server xact_start ages, not a distribution of completed transaction lifetimes; callback/commit lifetimes reported independently."
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Pinned Prisma6.19.3 private configOverride enables native metrics only in disposable fixture; production generated schema unchanged.",
+    "Pool wait is native aggregate; per-request call-to-callback includes pool, engine dispatch, BEGIN/isolation overhead.",
+    "Spans are nested and percentile sums are not additive.",
+    "10ms polling can miss short waits and adds measurement overhead.",
+    "CPU includes Rust engine and polling, excludes separate HTTP client. Finite local bursts, not production certification."
+  ]
+}

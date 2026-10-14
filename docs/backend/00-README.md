@@ -75,3 +75,7 @@ The review-stage descriptions above are historical phase summaries, not current 
 [FE-TEAM-01 live Team integration](../frontend/04-FE-TEAM-01-INTEGRATION.md) merged through PR #41 at `f65d9b0603cd76c243afb34cf59155bfa0c32a64`; not deployed. No backend authorization or migration changes are introduced by that frontend slice.
 
 [29 — BE-TEAM-02 architecture proposal](29-BE-TEAM-02-ARCHITECTURE-PROPOSAL.md) proposes explicit membership/role ceilings, transfer, lifecycle, revocation/concurrency and approval-gated owner recovery. Approved architecture PR #42 merged at `41502c012e263a384748e432157f84f09b3cde32` after verification of reviewed HEAD `111b44a36533f8062ea7f02106cecdadcdd07555`. [30 — implementation and verification](30-BE-TEAM-02-IMPLEMENTATION.md) records the separately authorized backend implementation submitted for security review. No implementation merge or frontend management is authorized.
+
+## BE-TEAM-02 merge and Team directory investigation
+
+Approved PR #43 merged at `d0fbdf9d338b22570ef53028174e046bb63349f4`, reviewed HEAD `027594b30d4e84ce8af61d8f09ea067ba6daebf4`. Backend management is merged, not deployed. [31 — directory latency investigation](31-TEAM-DIRECTORY-PERFORMANCE-INVESTIGATION.md) profiles the complete request path and proposes remediation for review. No performance production change or frontend Team management is authorized. Original evidence is preserved.

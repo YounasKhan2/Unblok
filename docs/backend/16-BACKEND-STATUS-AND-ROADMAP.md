@@ -54,7 +54,7 @@
 
 **FE-AUTH-01 F4 correction:** Reviewed `cab718ea77ab2ddf943f959feb483e307cd25f87`; narrow session-boundary changes durably retire the signed predecessor before fresh anonymous CSRF state. Same-context Chromium reset/relogin passes without deleting cookies or replacing its context. Request-bound principals, transaction fences and CSRF/cookie protections remain enforced. Frontend production, NEXUS, dependencies and migrations are unchanged. The frontend F4 report/evidence preserves successful and failed observations and deployment limitations. This supersedes the local retained-cookie blocker; PR #33 subsequently merged as recorded in the handoff.
 
-**Next action:** Human security review of [BE-TEAM-02 implementation](30-BE-TEAM-02-IMPLEMENTATION.md). Architecture PR #42 is approved and merged at `41502c012e263a384748e432157f84f09b3cde32`. Backend implementation is submitted separately; no implementation merge, recovery or frontend Team management is authorized.
+**Next action:** Review [Team directory performance investigation and proposed remediation](31-TEAM-DIRECTORY-PERFORMANCE-INVESTIGATION.md). BE-TEAM-02 PR #43 is approved and merged at `d0fbdf9d338b22570ef53028174e046bb63349f4`. No performance production changes, recovery or frontend Team management are authorized.
 
 ## 3. Remaining production backend capabilities
 
@@ -164,3 +164,5 @@ Architecture PR #39 merged at `d4b958c74d7383cd269e693745738b3534cd44af` after c
 2026-10-14: FE-TEAM-01 [PR #41](https://github.com/YounasKhan2/Unblok/pull/41) merged at `f65d9b0603cd76c243afb34cf59155bfa0c32a64`, approved HEAD `29328da349d54da3034caf4581748089e9dcf5f8`. Main synchronized clean. Team live frontend is merged, not deployed; original verification and risks retained. BE-TEAM-02 architecture is a separate documentation-only draft awaiting human decisions; no management/recovery implementation or architecture merge authorized.
 
 2026-10-14: Verified approved PR #42 HEAD `111b44a36533f8062ea7f02106cecdadcdd07555`, marked ready and merged at `41502c012e263a384748e432157f84f09b3cde32`; main synchronized clean. BE-TEAM-02 backend implementation is on a separate branch for human security review. Original phase evidence remains preserved. No deployment, implementation merge or frontend management.
+
+BE-TEAM-02 PR #43 merge checkpoint: reviewed HEAD `027594b30d4e84ce8af61d8f09ea067ba6daebf4` verified mergeable, marked ready and merged at `d0fbdf9d338b22570ef53028174e046bb63349f4`; local main synchronized clean. The directory investigation is separate observational work; all security/migration/performance evidence remains preserved. Stop for review before remediation or frontend management.
