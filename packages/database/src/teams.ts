@@ -16,27 +16,27 @@ function metadata(input: TeamPatch) {
   if (input.description !== undefined && (typeof input.description!=='string' || input.description.includes('\0') || chars(input.description)>2000 || Buffer.byteLength(input.description)>8000)) fail('INVALID_REQUEST');
   if (input.color !== undefined && (typeof input.color!=='string' || !colors.includes(input.color))) fail('INVALID_REQUEST');
 }
-type Scope = { membership: string; role: WorkspaceRole; status: string };
-type Row = { workspaceId: string; id: string; key: string; name: string; description: string; color: string; status: 'ACTIVE' | 'ARCHIVED'; createdAt: Date; version: bigint; ownerMembershipId: string };
+export type Scope = { membership: string; role: WorkspaceRole; status: string };
+export type Row = { workspaceId: string; id: string; key: string; name: string; description: string; color: string; status: 'ACTIVE' | 'ARCHIVED'; createdAt: Date; version: bigint; ownerMembershipId: string };
 const fields = Prisma.sql`t.workspace_id AS "workspaceId",t.id,t.key,t.name,t.description,t.color,t.status,t.created_at AS "createdAt",t.version,t.owner_membership_id AS "ownerMembershipId"`;
 export function teamProjection(row: Row, scope: Scope) {
   return { workspaceId: row.workspaceId, id: row.id, key: row.key, name: row.name, description: row.description, color: row.color, status: row.status, createdAt: row.createdAt.toISOString(), version: row.version.toString(),
     capabilities: { updateMetadata: scope.role==='ADMIN' && scope.membership===row.ownerMembershipId && scope.status==='ACTIVE' && row.status==='ACTIVE', manageMembers: false, transferOwnership: false, archive: false, restore: false, readProjects: false, writeIssues: false } };
 }
-async function scope(tx: Prisma.TransactionClient, actor: string, workspace: string, write: boolean): Promise<Scope> {
+export async function scope(tx: Prisma.TransactionClient, actor: string, workspace: string, write: boolean): Promise<Scope> {
   if (!uuid.test(workspace)) fail('INVALID_REQUEST');
   const rows = await tx.$queryRaw<{status:string}[]>(Prisma.sql`SELECT status FROM workspaces WHERE id=${workspace}::uuid ${write ? Prisma.sql`FOR UPDATE` : Prisma.sql`FOR SHARE`}`);
   const m = await tx.workspaceMembership.findUnique({ where: { workspaceId_userId: { workspaceId: workspace, userId: actor } }, select: { id:true,role:true,status:true } });
   if (!rows[0] || !m || m.status!=='ACTIVE') fail('NOT_FOUND');
   return { membership:m.id,role:m.role,status:rows[0].status };
 }
-async function row(tx: Prisma.TransactionClient, workspace: string, id: string, s: Scope) {
+export async function row(tx: Prisma.TransactionClient, workspace: string, id: string, s: Scope) {
   if (!uuid.test(id)) fail('INVALID_REQUEST');
   const rows = await tx.$queryRaw<Row[]>(Prisma.sql`SELECT ${fields} FROM teams t JOIN team_memberships tm ON tm.workspace_id=t.workspace_id AND tm.team_id=t.id
     WHERE t.workspace_id=${workspace}::uuid AND t.id=${id}::uuid AND NOT t.legacy_quarantined AND tm.membership_id=${s.membership}::uuid`);
   if (!rows[0]) fail('NOT_FOUND'); return rows[0];
 }
-async function revision(tx: Prisma.TransactionClient, workspace: string) {
+export async function revision(tx: Prisma.TransactionClient, workspace: string) {
   const rows = await tx.$queryRaw<{revision:bigint}[]>`SELECT revision FROM workspace_policy_revisions WHERE workspace_id=${workspace}::uuid FOR SHARE`;
   if (!rows[0]) fail('NOT_FOUND'); return rows[0].revision.toString();
 }

@@ -35,7 +35,7 @@ export async function createApp(config: ApiConfig, resources: Resources, limiter
   app.use(bodyBoundary(config));
   const workspaceJson = express.json({ limit: 2048, strict: true, inflate: false });
   app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
-    if (/^\/api\/v1\/workspaces\/[^/]+\/teams(?:\/[^/]+)?$/.test(req.path) && ['POST','PATCH'].includes(req.method)) { express.json({ limit: 32768, strict:true, inflate:false })(req,res,next); return; }
+    if (/^\/api\/v1\/workspaces\/[^/]+\/teams(?:\/[^/]+(?:\/(?:memberships(?:\/[^/]+)?|ownership-transfer-requests(?:\/[^/]+(?:\/(?:accept|reject))?)?|archive|restore))?)?$/.test(req.path) && ['POST','PATCH'].includes(req.method)) { express.json({ limit: 32768, strict:true, inflate:false })(req,res,next); return; }
     if ((req.path === '/api/v1/workspaces' || req.path.startsWith('/api/v1/workspaces/') || req.path.startsWith('/api/v1/workspace-invitations/')) && req.method === 'POST') { workspaceJson(req, res, next); return; }
     if (req.method === 'GET' && (req.path === '/api/v1/workspaces' || req.path.startsWith('/api/v1/workspaces/')) &&
       (Number(req.get('content-length') ?? '0') > 0 || req.get('transfer-encoding') !== undefined)) {
