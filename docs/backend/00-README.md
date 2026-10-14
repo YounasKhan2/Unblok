@@ -79,3 +79,5 @@ The review-stage descriptions above are historical phase summaries, not current 
 ## BE-TEAM-02 merge and Team directory investigation
 
 Approved PR #43 merged at `d0fbdf9d338b22570ef53028174e046bb63349f4`, reviewed HEAD `027594b30d4e84ce8af61d8f09ea067ba6daebf4`. Backend management is merged, not deployed. [31 — directory latency investigation](31-TEAM-DIRECTORY-PERFORMANCE-INVESTIGATION.md) profiles the complete request path and proposes remediation for review. No performance production change or frontend Team management is authorized. Original evidence is preserved.
+
+[32 — Team directory admission correction](32-TEAM-DIRECTORY-ADMISSION-CORRECTION.md) implements the approved first closed preflight correction for a separate draft review. Three acquisitions/request are proved; the250ms objective remains unmet at50. No implementation merge, further optimization or frontend management is authorized.

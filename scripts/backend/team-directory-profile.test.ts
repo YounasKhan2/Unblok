@@ -1,6 +1,9 @@
 import { writeFile, mkdir } from 'node:fs/promises';
 import { afterAll as registerAfterAll, beforeAll as registerBeforeAll, expect, test as registerTest } from 'bun:test';
 // Standalone mode permits Bun's CPU profiler (Bun test does not emit one).
+const baseline=process.env.TEAM_DIRECTORY_BASELINE==='1';
+const repetition=process.env.TEAM_DIRECTORY_REPETITION??'1';
+if(!/^[1-3]$/.test(repetition))throw new Error('Invalid profile repetition');
 const standalone=process.env.TEAM_DIRECTORY_PROFILE_STANDALONE==='1';
 let setupRun:(()=>Promise<void>)|undefined,cleanupRun:(()=>Promise<void>)|undefined,profileRun:(()=>Promise<void>)|undefined;
 function beforeAll(run:()=>Promise<void>,timeout:number){if(standalone)setupRun=run;else registerBeforeAll(run,timeout);}
@@ -16,6 +19,7 @@ import { Sessions, connectSessionStore, sessionSettings } from '../../apps/api/s
 import { Authentication, AuthenticationLimits, Passwords } from '../../apps/api/src/modules/auth';
 
 import { Teams, TeamLimits } from '../../apps/api/src/modules/teams';
+import { TeamRateError } from '../../apps/api/src/modules/teams/application/teams';
 import { Workspaces, WorkspaceLimits } from '../../apps/api/src/modules/workspaces';
 import type { Server, ServerResponse } from 'node:http';
 import { AsyncLocalStorage } from 'node:async_hooks';
@@ -57,10 +61,11 @@ wrapAsync(Sessions.prototype,'verify','session-verify');
 wrapAsync(AuthFences.prototype,'validate','session-primary-fence');
 wrapAsync(Tenancy.prototype,'currentUser','self-profile-authorization');
 wrapAsync(Tenancy.prototype,'workspaceContext','workspace-authorization');
+wrapAsync(Tenancy.prototype,'teamDirectoryAdmission','workspace-admission');
 wrapAsync(Tenancy.prototype,'teamMembers','private-team-directory');
 const parse=teamMemberPageSchema.safeParse;
 teamMemberPageSchema.safeParse=function(...args:Parameters<typeof parse>){const c=context.getStore(),start=performance.now();try{return Reflect.apply(parse,this,args);}finally{if(c?.trace.detailed)c.trace.spans.push({name:'response-schema-validation',ms:performance.now()-start});}};
-function summary(values:number[]){const v=[...values].sort((a,b)=>a-b);return {samples:v.length,sumMs:v.reduce((a,b)=>a+b,0),p50:v[Math.ceil(v.length*.5)-1]??null,p95:v[Math.ceil(v.length*.95)-1]??null,max:v.at(-1)??null};}
+function summary(values:number[]){const v=[...values].sort((a,b)=>a-b);return {samples:v.length,sumMs:v.reduce((a,b)=>a+b,0),p50:v[Math.ceil(v.length*.5)-1]??null,p95:v[Math.ceil(v.length*.95)-1]??null,p99:v[Math.ceil(v.length*.99)-1]??null,max:v.at(-1)??null};}
 async function metrics(){return (database.client as unknown as InstrumentedClient).$metrics.json();}
 function metric(m:NativeMetrics,key:'prisma_client_queries_wait_histogram_ms'):Histogram;
 function metric(m:NativeMetrics,key:string):number;
@@ -119,7 +124,15 @@ async function fixture(options: { afterConfirmation?: () => Promise<void>; redis
   wrapAsync(coarse,'consume','coarse-admission');
   wrapStore(connection.store);
   wrapAsync(teamLimits,'consume','team-admission');
-  const server = await createApp(config, { databaseReady: () => database.ready(), queueReady: async () => await rateCache.ping() === 'PONG', close: async () => { await connection.close(); if (options.redisUrl) rateCache.disconnect(); } }, coarse, createLogger('silent'), sessions, authentication, new Workspaces(sessions, tenancy, new WorkspaceLimits(rateCache, settings.secrets[0]!, settings.prefix)),new Teams(sessions,tenancy,measuredLimits));
+  const teams=new Teams(sessions,tenancy,measuredLimits);
+  // Exact merged-before correction directory flow, inside this fixture only.
+  // Uses real fences/admission/final Team authorization, never a production fallback.
+  if(baseline)teams.members=(req,workspace,team,query)=>sessions.withRequest(req,async p=>{
+    const actor=await tenancy.currentUser(p);await tenancy.workspaceContext(p,workspace);
+    const budget=await measuredLimits.consume('read',actor.id,workspace);if(!budget.allowed)throw new TeamRateError(budget.retryAfter);
+    return tenancy.teamMembers(p,workspace,team,query);
+  });
+  const server = await createApp(config, { databaseReady: () => database.ready(), queueReady: async () => await rateCache.ping() === 'PONG', close: async () => { await connection.close(); if (options.redisUrl) rateCache.disconnect(); } }, coarse, createLogger('silent'), sessions, authentication, new Workspaces(sessions, tenancy, new WorkspaceLimits(rateCache, settings.secrets[0]!, settings.prefix)),teams);
   installInboundProfile(server.app.getHttpServer());
   await server.app.listen(0, '127.0.0.1'); stops.push(server.close);
   const address = server.app.getHttpServer().address(); if (!address || typeof address === 'string') throw new Error('Missing test listener');
@@ -176,7 +189,7 @@ test('native pool calibration and complete isolated Team directory request profi
  const calibration={configuredConnections:configuredPool,heldMs:80,contenderCallToCallbackMs:admission,nativePoolWaitSumMs:metric(after,'prisma_client_queries_wait_histogram_ms').sum-metric(before,'prisma_client_queries_wait_histogram_ms').sum};
  expect(admission).toBeGreaterThan(60);expect(calibration.nativePoolWaitSumMs).toBeGreaterThan(60);
  const loads:unknown[]=[];
- for(const detailed of [false,true])for(const concurrency of [1,10,50]){
+ for(const detailed of [true])for(const concurrency of [1,10,50]){
   const o=await owned(),t=await make(o),team=t.row.id as string;
   await database.transaction(async tx=>{await tx.$executeRaw`WITH u AS (INSERT INTO users(id,name) SELECT gen_random_uuid(),rpad('Profile member',120,'x') FROM generate_series(1,1000) RETURNING id), m AS (INSERT INTO workspace_memberships(id,workspace_id,user_id,role,status) SELECT gen_random_uuid(),${o.ws}::uuid,id,'MEMBER','ACTIVE' FROM u RETURNING id) INSERT INTO team_memberships(workspace_id,team_id,membership_id) SELECT ${o.ws}::uuid,${team}::uuid,id FROM m`;});
   traces.clear();queryEvents=[];
@@ -192,13 +205,13 @@ test('native pool calibration and complete isolated Team directory request profi
   const wallMs=performance.now()-wallStart,cpu=process.cpuUsage(cpuBefore),elu=performance.eventLoopUtilization(eluBefore),metricAfter=await metrics();
   expect(results.every(r=>r.status===200&&r.items===20)).toBe(true);expect(traces.size).toBe(50);expect([...traces.values()].every(t=>t.status===200&&t.serverMs!==undefined)).toBe(true);
   const phaseNames=[...new Set([...traces.values()].flatMap(t=>t.spans.map(s=>s.name)))];const phases=Object.fromEntries(phaseNames.map(phase=>[phase,summary([...traces.values()].flatMap(t=>t.spans.filter(s=>s.name===phase).map(s=>s.ms)))]));
-  const transactions=[...traces.values()].flatMap(t=>t.transactions);if(detailed)expect(transactions).toHaveLength(200);
+  const transactions=[...traces.values()].flatMap(t=>t.transactions);if(detailed)expect(transactions).toHaveLength(baseline?200:150);
   const stages=[...new Set(transactions.map(t=>t.stage))];const transactionStages=Object.fromEntries(stages.map(stage=>{const rows=transactions.filter(t=>t.stage===stage);return [stage,{admissionCallToCallback:summary(rows.map(t=>t.admissionMs)),callbackLifetime:summary(rows.map(t=>t.callbackMs)),commit:summary(rows.map(t=>t.commitMs)),totalLifetime:summary(rows.map(t=>t.totalMs))}];}));
-  const waitBefore=metric(metricBefore,'prisma_client_queries_wait_histogram_ms'),waitAfter=metric(metricAfter,'prisma_client_queries_wait_histogram_ms'),sql=queryEvents!;queryEvents=null;
+  const waitBefore=metric(metricBefore,'prisma_client_queries_wait_histogram_ms'),waitAfter=metric(metricAfter,'prisma_client_queries_wait_histogram_ms'),sql=queryEvents!;queryEvents=null;expect(waitAfter.count-waitBefore.count).toBe(baseline?200:150);expect(sql.filter(s=>s.kind==='directory')).toHaveLength(50);
   loads.push({detailed,concurrency,success:summary(results.map(r=>r.ms)),server:summary([...traces.values()].map(t=>t.serverMs!)),statuses:{200:results.length},bytes:results[0]!.bytes,phases,transactionStages,nativePool:{connections:configuredPool,waitAcquisitions:waitAfter.count-waitBefore.count,totalWaitMs:waitAfter.sum-waitBefore.sum,maxBusy,maxQueued,meanWaitMsPerSuccessfulRequest:(waitAfter.sum-waitBefore.sum)/50},sql:{count:sql.length,directory:summary(sql.filter(s=>s.kind==='directory').map(s=>s.ms)),transactionControl:summary(sql.filter(s=>s.kind==='transaction-control').map(s=>s.ms)),authorizationAndOther:summary(sql.filter(s=>s.kind==='authorization-and-other').map(s=>s.ms))},serverProcess:{windowStartUnixUs,windowEndUnixUs:Date.now()*1000,wallMs,userCpuMs:cpu.user/1000,systemCpuMs:cpu.system/1000,cpuCoreEquivalent:(cpu.user+cpu.system)/1000/wallMs,eventLoopUtilizationReported:elu.utilization,eventLoopUtilizationUsable:elu.active>0||elu.idle>0,timerLagMs:summary(delays),eventLoopDelayP95Ms:loop.percentile(95)/1e6,eventLoopDelayMaxMs:loop.max/1e6},postgresLockSampling:{intervalMs:10,pgSamples,lockSamples,maxPgWaitMs,serverTransactionObservations:{maxPgTransactions,maxPgIdleTransactions,oldestTransactionAgeMs:summary(pgTransactionAges),note:'Sampled server xact_start ages, not a distribution of completed transaction lifetimes; callback/commit lifetimes reported independently.'}}});
  }
- await mkdir(resolve(root,'docs/backend/evidence/team-directory-investigation'),{recursive:true});
- await writeFile(resolve(root,'docs/backend/evidence/team-directory-investigation',standalone?'profile-cpu.json':'profile.json'),JSON.stringify({base:'d0fbdf9d338b22570ef53028174e046bb63349f4',calibration,workload:'Separate Bun HTTP client process;50 requests per fresh legitimate account/Workspace at concurrency1/10/50,1,001 explicit joins,120-character names,limit20. No pool/rate/timeout changes or cache. Baseline uses same native metrics but no method spans; detailed harness adds observational spans only.',loads,limitations:['Pinned Prisma6.19.3 private configOverride enables native metrics only in disposable fixture; production generated schema unchanged.','Pool wait is native aggregate; per-request call-to-callback includes pool, engine dispatch, BEGIN/isolation overhead.','Spans are nested and percentile sums are not additive.','10ms polling can miss short waits and adds measurement overhead.','CPU includes Rust engine and polling, excludes separate HTTP client. Finite local bursts, not production certification.']},null,2)+'\n');
+ await mkdir(resolve(root,'docs/backend/evidence/team-directory-admission'),{recursive:true});
+ await writeFile(resolve(root,'docs/backend/evidence/team-directory-admission',`profile-${baseline?'before':'after'}-${repetition}${standalone?'-cpu':''}.json`),JSON.stringify({base:'1bfb1c3d2aca1cf9e741e41e59e30603589e7624',baseline,repetition,calibration,workload:'Separate Bun HTTP client process;50 requests per fresh legitimate account/Workspace at concurrency1/10/50,1,001 explicit joins,120-character names,limit20. No pool/rate/timeout changes or cache. Baseline reconstructs exactly the merged four-acquisition directory preflight; candidate uses the new three-acquisition port. Both use the same detailed observational spans.',loads,limitations:['Pinned Prisma6.19.3 private configOverride enables native metrics only in disposable fixture; production generated schema unchanged.','Pool wait is native aggregate; per-request call-to-callback includes pool, engine dispatch, BEGIN/isolation overhead.','Spans are nested and percentile sums are not additive.','10ms polling can miss short waits and adds measurement overhead.','CPU includes Rust engine and polling, excludes separate HTTP client. Finite local bursts, not production certification.']},null,2)+'\n');
 },60000);
 
 if(standalone){if(!setupRun||!cleanupRun||!profileRun)throw new Error('Missing profiling hooks');try{await setupRun();await profileRun();}finally{await cleanupRun();}}

@@ -15,7 +15,13 @@ export class Teams {
   detail(req:Request,workspace:string,id:string){return this.run(req,workspace,'read',p=>this.tenancy.detailTeam(p,workspace,id));}
   create(req:Request,workspace:string,input:CreateTeamInput,key:string){return this.run(req,workspace,'create',p=>this.tenancy.createTeam(p,workspace,input,key));}
   update(req:Request,workspace:string,id:string,input:PatchTeamInput,key:string,match?:string){return this.run(req,workspace,'update',p=>this.tenancy.updateTeam(p,workspace,id,input,key,match));}
-  members(req:Request,workspace:string,team:string,query:TeamMemberQuery){return this.run(req,workspace,'read',p=>this.tenancy.teamMembers(p,workspace,team,query));}
+  members(req:Request,workspace:string,team:string,query:TeamMemberQuery){return this.sessions.withRequest(req,async p=>{
+    if(!this.limits)throw new AuthUnavailableError();
+    const admission=await this.tenancy.teamDirectoryAdmission(p,workspace);
+    const budget=await this.limits.consume('read',admission.actorId,workspace);
+    if(!budget.allowed)throw new TeamRateError(budget.retryAfter);
+    return this.tenancy.teamMembers(p,workspace,team,query);
+  });}
   transfer(req:Request,workspace:string,team:string,request:string){return this.run(req,workspace,'read',p=>this.tenancy.teamTransferDetail(p,workspace,team,request));}
   manage(req:Request,workspace:string,team:string,action:TeamManagementAction,input:TeamManagementInput,key:string,target?:string,match?:string){return this.run(req,workspace,'manage',p=>this.tenancy.teamManage(p,workspace,team,action,input,key,target,match));}
 

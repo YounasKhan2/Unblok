@@ -54,7 +54,7 @@
 
 **FE-AUTH-01 F4 correction:** Reviewed `cab718ea77ab2ddf943f959feb483e307cd25f87`; narrow session-boundary changes durably retire the signed predecessor before fresh anonymous CSRF state. Same-context Chromium reset/relogin passes without deleting cookies or replacing its context. Request-bound principals, transaction fences and CSRF/cookie protections remain enforced. Frontend production, NEXUS, dependencies and migrations are unchanged. The frontend F4 report/evidence preserves successful and failed observations and deployment limitations. This supersedes the local retained-cookie blocker; PR #33 subsequently merged as recorded in the handoff.
 
-**Next action:** Review [Team directory performance investigation and proposed remediation](31-TEAM-DIRECTORY-PERFORMANCE-INVESTIGATION.md). BE-TEAM-02 PR #43 is approved and merged at `d0fbdf9d338b22570ef53028174e046bb63349f4`. No performance production changes, recovery or frontend Team management are authorized.
+**Next action:** Review the separate draft [Team directory admission correction](32-TEAM-DIRECTORY-ADMISSION-CORRECTION.md). Investigation PR #44 merged at `1bfb1c3d2aca1cf9e741e41e59e30603589e7624`; only its first targeted correction is implemented for review. No implementation merge, further optimization or frontend Team management is authorized.
 
 ## 3. Remaining production backend capabilities
 

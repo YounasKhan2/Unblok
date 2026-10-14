@@ -1,0 +1,408 @@
+{
+  "base": "1bfb1c3d2aca1cf9e741e41e59e30603589e7624",
+  "investigationApprovedHead": "c9db666a0fc75cb0144d8d25180250355760012b",
+  "gates": {
+    "install": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "bun install v1.4.2 (744846f84)",
+        "",
+        "Checked 389 installs across 506 packages (no changes) [21.00ms]"
+      ]
+    },
+    "validate": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "@unblok/database validate: Prisma schema loaded from prisma/schema.prisma",
+        "@unblok/database validate: The schema at prisma/schema.prisma is valid \ud83d\ude80",
+        "@unblok/database validate: Exited with code 0"
+      ]
+    },
+    "lint": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "$ eslint apps/api apps/worker packages/backend-runtime packages/database packages/contracts scripts/backend"
+      ]
+    },
+    "typecheck": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "$ bun run check:architecture && tsc -p tsconfig.backend.json",
+        "$ bun scripts/backend/check-architecture.ts",
+        "Preserved infrastructure: BE-00C type-only Database backlink: tenancy.ts \u2192 index.ts (no runtime cycle)",
+        "Architecture checked 426 source files and 1156 resolved internal edges; 0 violations."
+      ]
+    },
+    "unit": {
+      "counts": [
+        [
+          "101",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "265"
+      ],
+      "tail": [
+        "(pass) logging and lifecycle > logger applies redaction before serialization [0.37ms]",
+        "(pass) logging and lifecycle > deadlines reject hanging work and preserve completed results [10.28ms]",
+        "(pass) logging and lifecycle > bounded retries and deterministic idempotency keys [0.32ms]",
+        "",
+        " 101 pass",
+        " 0 fail",
+        " 265 expect() calls",
+        "Ran 101 tests across 8 files. [7.86s]"
+      ]
+    },
+    "build": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "@unblok/api build:   main.js  97.55 KB  (entry point)",
+        "@unblok/api build: ",
+        "@unblok/api build: Exited with code 0",
+        "@unblok/worker build: Bundled 4 modules in 4ms",
+        "@unblok/worker build: ",
+        "@unblok/worker build:   main.js  5.36 KB  (entry point)",
+        "@unblok/worker build: ",
+        "@unblok/worker build: Exited with code 0"
+      ]
+    },
+    "teams-regression": {
+      "counts": [
+        [
+          "140",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "2425"
+      ],
+      "tail": [
+        "(pass) F1 valid sequential transfers require new consent and distinct immutable acceptance receipts [955.82ms]",
+        "(pass) F1 within-budget workload separates successes, admission, SQL and sampled lock waits [14245.98ms]",
+        "(pass) Workspace2000/deployment20000 caps preserve authorized management replay and immutable tombstone status [5335.05ms]",
+        "",
+        " 140 pass",
+        " 0 fail",
+        " 2425 expect() calls",
+        "Ran 140 tests across 5 files. [143.11s]"
+      ]
+    },
+    "auth-workspace-regression": {
+      "counts": [
+        [
+          "121",
+          "pass"
+        ],
+        [
+          "1",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "3170"
+      ],
+      "tail": [
+        "",
+        "1 tests failed:",
+        "(fail) fresh inviter and proof revocation: expired [522.01ms]",
+        "",
+        " 121 pass",
+        " 1 fail",
+        " 3170 expect() calls",
+        "Ran 122 tests across 4 files. [91.43s]"
+      ]
+    },
+    "invitations-final": {
+      "counts": [
+        [
+          "36",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "1200"
+      ],
+      "tail": [
+        "(pass) F2 leased delivery after archive may send but cannot grant authority [529.68ms]",
+        "(pass) SID retirement locks every user before sorted families even when a digest matches multiple users [304.91ms]",
+        "(pass) legacy raw membership lock inversion rolls back within existing bounds and never bypasses authority [1467.36ms]",
+        "",
+        " 36 pass",
+        " 0 fail",
+        " 1200 expect() calls",
+        "Ran 36 tests across 1 file. [21.83s]"
+      ]
+    },
+    "security-final": {
+      "counts": [
+        [
+          "13",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "353"
+      ],
+      "tail": [
+        "(pass) account switches and Workspace ADMIN status never inherit private Team directory access [545.78ms]",
+        "(pass) membership/role changes invalidate signed directory cursor; fresh reactivation does not cache authority [598.96ms]",
+        "(pass) real database and Valkey admission outages fail closed with generic HTTP503 [541.52ms]",
+        "",
+        " 13 pass",
+        " 0 fail",
+        " 353 expect() calls",
+        "Ran 13 tests across 1 file. [9.87s]"
+      ]
+    },
+    "contracts": {
+      "counts": [
+        [
+          "4",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "39"
+      ],
+      "tail": [
+        "",
+        "scripts/backend/workspace-invitation-contracts.test.ts:",
+        "(pass) live invitation contracts match approved field vocabulary, reject grants and require independent keys [7.67ms]",
+        "",
+        " 4 pass",
+        " 0 fail",
+        " 39 expect() calls",
+        "Ran 4 tests across 4 files. [244.00ms]"
+      ]
+    },
+    "web-lint": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "$ bun --filter @unblok/web lint",
+        "@unblok/web lint: Exited with code 0"
+      ]
+    },
+    "web-tests": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "@unblok/web test:    Duration  17.89s (transform 43%, import 34%, tests 21%, worker 2%)",
+        "@unblok/web test: ",
+        "@unblok/web test:   Transform  transforming modules took 14.94s \u00b7 43% of tracked time, re-done on every run",
+        "@unblok/web test:              persist transforms across runs with fsModuleCache: true",
+        "@unblok/web test:              learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns",
+        "@unblok/web test: ",
+        "@unblok/web test: Exited with code 1",
+        "error: script \"test:web\" exited with code 1"
+      ]
+    },
+    "web-build": {
+      "counts": [],
+      "assertions": [],
+      "tail": [
+        "@unblok/web build: ",
+        "@unblok/web build: [plugin builtin:vite-reporter] ",
+        "@unblok/web build: (!) Some chunks are larger than 500 kB after minification. Consider:",
+        "@unblok/web build: - Using dynamic import() to code-split the application",
+        "@unblok/web build: - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting",
+        "@unblok/web build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.",
+        "@unblok/web build: \u2713 built in 1.44s",
+        "@unblok/web build: Exited with code 0"
+      ]
+    },
+    "before-1": {
+      "counts": [
+        [
+          "1",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "60"
+      ],
+      "tail": [
+        "",
+        "scripts/backend/team-directory-profile.test.ts:",
+        "(pass) native pool calibration and complete isolated Team directory request profiles [10455.22ms]",
+        "",
+        " 1 pass",
+        " 0 fail",
+        " 60 expect() calls",
+        "Ran 1 test across 1 file. [12.97s]"
+      ]
+    },
+    "after-1": {
+      "counts": [
+        [
+          "1",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "60"
+      ],
+      "tail": [
+        "",
+        "scripts/backend/team-directory-profile.test.ts:",
+        "(pass) native pool calibration and complete isolated Team directory request profiles [8583.80ms]",
+        "",
+        " 1 pass",
+        " 0 fail",
+        " 60 expect() calls",
+        "Ran 1 test across 1 file. [11.02s]"
+      ]
+    },
+    "before-2": {
+      "counts": [
+        [
+          "1",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "60"
+      ],
+      "tail": [
+        "",
+        "scripts/backend/team-directory-profile.test.ts:",
+        "(pass) native pool calibration and complete isolated Team directory request profiles [9338.55ms]",
+        "",
+        " 1 pass",
+        " 0 fail",
+        " 60 expect() calls",
+        "Ran 1 test across 1 file. [11.73s]"
+      ]
+    },
+    "after-2": {
+      "counts": [
+        [
+          "1",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "60"
+      ],
+      "tail": [
+        "",
+        "scripts/backend/team-directory-profile.test.ts:",
+        "(pass) native pool calibration and complete isolated Team directory request profiles [9407.85ms]",
+        "",
+        " 1 pass",
+        " 0 fail",
+        " 60 expect() calls",
+        "Ran 1 test across 1 file. [11.93s]"
+      ]
+    },
+    "before-3": {
+      "counts": [
+        [
+          "1",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "60"
+      ],
+      "tail": [
+        "",
+        "scripts/backend/team-directory-profile.test.ts:",
+        "(pass) native pool calibration and complete isolated Team directory request profiles [10276.95ms]",
+        "",
+        " 1 pass",
+        " 0 fail",
+        " 60 expect() calls",
+        "Ran 1 test across 1 file. [12.62s]"
+      ]
+    },
+    "after-3": {
+      "counts": [
+        [
+          "1",
+          "pass"
+        ],
+        [
+          "0",
+          "fail"
+        ]
+      ],
+      "assertions": [
+        "60"
+      ],
+      "tail": [
+        "",
+        "scripts/backend/team-directory-profile.test.ts:",
+        "(pass) native pool calibration and complete isolated Team directory request profiles [8469.14ms]",
+        "",
+        " 1 pass",
+        " 0 fail",
+        " 60 expect() calls",
+        "Ran 1 test across 1 file. [10.80s]"
+      ]
+    }
+  },
+  "scope": {
+    "all12MigrationsUnchanged": true,
+    "neutralContractsFrontendInfraDependenciesUnchanged": true,
+    "allHistoricalEvidenceUnchanged": true,
+    "productionChanges": "Directory caller and closed Tenancy admission only"
+  },
+  "intermediateFailures": [
+    "New sole-Workspace-ADMIN revocation fixture correctly rejected by existing last-admin guard; added a second explicit eligible Workspace ADMIN with no Team join",
+    "Initial Workspace invitation expired fixture uses two Date.now calls;1ms drift violates24h bound; corrected with one captured timestamp, unchanged assertions and SQL",
+    "Early compile checks corrected missing test-only TeamRateError import and the existing Workspace projection nesting/opaque fake-principal cast"
+  ],
+  "limitations": [
+    "250ms objective unmet at50 in all candidate runs and at10 in one run",
+    "Finite bursts/host variability; native metric instrumentation pinned/private and test-only",
+    "Native pool wait is aggregate; callback/commit occupancy and sampled PG ages/waits are distinct",
+    "Original3 NEXUS fixture failures retained; no frontend management/deployment"
+  ]
+}

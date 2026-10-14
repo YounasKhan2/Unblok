@@ -1,0 +1,521 @@
+{
+  "base": "1bfb1c3d2aca1cf9e741e41e59e30603589e7624",
+  "runOrder": [
+    "before1",
+    "after1",
+    "after2",
+    "before2",
+    "before3",
+    "after3"
+  ],
+  "requests": 900,
+  "statuses": {
+    "200": 900,
+    "409": 0,
+    "412": 0,
+    "429": 0,
+    "503": 0
+  },
+  "dataset": {
+    "explicitJoins": 1001,
+    "memberNameCharacters": 120,
+    "limit": 20
+  },
+  "constraints": {
+    "poolConnections": 5,
+    "maxWaitMs": 2000,
+    "transactionTimeoutMs": 5000,
+    "lockTimeoutMs": 1500,
+    "statementTimeoutMs": 4000,
+    "teamReadPerAccountMinute": 60,
+    "teamReadPerWorkspaceMinute": 300,
+    "coarseMinute": 120
+  },
+  "loads": [
+    {
+      "mode": "after",
+      "repetition": "1",
+      "concurrency": 1,
+      "success": {
+        "samples": 50,
+        "sumMs": 2334.934754,
+        "p50": 43.27121199999999,
+        "p95": 74.296359,
+        "p99": 84.737931,
+        "max": 84.737931
+      },
+      "statuses": {
+        "200": 50
+      },
+      "acquisitionsPerRequest": 3.0,
+      "poolWaitMeanMsPerRequest": 0.001618319999998903,
+      "nativeSqlPerRequest": 49.0,
+      "callbackOccupancyMeanMsPerRequest": 34.37086897999996,
+      "transactionCompletionMeanMsPerRequest": 3.7527401200000896,
+      "postgresLockSamples": 0,
+      "objectiveMet": true
+    },
+    {
+      "mode": "after",
+      "repetition": "1",
+      "concurrency": 10,
+      "success": {
+        "samples": 50,
+        "sumMs": 7079.310576,
+        "p50": 135.461642,
+        "p95": 204.29631400000002,
+        "p99": 208.380168,
+        "max": 208.380168
+      },
+      "statuses": {
+        "200": 50
+      },
+      "acquisitionsPerRequest": 3.0,
+      "poolWaitMeanMsPerRequest": 54.09143767999999,
+      "nativeSqlPerRequest": 49.0,
+      "callbackOccupancyMeanMsPerRequest": 63.40636629999981,
+      "transactionCompletionMeanMsPerRequest": 7.48766936,
+      "postgresLockSamples": 0,
+      "objectiveMet": true
+    },
+    {
+      "mode": "after",
+      "repetition": "1",
+      "concurrency": 50,
+      "success": {
+        "samples": 50,
+        "sumMs": 29524.040522,
+        "p50": 572.732392,
+        "p95": 746.0499219999999,
+        "p99": 752.6468500000001,
+        "max": 752.6468500000001
+      },
+      "statuses": {
+        "200": 50
+      },
+      "acquisitionsPerRequest": 3.0,
+      "poolWaitMeanMsPerRequest": 472.2359338400001,
+      "nativeSqlPerRequest": 49.0,
+      "callbackOccupancyMeanMsPerRequest": 59.27387660000022,
+      "transactionCompletionMeanMsPerRequest": 7.022407779999703,
+      "postgresLockSamples": 0,
+      "objectiveMet": false
+    },
+    {
+      "mode": "after",
+      "repetition": "2",
+      "concurrency": 1,
+      "success": {
+        "samples": 50,
+        "sumMs": 2249.036027,
+        "p50": 39.505746000000045,
+        "p95": 71.104513,
+        "p99": 95.54802699999999,
+        "max": 95.54802699999999
+      },
+      "statuses": {
+        "200": 50
+      },
+      "acquisitionsPerRequest": 3.0,
+      "poolWaitMeanMsPerRequest": 0.0017173999999997136,
+      "nativeSqlPerRequest": 49.0,
+      "callbackOccupancyMeanMsPerRequest": 32.96566562000004,
+      "transactionCompletionMeanMsPerRequest": 4.332449920000008,
+      "postgresLockSamples": 0,
+      "objectiveMet": true
+    },
+    {
+      "mode": "after",
+      "repetition": "2",
+      "concurrency": 10,
+      "success": {
+        "samples": 50,
+        "sumMs": 8370.818325999997,
+        "p50": 145.27175999999997,
+        "p95": 296.324958,
+        "p99": 297.694618,
+        "max": 297.694618
+      },
+      "statuses": {
+        "200": 50
+      },
+      "acquisitionsPerRequest": 3.0,
+      "poolWaitMeanMsPerRequest": 65.24494332,
+      "nativeSqlPerRequest": 49.0,
+      "callbackOccupancyMeanMsPerRequest": 71.96432079999988,
+      "transactionCompletionMeanMsPerRequest": 12.10355762000021,
+      "postgresLockSamples": 0,
+      "objectiveMet": false
+    },
+    {
+      "mode": "after",
+      "repetition": "2",
+      "concurrency": 50,
+      "success": {
+        "samples": 50,
+        "sumMs": 28904.890408,
+        "p50": 575.825747,
+        "p95": 732.017686,
+        "p99": 738.994515,
+        "max": 738.994515
+      },
+      "statuses": {
+        "200": 50
+      },
+      "acquisitionsPerRequest": 3.0,
+      "poolWaitMeanMsPerRequest": 467.31582715999997,
+      "nativeSqlPerRequest": 49.0,
+      "callbackOccupancyMeanMsPerRequest": 59.310767439999836,
+      "transactionCompletionMeanMsPerRequest": 6.297340480000166,
+      "postgresLockSamples": 0,
+      "objectiveMet": false
+    },
+    {
+      "mode": "after",
+      "repetition": "3",
+      "concurrency": 1,
+      "success": {
+        "samples": 50,
+        "sumMs": 2098.5283970000005,
+        "p50": 41.038138000000004,
+        "p95": 55.45618400000001,
+        "p99": 70.71133999999998,
+        "max": 70.71133999999998
+      },
+      "statuses": {
+        "200": 50
+      },
+      "acquisitionsPerRequest": 3.0,
+      "poolWaitMeanMsPerRequest": 0.0013085399999997094,
+      "nativeSqlPerRequest": 49.0,
+      "callbackOccupancyMeanMsPerRequest": 30.900359479999842,
+      "transactionCompletionMeanMsPerRequest": 3.7177348800000254,
+      "postgresLockSamples": 0,
+      "objectiveMet": true
+    },
+    {
+      "mode": "after",
+      "repetition": "3",
+      "concurrency": 10,
+      "success": {
+        "samples": 50,
+        "sumMs": 7987.9662050000015,
+        "p50": 151.929932,
+        "p95": 232.433136,
+        "p99": 235.02087300000005,
+        "max": 235.02087300000005
+      },
+      "statuses": {
+        "200": 50
+      },
+      "acquisitionsPerRequest": 3.0,
+      "poolWaitMeanMsPerRequest": 61.45637229999999,
+      "nativeSqlPerRequest": 49.0,
+      "callbackOccupancyMeanMsPerRequest": 72.74217365999995,
+      "transactionCompletionMeanMsPerRequest": 7.845698479999956,
+      "postgresLockSamples": 0,
+      "objectiveMet": true
+    },
+    {
+      "mode": "after",
+      "repetition": "3",
+      "concurrency": 50,
+      "success": {
+        "samples": 50,
+        "sumMs": 26059.219647999995,
+        "p50": 511.620474,
+        "p95": 679.827657,
+        "p99": 683.710997,
+        "max": 683.710997
+      },
+      "statuses": {
+        "200": 50
+      },
+      "acquisitionsPerRequest": 3.0,
+      "poolWaitMeanMsPerRequest": 425.39155634,
+      "nativeSqlPerRequest": 49.0,
+      "callbackOccupancyMeanMsPerRequest": 55.40125058000023,
+      "transactionCompletionMeanMsPerRequest": 6.26883910000015,
+      "postgresLockSamples": 0,
+      "objectiveMet": false
+    },
+    {
+      "mode": "before",
+      "repetition": "1",
+      "concurrency": 1,
+      "success": {
+        "samples": 50,
+        "sumMs": 3036.3096589999986,
+        "p50": 56.32573400000001,
+        "p95": 93.48220899999998,
+        "p99": 111.682063,
+        "max": 111.682063
+      },
+      "statuses": {
+        "200": 50
+      },
+      "acquisitionsPerRequest": 4.0,
+      "poolWaitMeanMsPerRequest": 0.00209080000000057,
+      "nativeSqlPerRequest": 64.0,
+      "callbackOccupancyMeanMsPerRequest": 43.959077060000055,
+      "transactionCompletionMeanMsPerRequest": 6.625887099999946,
+      "postgresLockSamples": 0,
+      "objectiveMet": true
+    },
+    {
+      "mode": "before",
+      "repetition": "1",
+      "concurrency": 10,
+      "success": {
+        "samples": 50,
+        "sumMs": 9415.515030999997,
+        "p50": 186.23691199999996,
+        "p95": 249.793081,
+        "p99": 259.94401600000003,
+        "max": 259.94401600000003
+      },
+      "statuses": {
+        "200": 50
+      },
+      "acquisitionsPerRequest": 4.0,
+      "poolWaitMeanMsPerRequest": 73.42175817999998,
+      "nativeSqlPerRequest": 64.0,
+      "callbackOccupancyMeanMsPerRequest": 81.37841253999981,
+      "transactionCompletionMeanMsPerRequest": 11.67197449999996,
+      "postgresLockSamples": 0,
+      "objectiveMet": true
+    },
+    {
+      "mode": "before",
+      "repetition": "1",
+      "concurrency": 50,
+      "success": {
+        "samples": 50,
+        "sumMs": 35291.33809599999,
+        "p50": 700.297637,
+        "p95": 884.765488,
+        "p99": 889.155519,
+        "max": 889.155519
+      },
+      "statuses": {
+        "200": 50
+      },
+      "acquisitionsPerRequest": 4.0,
+      "poolWaitMeanMsPerRequest": 588.6058792599998,
+      "nativeSqlPerRequest": 64.0,
+      "callbackOccupancyMeanMsPerRequest": 72.15318328000016,
+      "transactionCompletionMeanMsPerRequest": 8.513324320000065,
+      "postgresLockSamples": 0,
+      "objectiveMet": false
+    },
+    {
+      "mode": "before",
+      "repetition": "2",
+      "concurrency": 1,
+      "success": {
+        "samples": 50,
+        "sumMs": 2445.7409099999995,
+        "p50": 47.18558200000007,
+        "p95": 65.16933,
+        "p99": 75.765312,
+        "max": 75.765312
+      },
+      "statuses": {
+        "200": 50
+      },
+      "acquisitionsPerRequest": 4.0,
+      "poolWaitMeanMsPerRequest": 0.001708779999999308,
+      "nativeSqlPerRequest": 64.0,
+      "callbackOccupancyMeanMsPerRequest": 36.978240220000174,
+      "transactionCompletionMeanMsPerRequest": 3.997784300000021,
+      "postgresLockSamples": 0,
+      "objectiveMet": true
+    },
+    {
+      "mode": "before",
+      "repetition": "2",
+      "concurrency": 10,
+      "success": {
+        "samples": 50,
+        "sumMs": 8605.241559,
+        "p50": 167.22075600000005,
+        "p95": 231.57726399999999,
+        "p99": 236.47585,
+        "max": 236.47585
+      },
+      "statuses": {
+        "200": 50
+      },
+      "acquisitionsPerRequest": 4.0,
+      "poolWaitMeanMsPerRequest": 68.72948724000001,
+      "nativeSqlPerRequest": 64.0,
+      "callbackOccupancyMeanMsPerRequest": 75.90201248000027,
+      "transactionCompletionMeanMsPerRequest": 8.448678979999785,
+      "postgresLockSamples": 0,
+      "objectiveMet": true
+    },
+    {
+      "mode": "before",
+      "repetition": "2",
+      "concurrency": 50,
+      "success": {
+        "samples": 50,
+        "sumMs": 35005.116919,
+        "p50": 698.463773,
+        "p95": 847.441127,
+        "p99": 861.417512,
+        "max": 861.417512
+      },
+      "statuses": {
+        "200": 50
+      },
+      "acquisitionsPerRequest": 4.0,
+      "poolWaitMeanMsPerRequest": 582.66587298,
+      "nativeSqlPerRequest": 64.0,
+      "callbackOccupancyMeanMsPerRequest": 69.44234773999997,
+      "transactionCompletionMeanMsPerRequest": 8.076664820000005,
+      "postgresLockSamples": 0,
+      "objectiveMet": false
+    },
+    {
+      "mode": "before",
+      "repetition": "3",
+      "concurrency": 1,
+      "success": {
+        "samples": 50,
+        "sumMs": 2744.136556999999,
+        "p50": 51.43139500000001,
+        "p95": 77.11878999999999,
+        "p99": 111.83701699999983,
+        "max": 111.83701699999983
+      },
+      "statuses": {
+        "200": 50
+      },
+      "acquisitionsPerRequest": 4.0,
+      "poolWaitMeanMsPerRequest": 0.0016316200000008507,
+      "nativeSqlPerRequest": 64.0,
+      "callbackOccupancyMeanMsPerRequest": 41.90985164,
+      "transactionCompletionMeanMsPerRequest": 5.009156500000045,
+      "postgresLockSamples": 0,
+      "objectiveMet": true
+    },
+    {
+      "mode": "before",
+      "repetition": "3",
+      "concurrency": 10,
+      "success": {
+        "samples": 50,
+        "sumMs": 10219.535870000002,
+        "p50": 177.8073569999999,
+        "p95": 346.657595,
+        "p99": 354.114716,
+        "max": 354.114716
+      },
+      "statuses": {
+        "200": 50
+      },
+      "acquisitionsPerRequest": 4.0,
+      "poolWaitMeanMsPerRequest": 83.81719249999998,
+      "nativeSqlPerRequest": 64.0,
+      "callbackOccupancyMeanMsPerRequest": 82.63427931999999,
+      "transactionCompletionMeanMsPerRequest": 17.64508065999962,
+      "postgresLockSamples": 0,
+      "objectiveMet": false
+    },
+    {
+      "mode": "before",
+      "repetition": "3",
+      "concurrency": 50,
+      "success": {
+        "samples": 50,
+        "sumMs": 35334.148085999994,
+        "p50": 702.247491,
+        "p95": 865.068754,
+        "p99": 867.0047179999999,
+        "max": 867.0047179999999
+      },
+      "statuses": {
+        "200": 50
+      },
+      "acquisitionsPerRequest": 4.0,
+      "poolWaitMeanMsPerRequest": 586.1718509599999,
+      "nativeSqlPerRequest": 64.0,
+      "callbackOccupancyMeanMsPerRequest": 69.62553733999994,
+      "transactionCompletionMeanMsPerRequest": 8.376740200000349,
+      "postgresLockSamples": 0,
+      "objectiveMet": false
+    }
+  ],
+  "summary": [
+    {
+      "concurrency": 1,
+      "before": {
+        "p95RangeMs": [
+          65.16933,
+          93.48220899999998
+        ],
+        "medianRunP95Ms": 77.11878999999999,
+        "objectiveMetRepetitions": 3,
+        "repetitions": 3
+      },
+      "after": {
+        "p95RangeMs": [
+          55.45618400000001,
+          74.296359
+        ],
+        "medianRunP95Ms": 71.104513,
+        "objectiveMetRepetitions": 3,
+        "repetitions": 3
+      }
+    },
+    {
+      "concurrency": 10,
+      "before": {
+        "p95RangeMs": [
+          231.57726399999999,
+          346.657595
+        ],
+        "medianRunP95Ms": 249.793081,
+        "objectiveMetRepetitions": 2,
+        "repetitions": 3
+      },
+      "after": {
+        "p95RangeMs": [
+          204.29631400000002,
+          296.324958
+        ],
+        "medianRunP95Ms": 232.433136,
+        "objectiveMetRepetitions": 2,
+        "repetitions": 3
+      }
+    },
+    {
+      "concurrency": 50,
+      "before": {
+        "p95RangeMs": [
+          847.441127,
+          884.765488
+        ],
+        "medianRunP95Ms": 865.068754,
+        "objectiveMetRepetitions": 0,
+        "repetitions": 3
+      },
+      "after": {
+        "p95RangeMs": [
+          679.827657,
+          746.0499219999999
+        ],
+        "medianRunP95Ms": 732.017686,
+        "objectiveMetRepetitions": 0,
+        "repetitions": 3
+      }
+    }
+  ],
+  "limitations": [
+    "Finite loopback bursts, fresh legitimate scopes, native observer overhead; no statistical confidence/production certification",
+    "Run order alternated but does not eliminate host/JIT/data-ID variability",
+    "Native pool waits aggregated, transaction callback/commit occupancy measured separately; sampled lock/transaction ages are incomplete",
+    "250ms remains unmet at50 in all candidate runs and at10 in one candidate run"
+  ]
+}
