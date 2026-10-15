@@ -1,6 +1,6 @@
 # Unblok — Backend Status and Delivery Roadmap
 
-**Last updated:** 2026-10-14
+**Last updated:** 2026-10-14 (UTC)
 **Repository milestone:** BE-TEAM-01 merged through PR #40 at `7ac1c39543d7057642db56f99bbd8a070f37a746`; FE-TEAM-01 merged through PR #41 at `f65d9b0603cd76c243afb34cf59155bfa0c32a64`. Authentication, Workspace foundation, directory/invitation APIs and their frontend integrations are merged; not deployed or production-certified.
 **Purpose:** Living, repository-grounded backend delivery tracker. Update when an approved backend PR is merged. This is a status tracker, **not** a replacement for the implementation/security/database architecture contracts in this folder.
 
@@ -54,7 +54,7 @@
 
 **FE-AUTH-01 F4 correction:** Reviewed `cab718ea77ab2ddf943f959feb483e307cd25f87`; narrow session-boundary changes durably retire the signed predecessor before fresh anonymous CSRF state. Same-context Chromium reset/relogin passes without deleting cookies or replacing its context. Request-bound principals, transaction fences and CSRF/cookie protections remain enforced. Frontend production, NEXUS, dependencies and migrations are unchanged. The frontend F4 report/evidence preserves successful and failed observations and deployment limitations. This supersedes the local retained-cookie blocker; PR #33 subsequently merged as recorded in the handoff.
 
-**Next action:** Review the separate draft [Team directory admission correction](32-TEAM-DIRECTORY-ADMISSION-CORRECTION.md). Investigation PR #44 merged at `1bfb1c3d2aca1cf9e741e41e59e30603589e7624`; only its first targeted correction is implemented for review. No implementation merge, further optimization or frontend Team management is authorized.
+**Next action:** Human architecture review of [FE-TEAM-02](../frontend/05-FE-TEAM-02-ARCHITECTURE-PROPOSAL.md). PR #45 is merged; no further performance optimization is authorized. Team management backend is merged; frontend management remains proposed, not implemented.
 
 ## 3. Remaining production backend capabilities
 
@@ -62,7 +62,7 @@
 | --- | --- | --- |
 | Authentication and sessions | Authentication/session fences, credential APIs, verification/recovery and FE-AUTH-01 merged and locally verified; OAuth/MFA and broader lifecycle/deployment remain deferred | Critical |
 | Workspace foundation / invitations | BE-WS-01/FE-WS-01 and BE-WS-02/FE-WS-02 merged; role/removal/suspension and Workspace lifecycle management APIs absent; not deployed | Critical |
-| Team and project APIs | BE-TEAM-01 private list/detail/create/metadata merged through PR #40; Team management/transfer/lifecycle and Project APIs missing | Critical |
+| Team and project APIs | BE-TEAM-01 private list/detail/create/metadata merged through PR #40; BE-TEAM-02 membership/consent transfer/lifecycle merged through PR #43; frontend management proposed; Project APIs missing | Critical |
 | Issues CRUD/search/filtering | Bounded scoped persistence primitives exist; business APIs missing | Critical |
 | Dependency graph APIs and cycle-safe writes | Database dependency-write gate active; DAG service missing | Critical |
 | Fine-grained permissions | Deny-by-default policy boundary only; approved action grants missing | Critical |
@@ -166,3 +166,12 @@ Architecture PR #39 merged at `d4b958c74d7383cd269e693745738b3534cd44af` after c
 2026-10-14: Verified approved PR #42 HEAD `111b44a36533f8062ea7f02106cecdadcdd07555`, marked ready and merged at `41502c012e263a384748e432157f84f09b3cde32`; main synchronized clean. BE-TEAM-02 backend implementation is on a separate branch for human security review. Original phase evidence remains preserved. No deployment, implementation merge or frontend management.
 
 BE-TEAM-02 PR #43 merge checkpoint: reviewed HEAD `027594b30d4e84ce8af61d8f09ea067ba6daebf4` verified mergeable, marked ready and merged at `d0fbdf9d338b22570ef53028174e046bb63349f4`; local main synchronized clean. The directory investigation is separate observational work; all security/migration/performance evidence remains preserved. Stop for review before remediation or frontend management.
+
+
+## PR #45 merge and FE-TEAM-02 priority checkpoint — 2026-10-14 UTC
+
+Approved [PR #45](https://github.com/YounasKhan2/Unblok/pull/45) reviewed HEAD `5f962c79cae9ca71472968dc5f3a856c91ada579` was confirmed mergeable, marked ready and merged at `df6c65875fc48a3521cac2754935bb0e04c57a77`. Local main and origin/main matched with a clean working tree. The directory admission correction reduces four acquisitions to three and preserves all original verification/security/migration evidence. These tests were not rerun at the documentation checkpoint.
+
+**Approved product decision:** defer the 250 ms Team-directory p95 objective for continued MVP development. Current measured performance is acceptable for that development, **not certified for production-scale deployment**. After-correction concurrency50 successful p95 ranges679.83–746.05ms across three paired runs (median732.02ms); concurrency10 ranges204.30–296.32ms and misses250ms in one of three runs. [Correction evidence](32-TEAM-DIRECTORY-ADMISSION-CORRECTION.md) retains exact workloads, distributions and limitations. The objective is not achieved or erased; production readiness must revisit sustained workload qualification. No cache, pool/timeout/rate-limit change or further optimization now.
+
+Prioritize the documentation-only [FE-TEAM-02 architecture](../frontend/05-FE-TEAM-02-ARCHITECTURE-PROPOSAL.md): private owner directory, member roles, explicit transfer consent, lifecycle and recovery. Human architecture review is required before frontend implementation. Preserve compact UX, session isolation and NEXUS separation. Existing production and three frontend fixture limitations remain open.
