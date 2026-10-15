@@ -48,6 +48,8 @@ import {
 } from '../data/mockSettingsData';
 import { useWorkspace } from '../../workspaces/context/WorkspaceContext';
 
+import {PreferenceContext} from './PreferenceBindings';
+
 const SettingsContext = createContext<SettingsContextType | null>(null);
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -712,7 +714,7 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         resetSettingsToDemoData,
       }}
     >
-      {children}
+      <PreferenceContext.Provider value={{currentUser,isAdmin,preferences,updatePreferences}}>{children}</PreferenceContext.Provider>
     </SettingsContext.Provider>
   );
 };

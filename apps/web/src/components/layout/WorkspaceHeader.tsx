@@ -5,9 +5,7 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useProject } from '../../context/ProjectContext';
-import { useCollaboration } from '../../features/collaboration/context/CollaborationContext';
-import { useKeyboard } from '../../context/KeyboardContext';
+import {useShell} from '../../app/shell/ShellBindings';
 import { Button } from '../ui/Button';
 import { Avatar } from '../ui/Avatar';
 import { WorkspaceSwitcher } from '../../features/workspaces/components/WorkspaceSwitcher';
@@ -35,9 +33,8 @@ import {
 } from 'lucide-react';
 
 export const WorkspaceHeader: React.FC = () => {
-  const { issues, currentUser, getIssueBlockerStatus } = useProject();
-  const { unreadCount } = useCollaboration();
-  const { setIsCreateModalOpen, setIsHelpModalOpen } = useKeyboard();
+  const {currentUser,unreadCount:unread,blockedCount:blocked,setIsCreateModalOpen,setIsHelpModalOpen,businessAvailable}=useShell();
+  const unreadCount=unread??0;
   const navigate = useNavigate();
 
   const handleOpenPalette = () => {
@@ -49,7 +46,7 @@ export const WorkspaceHeader: React.FC = () => {
   const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
-  const blockedCount = issues.filter(i => getIssueBlockerStatus(i.id).isBlocked).length;
+  const blockedCount=blocked??0;
 
   const mobileNavItems = [
     { to: '/my-work', label: 'My Work', icon: CheckSquare },
@@ -110,9 +107,11 @@ export const WorkspaceHeader: React.FC = () => {
       {/* 2. Middle: Global Search & Command Palette Trigger */}
       <div className="flex-1 max-w-md mx-3 hidden md:block">
         <button
+          disabled={!businessAvailable}
+          title={!businessAvailable?"Search is not connected to live data.":undefined}
           onClick={handleOpenPalette}
           className="w-full h-7 px-2.5 bg-surface-subtle hover:bg-surface-muted border border-border rounded-[5px] text-xs text-text-muted flex items-center justify-between cursor-pointer transition-colors"
-          title="Search or jump to... (⌘K)"
+
         >
           <div className="flex items-center gap-2">
             <Search className="w-3.5 h-3.5 text-text-muted" />
@@ -128,6 +127,8 @@ export const WorkspaceHeader: React.FC = () => {
       <div className="flex items-center gap-2">
         {/* Global Create Issue Button */}
         <Button
+          disabled={!businessAvailable}
+          title={!businessAvailable?"Issue creation is not connected to the backend.":undefined}
           variant="primary"
           size="sm"
           icon={<Plus className="w-3.5 h-3.5" />}
@@ -184,7 +185,7 @@ export const WorkspaceHeader: React.FC = () => {
         <Link
           to="/settings/preferences"
           className="flex items-center gap-1.5 p-0.5 rounded-[5px] hover:bg-surface-muted transition-colors"
-          title={`${currentUser.name} (${currentUser.role}) — Preferences`}
+          title={`${currentUser.name}${currentUser.role?` (${currentUser.role})`:''} — Preferences`}
         >
           <Avatar user={currentUser} size="xs" />
         </Link>

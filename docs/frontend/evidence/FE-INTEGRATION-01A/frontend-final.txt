@@ -1,0 +1,66 @@
+$ bun --filter @unblok/web test
+@unblok/web test: (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+@unblok/web test:   - `__dirname` (vite.config.ts:11:27). Use `import.meta.dirname` instead
+@unblok/web test: Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+@unblok/web test:
+@unblok/web test:  RUN  v5.0.3 D:/Full_Stack_Apps/Unblok/apps/web
+@unblok/web test:
+@unblok/web test:  ❯ src/data/nexusEnterprise.test.ts (8 tests | 2 failed) 127ms
+@unblok/web test:    ❯ NEXUS enterprise reference data (8)
+@unblok/web test:      × has valid entity references, unique IDs, and a directed acyclic dependency graph 39ms
+@unblok/web test:      × populates milestone dependency graphs and cross-team matrix data 7ms
+@unblok/web test:  ❯ src/data/nexus/nexusEnterpriseValidation.test.ts (32 tests | 1 failed) 267ms
+@unblok/web test:    ❯ NEXUS Enterprise Dataset Validation (UX-15.5) (32)
+@unblok/web test:      ❯ 5. Dependency Graph Integrity & Completion Guards (5)
+@unblok/web test:        × preserves five active blocked-work examples while limiting graph fan-in and fan-out 24ms
+@unblok/web test:
+@unblok/web test: ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+@unblok/web test:
+@unblok/web test:  FAIL  src/data/nexusEnterprise.test.ts > NEXUS enterprise reference data > has valid entity references, unique IDs, and a directed acyclic dependency graph
+@unblok/web test: AssertionError: expected undefined to be defined
+@unblok/web test:  ❯ src/data/nexusEnterprise.test.ts:94:27
+@unblok/web test:      92|       getBlockerStatus(issue.id, INITIAL_ISSUES, INITIAL_DEPENDENCIES)…
+@unblok/web test:      93|     );
+@unblok/web test:      94|     expect(resolvedIssue).toBeDefined();
+@unblok/web test:        |                           ^
+@unblok/web test:      95|
+@unblok/web test:      96|     expect(INITIAL_ISSUES.some(issue =>
+@unblok/web test:
+@unblok/web test: ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+@unblok/web test:
+@unblok/web test:  FAIL  src/data/nexusEnterprise.test.ts > NEXUS enterprise reference data > populates milestone dependency graphs and cross-team matrix data
+@unblok/web test: AssertionError: expected 0 to be greater than or equal to 12
+@unblok/web test:  ❯ src/data/nexusEnterprise.test.ts:152:48
+@unblok/web test:     150|         new Date(`${NEXUS_REFERENCE_DATE}T00:00:00.000Z`)
+@unblok/web test:     151|       );
+@unblok/web test:     152|       expect(detail?.graphLayout.nodes.length).toBeGreaterThanOrEqual(…
+@unblok/web test:        |                                                ^
+@unblok/web test:     153|       expect(detail?.graphLayout.edges.length).toBeLessThanOrEqual(15);
+@unblok/web test:     154|     }
+@unblok/web test:
+@unblok/web test: ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+@unblok/web test:
+@unblok/web test:  FAIL  src/data/nexus/nexusEnterpriseValidation.test.ts > NEXUS Enterprise Dataset Validation (UX-15.5) > 5. Dependency Graph Integrity & Completion Guards > preserves five active blocked-work examples while limiting graph fan-in and fan-out
+@unblok/web test: AssertionError: expected 3 to be less than or equal to 2
+@unblok/web test:  ❯ src/data/nexus/nexusEnterpriseValidation.test.ts:301:46
+@unblok/web test:     299|       expect(active.length).toBe(5);
+@unblok/web test:     300|       expect(Math.max(...incoming.values())).toBeLessThanOrEqual(2);
+@unblok/web test:     301|       expect(Math.max(...outgoing.values())).toBeLessThanOrEqual(2);
+@unblok/web test:        |                                              ^
+@unblok/web test:     302|     });
+@unblok/web test:     303|
+@unblok/web test:
+@unblok/web test: ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+@unblok/web test:
+@unblok/web test:
+@unblok/web test:  Test Files  2 failed | 59 passed (61)
+@unblok/web test:       Tests  3 failed | 885 passed (888)
+@unblok/web test:    Start at  00:29:10
+@unblok/web test:    Duration  15.52s (import 38%, transform 38%, tests 22%, worker 1%)
+@unblok/web test:
+@unblok/web test:   Transform  transforming modules took 26.39s · 38% of tracked time, re-done on every run
+@unblok/web test:              persist transforms across runs with fsModuleCache: true
+@unblok/web test:              learn more: https://vitest.dev/guide/improving-performance#caching-between-reruns
+@unblok/web test:
+@unblok/web test: Exited with code 1
+error: script "test:web" exited with code 1

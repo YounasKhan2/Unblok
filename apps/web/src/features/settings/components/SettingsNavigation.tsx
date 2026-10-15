@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Building2, Users, Users2, Plug, SlidersHorizontal } from 'lucide-react';
-import { useSettings } from '../context/SettingsContext';
+import { usePreferences } from '../context/PreferenceBindings';
 
 interface NavItem {
   to: string;
@@ -11,7 +11,7 @@ interface NavItem {
 }
 
 export const SettingsNavigation: React.FC = () => {
-  const { isAdmin } = useSettings();
+  const { isAdmin } = usePreferences();
 
   const adminNavItems: NavItem[] = [
     { to: '/settings/workspace', label: 'Workspace', icon: Building2, adminOnly: true },

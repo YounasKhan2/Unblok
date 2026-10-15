@@ -63,7 +63,7 @@ export class TeamsStore {
         if (actor)
             this.actor = actor;
         const c = w.context, allowed = !!actor && !s.pending && !!c && w.selected === c.workspace.id && c.self.membershipStatus === 'ACTIVE';
-        const identity = allowed ? `${actor}:${this.session.generation()}:${c!.workspace.id}:${c!.self.role}:${c!.workspace.status}` : '';
+        const identity = allowed ? `${actor}:${this.session.generation()}:${c!.workspace.id}:${c!.self.membershipId}:${c!.self.role}:${c!.self.membershipStatus}:${c!.workspace.status}` : '';
         if (identity === this.identity)
             return;
         const previous = this.state.workspace;

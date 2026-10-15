@@ -1,7 +1,7 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
- * 
+ *
  * UX-12 Login Page
  * Section 9, 10, 17, 24, 25, 26, 29: Work email & password authentication, safe returnTo,
  * session-expired re-entry state, accessible form handling.
@@ -9,19 +9,20 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../../features/auth/context/AuthContext';
+import { useAuth } from '../../features/auth/context/AuthBindings';
 import { getSafeReturnTo } from '../../features/auth/domain/safeReturnTo';
 import { AuthCard } from '../../features/auth/components/AuthCard';
 import { PasswordInput } from '../../features/auth/components/PasswordInput';
 import { AlertCircle, Clock, ArrowRight, Loader2, KeyRound } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
-  const { login, status, isLoading } = useAuth();
+  const { login, status, isLoading, mode } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const returnToParam = searchParams.get('returnTo');
-  const isSessionExpired = status === 'sessionExpired' || searchParams.get('sessionExpired') === 'true';
+  const requestedReturnTo=searchParams.get('returnTo');
+  const returnToParam = mode==='live'?(requestedReturnTo==='/invite'?'/invite':null):requestedReturnTo;
+  const isSessionExpired = status === 'sessionExpired' || (mode!=='live' && searchParams.get('sessionExpired') === 'true');
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -70,20 +71,22 @@ export const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    if (isLoading) return;
     if (!validateForm()) return;
 
     try {
       const result = await login({ email, password });
       if (result.success) {
-        const destination = getSafeReturnTo(returnToParam);
+        const destination = mode==='live'?(returnToParam==='/invite'?'/invite':'/account'):getSafeReturnTo(returnToParam);
         navigate(destination, { replace: true });
       } else {
         setAuthError(result.error || 'Email or password is incorrect.');
         passwordInputRef.current?.focus();
       }
-    } catch {
-      setAuthError('An unexpected authentication error occurred. Please try again.');
+    } catch (cause) {
+      setPassword('');
+      setAuthError(cause instanceof Error?cause.message:'An unexpected authentication error occurred. Please try again.');
+      passwordInputRef.current?.focus();
     }
   };
 
@@ -112,7 +115,7 @@ export const LoginPage: React.FC = () => {
             <Clock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
             <div>
               <span className="font-semibold block">Session timeout</span>
-              Your prototype session reached its expiration limit. Enter your credentials to resume your work.
+              {mode==='live'?'Your session ended. Sign in again to continue.':'Your prototype session reached its expiration limit. Enter your credentials to resume your work.'}
             </div>
           </div>
         ) : null
@@ -129,7 +132,7 @@ export const LoginPage: React.FC = () => {
             </Link>
           </span>
 
-          <button
+          {mode!=='live' && <button
             type="button"
             onClick={handleQuickFill}
             className="inline-flex items-center gap-1 text-[11px] text-[var(--color-pub-text-muted)] hover:text-[var(--color-pub-accent)] transition-colors cursor-pointer"
@@ -137,7 +140,7 @@ export const LoginPage: React.FC = () => {
           >
             <KeyRound className="w-3 h-3" />
             <span>Fill demo credentials</span>
-          </button>
+          </button>}
         </div>
       }
     >
@@ -215,7 +218,7 @@ export const LoginPage: React.FC = () => {
 
           <div className="flex justify-end mt-1.5">
             <Link
-              to="/forgot-password"
+              to={mode==='live'&&returnToParam==='/invite'?'/forgot-password?returnTo=%2Finvite':'/forgot-password'}
               className="text-xs font-medium text-[var(--color-pub-accent)] hover:underline focus:outline-none focus:ring-2 focus:ring-[var(--color-pub-accent)] rounded"
             >
               Forgot password?

@@ -1,11 +1,11 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { SettingsNavigation } from './SettingsNavigation';
-import { useSettings } from '../context/SettingsContext';
+import { usePreferences } from '../context/PreferenceBindings';
 import { RoleBadge } from './RoleBadge';
 
 export const SettingsLayout: React.FC = () => {
-  const { currentUser } = useSettings();
+  const { currentUser } = usePreferences();
 
   return (
     <div className="flex-1 overflow-y-auto bg-canvas p-4 sm:p-6 lg:p-8">
@@ -17,7 +17,7 @@ export const SettingsLayout: React.FC = () => {
               <h1 className="text-xl font-bold text-text-primary tracking-tight">
                 Settings
               </h1>
-              <RoleBadge role={currentUser.role} size="sm" />
+              {currentUser.role&&<RoleBadge role={currentUser.role} size="sm" />}
             </div>
             <p className="text-xs text-text-muted mt-0.5">
               Manage workspace configuration, members, integrations, and personal preferences.

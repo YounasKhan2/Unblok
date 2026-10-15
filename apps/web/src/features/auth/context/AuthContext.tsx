@@ -1,7 +1,7 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
- * 
+ *
  * UX-12 Auth Context & Provider
  * Manages prototype authentication state, session lifecycle, and contract integration.
  */
@@ -23,22 +23,9 @@ export const AUTH_STATUS_STORAGE_KEY = 'unblok_auth_status';
 export const AUTH_USER_STORAGE_KEY = 'unblok_auth_user';
 export const AUTH_MEMBERSHIP_STORAGE_KEY = 'unblok_auth_membership';
 
-export interface AuthContextType {
-  status: AuthStatus;
-  user: AuthenticatedUser | null;
-  membership: WorkspaceMembership | null;
-  isLoading: boolean;
-  login: (credentials: { email: string; password: string }) => Promise<AuthResult>;
-  signup: (data: { name: string; email: string; password: string }) => Promise<AuthResult>;
-  logout: () => void;
-  expireSession: () => void;
-  restoreSession: () => void;
-  setGuest: () => void;
-  switchReviewerUser: (email: string) => void;
-  adapter: AuthAdapter;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import {AuthContext,type AuthContextType} from './AuthBindings';
+export {useAuth} from './AuthBindings';
+export type {AuthContextType} from './AuthBindings';
 
 export interface AuthProviderProps {
   children: React.ReactNode;
@@ -245,12 +232,4 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 };

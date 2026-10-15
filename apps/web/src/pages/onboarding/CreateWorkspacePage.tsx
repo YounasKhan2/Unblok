@@ -1,7 +1,7 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
- * 
+ *
  * UX-13 Create Workspace Onboarding Page
  * Section 17, 18, 29: Workspace naming, slug generation, and Admin membership creation.
  */
@@ -9,8 +9,9 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { AuthCard } from '../../features/auth/components/AuthCard';
-import { useWorkspace } from '../../features/workspaces/context/WorkspaceContext';
-import { useAuth } from '../../features/auth/context/AuthContext';
+import {useWorkspaceCreation} from '../../features/workspaces/components/WorkspaceCreationBindings';
+import {createWorkspaceSchema} from '@unblok/contracts';
+
 import { slugifyWorkspaceName } from '../../features/workspaces/domain/workspaceSelection';
 import { Building2, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
 
@@ -18,36 +19,38 @@ export const CreateWorkspacePage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const isExistingUserMode = searchParams.get('mode') === 'create';
 
-  const [name, setName] = useState('');
+  const binding=useWorkspaceCreation();
+  const [name, setName] = useState(binding.attempt?.name??'');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { createWorkspace } = useWorkspace();
-  const { user } = useAuth();
+  const createWorkspace=binding.create;
   const navigate = useNavigate();
 
-  const slugPreview = name ? slugifyWorkspaceName(name) : 'your-workspace';
+  const slugPreview = binding.attempt?.slug??(name ? slugifyWorkspaceName(name) : 'your-workspace');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if(isSubmitting||binding.busy||binding.blocked)return;
     if (!name.trim()) {
       setError('Please provide a workspace name.');
       return;
     }
 
+    const input=binding.attempt??{name:name.trim(),slug:slugPreview};
+    if(binding.mode==='live'&&!createWorkspaceSchema.safeParse(input).success){setError('Use a name up to 120 characters and an address of up to 63 lowercase letters and numbers, separated by single hyphens.');return;}
     setIsSubmitting(true);
     setError(null);
 
     try {
-      const newWs = await createWorkspace({
-        name: name.trim(),
-        slug: slugPreview,
-      });
+      const id = await createWorkspace(input);
+      if(!id)return;
 
       // Section 18: Creator becomes ADMIN, routes to /onboarding/team boundary
-      navigate('/onboarding/team');
+      navigate(binding.mode==='live'?'/workspaces/'+id:'/onboarding/team');
     } catch (err: any) {
       setError(err?.message || 'Failed to create workspace. Please try again.');
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -63,21 +66,21 @@ export const CreateWorkspacePage: React.FC = () => {
       subtitle={
         isExistingUserMode
           ? 'Set up a new workspace context. Your existing memberships remain unchanged.'
-          : `Welcome ${user?.name || ''}. Set up your primary organization workspace.`
+          : `Welcome ${binding.name}. Set up your primary organization workspace.`
       }
       footer={
         <div className="space-y-3">
           <button
             type="submit"
             form="create-workspace-form"
-            disabled={isSubmitting}
+            disabled={isSubmitting||binding.busy||binding.blocked}
             className="pub-btn-primary w-full justify-center text-sm py-2.5 cursor-pointer disabled:opacity-50"
           >
-            {isSubmitting ? (
+            {isSubmitting||binding.busy ? (
               <span>Creating workspace...</span>
             ) : (
               <>
-                <span>Create workspace</span>
+                <span>{binding.attempt?'Retry creation':'Create workspace'}</span>
                 <ArrowRight className="w-4 h-4 ml-1.5" />
               </>
             )}
@@ -97,12 +100,12 @@ export const CreateWorkspacePage: React.FC = () => {
       }
     >
       <form id="create-workspace-form" onSubmit={handleSubmit} className="space-y-4">
-        {error && (
+        {(error||binding.error) && (
           <div
             role="alert"
             className="p-3 rounded-lg bg-red-50 text-red-600 text-xs border border-red-200"
           >
-            {error}
+            {error||binding.error}
           </div>
         )}
 
@@ -117,12 +120,13 @@ export const CreateWorkspacePage: React.FC = () => {
             id="workspace-name"
             type="text"
             required
-            value={name}
+            value={binding.attempt?.name??name}
+            disabled={isSubmitting||binding.busy||!!binding.attempt||binding.blocked}
             onChange={(e) => {
               setName(e.target.value);
               if (error) setError(null);
             }}
-            placeholder="e.g. NEXUS Commerce"
+            placeholder={binding.mode==='live'?'e.g. Your organization':'e.g. NEXUS Commerce'}
             className="w-full px-3 py-2 text-sm rounded-lg border border-[var(--color-pub-border)] bg-[var(--color-pub-surface-base)] text-[var(--color-pub-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-pub-accent)] focus:border-transparent transition-all"
             autoFocus
           />

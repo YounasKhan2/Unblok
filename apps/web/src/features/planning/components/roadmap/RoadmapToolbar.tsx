@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 
 interface RoadmapToolbarProps {
+  unavailable?:false;
   filters: RoadmapFilterState;
   onFilterChange: (updates: Partial<RoadmapFilterState>) => void;
   onResetFilters: () => void;
@@ -35,7 +36,9 @@ interface RoadmapToolbarProps {
   isObserver: boolean;
 }
 
-export const RoadmapToolbar: React.FC<RoadmapToolbarProps> = ({
+type UnavailableToolbarProps={unavailable:true}&Partial<Record<Exclude<keyof RoadmapToolbarProps,'unavailable'>,never>>;
+export const RoadmapToolbar: React.FC<RoadmapToolbarProps|UnavailableToolbarProps> = ({
+  unavailable=false,
   filters,
   onFilterChange,
   onResetFilters,
@@ -50,13 +53,13 @@ export const RoadmapToolbar: React.FC<RoadmapToolbarProps> = ({
   milestones,
   isObserver,
 }) => {
-  const hasActiveFilters =
-    filters.team !== 'ALL' ||
-    filters.assignee !== 'ALL' ||
-    filters.cycle !== 'ALL' ||
-    filters.milestone !== 'ALL' ||
-    filters.blockedOnly ||
-    Boolean(filters.searchQuery);
+  const hasActiveFilters = !!filters && (
+    filters?.team !== 'ALL' ||
+    filters?.assignee !== 'ALL' ||
+    filters?.cycle !== 'ALL' ||
+    filters?.milestone !== 'ALL' ||
+    filters?.blockedOnly ||
+    Boolean(filters?.searchQuery));
 
   return (
     <div className="bg-surface-base border-b border-border px-4 py-2.5 flex flex-col gap-2.5 shrink-0 select-none">
@@ -70,11 +73,11 @@ export const RoadmapToolbar: React.FC<RoadmapToolbarProps> = ({
             aria-label="Roadmap grouping"
             className="inline-flex items-center p-0.5 rounded-[6px] bg-surface-muted border border-border"
           >
-            <button
+            <button disabled={unavailable}
               type="button"
-              onClick={() => onFilterChange({ group: 'team' })}
+              onClick={() => onFilterChange?.({ group: 'team' })}
               className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] text-xs font-semibold cursor-pointer transition-colors ${
-                filters.group === 'team'
+                filters?.group === 'team'
                   ? 'bg-surface-base text-text-primary shadow-2xs border border-border'
                   : 'text-text-secondary hover:text-text-primary'
               }`}
@@ -82,11 +85,11 @@ export const RoadmapToolbar: React.FC<RoadmapToolbarProps> = ({
               <Users className="w-3.5 h-3.5" />
               <span>By Team</span>
             </button>
-            <button
+            <button disabled={unavailable}
               type="button"
-              onClick={() => onFilterChange({ group: 'assignee' })}
+              onClick={() => onFilterChange?.({ group: 'assignee' })}
               className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] text-xs font-semibold cursor-pointer transition-colors ${
-                filters.group === 'assignee'
+                filters?.group === 'assignee'
                   ? 'bg-surface-base text-text-primary shadow-2xs border border-border'
                   : 'text-text-secondary hover:text-text-primary'
               }`}
@@ -98,7 +101,7 @@ export const RoadmapToolbar: React.FC<RoadmapToolbarProps> = ({
 
           {/* Date Window Navigation */}
           <div className="inline-flex items-center gap-1 bg-surface-base border border-border rounded-[6px] p-0.5">
-            <button
+            <button disabled={unavailable}
               type="button"
               onClick={onPrevRange}
               aria-label="Previous date range"
@@ -106,14 +109,14 @@ export const RoadmapToolbar: React.FC<RoadmapToolbarProps> = ({
             >
               <ChevronLeft className="w-3.5 h-3.5" />
             </button>
-            <button
+            <button disabled={unavailable}
               type="button"
               onClick={onToday}
               className="px-2 py-0.5 text-xs font-semibold text-text-primary hover:bg-surface-muted rounded cursor-pointer"
             >
               Today
             </button>
-            <button
+            <button disabled={unavailable}
               type="button"
               onClick={onNextRange}
               aria-label="Next date range"
@@ -124,14 +127,14 @@ export const RoadmapToolbar: React.FC<RoadmapToolbarProps> = ({
           </div>
 
           <span className="text-xs font-bold text-text-primary font-mono hidden sm:inline">
-            {rangeLabel}
+            {rangeLabel??'Unavailable'}
           </span>
         </div>
 
         {/* Primary Action: Schedule Work */}
         <div className="flex items-center gap-2">
           {!isObserver && (
-            <Button
+            <Button disabled={unavailable}
               type="button"
               variant="primary"
               size="sm"
@@ -147,22 +150,22 @@ export const RoadmapToolbar: React.FC<RoadmapToolbarProps> = ({
       {/* Filter Row */}
       <div className="flex flex-wrap items-center gap-2 text-xs">
         {/* Search */}
-        <input
+        <input disabled={unavailable}
           type="text"
           placeholder="Filter by key or title..."
-          value={filters.searchQuery}
-          onChange={e => onFilterChange({ searchQuery: e.target.value })}
+          value={filters?.searchQuery}
+          onChange={e => onFilterChange?.({ searchQuery: e.target.value })}
           className="h-7 w-40 text-xs px-2 rounded-[4px] border border-border bg-surface-base text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent"
         />
 
         {/* Team filter */}
-        <select
-          value={filters.team}
-          onChange={e => onFilterChange({ team: e.target.value })}
+        <select disabled={unavailable}
+          value={filters?.team}
+          onChange={e => onFilterChange?.({ team: e.target.value })}
           className="h-7 text-xs px-2 rounded-[4px] border border-border bg-surface-base text-text-primary focus:outline-none focus:border-accent"
         >
           <option value="ALL">All Teams</option>
-          {teams.map(t => (
+          {teams?.map(t => (
             <option key={t.id} value={t.key}>
               {t.name} ({t.key})
             </option>
@@ -170,13 +173,13 @@ export const RoadmapToolbar: React.FC<RoadmapToolbarProps> = ({
         </select>
 
         {/* Assignee filter */}
-        <select
-          value={filters.assignee}
-          onChange={e => onFilterChange({ assignee: e.target.value })}
+        <select disabled={unavailable}
+          value={filters?.assignee}
+          onChange={e => onFilterChange?.({ assignee: e.target.value })}
           className="h-7 text-xs px-2 rounded-[4px] border border-border bg-surface-base text-text-primary focus:outline-none focus:border-accent"
         >
           <option value="ALL">All Assignees</option>
-          {users.map(u => (
+          {users?.map(u => (
             <option key={u.id} value={u.id}>
               {u.name}
             </option>
@@ -184,13 +187,13 @@ export const RoadmapToolbar: React.FC<RoadmapToolbarProps> = ({
         </select>
 
         {/* Cycle filter */}
-        <select
-          value={filters.cycle}
-          onChange={e => onFilterChange({ cycle: e.target.value })}
+        <select disabled={unavailable}
+          value={filters?.cycle}
+          onChange={e => onFilterChange?.({ cycle: e.target.value })}
           className="h-7 text-xs px-2 rounded-[4px] border border-border bg-surface-base text-text-primary focus:outline-none focus:border-accent"
         >
           <option value="ALL">All Cycles</option>
-          {cycles.map(c => (
+          {cycles?.map(c => (
             <option key={c.id} value={c.id}>
               {c.name}
             </option>
@@ -198,13 +201,13 @@ export const RoadmapToolbar: React.FC<RoadmapToolbarProps> = ({
         </select>
 
         {/* Milestone filter */}
-        <select
-          value={filters.milestone}
-          onChange={e => onFilterChange({ milestone: e.target.value })}
+        <select disabled={unavailable}
+          value={filters?.milestone}
+          onChange={e => onFilterChange?.({ milestone: e.target.value })}
           className="h-7 text-xs px-2 rounded-[4px] border border-border bg-surface-base text-text-primary focus:outline-none focus:border-accent"
         >
           <option value="ALL">All Milestones</option>
-          {milestones.map(m => (
+          {milestones?.map(m => (
             <option key={m.id} value={m.id}>
               {m.name}
             </option>
@@ -212,11 +215,11 @@ export const RoadmapToolbar: React.FC<RoadmapToolbarProps> = ({
         </select>
 
         {/* Blocked filter toggle */}
-        <button
+        <button disabled={unavailable}
           type="button"
-          onClick={() => onFilterChange({ blockedOnly: !filters.blockedOnly })}
+          onClick={() => onFilterChange?.({ blockedOnly: !filters?.blockedOnly })}
           className={`h-7 px-2.5 rounded-[4px] border text-xs font-semibold inline-flex items-center gap-1.5 transition-colors cursor-pointer ${
-            filters.blockedOnly
+            filters?.blockedOnly
               ? 'bg-danger/10 text-danger border-danger/40'
               : 'bg-surface-base text-text-secondary border-border hover:bg-surface-muted'
           }`}
@@ -226,7 +229,7 @@ export const RoadmapToolbar: React.FC<RoadmapToolbarProps> = ({
         </button>
 
         {hasActiveFilters && (
-          <button
+          <button disabled={unavailable}
             type="button"
             onClick={onResetFilters}
             className="h-7 px-2 text-xs text-text-muted hover:text-text-primary inline-flex items-center gap-1 cursor-pointer"

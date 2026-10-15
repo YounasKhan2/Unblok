@@ -1,14 +1,16 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
- * 
+ *
  * UX-12 Reset Password Page
  * Section 12: Deterministic password reset ceremony supporting valid, expired, and invalid states.
  */
 
+import {passwordRecoveryConfirmSchema} from '@unblok/contracts';
+import {AuthField} from '../../features/auth/live/AuthField';
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../../features/auth/context/AuthContext';
+import { useAuth } from '../../features/auth/context/AuthBindings';
 import { evaluatePassword } from '../../features/auth/domain/passwordRules';
 import { AuthCard } from '../../features/auth/components/AuthCard';
 import { PasswordInput } from '../../features/auth/components/PasswordInput';
@@ -23,10 +25,13 @@ import {
 } from 'lucide-react';
 
 export const ResetPasswordPage: React.FC = () => {
-  const { adapter, isLoading } = useAuth();
+  const { adapter, isLoading, mode } = useAuth();
   const [searchParams] = useSearchParams();
+  const authSuffix=mode==='live'&&searchParams.get('returnTo')==='/invite'?'?returnTo=%2Finvite':'';
 
-  const token = searchParams.get('token') || '';
+  const [email,setEmail]=useState('');
+  const [code,setCode]=useState('');
+  const token = mode==='live'?code:searchParams.get('token') || '';
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -40,8 +45,8 @@ export const ResetPasswordPage: React.FC = () => {
   const confirmPasswordRef = useRef<HTMLInputElement>(null);
 
   // Determine token validity status deterministically
-  const isExpired = token === 'rst_expired' || token === 'reset-expired';
-  const isInvalid = !token || token === 'rst_invalid' || token === 'reset-invalid';
+  const isExpired = mode!=='live'&&(token === 'rst_expired' || token === 'reset-expired');
+  const isInvalid = mode!=='live'&&(!token || token === 'rst_invalid' || token === 'reset-invalid');
 
   useEffect(() => {
     if (!isExpired && !isInvalid && !isSuccess) {
@@ -122,12 +127,12 @@ export const ResetPasswordPage: React.FC = () => {
             <CheckCircle2 className="w-6 h-6 stroke-[2]" />
           </div>
         }
-        title="Password updated"
-        subtitle="Your password has been successfully reset. You can now sign in with your new credentials."
+        title={mode==='live'?'Request received':'Password updated'}
+        subtitle={mode==='live'?'Try signing in with your new password. This response does not confirm that your password changed.':'Your password has been successfully reset. You can now sign in with your new credentials.'}
         footer={
           <div className="w-full">
             <Link
-              to="/login"
+              to={"/login"+authSuffix}
               className="pub-btn-primary w-full justify-center text-sm py-2.5"
             >
               <span>Continue to sign in</span>
@@ -137,9 +142,9 @@ export const ResetPasswordPage: React.FC = () => {
         }
       >
         <div className="p-4 rounded-xl bg-emerald-50/60 border border-emerald-200 text-xs text-emerald-900 leading-relaxed">
-          <p className="font-semibold mb-1">Credentials updated</p>
+          <p className="font-semibold mb-1">{mode==='live'?'Check by signing in':'Credentials updated'}</p>
           <p>
-            Your account credentials have been refreshed. Your next authentication ceremony will require your new password.
+            {mode==='live'?'If the new password does not work, request another email. If you are still signed in, sign out from your account first.':'Your account credentials have been refreshed. Your next authentication ceremony will require your new password.'}
           </p>
         </div>
       </AuthCard>
@@ -149,6 +154,7 @@ export const ResetPasswordPage: React.FC = () => {
   // State 4: Valid Token — Password Reset Form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if(isSubmitting||isLoading)return;
     setPasswordError('');
     setConfirmError('');
     setFormError('');
@@ -159,7 +165,7 @@ export const ResetPasswordPage: React.FC = () => {
     if (!newPassword) {
       setPasswordError('New password is required');
       isValid = false;
-    } else if (!rules.isValid) {
+    } else if (mode==='live'?!passwordRecoveryConfirmSchema.shape.password.safeParse(newPassword).success:!rules.isValid) {
       setPasswordError('Password does not satisfy the requirement criteria below');
       isValid = false;
     }
@@ -183,14 +189,16 @@ export const ResetPasswordPage: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const result = await adapter.resetPassword({ token, newPassword });
+      if(mode==='live'&&!passwordRecoveryConfirmSchema.safeParse({email,token,password:newPassword}).success){setFormError('Enter your email, the complete recovery code and a password of 16–128 characters.');return;}
+      const result = await adapter.resetPassword({ token, newPassword, ...(mode==='live'?{email}:{}) });
       if (result.success) {
+        if(mode==='live'){setCode('');setNewPassword('');setConfirmPassword('');}
         setIsSuccess(true);
       } else {
         setFormError('Failed to reset password. The link may have expired or is invalid.');
       }
-    } catch {
-      setFormError('An unexpected error occurred while resetting your password.');
+    } catch (cause) {
+      setFormError(cause instanceof Error?cause.message:'An unexpected error occurred while resetting your password.');
     } finally {
       setIsSubmitting(false);
     }
@@ -208,7 +216,7 @@ export const ResetPasswordPage: React.FC = () => {
       footer={
         <div>
           Remember your existing credentials?{' '}
-          <Link to="/login" className="text-[var(--color-pub-accent)] font-semibold hover:underline">
+          <Link to={"/login"+authSuffix} className="text-[var(--color-pub-accent)] font-semibold hover:underline">
             Sign in
           </Link>
         </div>
@@ -229,6 +237,7 @@ export const ResetPasswordPage: React.FC = () => {
           </div>
         )}
 
+        {mode==='live'&&<><AuthField id="reset-email" name="email" label="Work email" type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email" disabled={isSubmitting||isLoading} required/><AuthField id="reset-code" name="token" label="Code from your email" value={code} onChange={e=>setCode(e.target.value.trim())} autoComplete="off" spellCheck={false} maxLength={80} disabled={isSubmitting||isLoading} required/></>}
         {/* New Password */}
         <div>
           <PasswordInput
@@ -243,6 +252,7 @@ export const ResetPasswordPage: React.FC = () => {
             }}
             disabled={isSubmitting || isLoading}
             autoComplete="new-password"
+            requirements={mode==='live'?'server':'prototype'}
             showRequirements={true}
             error={passwordError}
             required

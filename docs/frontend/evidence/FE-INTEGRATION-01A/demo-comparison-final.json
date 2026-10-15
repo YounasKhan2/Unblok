@@ -1,0 +1,209 @@
+[
+  {
+    "name": "gate-baseline-desktop-dark-dependencies.png",
+    "identical": false,
+    "differenceBounds": [
+      15,
+      212,
+      742,
+      983
+    ],
+    "differentPixels": 23
+  },
+  {
+    "name": "gate-baseline-desktop-dark-forgot-password.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-desktop-dark-login.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-desktop-dark-my-work.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-desktop-dark-projects.png",
+    "identical": false,
+    "differenceBounds": [
+      15,
+      77,
+      985,
+      983
+    ],
+    "differentPixels": 27
+  },
+  {
+    "name": "gate-baseline-desktop-dark-settings-preferences.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-desktop-dark-signup.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-desktop-dark-teams.png",
+    "identical": false,
+    "differenceBounds": [
+      257,
+      14,
+      258,
+      15
+    ],
+    "differentPixels": 1
+  },
+  {
+    "name": "gate-baseline-desktop-light-dependencies.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-desktop-light-forgot-password.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-desktop-light-login.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-desktop-light-my-work.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-desktop-light-projects.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-desktop-light-settings-preferences.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-desktop-light-signup.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-desktop-light-teams.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-mobile-dark-dependencies.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-mobile-dark-forgot-password.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-mobile-dark-login.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-mobile-dark-my-work.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-mobile-dark-projects.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-mobile-dark-settings-preferences.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-mobile-dark-signup.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-mobile-dark-teams.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-mobile-light-dependencies.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-mobile-light-forgot-password.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-mobile-light-login.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-mobile-light-my-work.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-mobile-light-projects.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-mobile-light-settings-preferences.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-mobile-light-signup.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  },
+  {
+    "name": "gate-baseline-mobile-light-teams.png",
+    "identical": true,
+    "differenceBounds": null,
+    "differentPixels": 0
+  }
+]

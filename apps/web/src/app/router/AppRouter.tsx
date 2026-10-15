@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import {DemoShellFrame} from '../shell/DemoShellBindings';
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { PublicLayout } from '../layouts/PublicLayout';
@@ -106,7 +107,7 @@ export const AppRoutes: React.FC = () => {
         {/* Guarded by RequireAuth prototype navigation contract      */}
         {/* ========================================================= */}
         <Route element={<RequireAuth />}>
-          <Route element={<AppShellLayout />}>
+          <Route element={<DemoShellFrame><AppShellLayout /></DemoShellFrame>}>
             {/* Primary UX-01 Page */}
             <Route path="/my-work" element={<MyWorkPage />} />
             <Route path="/my-work/*" element={<PrivateNotFoundPage />} />

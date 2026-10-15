@@ -1,0 +1,43 @@
+{
+  "browser": {
+    "passed": 22,
+    "failed": 0,
+    "manifest": "evidence.json"
+  },
+  "combinedBackendUnit": {
+    "passed": 100,
+    "failed": 1,
+    "reason": "Existing architecture-test 5000 ms timeout",
+    "log": "backend-unit.txt"
+  },
+  "serialBackendUnit": {
+    "passed": 101,
+    "failed": 0,
+    "log": "backend-unit-idle.txt"
+  },
+  "authenticationSession": {
+    "passed": 57,
+    "failed": 0,
+    "log": "auth-session.txt"
+  },
+  "tenancy": {
+    "passed": 59,
+    "failed": 0,
+    "log": "tenancy-fences.txt"
+  },
+  "frontend": {
+    "passed": 885,
+    "failed": 3,
+    "historicalFailures": "Unchanged NEXUS fixture expectations",
+    "log": "frontend-final.txt"
+  },
+  "focusedFrontend": {
+    "passed": 32,
+    "failed": 0
+  },
+  "limitations": [
+    "Intermittent Create workspace navigation timeout in review-ready: unresolved; latest full Chromium run passed without production changes",
+    "Historical queue and SIGTERM suites not rerun",
+    "Shared QA infrastructure was not used"
+  ]
+}

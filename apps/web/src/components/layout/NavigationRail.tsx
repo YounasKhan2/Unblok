@@ -25,54 +25,18 @@ import {
   ChevronsUpDown,
   Check,
 } from 'lucide-react';
-import { useProject } from '../../context/ProjectContext';
-import { useCollaboration } from '../../features/collaboration/context/CollaborationContext';
-import { useKeyboard } from '../../context/KeyboardContext';
-import { Avatar } from '../ui/Avatar';
-import {
-  getLatestNexusFixtureBackup,
-  restorePrototypeBackup,
-} from '../../context/nexusFixtureReset';
-
-export const NavigationRail: React.FC = () => {
-  const location = useLocation();
-  const {
-    issues,
-    currentUser,
-    setCurrentUser,
-    users,
-    isNavCollapsed,
-    setIsNavCollapsed,
-    getIssueBlockerStatus,
-    resetToDemoData,
-  } = useProject();
-
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [recoveryError, setRecoveryError] = useState<string | null>(null);
-  const { unreadCount } = useCollaboration();
-  const { setIsHelpModalOpen } = useKeyboard();
-
-  const totalBlockedCount = issues.filter(i => getIssueBlockerStatus(i.id).isBlocked).length;
-  const latestBackupKey = typeof window === 'undefined'
-    ? null
-    : getLatestNexusFixtureBackup(window.localStorage);
-
-  const restoreLastBackup = () => {
-    if (typeof window === 'undefined' || !latestBackupKey) return;
-    const confirmed = window.confirm(
-      `Restore the backed-up prototype state from ${latestBackupKey}? Current NEXUS changes will be backed up so they can be recovered.`
-    );
-    if (!confirmed) return;
-
-    try {
-      const undoBackupKey = restorePrototypeBackup(window.localStorage, latestBackupKey, true);
-      console.info(`Prototype state restored. Current NEXUS state backup: ${undoBackupKey}`);
-      window.location.reload();
-    } catch (error) {
-      setRecoveryError(error instanceof Error ? error.message : 'Could not restore the prototype backup.');
-    }
-  };
-
+import {Avatar} from '../ui/Avatar';
+import {useShell} from '../../app/shell/ShellBindings';
+export const NavigationRail:React.FC=()=>{
+ const location=useLocation();
+ const {currentUser,isNavCollapsed,setIsNavCollapsed,unreadCount:unread,blockedCount:blocked,setIsHelpModalOpen,demoControls,mode}=useShell();
+ const unreadCount=unread??0,totalBlockedCount=blocked??0;
+ const [isUserMenuOpen,setIsUserMenuOpen]=useState(false);
+ const latestBackupKey=demoControls?.backupKey,recoveryError=demoControls?.error;
+ const restoreLastBackup=()=>demoControls?.restore();
+ const resetToDemoData=()=>demoControls?.reset();
+ const users=demoControls?.users??[];
+ const setCurrentUser=(user:(typeof users)[number])=>demoControls?.setCurrentUser(user);
   const navItems = [
     {
       to: '/my-work',
@@ -113,14 +77,14 @@ export const NavigationRail: React.FC = () => {
       label: 'Cycles',
       icon: Clock,
       shortcut: 'G C',
-      badge: '24',
+      badge: mode==='demo'?'24':null,
     },
     {
       to: '/milestones',
       label: 'Milestones',
       icon: Target,
       shortcut: 'G S',
-      badge: '3',
+      badge: mode==='demo'?'3':null,
     },
     {
       to: '/roadmap',
@@ -266,6 +230,7 @@ export const NavigationRail: React.FC = () => {
           {!isNavCollapsed && <span>Shortcuts (?)</span>}
         </button>
 
+        {demoControls && <>
         {/* Reset Demo State */}
         <button
           onClick={resetToDemoData}
@@ -291,13 +256,14 @@ export const NavigationRail: React.FC = () => {
           </p>
         )}
 
+        </>}
         {/* Current User Card & Role Switcher Popover */}
         <div className="pt-1 border-t border-border mt-1 relative">
           <div className="flex items-center justify-between p-1 rounded-[5px] hover:bg-surface-muted transition-colors group">
             <Link
               to="/settings/preferences"
               className="flex items-center gap-2 flex-1 min-w-0"
-              title={`${currentUser.name} (${currentUser.role}) — Preferences`}
+              title={`${currentUser.name}${currentUser.role?` (${currentUser.role})`:''} — Preferences`}
             >
               <Avatar user={currentUser} size="xs" />
               {!isNavCollapsed && (
@@ -312,7 +278,7 @@ export const NavigationRail: React.FC = () => {
               )}
             </Link>
 
-            {!isNavCollapsed && (
+            {!isNavCollapsed && demoControls && (
               <button
                 type="button"
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
@@ -326,7 +292,7 @@ export const NavigationRail: React.FC = () => {
           </div>
 
           {/* User Switcher Dropdown Menu */}
-          {isUserMenuOpen && (
+          {demoControls && isUserMenuOpen && (
             <>
               <div
                 className="fixed inset-0 z-40"

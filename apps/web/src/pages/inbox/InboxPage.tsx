@@ -1,3 +1,4 @@
+import {InboxPageFrame} from './InboxPageFrame';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -101,9 +102,7 @@ export const InboxPage: React.FC = () => {
   }, [registerInboxHandlers, handleNext, handlePrev, handleOpen, handleArchive]);
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-surface-base">
-      {/* 1. Header (Compact, no giant dashboard header) */}
-      <header className="px-4 py-3 border-b border-border bg-surface-base shrink-0 flex items-center justify-between">
+    <InboxPageFrame header={<header className="px-4 py-3 border-b border-border bg-surface-base shrink-0 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <h1 className="text-sm font-bold text-text-primary tracking-tight">
             Inbox
@@ -129,7 +128,9 @@ export const InboxPage: React.FC = () => {
             <span>Mark all read</span>
           </button>
         )}
-      </header>
+      </header>}>
+      {/* 1. Header (Compact, no giant dashboard header) */}
+
 
       {/* 2. Primary Tabs */}
       <InboxTabs />
@@ -216,6 +217,6 @@ export const InboxPage: React.FC = () => {
           </div>
         )}
       </div>
-    </div>
+    </InboxPageFrame>
   );
 };
