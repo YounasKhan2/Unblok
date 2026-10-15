@@ -11,6 +11,7 @@ import {RedisRateLimiter} from '../src/security';
 import {Sessions,connectSessionStore,sessionSettings} from '../src/modules/sessions';
 import {Authentication,AuthenticationLimits,Passwords} from '../src/modules/auth';
 import {Workspaces,WorkspaceLimits} from '../src/modules/workspaces';
+import {Teams,TeamLimits} from '../src/modules/teams';
 
 // Narrow type surface for the externally supplied runner; no dependency edge.
 interface Locator {waitFor(options?:{state:string}):Promise<void>;fill(value:string):Promise<void>;click():Promise<void>;count():Promise<number>;isDisabled():Promise<boolean>;getAttribute(name:string):Promise<string|null>;first():Locator;filter(options:{hasText:string}):Locator;evaluate<T>(run:(element:HTMLElement)=>T):Promise<T>}
@@ -41,7 +42,8 @@ test('FE-WS-01 real Chromium / PostgreSQL / Valkey workspace flows',async()=>{
     const sessions=new Sessions(connection.store,settings,{create:i=>fences.create(i),rotate:(e,d,idle)=>fences.rotate(e,d,idle),revoke:e=>fences.revoke(e),retireSid:d=>fences.retireSid(d),revokeAll:id=>fences.revokeAll(id)},a=>authentication.resolveIdentity(a));
     const keys={active:'test-v1',cursors:{'test-v1':randomBytes(32).toString('hex')},idempotency:randomBytes(32).toString('hex')};
     const tenancy=new Tenancy(database,{verify:async()=>null},denyAll,sessions,undefined,keys);sessions.bind(tenancy);authentication.bind(sessions,tenancy);
-    server=await createApp(config,{databaseReady:()=>database.ready(),queueReady:async()=>await cache.ping()==='PONG',close:()=>connection!.close()},new RedisRateLimiter(cache,120,60000,prefix+'coarse:'),createLogger('silent'),sessions,authentication,new Workspaces(sessions,tenancy,new WorkspaceLimits(cache,settings.secrets[0]!,prefix)));
+    let throttleUntil=0;const coarse=new RedisRateLimiter(cache,120,60000,prefix+'coarse:'),consume=coarse.consume.bind(coarse);coarse.consume=async key=>{const result=await consume(key);if(!result.allowed){throttleUntil=Date.now()+result.retryAfter*1000;evidence.coarseRateLimit={observed:true,retryAfter:result.retryAfter};}return result;};
+    server=await createApp(config,{databaseReady:()=>database.ready(),queueReady:async()=>await cache.ping()==='PONG',close:()=>connection!.close()},coarse,createLogger('silent'),sessions,authentication,new Workspaces(sessions,tenancy,new WorkspaceLimits(cache,settings.secrets[0]!,prefix)),new Teams(sessions,tenancy,new TeamLimits(cache,settings.secrets[0]!,prefix)));
     await server.app.listen(4000,'127.0.0.1');const {chromium}=createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE!) as {chromium:{launch(options:{headless:boolean}):Promise<Browser>}};browser=await chromium.launch({headless:true});evidence.browser=browser.version();
     const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1,colorScheme:'light'});
     // Remote Google Fonts did not settle in this host. Exercise documented CSS
@@ -51,7 +53,7 @@ test('FE-WS-01 real Chromium / PostgreSQL / Valkey workspace flows',async()=>{
     const email='fews-'+randomUUID()+'@example.test',password='A private browser password '+randomUUID(),base='http://localhost:3000';
     const heading=async(text:string)=>page.getByRole('heading',{name:text,exact:true}).waitFor();
     const signup=async(address:string)=>{await page.goto(base+'/signup');await page.getByLabel('Full name').fill('Workspace Browser');await page.getByLabel('Email',{exact:true}).fill(address);await page.locator('input[name=password]').fill(password);await page.getByRole('button',{name:'Create account',exact:true}).click();await heading('Request received');};
-    const login=async(address:string)=>{await page.goto(base+'/login');await page.getByLabel('Email',{exact:true}).fill(address);await page.locator('input[name=password]').fill(password);await page.getByRole('button',{name:'Sign in',exact:true}).click();await heading('Your account');};
+    const login=async(address:string)=>{const submit=async()=>{await page.goto(base+'/login');await page.getByLabel('Email',{exact:true}).fill(address);await page.locator('input[name=password]').fill(password);await page.getByRole('button',{name:'Sign in',exact:true}).click();};await submit();try{await heading('Your account');}catch(error){if(!await page.getByText('Too many attempts. Please wait before trying again.',{exact:true}).count())throw error;if(throttleUntil>Date.now())await Bun.sleep(throttleUntil-Date.now());await submit();await heading('Your account');}};
     step='login discovery and empty state';await signup(email);await login(email);await page.getByText('You don’t have a workspace yet.',{exact:false}).waitFor();expect(await page.getByText('NEXUS Commerce',{exact:true}).count()).toBe(0);passed.push(step);
     const user=await database.client.passwordCredential.findUniqueOrThrow({where:{email},include:{identity:true}}),actor=user.identity.userId;
     step='create with lost acknowledgement and same-key retry';await page.getByRole('link',{name:'Create workspace',exact:true}).click();await heading('Create workspace');
