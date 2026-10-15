@@ -78,4 +78,13 @@ describe('server-owned live workspace state',()=>{
     blocked=false;s.store.abandonAttempt();expect(s.store.snapshot().reconciliationBlocked).toBe(false);expect(data).toBeNull();s.stop();
   });
   it.each(['status','body','grant'])('retains the key rather than trusting an inconsistent201 projection: %s',async mode=>{const s=await setup((_u,o)=>o.method==='POST'?response({workspace:mode==='body'?{...row,name:'Another result'}:row,initialAdministrator:mode==='grant'?{...self,role:'MEMBER'}:self},mode==='status'?200:201):response(page));expect(await s.store.create({name:row.name,slug:row.slug})).toBeNull();expect(s.store.snapshot().attempt?.key).toBe(id);expect(s.store.snapshot().selected).toBeNull();s.stop();});
+  it('replaces the cached empty discovery page after a confirmed create',async()=>{
+    let created=false;const s=await setup((_u,o)=>{if(o.method==='POST'){created=true;return response({workspace:row,initialAdministrator:self},201);}return response(created?page:{items:[],page:{hasMore:false,nextCursor:null}});});
+    expect(s.store.snapshot().page?.items).toEqual([]);expect(await s.store.create({name:row.name,slug:row.slug})).toBe(id);await tick();expect(s.store.snapshot().page?.items).toEqual([row]);expect(s.store.snapshot().selected).toBe(id);s.stop();
+  });
+  it('does not let post-create discovery leak after a different actor signs in',async()=>{
+    const old=deferred<Response>();let created=false,delay=true;const s=await setup((_u,o)=>{if(o.method==='POST'){created=true;return response({workspace:row,initialAdministrator:self},201);}return created&&delay?old.promise:response({items:[],page:{hasMore:false,nextCursor:null}});});
+    await s.store.create({name:row.name,slug:row.slug});s.session.clear();s.actor(other);delay=false;await s.session.login({email:'other@example.test',password:'A valid private password 2026'});old.resolve(response(page));await tick();expect(s.store.snapshot().page?.items).toEqual([]);expect(s.store.snapshot().selected).toBeNull();s.stop();
+  });
+
 });

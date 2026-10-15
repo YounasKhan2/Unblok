@@ -1,0 +1,4 @@
+$ bun run check:architecture && tsc -p tsconfig.backend.json
+$ bun scripts/backend/check-architecture.ts
+Preserved infrastructure: BE-00C type-only Database backlink: tenancy.ts → index.ts (no runtime cycle)
+Architecture checked 428 source files and 1159 resolved internal edges; 0 violations.

@@ -1,3 +1,4 @@
+import {DisposableMailpit} from '../test-support/mailpit.cjs';
 import {startVerificationDispatcher} from '../../apps/worker/src/jobs/email-verification';
 import {test,expect} from 'bun:test';
 import {randomBytes,randomUUID} from 'node:crypto';
@@ -25,6 +26,7 @@ interface Browser {version():string;newContext(options:{viewport:{width:number;h
 test('FE-WS-02 real Chromium members and invitation lifecycle',async()=>{
   const config=loadApiConfig(process.env),name='unblok_fews02_'+randomUUID().replaceAll('-','');
   const url=new URL(config.DATABASE_URL);url.pathname='/'+name;
+  const mailpit=new DisposableMailpit();
   const admin=new Database(config.DATABASE_URL),database=new Database(url.toString()),cache=createRedis(config.REDIS_URL);
   const prefix='fews:test:'+randomUUID()+':',output=resolve('docs/frontend/evidence/fe-ws-02');await mkdir(output,{recursive:true});
   const evidence:{[key:string]:unknown}={base:'d473e02487d1a6b40225a54b3105bd8fed05d0aa',transport:'real Chromium / same-origin Vite proxy / isolated PostgreSQL / Valkey',productionCertified:false,passed:[],visuals:[]};
@@ -32,6 +34,7 @@ test('FE-WS-02 real Chromium members and invitation lifecycle',async()=>{
   const mailIds:string[]=[];
   let diagnosticPage:Page|undefined;let owned=false,browser:Browser|undefined,server:Awaited<ReturnType<typeof createApp>>|undefined,connection:Awaited<ReturnType<typeof connectSessionStore>>|undefined,step='setup';cache.on('error',()=>{});
   try{
+    await mailpit.start();
     await admin.connect();await admin.client.$executeRawUnsafe(`CREATE DATABASE "${name}"`);owned=true;
     const migration=Bun.spawn(['node','packages/database/node_modules/prisma/build/index.js','migrate','deploy','--schema','packages/database/prisma/schema.prisma'],{cwd:resolve(import.meta.dir,'../..'),env:{...process.env,DATABASE_URL:url.toString()},stdout:'pipe',stderr:'pipe'});
     const timer=setTimeout(()=>migration.kill('SIGKILL'),6000);try{const [exit,out,err]=await Promise.all([migration.exited,new Response(migration.stdout).text(),new Response(migration.stderr).text()]);evidence.migration={cliRuntime:'Node (existing installed runtime)',exitCode:exit,appliedCount:(out.match(/Applying migration/g)??[]).length,errorCodes:err.match(/P\d{4}/g)??[]};expect(exit).toBe(0);}finally{clearTimeout(timer);}
@@ -56,12 +59,12 @@ test('FE-WS-02 real Chromium members and invitation lifecycle',async()=>{
     const visibleText=async(p:Page,text:string)=>{try{await p.getByText(text).waitFor();}catch(error){if(!await p.getByText('Too many attempts. Please wait before trying again.',{exact:true}).count())throw error;if(throttleUntil>Date.now())await Bun.sleep(throttleUntil-Date.now());await p.reload();await p.getByText(text).waitFor();}};
     const signup=async(p:Page,address:string,navigate=true)=>{if(navigate)await p.goto(base+'/signup');await p.getByLabel('Full name').fill('Live account');await p.getByLabel('Email',{exact:true}).fill(address);await p.locator('input[name=password]').fill(password);await p.getByRole('button',{name:'Create account',exact:true}).click();await heading(p,'Request received');};
     const login=async(p:Page,address:string,navigate=true)=>{if(navigate)await p.goto(base+'/login');await p.getByLabel('Email',{exact:true}).fill(address);await p.locator('input[name=password]').fill(password);await p.getByRole('button',{name:'Sign in',exact:true}).click();};
-    const mail=loadVerificationMail({NODE_ENV:'test',EMAIL_MAIL_ENDPOINT:'http://127.0.0.1:8025/api/v1/send',EMAIL_MAIL_FROM:'browser@unblok.local'});
+    const mail=loadVerificationMail({NODE_ENV:'test',EMAIL_MAIL_ENDPOINT:mailpit.url('/api/v1/send'),EMAIL_MAIL_FROM:'browser@unblok.local'});
     const deliver=async(purpose:'verification'|'invitation',address:string)=>{
       const dispatcher=startVerificationDispatcher({once:async()=>false},mail,createLogger('silent'),purpose);
       try{expect(await (purpose==='verification'?new VerificationDelivery(database,verifyKey):new InvitationDelivery(database,inviteKey)).once(dispatcher.send)).toBe(true);}finally{await dispatcher.close();}
-      const messages=await (await fetch('http://127.0.0.1:8025/api/v1/messages?limit=500')).json();const message=messages.messages.find((m:{ID:string;To:{Address:string}[]})=>m.To.some(r=>r.Address===address)&&!mailIds.includes(m.ID));expect(!!message).toBe(true);mailIds.push(message.ID);
-      const detail=await (await fetch('http://127.0.0.1:8025/api/v1/message/'+message.ID)).json(),proof=/[0-9a-f-]{36}\.[A-Za-z0-9_-]{43}/.exec(detail.Text)?.[0];expect(!!proof).toBe(true);return proof!;
+      const messages=await (await fetch(mailpit.url('/api/v1/messages?limit=500'))).json();const message=messages.messages.find((m:{ID:string;To:{Address:string}[]})=>m.To.some(r=>r.Address===address)&&!mailIds.includes(m.ID));expect(!!message).toBe(true);mailIds.push(message.ID);
+      const detail=await (await fetch(mailpit.url('/api/v1/message/')+message.ID)).json(),proof=/[0-9a-f-]{36}\.[A-Za-z0-9_-]{43}/.exec(detail.Text)?.[0];expect(!!proof).toBe(true);return proof!;
     };
     const verify=async(p:Page,address:string)=>{await p.getByRole('button',{name:'Send verification email'}).click();await p.getByText('Request received. Check your inbox and spam folder for the code.').waitFor();await p.getByLabel('Code from your email').fill(await deliver('verification',address));await p.getByRole('button',{name:'Confirm email'}).click();};
     step='real admin signup login verification and workspace';await signup(page,email);await login(page,email);await heading(page,'Your account');await page.getByRole('link',{name:'Verify your email',exact:true}).click();await verify(page,email);await heading(page,'Your account');
@@ -94,11 +97,13 @@ test('FE-WS-02 real Chromium members and invitation lifecycle',async()=>{
     evidence.status='passed';evidence.isolatedFixtures=true;evidence.proofPersistence='memory only; fragment scrubbed; no proof in evidence/screenshots';await recipientContext.close();await context.close();
   }catch(error){evidence.status='failed';evidence.failedStep=step;evidence.errorType=error instanceof Error?error.name:'Unknown';if(diagnosticPage)evidence.page=await diagnosticPage.evaluate(()=>({path:location.pathname,alerts:Array.from(document.querySelectorAll('[role=alert]')).map(e=>e.textContent?.slice(0,300)),heading:document.querySelector('h1')?.textContent}));throw error;}
   finally{
-    if(mailIds.length)await fetch('http://127.0.0.1:8025/api/v1/messages',{method:'DELETE',headers:{'content-type':'application/json'},body:JSON.stringify({IDs:mailIds})});
+   try {
     await browser?.close();await server?.close();await connection?.close();
     if(cache.status==='ready'){const keys=await cache.keys(prefix+'*');if(keys.length)await cache.del(...keys);}cache.disconnect();await database.close();
     if(owned)await admin.client.$executeRawUnsafe(`DROP DATABASE "${name}" WITH (FORCE)`);await admin.close();
+    await mailpit.deleteOwned(mailIds);
     const historyFile=resolve(output,'runs.json');let history:unknown[]=[];try{history=await Bun.file(historyFile).json();}catch{}
     history.push(evidence);await Bun.write(historyFile,JSON.stringify(history,null,2));await Bun.write(resolve(output,'results.json'),JSON.stringify(evidence,null,2));
+   } finally { await mailpit.close(); }
   }
 },120000);

@@ -1,3 +1,5 @@
+const {ReadOnlyMailpit}=require('../test-support/mailpit.cjs');
+const mailpit=new ReadOnlyMailpit();let mailBaseline;
 // Uses an operator-provided, already installed Playwright module. No installs.
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE);
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{randomUUID}=require('node:crypto');
@@ -5,10 +7,11 @@ const output=path.resolve('docs/frontend/evidence/browser-f4');fs.mkdirSync(outp
 const base='http://localhost:3000',email=`fe-browser-${randomUUID()}@example.test`,password='A private browser password '+randomUUID(),nextPassword='A replacement browser password '+randomUUID();
 const evidence={runner:'external bundled Playwright',transport:'real Chromium, same-origin HTTP Vite proxy, real API/worker/PostgreSQL/Valkey/Mailpit',passed:[],visuals:[],productionCertified:false};
 let step='launch',activePage;const ids=new Set(),headerChecks=[];evidence.http=[];evidence.mutationHeaders=[];
-async function mail(){for(let i=0;i<40;i++){const listing=await(await fetch('http://127.0.0.1:8025/api/v1/messages?limit=500')).json();const item=listing.messages.find(m=>m.To.some(r=>r.Address===email)&&!ids.has(m.ID));if(item){ids.add(item.ID);const body=await(await fetch(`http://127.0.0.1:8025/api/v1/message/${item.ID}`)).json();const proof=/[0-9a-f-]{36}\.[A-Za-z0-9_-]{43}/.exec(body.Text)?.[0];assert.ok(proof);return proof;}await new Promise(r=>setTimeout(r,250));}throw new Error('Owned message unavailable');}
+async function mail(){for(let i=0;i<40;i++){const listing=await mailpit.messages();const item=listing.messages.find(m=>m.To.some(r=>r.Address===email)&&!ids.has(m.ID));if(item){ids.add(item.ID);const body=await mailpit.message(item.ID);const proof=/[0-9a-f-]{36}\.[A-Za-z0-9_-]{43}/.exec(body.Text)?.[0];assert.ok(proof);return proof;}await new Promise(r=>setTimeout(r,250));}throw new Error('Owned message unavailable');}
 async function heading(page,text){await page.getByRole('heading',{name:text,exact:true}).waitFor();}
 async function login(page,pw=password){await page.goto(base+'/login');await page.getByLabel('Email',{exact:true}).fill(email);await page.locator('input[name=password]').fill(pw);await page.getByRole('button',{name:'Sign in',exact:true}).click();await heading(page,'Your account');}
 (async()=>{
+ mailBaseline=await mailpit.snapshot();
  const browser=await chromium.launch({headless:true});evidence.browser=browser.version();
  try{
   const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1,colorScheme:'light'});let page=await context.newPage();activePage=page;let csrfPosts=0;
@@ -45,5 +48,5 @@ async function login(page,pw=password){await page.goto(base+'/login');await page
    const file=`login-${width}-${theme}.png`;await p.screenshot({path:path.join(output,file),fullPage:true,animations:'disabled'});evidence.visuals.push({width,height:900,dpr:1,theme,file,noHorizontalOverflow:true});await c.close();
   }await Promise.all(headerChecks);assert.ok(evidence.mutationHeaders.every(h=>h.csrfPresent&&h.originMatches));evidence.passed.push(step);evidence.status='passed';
  }catch(error){evidence.status='failed';evidence.failedStep=step;evidence.errorType=error.name;evidence.errorSummary=error.message.split('Call log:')[0].replaceAll(email,'[owned email]').replaceAll(password,'[password]').replaceAll(nextPassword,'[password]');if(activePage&&!activePage.isClosed())evidence.formFeedback=await activePage.getByRole('alert').allTextContents();process.exitCode=1;}
- finally{await browser.close();if(ids.size)await fetch('http://127.0.0.1:8025/api/v1/messages',{method:'DELETE',headers:{'content-type':'application/json'},body:JSON.stringify({IDs:[...ids]})});fs.writeFileSync(path.join(output,'results.json'),JSON.stringify(evidence,null,2));console.log(JSON.stringify(evidence));}
+ finally{await browser.close();try{evidence.mailPreservation=await mailpit.assertPreserved(mailBaseline);}catch(error){evidence.status='failed';evidence.preservationFailure=error.message;process.exitCode=1;}fs.writeFileSync(path.join(output,'results.json'),JSON.stringify(evidence,null,2));console.log(JSON.stringify(evidence));}
 })();

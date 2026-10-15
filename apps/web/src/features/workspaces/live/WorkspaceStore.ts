@@ -45,10 +45,11 @@ export class WorkspaceStore {
     try{this.journal?.write(this.session.snapshot().user!.id,attempt);}catch{this.publish({reconciliationBlocked:true,creationError:'We couldn’t save this request for a safe retry. Please try again.'});return null;}
     this.listing?.abort();this.selecting?.abort();const controller=this.creating=new AbortController(),version=this.version;
     this.publish({attempt,creating:true,loading:false,selecting:false,creationError:undefined});
+    let created=false;
     try{const result=await this.api.create(attempt.body,attempt.key,controller.signal);if(!this.current(version,controller))return null;
-      try{this.journal?.write(this.session.snapshot().user!.id);}catch{}this.publish({attempt:undefined,selected:result.workspace.id,context:null});return result.workspace.id;
+      try{this.journal?.write(this.session.snapshot().user!.id);}catch{}created=true;this.publish({attempt:undefined,selected:result.workspace.id,context:null,page:null});return result.workspace.id;
     }catch(error){if(this.current(version,controller)){if(error instanceof AuthApiError&&error.status===400){try{this.journal?.write(this.session.snapshot().user!.id);}catch{}}
       this.publish({creationError:error instanceof AuthApiError?error.message:'We couldn’t confirm creation. Retry this request to check its result.',...(error instanceof AuthApiError&&error.status===400?{attempt:undefined}:{})});}return null;
-    }finally{if(this.current(version,controller))this.publish({creating:false});}
+    }finally{if(this.current(version,controller)){this.publish({creating:false});if(created)void this.load();}}
   }
 }

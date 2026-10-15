@@ -33,12 +33,13 @@ export class AuthApi {
     if(!response.ok) {
       if([401,403].includes(response.status) && epoch===this.epoch && !options.signal?.aborted) {this.csrf=undefined;if(response.status===401)this.onUnauthorized();}
       const retry=Number(response.headers.get('retry-after'));
-      const messages:Record<number,string>={400:'Check the information you entered.',401:'Your session ended or the sign-in details were incorrect.',403:'Refresh this page before trying again.',429:'Too many attempts. Please wait before trying again.',503:'Unblok is temporarily unavailable. Please try again later.'};
+      const messages:Record<number,string>={400:'Check the information you entered.',401:path==='login'&&!options.workspace?'We couldn’t sign you in. Check your email and password.':'Your session ended. Sign in again to continue.',403:'Refresh this page before trying again.',429:'Too many attempts. Please wait before trying again.',503:'Unblok is temporarily unavailable. Please try again later.'};
       let code:string|undefined;
       if(options.workspace){try{const value=await response.json();if(['CURSOR_STALE','IDEMPOTENCY_RESULT_EXPIRED'].includes(value?.error?.code))code=value.error.code;}catch{}}
       const teamMessages:Record<number,string>={403:'You cannot change this Team. Reload its access before continuing.',404:'This Team is unavailable.',409:code==='CURSOR_STALE'?'The Team list changed. Reload it to continue.':code==='IDEMPOTENCY_RESULT_EXPIRED'?'This request has expired. Check the current Team before starting another.':'The result is uncertain. Retry the same Team request.',412:'The Team changed. Review its current metadata before submitting another edit.',428:'Reload the Team to obtain its current version.'};
       const message=options.team?(teamMessages[response.status]??messages[response.status]??'We couldn’t complete this Team request.'):options.workspace&&response.status===404?'This workspace is no longer available.':options.workspace&&response.status===409?(code==='CURSOR_STALE'?'Your workspace list changed. Refresh it to continue.':code==='IDEMPOTENCY_RESULT_EXPIRED'?'This request is no longer available. Check your workspaces before creating another.':'We couldn’t confirm this request. Check your workspaces or retry the same request.'):messages[response.status]??'We couldn’t complete your request.';
-      throw new AuthApiError(response.status,message,Number.isFinite(retry)&&retry>0?retry:undefined,code);
+      const wait=Number.isFinite(retry)&&retry>0?Math.ceil(retry):undefined;
+      throw new AuthApiError(response.status,response.status===429&&wait?`Too many attempts. Try again in ${wait} seconds.`:message,wait,code);
     }
     if(options.expectedStatus&&response.status!==options.expectedStatus)throw new AuthApiError(503,'We couldn’t validate the response. Please try again later.');
     try {return schema.parse(await response.json());} catch {throw new AuthApiError(503,'We couldn’t validate the response. Please try again later.');}

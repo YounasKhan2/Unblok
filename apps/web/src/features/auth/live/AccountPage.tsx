@@ -11,7 +11,11 @@ export function AccountPage() {
   return <AuthCard appearance="application" title="Your account" subtitle={user?.email??'Signed in'}>
     <div className="space-y-4 text-sm"><p className="font-medium break-words">Welcome, {user?.name}.</p>
       <p className="text-text-secondary">{user?.emailVerified?'Your email is verified.':'Your email is not verified yet.'}</p>
-      {!user?.emailVerified&&<Link to="/verify-email" className="text-accent">Verify your email</Link>}
+      {!user?.emailVerified&&<section aria-label="Email verification" className="rounded-lg border border-border p-4 space-y-3">
+        <h2 className="font-semibold">Next step: verify your email</h2>
+        <p className="text-text-secondary">Verification enables password recovery and Workspace invitations. Request an email, then paste its code while signed in to this account.</p>
+        <Link to="/verify-email" className="inline-block rounded-lg bg-accent px-4 py-2 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">Verify your email</Link>
+      </section>}
       <WorkspacePicker/>
       <Link to="/forgot-password" className="block text-accent">Recover your password</Link>
       {error&&<p role="alert" className="text-danger">{error}</p>}

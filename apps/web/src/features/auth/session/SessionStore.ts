@@ -1,19 +1,19 @@
 import {AuthApi,AuthApiError,type SessionUser} from '../api/authApi';
-export interface SessionState {status:'loading'|'anonymous'|'authenticated'|'unavailable';user:SessionUser|null;pending:boolean;error?:string|undefined}
+export interface SessionState {status:'loading'|'anonymous'|'authenticated'|'unavailable';user:SessionUser|null;pending:boolean;sessionExpired?:boolean;error?:string|undefined}
 export class SessionStore {
   private state:SessionState={status:'loading',user:null,pending:false};
   private listeners=new Set<()=>void>();
   private version=0;
   private logoutVersion=0;
   private restoring:Promise<void>|undefined;
-  constructor(readonly api:AuthApi) {api.onUnauthorized=()=>this.clear();}
+  constructor(readonly api:AuthApi) {api.onUnauthorized=()=>this.clear(this.state.status==='authenticated'||!!this.state.user||!!this.state.sessionExpired);}
   snapshot=()=>this.state;
   generation=()=>this.version;
   explicitLogoutGeneration=()=>this.logoutVersion;
   subscribe=(listener:()=>void)=>{this.listeners.add(listener);return()=>{this.listeners.delete(listener);};};
   private publish(state:SessionState) {this.state=state;for(const listener of this.listeners)listener();}
   private advance() {this.version++;this.restoring=undefined;this.api.invalidateRequests();}
-  clear() {this.advance();this.api.clear();this.publish({status:'anonymous',user:null,pending:this.state.pending});}
+  clear(sessionExpired=false) {this.advance();this.api.clear();this.publish({status:'anonymous',user:null,pending:this.state.pending,sessionExpired});}
   refresh=():Promise<void>=>{
     if(this.state.pending)return Promise.resolve();
     return this.restore();

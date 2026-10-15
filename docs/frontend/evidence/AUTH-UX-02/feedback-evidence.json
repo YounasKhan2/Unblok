@@ -1,0 +1,6 @@
+{
+  "passed": 2,
+  "failed": 0,
+  "transport": "Browser presentation assertions with controlled signup202/login429 responses; not live server rate exhaustion",
+  "noAccountCreated": true
+}
