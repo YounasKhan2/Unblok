@@ -1,0 +1,538 @@
+{
+  "passed": [
+    "first anonymous protected visit",
+    "unknown login and focus",
+    "new signup neutral receipt",
+    "duplicate signup identical receipt",
+    "unverified recovery conditional receipt",
+    "unverified login primary verification action",
+    "pending verification and resend guidance",
+    "confirmed create immediately refreshes picker",
+    "lost response creation reuses key once",
+    "tenant switching discards stale async context",
+    "invitation instructions and real delivery",
+    "actual browser session cookie expiry after confirmed login",
+    "verified recovery reset truthful result and login",
+    "invitation signup login verification continuation",
+    "stale inviter epoch remains denied",
+    "responsive feedback and no proof persistence"
+  ],
+  "http": [
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "status": 401,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/signup",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/signup",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/password-recovery/request",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/email-verification/request",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/email-verification/confirm",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/email-verification/status",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 201,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces/15f4641f-0522-4b66-b71c-9c2c540e3538",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/15f4641f-0522-4b66-b71c-9c2c540e3538/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/15f4641f-0522-4b66-b71c-9c2c540e3538/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/15f4641f-0522-4b66-b71c-9c2c540e3538/teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 201,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces/b79baffa-8075-4ab2-aeec-655c40ed97f2",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/b79baffa-8075-4ab2-aeec-655c40ed97f2/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/b79baffa-8075-4ab2-aeec-655c40ed97f2/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/b79baffa-8075-4ab2-aeec-655c40ed97f2/teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/b79baffa-8075-4ab2-aeec-655c40ed97f2",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/b79baffa-8075-4ab2-aeec-655c40ed97f2/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/b79baffa-8075-4ab2-aeec-655c40ed97f2/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/b79baffa-8075-4ab2-aeec-655c40ed97f2/teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/b79baffa-8075-4ab2-aeec-655c40ed97f2/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/b79baffa-8075-4ab2-aeec-655c40ed97f2",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/b79baffa-8075-4ab2-aeec-655c40ed97f2/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/b79baffa-8075-4ab2-aeec-655c40ed97f2/teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/b79baffa-8075-4ab2-aeec-655c40ed97f2/invitations",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces/b79baffa-8075-4ab2-aeec-655c40ed97f2",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/password-recovery/request",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/password-recovery/confirm",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/logout",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/signup",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/email-verification/request",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/email-verification/confirm",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/email-verification/status",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspace-invitations/accept",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/logout",
+      "status": 200,
+      "method": "POST"
+    }
+  ],
+  "visuals": [
+    "01-anonymous.png",
+    "02-invalid-login.png",
+    "03-signup.png",
+    "04-ineligible-recovery.png",
+    "05-unverified.png",
+    "06-pending-verification.png",
+    "07-workspace-picker.png",
+    "08-invitation.png",
+    "09-expired-session.png",
+    "10-reset-receipt.png",
+    "11-invitation-continuation.png",
+    "12-invite-mobile.png"
+  ],
+  "consoleErrors": [],
+  "mail": [
+    {
+      "id": "27BgR5BLBd5vLnhdecfMED",
+      "subject": "Verify your Unblok email",
+      "recipient": "test-owned example.test"
+    },
+    {
+      "id": "KH8NJHZWTRWfVmyWhqsi66",
+      "subject": "Join an Unblok workspace",
+      "recipient": "test-owned example.test"
+    },
+    {
+      "id": "JGR2Ua2fLAnznT2nxyugw9",
+      "subject": "Reset your Unblok password",
+      "recipient": "test-owned example.test"
+    },
+    {
+      "id": "nocEUzinUsMVjMMz7hSX26",
+      "subject": "Verify your Unblok email",
+      "recipient": "test-owned example.test"
+    }
+  ],
+  "mutationSecurity": [
+    {
+      "path": "/api/v1/auth/login",
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "path": "/api/v1/auth/signup",
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "path": "/api/v1/auth/signup",
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "path": "/api/v1/auth/password-recovery/request",
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "path": "/api/v1/auth/email-verification/request",
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "path": "/api/v1/auth/email-verification/confirm",
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "path": "/api/v1/workspaces/b79baffa-8075-4ab2-aeec-655c40ed97f2/invitations",
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "path": "/api/v1/auth/password-recovery/request",
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "path": "/api/v1/auth/password-recovery/confirm",
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "path": "/api/v1/auth/logout",
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "path": "/api/v1/auth/signup",
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "path": "/api/v1/auth/email-verification/request",
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "path": "/api/v1/auth/email-verification/confirm",
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "path": "/api/v1/workspace-invitations/accept",
+      "csrfPresent": true,
+      "originMatches": true
+    },
+    {
+      "path": "/api/v1/auth/logout",
+      "csrfPresent": true,
+      "originMatches": true
+    }
+  ],
+  "browser": "151.0.7922.34",
+  "status": "passed"
+}

@@ -54,4 +54,16 @@ describe('live authentication boundary',()=>{
     await api.login({email:'user@example.com',password:'long-password-for-testing'});await api.logout();
     expect(t.calls[2].options.headers).toMatchObject({'X-CSRF-Token':rotated});expect(t.calls).toHaveLength(3);
   });
+  it('keeps login denial generic while distinguishing protected-session loss',async()=>{
+    for(const denial of ['unknown','wrong-password','disabled']){
+      const t=transport([json({csrf}),json({reason:denial},401)]),api=new AuthApi('',t.fetcher);let cleared=0;api.onUnauthorized=()=>{cleared++;};
+      await expect(api.login({email:'user@example.com',password:'long-password-for-testing'})).rejects.toMatchObject({status:401,message:'We couldn’t sign you in. Check your email and password.'});expect(cleared).toBe(1);
+    }
+    await expect(new AuthApi('',transport([json({},401)]).fetcher).me()).rejects.toMatchObject({message:'Your session ended. Sign in again to continue.'});
+  });
+  it('presents the server retry wait without replaying the rejected mutation',async()=>{
+    const denied=new Response('{}',{status:429,headers:{'Retry-After':'61'}}),t=transport([json({csrf}),denied]);
+    await expect(new AuthApi('',t.fetcher).requestVerification()).rejects.toMatchObject({retryAfter:61,message:'Too many attempts. Try again in 61 seconds.'});expect(t.calls).toHaveLength(2);
+  });
+
 });

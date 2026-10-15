@@ -68,4 +68,15 @@ describe('server-authoritative session lifecycle',()=>{
     const s=new SessionStore(api),restore=s.refresh();await s.login({email:user.email,password:'long-password-for-testing'});
     finish(json({},401));await restore;expect(s.snapshot()).toMatchObject({status:'authenticated',user});
   });
+  it('marks expiry only after confirmed authentication, never on first anonymous restoration',async()=>{
+    const initial=store([json({},401)]);await initial.refresh();expect(initial.snapshot().sessionExpired).toBe(false);
+    const active=store([json({user}),json({},401)]);await active.refresh();await active.refresh();expect(active.snapshot()).toMatchObject({status:'anonymous',sessionExpired:true});
+  });
+  it('does not call an explicit sign-out an expired session',async()=>{
+    const s=store([json({user}),json({csrf}),json({revocation:'confirmed',cleanup:'confirmed'})]);await s.refresh();await s.logout();expect(s.snapshot().sessionExpired).toBe(false);
+  });
+  it('does not infer expiration from a dependency outage after authentication',async()=>{
+    const s=store([json({user}),json({},503)]);await s.refresh();await s.refresh();expect(s.snapshot().status).toBe('unavailable');expect(s.snapshot().sessionExpired).not.toBe(true);
+  });
+
 });

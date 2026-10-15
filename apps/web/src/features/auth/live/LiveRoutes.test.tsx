@@ -30,4 +30,16 @@ describe('real account surfaces and guards',()=>{
     const html=renderToString(<SessionProvider store={await session()}><MemoryRouter initialEntries={['/protected']}><Routes><Route element={<SessionGuard/>}><Route path="/protected" element={<p>Authorized child</p>}/></Route></Routes></MemoryRouter></SessionProvider>);
     expect(html).toContain('Authorized child');
   });
+  it('promotes verification without issuing email or inventing authorization',async()=>{
+    const html=page(await session(),'/account');expect(html).toContain('Next step: verify your email');expect(html).toContain('Verification enables password recovery');
+    const verification=page(await session(),'/verify-email');expect(verification).toContain('15 minutes after issuance');expect(verification).toContain('without sending another email');
+  });
+  it('ignores a forged expiry query on an initial anonymous login',async()=>{
+    expect(page(await session(401),'/login?sessionExpired=true')).not.toContain('Your session ended.');
+  });
+  it('explains manual verification and invitation expiry without a mail promise',async()=>{
+    expect(page(await session(401),'/signup')).toContain('sign in and request email verification');
+    expect(page(await session(401),'/invite')).toContain('24 hours after issuance');
+  });
+
 });
