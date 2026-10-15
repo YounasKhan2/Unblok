@@ -1,0 +1,89 @@
+bun test v1.4.2 (744846f84)
+
+scripts\backend\email-verification.test.ts:
+(pass) fresh migration replay/schema equality and real committed outbox delivery; valid one-use proof stamps only own email [4147.36ms]
+(pass) concurrent issuance produces one committed outbox; concurrent redemption/replay cannot apply proof twice [984.92ms]
+(pass) mail transport outage leaves durable retry; unknown acknowledgement may duplicate identical email but cannot duplicate authority [638.71ms]
+(pass) forged proof attempts are generic and durable-capped; another account cannot consume exact credential-bound token [2188.97ms]
+(pass) delayed epoch-stale or disabled messages cannot verify; new independently authenticated epoch can request a new proof [828.80ms]
+(pass) expired proof and SQL tampering cannot verify or be dispatched [565.55ms]
+(pass) strict body/CSRF/origin and live session boundary protect verification; no client ownership/grants or token return [425.22ms]
+(pass) real PostgreSQL and Valkey outages fail closed before verification writes or mail work [478.74ms]
+(pass) leased outbox survives worker crash and stale acknowledgements cannot overwrite a newer lease completion [704.41ms]
+(pass) request account/IP quotas and key rotation are fail-closed; no prior-key or canceled message can stamp ownership [1745.02ms]
+(pass) confirmation cannot reuse a minted principal after concurrent logout-all commits [531.31ms]
+(pass) misconfigured same-version worker key cannot send an inconsistent proof [341.94ms]
+(pass) wrong HTTP proofs commit ten sequential attempts and remain exhausted after worker and API restart [1791.07ms]
+(pass) overlapping wrong HTTP attempts persist exactly the committed accepted attempts, then exhaust durably [1747.78ms]
+(pass) five failed delivery claims recover transactionally; final live lease and late acknowledgement cannot revive old proof [1091.26ms]
+(pass) acknowledged five transport failures permit a bounded replacement without waiting for proof expiry [771.99ms]
+
+scripts\backend\frontend-auth.test.ts:
+FE HTTP: initial login
+FE HTTP: second session
+FE HTTP: login after logout-all
+FE HTTP: login after reset
+(pass) shipped frontend client: signup, login, restoration, mail verification/recovery and all-session revocation [2314.47ms]
+
+scripts\backend\password-recovery.test.ts:
+(pass) additive migration replay and Prisma schema equality [2661.74ms]
+(pass) anonymous verified recovery consumes proof, changes password, advances epoch and revokes every prior session without login [1234.63ms]
+(pass) unknown, unverified and disabled requests have identical accepted responses and no actionable mail [1143.90ms]
+(pass) overlapping redemption changes password and epoch exactly once; replay is generic [872.98ms]
+(pass) ten wrong attempts persist; correct token after exhaustion fails even after API/worker reconstruction [2495.17ms]
+(pass) expired or forged proof and altered immutable SQL evidence never change password [958.77ms]
+(pass) logout-all before proof redemption and delayed mail invalidate old epoch, allowing a fresh request [1279.41ms]
+(pass) proof captured before reset remains valid after API and worker restart only for its unchanged credential epoch [685.36ms]
+(pass) anonymous CSRF and origin policy, strict fields, existing session, no automatic authentication [688.83ms]
+(pass) separate key domains, key mismatch and disabled identity after delivery fail closed [678.60ms]
+(pass) delivery outage, exhaustion and replacement retain binding; late successful old mail cannot restore authority [1351.63ms]
+(pass) lost delivery acknowledgement and worker lease recovery retry identical proof, stale acknowledgement cannot override successor [712.17ms]
+(pass) primary and Valkey dependency outages fail closed; recovery cannot mutate password through an unknown primary outcome [561.77ms]
+(pass) logout-all between new hash admission and final transaction rejects the captured old proof [636.96ms]
+(pass) unknown and known account/IP request budgets have the same fixed limits, including concurrent Valkey operations [961.53ms]
+(pass) anonymous request uniform timing floor applies to both eligible and absent credential paths [802.07ms]
+(pass) verification-domain MAC cannot redeem recovery even with identical metadata and key; other email cannot consume proof [1067.62ms]
+(pass) an already-minted session principal loses authority when password reset commits before its protected read [635.36ms]
+
+scripts\backend\workspace-memberships-invitations.test.ts:
+(pass) membership listing is admin-only, bounded, contact-private and actor/workspace/filter/revision bound [1641.99ms]
+(pass) issuance generic202, normalized emails, independent digests, durable retry, roles and CSRF boundaries [930.22ms]
+(pass) one-use acceptance, replay and lost commit acknowledgement never duplicate or elevate membership [1025.17ms]
+(pass) concurrent redemption has one effect and fresh same-key reconciliation after confirmed serialization conflict [921.62ms]
+(pass) recipient eligibility and no privilege elevation: mismatch [987.05ms]
+(pass) recipient eligibility and no privilege elevation: unverified [860.09ms]
+(pass) recipient eligibility and no privilege elevation: suspended [946.97ms]
+(pass) recipient eligibility and no privilege elevation: existing [1075.04ms]
+(pass) recipient eligibility and no privilege elevation: invited [903.30ms]
+(pass) fresh inviter and proof revocation: cancel [905.10ms]
+(pass) fresh inviter and proof revocation: archive [849.83ms]
+(pass) fresh inviter and proof revocation: demote [1033.06ms]
+(pass) fresh inviter and proof revocation: epoch [873.89ms]
+(pass) fresh inviter and proof revocation: expired [860.77ms]
+(pass) durable wrong attempts exhaust proof across requests and worker reconstruction [2139.72ms]
+(pass) delivery to real Mailpit carries a proof only after commit; no proof in persistence or queue [917.26ms]
+(pass) five transport failures, concurrent replacement and late old acknowledgement cannot restore canceled proof [1548.51ms]
+(pass) retired invitation key rejects old proofs; cursor previous key verifies only within original lifetime [1681.47ms]
+(pass) verified sender and active workspace required; sensitive admission budgets remain fail-closed [1955.43ms]
+(pass) controlled PostgreSQL redemption locks users before family/workspace and serializes the contender [1170.22ms]
+(pass) issuance ordered before archival commits first; archival cancels the proof and prevents redemption [725.14ms]
+(pass) archival ordered before acceptance forces fresh generic denial after serialization rollback [944.31ms]
+(pass) acceptance ordered before recipient logout-all completes first; subsequent cookie requests deny authority [919.70ms]
+(pass) listing ordered before demotion completes; the next fresh cursor read hides all directory facts [669.85ms]
+(pass) membership page caps100, exposes no counts, and indexed primary plan is recorded on owned data [495.19ms]
+(pass) concurrent wrong proofs commit only acknowledged attempts and remain bounded after retries [1608.73ms]
+(pass) database authority unavailability cannot redeem; additive SQL rejects role and binding tampering [1904.74ms]
+(pass) disabled recipient/issuer and sensitive HTTP rate-store outage remain fail-closed [2282.52ms]
+(pass) sorted inviter before: acceptance versus family revocation and ordered membership lifecycle [1307.78ms]
+(pass) sorted inviter after: acceptance versus family revocation and ordered membership lifecycle [1141.75ms]
+(pass) sorted inviter before: issuer epoch revocation first rejects stale proof [868.85ms]
+(pass) sorted inviter after: issuer epoch revocation first rejects stale proof [874.79ms]
+(pass) F2 leased delivery after demote may send but cannot grant authority [1136.74ms]
+(pass) F2 leased delivery after archive may send but cannot grant authority [1074.97ms]
+(pass) SID retirement locks every user before sorted families even when a digest matches multiple users [434.72ms]
+(pass) legacy raw membership lock inversion rolls back within existing bounds and never bypasses authority [1994.63ms]
+
+ 71 pass
+ 0 fail
+ 2239 expect() calls
+Ran 71 tests across 4 files. [101.42s]

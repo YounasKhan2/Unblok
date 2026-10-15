@@ -1,3 +1,4 @@
+import {DisposableMailpit} from '../test-support/mailpit.cjs';
 import {afterAll,beforeAll,expect,test} from 'bun:test';
 import {randomBytes,randomUUID} from 'node:crypto';
 import {resolve} from 'node:path';
@@ -13,6 +14,7 @@ import {SessionStore} from '../../apps/web/src/features/auth/session/SessionStor
 
 // Real HTTP integration of the shipped frontend client. This explicit cookie jar
 // is test-only and does not certify browser cookie/CORS/Fetch Metadata behavior.
+const mailpit=new DisposableMailpit();
 const config=loadApiConfig(process.env),root=resolve(import.meta.dir,'../..');
 const name=`unblok_feauth_${randomUUID().replaceAll('-','')}`,admin=new Database(config.DATABASE_URL);
 const url=new URL(config.DATABASE_URL);url.pathname=`/${name}`;
@@ -21,14 +23,17 @@ cache.on('error',()=>{});
 const prefix=`feauth:test:${randomUUID()}:`,verificationKey={id:'test-v1',secret:randomBytes(32).toString('hex')},recoveryKey={id:'reset-v1',secret:randomBytes(32).toString('hex')};
 const stops:Array<()=>Promise<void>>=[],messages=new Set<string>();let created=false;
 beforeAll(async()=>{
+  await mailpit.start();
   await admin.connect();await admin.client.$executeRawUnsafe(`CREATE DATABASE "${name}"`);created=true;
   const child=Bun.spawn([process.execPath,'packages/database/node_modules/prisma/build/index.js','migrate','deploy','--schema','packages/database/prisma/schema.prisma'],{cwd:root,env:{...process.env,DATABASE_URL:url.toString()},stdout:'ignore',stderr:'ignore'});
   const timer=setTimeout(()=>child.kill('SIGKILL'),6000);try{expect(await child.exited).toBe(0);}finally{clearTimeout(timer);}
   await database.connect();await cache.connect();
 },30000);
 afterAll(async()=>{
-  try{for(const stop of stops.reverse())await stop();if(messages.size)expect((await fetch('http://127.0.0.1:8025/api/v1/messages',{method:'DELETE',headers:{'content-type':'application/json'},body:JSON.stringify({IDs:[...messages]})})).ok).toBe(true);}
+ try {
+  try{for(const stop of stops.reverse())await stop();await mailpit.deleteOwned([...messages]);}
   finally{try{if(cache.status==='ready'){const keys=await cache.keys(prefix+'*');if(keys.length)await cache.del(...keys);}}finally{cache.disconnect();await database.close();try{if(created)await admin.client.$executeRawUnsafe(`DROP DATABASE "${name}" WITH (FORCE)`);}finally{await admin.close();}}}
+ } finally { await mailpit.close(); }
 },10000);
 async function fixture(){
   const settings={...sessionSettings(config,{SESSION_SECRETS:randomBytes(32).toString('hex'),SESSION_NAMESPACE:'test'}),prefix};
@@ -54,12 +59,12 @@ async function fixture(){
   return {client};
 }
 async function deliver(email:string,recovery=false){
-  const mail=loadVerificationMail({NODE_ENV:'test',EMAIL_MAIL_ENDPOINT:'http://127.0.0.1:8025/api/v1/send',EMAIL_MAIL_FROM:'verify@unblok.local'});
+  const mail=loadVerificationMail({NODE_ENV:'test',EMAIL_MAIL_ENDPOINT:mailpit.url('/api/v1/send'),EMAIL_MAIL_FROM:'verify@unblok.local'});
   const sender=startVerificationDispatcher({once:async()=>false},mail,createLogger('silent'),recovery?'recovery':'verification');
   try{const delivery=recovery?new RecoveryDelivery(database,recoveryKey):new VerificationDelivery(database,verificationKey);expect(await delivery.once(sender.send)).toBe(true);}finally{await sender.close();}
-  const listing=await (await fetch('http://127.0.0.1:8025/api/v1/messages?limit=500')).json() as {messages:Array<{ID:string;To:Array<{Address:string}>}>};
+  const listing=await (await fetch(mailpit.url('/api/v1/messages?limit=500'))).json() as {messages:Array<{ID:string;To:Array<{Address:string}>}>};
   const found=listing.messages.find(m=>m.To.some(r=>r.Address===email));expect(found).toBeDefined();messages.add(found!.ID);
-  const body=await (await fetch(`http://127.0.0.1:8025/api/v1/message/${found!.ID}`)).json() as {Text:string};
+  const body=await (await fetch(mailpit.url(`/api/v1/message/${found!.ID}`))).json() as {Text:string};
   const proof=/[0-9a-f-]{36}\.[A-Za-z0-9_-]{43}/.exec(body.Text)?.[0];if(!proof)throw new Error('Owned mail proof missing');return proof;
 }
 test('shipped frontend client: signup, login, restoration, mail verification/recovery and all-session revocation',async()=>{

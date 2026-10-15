@@ -1,0 +1,87 @@
+{
+  "users": {
+    "before": 9,
+    "after": 9,
+    "allOriginalRecordsUnchanged": true
+  },
+  "identities": {
+    "before": 9,
+    "after": 9,
+    "allOriginalRecordsUnchanged": true
+  },
+  "password_credentials": {
+    "before": 9,
+    "after": 9,
+    "allOriginalRecordsUnchanged": true
+  },
+  "workspaces": {
+    "before": 7,
+    "after": 7,
+    "allOriginalRecordsUnchanged": true
+  },
+  "workspace_memberships": {
+    "before": 7,
+    "after": 7,
+    "allOriginalRecordsUnchanged": true
+  },
+  "teams": {
+    "before": 0,
+    "after": 0,
+    "allOriginalRecordsUnchanged": true
+  },
+  "team_memberships": {
+    "before": 0,
+    "after": 0,
+    "allOriginalRecordsUnchanged": true
+  },
+  "email_verification_challenges": {
+    "before": 7,
+    "after": 7,
+    "allOriginalRecordsUnchanged": true
+  },
+  "email_verification_outbox": {
+    "before": 7,
+    "after": 7,
+    "allOriginalRecordsUnchanged": true
+  },
+  "password_recovery_challenges": {
+    "before": 3,
+    "after": 3,
+    "allOriginalRecordsUnchanged": true
+  },
+  "password_recovery_outbox": {
+    "before": 3,
+    "after": 3,
+    "allOriginalRecordsUnchanged": true
+  },
+  "workspace_invitations": {
+    "before": 3,
+    "after": 3,
+    "allOriginalRecordsUnchanged": true
+  },
+  "workspace_invitation_outbox": {
+    "before": 3,
+    "after": 3,
+    "allOriginalRecordsUnchanged": true
+  },
+  "workspace_creation_results": {
+    "before": 7,
+    "after": 7,
+    "allOriginalRecordsUnchanged": true
+  },
+  "workspace_invitation_results": {
+    "before": 6,
+    "after": 6,
+    "allOriginalRecordsUnchanged": true
+  },
+  "_prisma_migrations": {
+    "before": 12,
+    "after": 12,
+    "allOriginalRecordsUnchanged": true
+  },
+  "mailIds": {
+    "before": 5,
+    "after": 5,
+    "allOriginalRecordsUnchanged": true
+  }
+}

@@ -42,6 +42,8 @@ Reproduction: `scripts/frontend/auth-ux-02-browser.cjs`. New evidence: `docs/fro
 
 ## Verification results
 
+These are the original implementation-run results. See [the focused Mailpit correction report](AUTH-UX-02-MAIL-PRESERVATION.md) for the subsequent investigation and correction-run evidence.
+
 | Check | Final result |
 |---|---|
 | Focused frontend auth + live Workspace | **196 passed / 0 failed**, 11 files |
@@ -72,8 +74,9 @@ bun run test:backend
 bun run typecheck:backend
 bun --env-file=apps/api/.env test apps/api/verification/authentication-integration.test.ts apps/api/verification/session-integration.test.ts
 
-# Existing suites with external verification-only preload; see below.
-bun --env-file=apps/api/.env test --preload D:/Full_Stack_Apps/Unblok-AUTH-UX-02-20261015/isolated-runner.ts scripts/backend/workspace-memberships-invitations.test.ts scripts/backend/email-verification.test.ts scripts/backend/password-recovery.test.ts scripts/backend/frontend-auth.test.ts scripts/backend/auth-fences.test.ts
+# Mail suites now create their own disposable, sentinel-protected captures.
+# On this Windows host the optional preload selects Node for Prisma only.
+bun --env-file=apps/api/.env test --preload D:/Full_Stack_Apps/Unblok-AUTH-UX-02-20261015/prisma-node-preload.ts scripts/backend/workspace-memberships-invitations.test.ts scripts/backend/email-verification.test.ts scripts/backend/password-recovery.test.ts scripts/backend/frontend-auth.test.ts scripts/backend/auth-fences.test.ts
 
 # Requires already-running local frontend/API/worker/DB/cache/mail capture.
 $env:PLAYWRIGHT_MODULE='C:/Users/youna/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright'
@@ -83,7 +86,7 @@ node scripts/frontend/auth-ux-02-browser.cjs
 
 The browser runner requires a new evidence directory, creates uniquely addressed test-owned accounts/Workspaces, and never resets existing data or deletes mail. Credentials/proofs are held only in memory. Do not point it at a production/shared environment. It exercises browser cookie expiry by expiring its own cookie after authenticated state; server-side lifetime/fence expiry is independently exercised by existing session integration tests.
 
-The external preload changes only Prisma subprocess runtime to Node and redirects all backend-suite Mailpit HTTP to a disposable capture on port 18025. It rejects empty-ID mail deletion. Assertions, quotas, concurrency, proof and timeout behavior remain unchanged. That disposable capture was removed after verification. Temporary test databases/cache namespaces are owned by the existing suites; no QA migration was applied. API/worker/frontend were not stopped.
+The original run used an external fetch-redirecting preload and a capture on port 18025; this is historical evidence, not the recommended runner. After the correction, each mail suite creates its own labeled, pinned Mailpit container on an ephemeral loopback port and checks two sentinels before/after cleanup and teardown. No global fetch redirection is needed. The optional preload in the command above selects Node for Prisma only. Existing test assertions, quotas, concurrency and timeout behavior remain unchanged. Live-stack browser runners expose only GET mail operations, retain newly generated mail, and fail if preexisting message IDs disappear. Temporary test databases/cache namespaces remain owned by their suites; no QA migration is applied.
 
 ## Chromium evidence
 

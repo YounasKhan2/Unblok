@@ -1,0 +1,18 @@
+bun test v1.4.2 (744846f84)
+
+scripts\backend\mailpit-preservation.test.ts:
+(pass) scoped and duplicate-ID cleanup removes owned mail and preserves both sentinels; empty cleanup sends no destructive request [1863.09ms]
+(pass) malformed, unknown and sentinel IDs are rejected before deletion [1768.36ms]
+(pass) pinned Mailpit unsafe deletion reproduction: missing body [1791.91ms]
+(pass) pinned Mailpit unsafe deletion reproduction: empty object [1843.86ms]
+(pass) pinned Mailpit unsafe deletion reproduction: empty IDs [1760.02ms]
+(pass) pinned Mailpit unsafe deletion reproduction: null IDs [1725.70ms]
+(pass) pinned Mailpit unsafe deletion reproduction: malformed JSON [1756.96ms]
+(pass) pinned Mailpit unsafe deletion reproduction: wrong ID type [1750.25ms]
+(pass) legacy invitation failure-finally recomputation can produce empty IDs and delete unrelated sentinels [1774.67ms]
+(pass) backend mail suites use disposable capture and live browser runners have no deletion capability [69.91ms]
+
+ 10 pass
+ 0 fail
+ 94 expect() calls
+Ran 10 tests across 1 file. [16.17s]

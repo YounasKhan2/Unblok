@@ -1,3 +1,4 @@
+import {DisposableMailpit} from '../test-support/mailpit.cjs';
 import {startVerificationDispatcher} from '../../apps/worker/src/jobs/email-verification';
 import { afterAll, afterEach, beforeAll, expect, test } from 'bun:test';
 import { createHmac, randomBytes, randomUUID } from 'node:crypto';
@@ -10,6 +11,7 @@ import { Sessions, connectSessionStore, sessionSettings } from '../../apps/api/s
 import { Authentication, AuthenticationLimits, Passwords } from '../../apps/api/src/modules/auth';
 
 import { Workspaces, WorkspaceLimits, InvitationLimits } from '../../apps/api/src/modules/workspaces';
+const mailpit=new DisposableMailpit();
 const invitationKey={id:'invitation-v1',secret:randomBytes(32).toString('hex')};
 const observations:unknown[]=[];
 const workspaceKeys = { active: 'v1', cursors: { v1: randomBytes(32).toString('hex') }, idempotency: randomBytes(32).toString('hex') };
@@ -32,11 +34,13 @@ async function prisma(args: string[]) {
   } finally { clearTimeout(timer); }
 }
 beforeAll(async () => {
+  await mailpit.start();
   await admin.connect(); await admin.client.$executeRawUnsafe(`CREATE DATABASE "${name}"`); created = true;
   await prisma(['migrate', 'deploy', '--schema', 'packages/database/prisma/schema.prisma']);
   await database.connect(); await cache.connect();
 }, 30000);
 afterAll(async () => {
+ try {
   try { for (const stop of stops.reverse()) await stop(); }
   finally {
     try { if(cache.status==='ready'){const keys = await cache.keys(`${ownedPrefix}*`); if (keys.length) await cache.del(...keys);}await Bun.write(resolve(root,'docs/backend/evidence/BE-WS-02-concurrency.json'),JSON.stringify(observations,null,2)); }
@@ -45,6 +49,7 @@ afterAll(async () => {
       finally { await admin.close(); }
     }
   }
+ } finally { await mailpit.close(); }
 }, 10000);
 afterEach(async()=>{await database.client.workspaceInvitation.updateMany({where:{consumedAt:null,canceledAt:null},data:{canceledAt:new Date()}});});
 const password = 'A long private test password 2026';
@@ -171,10 +176,10 @@ test('durable wrong attempts exhaust proof across requests and worker reconstruc
 
 test('delivery to real Mailpit carries a proof only after commit; no proof in persistence or queue',async()=>{
  const s=await setup(),recipient=await actor(s.f);expect((await issue(s,recipient.email)).status).toBe(202);
- const mail=loadVerificationMail({NODE_ENV:'test',EMAIL_MAIL_ENDPOINT:'http://127.0.0.1:8025/api/v1/send',EMAIL_MAIL_FROM:'invite@unblok.local'}),dispatcher=startVerificationDispatcher({once:async()=>false},mail,createLogger('silent'),'invitation');let token='';
+ const mail=loadVerificationMail({NODE_ENV:'test',EMAIL_MAIL_ENDPOINT:mailpit.url('/api/v1/send'),EMAIL_MAIL_FROM:'invite@unblok.local'}),dispatcher=startVerificationDispatcher({once:async()=>false},mail,createLogger('silent'),'invitation');let token='';
  try{expect(await new InvitationDelivery(database,invitationKey).once(async(email,value,id)=>{token=value;await dispatcher.send(email,value,id);})).toBe(true);}finally{await dispatcher.close();}
- const response=await fetch('http://127.0.0.1:8025/api/v1/messages?limit=500'),messages=await response.json(),matching=messages.messages.filter((m:{To:{Address:string}[]})=>m.To.some(r=>r.Address===recipient.email));expect(matching.length).toBe(1);
- try{const message=await (await fetch('http://127.0.0.1:8025/api/v1/message/'+matching[0].ID)).json();expect(message.Subject).toBe('Join an Unblok workspace');expect(message.Text).toContain(token);expect(message.Text).toContain('24 hours');const row=await database.client.workspaceInvitation.findUniqueOrThrow({where:{id:token.split('.')[0]!},include:{delivery:true}});expect(JSON.stringify(row,(_k,v)=>typeof v==='bigint'?v.toString():v)).not.toContain(token);expect(row.delivery?.deliveredAt).not.toBeNull();expect((await accept(s.f,recipient.client,token)).status).toBe(202);}finally{await fetch('http://127.0.0.1:8025/api/v1/messages',{method:'DELETE',headers:{'content-type':'application/json'},body:JSON.stringify({IDs:matching.map((m:{ID:string})=>m.ID)})});}
+ const response=await fetch(mailpit.url('/api/v1/messages?limit=500')),messages=await response.json(),matching=messages.messages.filter((m:{To:{Address:string}[]})=>m.To.some(r=>r.Address===recipient.email));expect(matching.length).toBe(1);
+ try{const message=await (await fetch(mailpit.url('/api/v1/message/')+matching[0].ID)).json();expect(message.Subject).toBe('Join an Unblok workspace');expect(message.Text).toContain(token);expect(message.Text).toContain('24 hours');const row=await database.client.workspaceInvitation.findUniqueOrThrow({where:{id:token.split('.')[0]!},include:{delivery:true}});expect(JSON.stringify(row,(_k,v)=>typeof v==='bigint'?v.toString():v)).not.toContain(token);expect(row.delivery?.deliveredAt).not.toBeNull();expect((await accept(s.f,recipient.client,token)).status).toBe(202);}finally{await mailpit.deleteOwned(matching.map((m:{ID:string})=>m.ID));}
 },15000);
 
 test('five transport failures, concurrent replacement and late old acknowledgement cannot restore canceled proof',async()=>{
@@ -329,7 +334,7 @@ test.each(['demote','archive'] as const)('F2 leased delivery after %s may send b
  expect((await issue(s,recipient.email)).status).toBe(202);
  const entered=latch(),pause=latch();let token='',sent=false;
  const worker=new InvitationDelivery(database,invitationKey);
- const mail=loadVerificationMail({NODE_ENV:'test',EMAIL_MAIL_ENDPOINT:'http://127.0.0.1:8025/api/v1/send',EMAIL_MAIL_FROM:'invite@unblok.local'}),dispatcher=startVerificationDispatcher({once:async()=>false},mail,createLogger('silent'),'invitation');
+ const mail=loadVerificationMail({NODE_ENV:'test',EMAIL_MAIL_ENDPOINT:mailpit.url('/api/v1/send'),EMAIL_MAIL_FROM:'invite@unblok.local'}),dispatcher=startVerificationDispatcher({once:async()=>false},mail,createLogger('silent'),'invitation');
  const delivery=worker.once(async(email,value,id)=>{token=value;entered.release();await pause.promise;await dispatcher.send(email,value,id);sent=true;});
  await entered.promise;
  try{
@@ -341,14 +346,14 @@ test.each(['demote','archive'] as const)('F2 leased delivery after %s may send b
    else await tx.workspaceMembership.update({where:{workspaceId_userId:{workspaceId:s.workspace.id,userId:s.admin.userId}},data:{role:'MEMBER'}});
   });
   expect((await database.client.workspaceInvitation.findUniqueOrThrow({where:{id}})).canceledAt).not.toBeNull();pause.release();expect(await delivery).toBe(true);expect(sent).toBe(true);
-  const messages=await (await fetch('http://127.0.0.1:8025/api/v1/messages?limit=500')).json(),matching=messages.messages.filter((m:{To:{Address:string}[]})=>m.To.some(r=>r.Address===recipient.email));expect(matching).toHaveLength(1);
-  const message=await (await fetch('http://127.0.0.1:8025/api/v1/message/'+matching[0].ID)).json();expect(message.Text).toContain(token);
+  const messages=await (await fetch(mailpit.url('/api/v1/messages?limit=500'))).json(),matching=messages.messages.filter((m:{To:{Address:string}[]})=>m.To.some(r=>r.Address===recipient.email));expect(matching).toHaveLength(1);
+  const message=await (await fetch(mailpit.url('/api/v1/message/')+matching[0].ID)).json();expect(message.Text).toContain(token);
   expect((await accept(s.f,recipient.client,token)).status).toBe(202);expect(await membership(s.workspace.id,recipient.userId)).toBeNull();
   expect(await worker.once(async()=>{throw new Error('Canceled proof must not lease again');})).toBe(false);
   observations.push({case:'F2 revocation between lease and external send',revocation:mode,leaseCommittedBeforeRevocation:true,mailSentAfterRevocation:sent,acceptHttp:202,effects:0});
  }finally{pause.release();await delivery;await dispatcher.close();
-  const messages=await (await fetch('http://127.0.0.1:8025/api/v1/messages?limit=500')).json(),matching=messages.messages.filter((m:{To:{Address:string}[]})=>m.To.some(r=>r.Address===recipient.email));
-  await fetch('http://127.0.0.1:8025/api/v1/messages',{method:'DELETE',headers:{'content-type':'application/json'},body:JSON.stringify({IDs:matching.map((m:{ID:string})=>m.ID)})});
+  const messages=await (await fetch(mailpit.url('/api/v1/messages?limit=500'))).json(),matching=messages.messages.filter((m:{To:{Address:string}[]})=>m.To.some(r=>r.Address===recipient.email));
+  await mailpit.deleteOwned(matching.map((m:{ID:string})=>m.ID));
  }
 },15000);
 

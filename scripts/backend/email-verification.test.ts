@@ -1,3 +1,4 @@
+import {DisposableMailpit} from '../test-support/mailpit.cjs';
 import { afterAll, beforeAll, expect, test } from 'bun:test';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { resolve } from 'node:path';
@@ -9,6 +10,7 @@ import { Sessions, connectSessionStore, sessionSettings } from '../../apps/api/s
 import { startVerificationDispatcher } from '../../apps/worker/src/jobs/email-verification';
 import { Authentication, AuthenticationLimits, Passwords } from '../../apps/api/src/modules/auth';
 
+const mailpit=new DisposableMailpit();
 const root = resolve(import.meta.dir, '../..'), config = loadApiConfig(process.env);
 const admin = new Database(config.DATABASE_URL), name = `unblok_be00ib_test_${randomUUID().replaceAll('-', '')}`;
 const url = new URL(config.DATABASE_URL); url.pathname = `/${name}`;
@@ -17,7 +19,7 @@ const ownedPrefix = `be00ib:test:${randomUUID()}:`;
 cache.on('error', () => {}); // Expected outage diagnostics must not print SDK details.
 const verificationKey = { id: 'test-v1', secret: randomBytes(32).toString('hex') };
 const messageIds = new Set<string>();
-const mail = loadVerificationMail({ NODE_ENV: 'test', EMAIL_MAIL_ENDPOINT: 'http://127.0.0.1:8025/api/v1/send', EMAIL_MAIL_FROM: 'verify@unblok.local' });
+let mail:ReturnType<typeof loadVerificationMail>;
 const stops: (() => Promise<void>)[] = [];
 let created = false;
 async function prisma(args: string[]) {
@@ -31,12 +33,15 @@ async function prisma(args: string[]) {
   } finally { clearTimeout(timer); }
 }
 beforeAll(async () => {
+  await mailpit.start();
+  mail = loadVerificationMail({ NODE_ENV: 'test', EMAIL_MAIL_ENDPOINT: mailpit.url('/api/v1/send'), EMAIL_MAIL_FROM: 'verify@unblok.local' });
   await admin.connect(); await admin.client.$executeRawUnsafe(`CREATE DATABASE "${name}"`); created = true;
   await prisma(['migrate', 'deploy', '--schema', 'packages/database/prisma/schema.prisma']);
   await database.connect(); await cache.connect();
 }, 30000);
 afterAll(async () => {
-  try { for (const stop of stops.reverse()) await stop(); if (messageIds.size) { const result = await fetch('http://127.0.0.1:8025/api/v1/messages', { method: 'DELETE', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ IDs: [...messageIds] }) }); if (!result.ok) throw new Error('Owned mail cleanup failed'); } }
+ try {
+  try { for (const stop of stops.reverse()) await stop(); await mailpit.deleteOwned([...messageIds]); }
   finally {
     try { const keys = await cache.keys(`${ownedPrefix}*`); if (keys.length) await cache.del(...keys); }
     finally { cache.disconnect(); await database.close();
@@ -44,6 +49,7 @@ afterAll(async () => {
       finally { await admin.close(); }
     }
   }
+ } finally { await mailpit.close(); }
 }, 10000);
 const password = 'A long private test password 2026';
 type Client = { cookie: string; csrf: string };
@@ -92,11 +98,11 @@ async function fixture(options: { afterConfirmation?: () => Promise<void>; redis
 
 
 async function message(email: string) {
-  const rows = await (await fetch('http://127.0.0.1:8025/api/v1/messages?limit=500')).json();
+  const rows = await (await fetch(mailpit.url('/api/v1/messages?limit=500'))).json();
   const matching = rows.messages.filter((m: { To: { Address: string }[] }) => m.To.some(r => r.Address === email));
   for (const item of matching) messageIds.add(item.ID);
   const row = matching[0]; expect(row).toBeDefined();
-  const body = await (await fetch(`http://127.0.0.1:8025/api/v1/message/${row.ID}`)).json();
+  const body = await (await fetch(mailpit.url(`/api/v1/message/${row.ID}`))).json();
   const token = /[0-9a-f-]{36}\.[A-Za-z0-9_-]{43}/.exec(body.Text)?.[0]; expect(token).toBeDefined(); return token!;
 }
 function transport(endpoint = mail.endpoint) {
