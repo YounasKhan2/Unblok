@@ -67,7 +67,17 @@ export async function administrationTeams(tx:Tx,a:PrincipalAuthority,ws:string,q
 }
 // A public response never evaluates or returns this private lifecycle projection.
 const invitationAuthorityJoins=Prisma.sql`LEFT JOIN users iu ON iu.id=i.inviter_id LEFT JOIN workspaces iw ON iw.id=i.workspace_id LEFT JOIN workspace_memberships im ON im.workspace_id=i.workspace_id AND im.id=i.inviter_membership_id AND im.user_id=i.inviter_id LEFT JOIN password_credentials ic ON ic.identity_id=i.inviter_identity_id LEFT JOIN identities ii ON ii.id=ic.identity_id AND ii.user_id=i.inviter_id AND ii.provider='password'`;
-function lifecycle(asOf:string){return Prisma.sql`CASE WHEN i.consumed_at IS NOT NULL THEN 'ACCEPTED' WHEN i.canceled_at IS NOT NULL AND EXISTS(SELECT 1 FROM workspace_invitations successor WHERE successor.previous_id=i.id) THEN 'SUPERSEDED' WHEN i.canceled_at IS NOT NULL THEN 'REVOKED' WHEN i.expires_at<=${new Date(asOf)}::timestamptz THEN 'EXPIRED' WHEN i.attempts>=10 OR iu.id IS NULL OR iu.auth_disabled OR iu.auth_epoch<>i.inviter_epoch OR im.id IS NULL OR im.role<>'ADMIN' OR im.status<>'ACTIVE' OR iw.status<>'ACTIVE' OR ic.email_verified_at IS NULL OR ii.id IS NULL OR EXISTS(SELECT 1 FROM workspace_invitation_teams it JOIN teams t ON t.workspace_id=it.workspace_id AND t.id=it.team_id WHERE it.invitation_id=i.id AND (t.status<>'ACTIVE' OR t.legacy_quarantined OR t.version<>it.team_version OR t.owner_membership_id<>i.inviter_membership_id OR NOT EXISTS(SELECT 1 FROM team_memberships tm WHERE tm.workspace_id=t.workspace_id AND tm.team_id=t.id AND tm.membership_id=i.inviter_membership_id AND tm.team_role='MEMBER'))) THEN 'INVALIDATED' ELSE 'PENDING' END`;}
+function lifecycle(asOf:string,ignoreExpiry=false){return Prisma.sql`CASE WHEN i.consumed_at IS NOT NULL THEN 'ACCEPTED' WHEN i.canceled_at IS NOT NULL AND EXISTS(SELECT 1 FROM workspace_invitations successor WHERE successor.previous_id=i.id) THEN 'SUPERSEDED' WHEN i.canceled_at IS NOT NULL THEN 'REVOKED' ${ignoreExpiry?Prisma.empty:Prisma.sql`WHEN i.expires_at<=${new Date(asOf)}::timestamptz THEN 'EXPIRED'`} WHEN i.attempts>=10 OR iu.id IS NULL OR iu.auth_disabled OR iu.auth_epoch<>i.inviter_epoch OR im.id IS NULL OR im.role<>'ADMIN' OR im.status<>'ACTIVE' OR iw.status<>'ACTIVE' OR ic.email_verified_at IS NULL OR ii.id IS NULL OR EXISTS(SELECT 1 FROM workspace_invitation_teams it JOIN teams t ON t.workspace_id=it.workspace_id AND t.id=it.team_id WHERE it.invitation_id=i.id AND (t.status<>'ACTIVE' OR t.legacy_quarantined OR t.version<>it.team_version OR t.owner_membership_id<>i.inviter_membership_id OR NOT EXISTS(SELECT 1 FROM team_memberships tm WHERE tm.workspace_id=t.workspace_id AND tm.team_id=t.id AND tm.membership_id=i.inviter_membership_id AND tm.team_role='MEMBER'))) THEN 'INVALIDATED' ELSE 'PENDING' END`;}
+
+// Resource validators are opaque and independent of unrelated Workspace activity.
+// All material is read in the caller's authorized transaction; no digest/authority
+// fields escape. One bounded bulk query serves an entire invitation page.
+async function invitationValidators(tx:Tx,ws:string,ids:string[],keys:WorkspaceKeys,key?:InvitationKey){
+ if(!ids.length)return new Map<string,{revision:string;renewable:boolean}>();
+ const now=(await clock(tx)).toISOString();
+ const rows=await tx.$queryRaw<{id:string;material:string;renewable:boolean}[]>(Prisma.sql`SELECT i.id,jsonb_build_array(to_jsonb(i),to_jsonb(o),iu.auth_epoch::text,iu.auth_disabled,im.role,im.status,ic.email_verified_at,iw.status,${lifecycle(now)},i.key_id=${key?.id??''},(SELECT jsonb_agg(jsonb_build_array(it.team_id,it.team_version::text,t.version::text,t.name,t.key,t.status,t.legacy_quarantined,t.owner_membership_id,tm.team_role) ORDER BY it.team_id) FROM workspace_invitation_teams it JOIN teams t ON t.workspace_id=it.workspace_id AND t.id=it.team_id LEFT JOIN team_memberships tm ON tm.workspace_id=t.workspace_id AND tm.team_id=t.id AND tm.membership_id=i.inviter_membership_id WHERE it.workspace_id=i.workspace_id AND it.invitation_id=i.id))::text AS material,(${lifecycle(now,true)}='PENDING' AND i.key_id=${key?.id??''}) AS renewable FROM workspace_invitations i ${invitationAuthorityJoins} LEFT JOIN workspace_invitation_outbox o ON o.invitation_id=i.id WHERE i.workspace_id=${ws}::uuid AND i.id IN (${Prisma.join(ids.map(id=>Prisma.sql`${id}::uuid`))})`);
+ return new Map(rows.map(r=>[r.id,{revision:'inv2-'+r.id+'-'+createHmac('sha256',Buffer.from(keys.idempotency,'hex')).update('unblok-invitation-resource-v2\0'+ws+'\0'+r.material).digest('hex'),renewable:r.renewable}]));
+}
 type InvitationRow={id:string;previousId:string|null;email:string;role:WorkspaceRole;status:string;delivery:string;issuedAt:Date;expiresAt:Date;consumedAt:Date|null;canceledAt:Date|null};
 export async function administrationInvitations(tx:Tx,a:PrincipalAuthority,ws:string,q:AdministrationQuery,keys:WorkspaceKeys,invitation?:string,currentKey?:InvitationKey){
  await admission(tx,a,ws);if(invitation&&!uuid.test(invitation))fail('INVALID_REQUEST');const rev=await revision(tx,ws,keys),binding=cursorContext(a,ws,'invitations:v2:'+(currentKey?.id??''),q),c=decode(q,binding,rev,keys),asOf=c?.asOf??(await clock(tx)).toISOString();
@@ -79,7 +89,8 @@ export async function administrationInvitations(tx:Tx,a:PrincipalAuthority,ws:st
  const total=await tx.$queryRaw<{n:bigint}[]>(Prisma.sql`SELECT count(*) AS n FROM workspace_invitations i ${invitationAuthorityJoins} WHERE ${where}`);
  const ids=rows.slice(0,q.limit).map(r=>r.id),teams=ids.length?await tx.$queryRaw<(TeamRow&{invitationId:string})[]>(Prisma.sql`SELECT it.invitation_id AS "invitationId",t.id,t.name,t.key FROM workspace_invitation_teams it JOIN teams t ON t.workspace_id=it.workspace_id AND t.id=it.team_id WHERE it.workspace_id=${ws}::uuid AND it.invitation_id IN (${Prisma.join(ids.map(id=>Prisma.sql`${id}::uuid`))}) ORDER BY it.invitation_id,t.id`):[];
  const result=paginate(rows,q,binding,rev,keys,asOf,r=>r.issuedAt.toISOString(),c);
- const projected=result.items.map(r=>({...r,revision:publicRevision(rev),issuedAt:r.issuedAt.toISOString(),expiresAt:r.expiresAt.toISOString(),consumedAt:r.consumedAt?.toISOString()??null,canceledAt:r.canceledAt?.toISOString()??null,teams:teams.filter(t=>t.invitationId===r.id).map(({id,name,key})=>({id,name,key}))}));
+ const validators=await invitationValidators(tx,ws,ids,keys,currentKey);
+ const projected=result.items.map(r=>({...r,revision:validators.get(r.id)!.revision,issuedAt:r.issuedAt.toISOString(),expiresAt:r.expiresAt.toISOString(),consumedAt:r.consumedAt?.toISOString()??null,canceledAt:r.canceledAt?.toISOString()??null,teams:teams.filter(t=>t.invitationId===r.id).map(({id,name,key})=>({id,name,key}))}));
  return {...result,items:projected,revision:publicRevision(rev),total:Number(total[0]!.n)};
 }
 export async function administrationMutation(tx:Tx,a:PrincipalAuthority,ws:string,action:AdministrationAction,input:AdministrationInput,key:string,keys:WorkspaceKeys,invKey:InvitationKey,target?:string,match?:string){
@@ -93,7 +104,9 @@ export async function administrationMutation(tx:Tx,a:PrincipalAuthority,ws:strin
   if(!old)await createAdministrationInvitation(tx,a,ws,actor.id,{email:input.email!,role:input.role!,teamIds:input.teamIds??[]},invKey);
  }else{
   if(!target)fail('INVALID_REQUEST');
-  if(!match)fail('PRECONDITION_REQUIRED');if(!/^"[1-9][0-9]{0,18}"$/.test(match!))fail('INVALID_REQUEST');
+  if(!match)fail('PRECONDITION_REQUIRED');
+  const format=action==='role'||action==='remove'?/^"[1-9][0-9]{0,18}"$/:/^"inv2-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}-[0-9a-f]{64}"$/;
+  if(!format.test(match!))fail('INVALID_REQUEST');
   if(action==='role'||action==='remove'){
    const row=await tx.workspaceMembership.findUnique({where:{workspaceId_id:{workspaceId:ws,id:target!}}});if(!row)fail('NOT_FOUND');
    if(match!==`"${row!.administrationVersion}"`)fail('PRECONDITION_FAILED');
@@ -106,9 +119,13 @@ export async function administrationMutation(tx:Tx,a:PrincipalAuthority,ws:strin
    await tx.workspaceMembership.update({where:{workspaceId_id:{workspaceId:ws,id:target!}},data:action==='remove'?{status:'SUSPENDED',removedAt:await clock(tx)}:{role:role!}});
   }else{
    const row=await tx.workspaceInvitation.findFirst({where:{workspaceId:ws,id:target!}});if(!row)fail('NOT_FOUND');
-   if(match!==`"${publicRevision(await revision(tx,ws,keys))}"`)fail('PRECONDITION_FAILED');
+   const validator=(await invitationValidators(tx,ws,[target!],keys,invKey)).get(target!)!;
+   if(match!==`"${validator.revision}"`)fail('PRECONDITION_FAILED');
    if(row!.consumedAt)fail('CONFLICT');
    if(action==='resend'){
+    // Cancellation is terminal even with a fresh validator. Expiry alone may
+    // renew, but never masks revoked issuer/key/Team authority or exhausted proofs.
+    if(row!.canceledAt||!validator.renewable)fail('CONFLICT');
     if(await tx.workspaceInvitation.count({where:{previousId:target!}}))fail('CONFLICT');
     const teams=await invitationTeams(tx,row!);await permittedAssignments(tx,ws,actor.id,teams);
     if(!row!.canceledAt)await tx.workspaceInvitation.update({where:{id:target!},data:{canceledAt:await clock(tx)}});

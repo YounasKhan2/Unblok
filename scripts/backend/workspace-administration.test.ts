@@ -19,7 +19,13 @@ const workspaceKeys = { active: 'v1', cursors: { v1: randomBytes(32).toString('h
 const root = resolve(import.meta.dir, '../..'), config = loadApiConfig(process.env);
 const admin = new Database(config.DATABASE_URL), name = `unblok_be01b_test_${randomUUID().replaceAll('-', '')}`;
 const url = new URL(config.DATABASE_URL); url.pathname = `/${name}`;
-const database = new Database(url.toString()), fences = new AuthFences(database), cache = createRedis(config.REDIS_URL);
+// Test-only gate holds an actual accepted mutation inside its real transaction.
+// It never changes production admission, isolation, locks or authority checks.
+let acceptedTransactionGate:(()=>Promise<void>)|undefined;
+class GatedDatabase extends Database {
+ override transaction<T>(run:(tx:Parameters<Parameters<Database['transaction']>[0]>[0])=>Promise<T>){return super.transaction(async tx=>{const result=await run(tx);if(acceptedTransactionGate&&result&&typeof result==='object'&&'status' in result&&result.status==='accepted'){const gate=acceptedTransactionGate;acceptedTransactionGate=undefined;await gate();}return result;});}
+}
+const database = new GatedDatabase(url.toString()), fences = new AuthFences(database), cache = createRedis(config.REDIS_URL);
 const ownedPrefix = `be01b:test:${randomUUID()}:`;
 cache.on('error', () => {}); // Expected outage diagnostics must not print SDK details.
 const stops: (() => Promise<void>)[] = [];
@@ -116,6 +122,11 @@ async function tokenFor(row:{id:string}){let token='';const worker=new Invitatio
 async function addMember(s:Setup,role:'ADMIN'|'MEMBER'|'OBSERVER'='MEMBER',verified=true){const account=await actor(s.f,verified),m=await database.client.workspaceMembership.create({data:{workspaceId:s.workspace.id,userId:account.userId,status:'ACTIVE',role,joinedAt:new Date()}});return {...account,m};}
 async function ownedTeam(s:Setup,key='ONE'){const owner=await membership(s.workspace.id,s.admin.userId),id=randomUUID();await database.transaction(async tx=>{await tx.$queryRaw`SELECT id FROM workspaces WHERE id=${s.workspace.id}::uuid FOR UPDATE`;await tx.team.create({data:{workspaceId:s.workspace.id,id,key,name:'Team '+key,ownerMembershipId:owner!.id}});await tx.teamMembership.create({data:{workspaceId:s.workspace.id,teamId:id,membershipId:owner!.id}});});return id;}
 async function waitForWorkspaceWaiters(count:number){const deadline=Date.now()+1000;while(Date.now()<deadline){const rows=await database.client.$queryRaw<{n:bigint}[]>`SELECT count(*) AS n FROM pg_stat_activity WHERE datname=current_database() AND wait_event_type='Lock' AND query LIKE '%FROM workspaces%'`;if(Number(rows[0]!.n)>=count)return;await Bun.sleep(10);}throw Error('Expected primary Workspace lock wait was not observed');}
+const invitationDetail=async(s:Setup,id:string,client=s.admin.client)=>{const response=await read(s,'invitations/'+id,client);expect(response.status).toBe(200);return response.json();};
+async function historicalProof(s:Setup,email:string){
+ const id=randomUUID(),owner=await membership(s.workspace.id,s.admin.userId),now=Date.now(),token=id+'.'+createHmac('sha256',Buffer.from(invitationKey.secret,'hex')).update('unblok-invitation-proof-v1\0'+JSON.stringify([invitationKey.id,id,s.workspace.id,s.admin.userId,'1',email,'MEMBER'])).digest('base64url'),digest=createHmac('sha256',Buffer.from(invitationKey.secret,'hex')).update('unblok-invitation-digest-v1\0'+token).digest('hex');
+ const row=await database.client.workspaceInvitation.create({data:{id,workspaceId:s.workspace.id,inviterId:s.admin.userId,inviterIdentityId:s.admin.identityId,inviterMembershipId:owner!.id,inviterEpoch:1n,email,role:'MEMBER',keyId:invitationKey.id,tokenDigest:digest,issuedAt:new Date(now-90000000),expiresAt:new Date(now-3601000)}});return {row,token};
+}
 
 test('private directory: role matrix, nullable contact fields, filters, exact counts and signed stale cursors',async()=>{
  const s=await setup(),member=await addMember(s),observer=await addMember(s,'OBSERVER'),unverified=await addMember(s,'ADMIN',false),foreign=await actor(s.f);
@@ -287,4 +298,89 @@ test('failure during multi-Team insertion rolls back membership, proof consumpti
  try{expect((await accept(s.f,recipient.client,token,key)).status).toBe(503);expect(await membership(s.workspace.id,recipient.userId)).toBeNull();expect((await database.client.workspaceInvitation.findUniqueOrThrow({where:{id:row.id}})).consumedAt).toBeNull();expect(await database.client.workspaceInvitationResult.count({where:{actorId:recipient.userId,operation:'invitation:accept:v1',requestKey:key}})).toBe(0);}
  finally{await database.client.$executeRawUnsafe('DROP TRIGGER be01b_injected_failure ON team_memberships');await database.client.$executeRawUnsafe('DROP FUNCTION be01b_injected_failure()');}
  expect((await accept(s.f,recipient.client,token,key)).status).toBe(202);const m=await membership(s.workspace.id,recipient.userId);expect(await database.client.teamMembership.count({where:{workspaceId:s.workspace.id,membershipId:m!.id}})).toBe(2);
+},20000);
+
+test('revoke is terminal: stale resend fails412, fresh resend fails409 and replay cannot create another proof',async()=>{
+ const s=await setup(),recipient=await actor(s.f),row=await adminInvite(s,recipient.email),token=await tokenFor(row),before=await invitationDetail(s,row.id),key=randomUUID();
+ expect((await mutate(s,'invitations/'+row.id+'/revoke',{},'POST',before.revision,key)).status).toBe(202);
+ expect((await mutate(s,'invitations/'+row.id+'/resend',{},'POST',before.revision)).status).toBe(412);
+ const after=await invitationDetail(s,row.id);expect(after.status).toBe('REVOKED');expect(after.revision).not.toBe(before.revision);
+ const deniedKey=randomUUID();expect((await mutate(s,'invitations/'+row.id+'/resend',{},'POST',after.revision,deniedKey)).status).toBe(409);
+ expect((await mutate(s,'invitations/'+row.id+'/revoke',{},'POST',before.revision,key)).status).toBe(202);
+ expect(await database.client.workspaceInvitation.count({where:{workspaceId:s.workspace.id}})).toBe(1);expect(await database.client.workspaceInvitation.count({where:{previousId:row.id}})).toBe(0);expect(await database.client.workspaceInvitationResult.count({where:{actorId:s.admin.userId,operation:'administration:resend:v2',requestKey:deniedKey}})).toBe(0);
+ expect((await accept(s.f,recipient.client,token)).status).toBe(202);expect(await membership(s.workspace.id,recipient.userId)).toBeNull();
+},20000);
+
+test('a committed resend replay after successor revocation acknowledges only the original effect',async()=>{
+ const s=await setup(),recipient=await actor(s.f),row=await adminInvite(s,recipient.email),oldProof=await tokenFor(row),before=await invitationDetail(s,row.id),key=randomUUID();
+ expect((await mutate(s,'invitations/'+row.id+'/resend',{},'POST',before.revision,key)).status).toBe(202);
+ const next=await database.client.workspaceInvitation.findFirstOrThrow({where:{previousId:row.id}}),newProof=await tokenFor(next),current=await invitationDetail(s,next.id);
+ expect((await mutate(s,'invitations/'+next.id+'/revoke',{},'POST',current.revision)).status).toBe(202);
+ expect((await mutate(s,'invitations/'+row.id+'/resend',{},'POST',before.revision,key)).status).toBe(202);
+ const superseded=await invitationDetail(s,row.id);expect(superseded.status).toBe('SUPERSEDED');expect((await mutate(s,'invitations/'+row.id+'/resend',{},'POST',superseded.revision)).status).toBe(409);
+ expect(await database.client.workspaceInvitation.count({where:{workspaceId:s.workspace.id}})).toBe(2);expect((await database.client.workspaceInvitation.findUniqueOrThrow({where:{id:next.id}})).canceledAt).not.toBeNull();
+ for(const proof of [oldProof,newProof])expect((await accept(s.f,recipient.client,proof)).status).toBe(202);expect(await membership(s.workspace.id,recipient.userId)).toBeNull();
+},20000);
+
+for(const firstAction of ['revoke','resend'] as const)test('controlled concurrent '+firstAction+' first: winner202, stale contender412, no canceled-generation revival',async()=>{
+ const s=await setup(),recipient=await actor(s.f),row=await adminInvite(s,recipient.email),oldProof=await tokenFor(row),before=await invitationDetail(s,row.id),firstKey=randomUUID(),secondKey=randomUUID(),secondAction=firstAction==='revoke'?'resend':'revoke';
+ let entered!:()=>void,release!:()=>void;const inside=new Promise<void>(r=>entered=r),held=new Promise<void>(r=>release=r);acceptedTransactionGate=async()=>{entered();await held;};
+ const winner=mutate(s,'invitations/'+row.id+'/'+firstAction,{},'POST',before.revision,firstKey);await inside;
+ const contender=mutate(s,'invitations/'+row.id+'/'+secondAction,{},'POST',before.revision,secondKey);
+ try{await waitForWorkspaceWaiters(1);}finally{acceptedTransactionGate=undefined;release();}
+ expect((await winner).status).toBe(202);expect((await contender).status).toBe(412);
+ expect((await mutate(s,'invitations/'+row.id+'/'+firstAction,{},'POST',before.revision,firstKey)).status).toBe(202);
+ const current=await invitationDetail(s,row.id);expect(current.status).toBe(firstAction==='revoke'?'REVOKED':'SUPERSEDED');expect((await mutate(s,'invitations/'+row.id+'/resend',{},'POST',current.revision)).status).toBe(409);
+ expect(await database.client.workspaceInvitation.count({where:{previousId:row.id}})).toBe(firstAction==='resend'?1:0);expect(await database.client.workspaceInvitationResult.count({where:{actorId:s.admin.userId,operation:'administration:'+secondAction+':v2',requestKey:secondKey}})).toBe(0);
+ expect((await accept(s.f,recipient.client,oldProof)).status).toBe(202);expect(await membership(s.workspace.id,recipient.userId)).toBeNull();
+},20000);
+
+test('resource validators survive unrelated invitations/members/delivery but reject cross-resource and own delivery changes',async()=>{
+ const s=await setup(),one=await adminInvite(s,'one@example.test'),before=await invitationDetail(s,one.id),two=await adminInvite(s,'two@example.test'),other=await invitationDetail(s,two.id);
+ expect(other.revision).not.toBe(before.revision);expect((await (await read(s,'invitations')).json()).items.find((r:{id:string})=>r.id===one.id).revision).toBe(before.revision);
+ await addMember(s);await database.client.workspaceInvitationOutbox.update({where:{invitationId:two.id},data:{nextAttemptAt:new Date(Date.now()+1000)}});expect((await invitationDetail(s,one.id)).revision).toBe(before.revision);
+ expect((await mutate(s,'invitations/'+two.id+'/revoke',{},'POST',before.revision)).status).toBe(412);
+ await database.client.workspaceInvitationOutbox.update({where:{invitationId:one.id},data:{nextAttemptAt:new Date(Date.now()+2000)}});const changed=await invitationDetail(s,one.id);expect(changed.revision).not.toBe(before.revision);
+ expect((await mutate(s,'invitations/'+one.id+'/revoke',{},'POST',before.revision)).status).toBe(412);expect((await mutate(s,'invitations/'+one.id+'/revoke',{},'POST',changed.revision)).status).toBe(202);
+},20000);
+
+test('expired authentic v1 invitation may renew only with unchanged original issuer authority; new proof remains24h',async()=>{
+ const s=await setup(),recipient=await actor(s.f),old=await historicalProof(s,recipient.email),before=await invitationDetail(s,old.row.id),key=randomUUID();expect(before.status).toBe('EXPIRED');
+ expect((await mutate(s,'invitations/'+old.row.id+'/resend',{},'POST',before.revision,key)).status).toBe(202);
+ expect((await mutate(s,'invitations/'+old.row.id+'/resend',{},'POST',before.revision,key)).status).toBe(202);
+ const next=await database.client.workspaceInvitation.findFirstOrThrow({where:{previousId:old.row.id}});expect(next.proofVersion).toBe(2);expect(next.expiresAt.getTime()-next.issuedAt.getTime()).toBe(86400000);const token=await tokenFor(next);
+ expect((await accept(s.f,recipient.client,old.token)).status).toBe(202);expect(await membership(s.workspace.id,recipient.userId)).toBeNull();expect((await accept(s.f,recipient.client,token)).status).toBe(202);expect((await membership(s.workspace.id,recipient.userId))!.role).toBe('MEMBER');
+ const consumed=await invitationDetail(s,next.id);expect((await mutate(s,'invitations/'+next.id+'/resend',{},'POST',consumed.revision)).status).toBe(409);
+},20000);
+
+test('expiry does not hide issuer-epoch invalidation; implicit cancellation cannot be resent by another ADMIN',async()=>{
+ const s=await setup(),recipient=await actor(s.f),expired=await historicalProof(s,recipient.email);await fences.revokeAll(s.admin.userId);const fresh=await s.f.login(s.admin.email),detail=await invitationDetail(s,expired.row.id,fresh);
+ expect(detail.status).toBe('EXPIRED');expect((await mutate(s,'invitations/'+expired.row.id+'/resend',{},'POST',detail.revision,randomUUID(),fresh)).status).toBe(409);
+ const other=await addMember(s,'ADMIN'),owner=await membership(s.workspace.id,s.admin.userId);await database.client.workspaceMembership.update({where:{workspaceId_id:{workspaceId:s.workspace.id,id:owner!.id}},data:{role:'MEMBER'}});
+ const canceled=await invitationDetail(s,expired.row.id,other.client);expect(canceled.status).toBe('REVOKED');expect((await mutate(s,'invitations/'+expired.row.id+'/resend',{},'POST',canceled.revision,randomUUID(),other.client)).status).toBe(409);expect(await database.client.workspaceInvitation.count({where:{previousId:expired.row.id}})).toBe(0);
+},20000);
+
+for(const terminal of ['REVOKED','SUPERSEDED','ACCEPTED','EXPIRED','INVALIDATED'] as const)test('recipient preview '+terminal+': only verified matching proof owner sees lifecycle; other callers stay neutral',async()=>{
+ const s=await setup(),recipient=await actor(s.f),foreign=await actor(s.f);let row:Awaited<ReturnType<typeof adminInvite>>,token:string;
+ if(terminal==='EXPIRED'){const old=await historicalProof(s,recipient.email);row=old.row;token=old.token;}else{row=await adminInvite(s,recipient.email);token=await tokenFor(row);}
+ if(terminal==='REVOKED'||terminal==='SUPERSEDED'){const d=await invitationDetail(s,row.id);expect((await mutate(s,'invitations/'+row.id+'/'+(terminal==='REVOKED'?'revoke':'resend'),{},'POST',d.revision)).status).toBe(202);}
+ if(terminal==='ACCEPTED')expect((await accept(s.f,recipient.client,token)).status).toBe(202);
+ if(terminal==='INVALIDATED')for(let n=0;n<10;n++)await database.client.workspaceInvitation.update({where:{id:row.id},data:{attempts:{increment:1}}});
+ const preview=(client:Client|undefined,value=token)=>s.f.http('/api/v1/workspace-invitations/preview','POST',client,{token:value});
+ const owned=await preview(recipient.client);expect(owned.status).toBe(200);const detail=await owned.json();expect(detail.invitation.status).toBe(terminal);expect(detail.invitation.email).toBe(recipient.email);expect(detail.invitation).not.toHaveProperty('isExistingUser');
+ if(terminal!=='EXPIRED'){const current=await invitationDetail(s,row.id);expect((await mutate(s,'invitations/'+row.id+'/resend',{},'POST',current.revision)).status).toBe(409);}
+ for(const client of [foreign.client,s.admin.client]){const r=await preview(client);expect(r.status).toBe(200);expect(await r.json()).toEqual({status:'accepted'});}
+ const wrong=token.slice(0,-1)+(token.endsWith('a')?'b':'a');expect(await (await preview(recipient.client,wrong)).json()).toEqual({status:'accepted'});expect(await (await preview(recipient.client,randomUUID()+'.'+'x'.repeat(43))).json()).toEqual({status:'accepted'});
+ expect((await preview(undefined)).status).toBe(403);expect((await read(s,'invitations/'+row.id,recipient.client)).status).toBe(404);
+ if(terminal!=='ACCEPTED'){expect((await accept(s.f,recipient.client,token)).status).toBe(202);expect(await membership(s.workspace.id,recipient.userId)).toBeNull();}
+ // Fixture-only loss of verification: even authentic terminal proofs require
+ // current verified ownership, not a remembered earlier verification result.
+ await database.client.passwordCredential.update({where:{identityId:recipient.identityId},data:{emailVerifiedAt:null}});const unverified=await preview(recipient.client);expect(unverified.status).toBe(200);expect(await unverified.json()).toEqual({status:'accepted'});
+},20000);
+
+test('retired key and changed Team plan cannot be renewed with a fresh resource validator',async()=>{
+ const s=await setup(),recipient=await actor(s.f),team=await ownedTeam(s),row=await adminInvite(s,recipient.email,'MEMBER',[team]),token=await tokenFor(row);
+ await database.client.team.update({where:{workspaceId_id:{workspaceId:s.workspace.id,id:team}},data:{name:'Changed Team',version:{increment:1}}});const changed=await invitationDetail(s,row.id);expect(changed.status).toBe('INVALIDATED');expect((await mutate(s,'invitations/'+row.id+'/resend',{},'POST',changed.revision)).status).toBe(409);
+ const rotated=await fixture({invKey:{id:'retired-key-test',secret:randomBytes(32).toString('hex')}}),admin=await rotated.login(s.admin.email),owner=await rotated.login(recipient.email),detail=await (await rotated.http(endpoint(s,'invitations/'+row.id),'GET',admin)).json();expect(detail.status).toBe('INVALIDATED');
+ expect((await rotated.http(endpoint(s,'invitations/'+row.id+'/resend'),'POST',admin,{}, {'idempotency-key':randomUUID(),'if-match':`"${detail.revision}"`})).status).toBe(409);expect(await (await rotated.http('/api/v1/workspace-invitations/preview','POST',owner,{token})).json()).toEqual({status:'accepted'});expect((await accept(rotated,owner,token)).status).toBe(202);expect(await membership(s.workspace.id,recipient.userId)).toBeNull();expect(await database.client.workspaceInvitation.count({where:{previousId:row.id}})).toBe(0);
 },20000);
