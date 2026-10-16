@@ -1,0 +1,24 @@
+import {z} from 'zod';
+const role=z.enum(['ADMIN','MEMBER','OBSERVER']);
+const version=z.string().regex(/^[1-9][0-9]{0,18}$/);
+const page=z.object({hasMore:z.boolean(),nextCursor:z.string().max(4096).nullable()}).strict();
+const base={limit:z.string().regex(/^[1-9][0-9]{0,2}$/).transform(Number).pipe(z.number().int().max(100)).optional().default(20),after:z.string().min(1).max(4096).optional()};
+export const administrationPageQuerySchema=z.object(base).strict();
+export const administrationMemberQuerySchema=z.object({...base,status:z.enum(['ACTIVE','INVITED','SUSPENDED','REMOVED','ALL']).default('ALL'),role:role.optional(),search:z.string().trim().max(120).optional(),teamId:z.uuid().optional()}).strict();
+export const invitationLifecycleSchema=z.enum(['PENDING','EXPIRED','REVOKED','ACCEPTED','SUPERSEDED','INVALIDATED']);
+export const administrationInvitationQuerySchema=z.object({...base,status:invitationLifecycleSchema.optional(),search:z.string().trim().max(120).optional()}).strict();
+export const administrationInviteSchema=z.object({email:z.string().max(320).trim().toLowerCase().pipe(z.email().max(320).regex(/^[\x21-\x7e]+$/)),role,teamIds:z.array(z.uuid()).max(20).default([]).refine(ids=>new Set(ids).size===ids.length).transform(ids=>ids.sort())}).strict();
+export const administrationRoleSchema=z.object({role}).strict();
+const team=z.object({id:z.uuid(),name:z.string().refine(v=>Array.from(v).length<=120&&new TextEncoder().encode(v).length<=480),key:z.string().max(6)}).strict();
+const teams=z.object({items:z.array(team).max(100),page}).strict();
+export const administrationTeamPageSchema=teams;
+const member=z.object({id:z.uuid(),displayName:z.string().max(120),email:z.string().max(320).nullable(),role,status:z.enum(['ACTIVE','INVITED','SUSPENDED']),joinedAt:z.iso.datetime().nullable(),removedAt:z.iso.datetime().nullable(),revision:version,teams}).strict();
+export const administrationMemberPageSchema=z.object({items:z.array(member).max(100),page,revision:version,totals:z.object({activeMembers:z.number().int().nonnegative(),matchingMembers:z.number().int().nonnegative(),pendingInvitations:z.number().int().nonnegative()}).strict()}).strict();
+export const administrationInvitationSchema=z.object({id:z.uuid(),previousId:z.uuid().nullable(),email:z.string().max(320),role,status:invitationLifecycleSchema,delivery:z.enum(['QUEUED','DELIVERED','FAILED']),issuedAt:z.iso.datetime(),expiresAt:z.iso.datetime(),consumedAt:z.iso.datetime().nullable(),canceledAt:z.iso.datetime().nullable(),revision:version,teams:z.array(team).max(20)}).strict();
+export const administrationInvitationPageSchema=z.object({items:z.array(administrationInvitationSchema).max(100),page,revision:version,total:z.number().int().nonnegative()}).strict();
+export const administrationPreviewSchema=z.union([z.object({status:z.literal('accepted')}).strict(),z.object({invitation:z.object({workspaceId:z.uuid(),workspaceName:z.string().max(120),email:z.string().max(320),role,status:invitationLifecycleSchema,expiresAt:z.iso.datetime(),teams:z.array(team).max(20)}).strict()}).strict()]);
+export type AdministrationMemberQuery=z.infer<typeof administrationMemberQuerySchema>;
+export type AdministrationInvitationQuery=z.infer<typeof administrationInvitationQuerySchema>;
+export type AdministrationPageQuery=z.infer<typeof administrationPageQuerySchema>;
+export type AdministrationInvite=z.infer<typeof administrationInviteSchema>;
+export function workspaceAdministrationJsonSchemas(){return Object.fromEntries(Object.entries({AdministrationInvite:administrationInviteSchema,AdministrationRole:administrationRoleSchema,AdministrationMemberPage:administrationMemberPageSchema,AdministrationInvitation:administrationInvitationSchema,AdministrationInvitationPage:administrationInvitationPageSchema,AdministrationTeamPage:administrationTeamPageSchema,AdministrationPreview:administrationPreviewSchema}).map(([name,schema])=>[name,z.toJSONSchema(schema,{io:name==='AdministrationInvite'?'input':'output'})]));}

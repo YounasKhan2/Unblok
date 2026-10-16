@@ -45,9 +45,9 @@ async function fixture(target = database, authenticate = true) {
     }
     await tx.identity.create({ data: { provider: 'test-verifier', subject: actor, userId: actor } });
     for (const [id, suffix] of [[a, 'a'], [b, 'b']] as const) await tx.workspace.create({ data: { id, slug: `test-${id}-${suffix}`, name: 'Test workspace' } });
-    await tx.workspaceMembership.create({ data: { workspaceId: a, id: owner, userId: adminA, role: 'ADMIN', status: 'ACTIVE' } });
-    await tx.workspaceMembership.create({ data: { workspaceId: a, id: member, userId: actor, role: 'MEMBER', status: 'ACTIVE' } });
-    await tx.workspaceMembership.create({ data: { workspaceId: b, id: member, userId: userB, role: 'ADMIN', status: 'ACTIVE' } });
+    await tx.$executeRaw`INSERT INTO workspace_memberships(workspace_id,id,user_id,role,status) VALUES(${a}::uuid,${owner}::uuid,${adminA}::uuid,'ADMIN','ACTIVE')`;
+    await tx.$executeRaw`INSERT INTO workspace_memberships(workspace_id,id,user_id,role,status) VALUES(${a}::uuid,${member}::uuid,${actor}::uuid,'MEMBER','ACTIVE')`;
+    await tx.$executeRaw`INSERT INTO workspace_memberships(workspace_id,id,user_id,role,status) VALUES(${b}::uuid,${member}::uuid,${userB}::uuid,'ADMIN','ACTIVE')`;
     for (const workspaceId of [a, b]) {
       const installed = await tx.$queryRaw<{ present: boolean }[]>`SELECT EXISTS(SELECT 1 FROM information_schema.columns WHERE table_name='teams' AND column_name='owner_membership_id') AS present`;
       if (installed[0]?.present) {
@@ -74,7 +74,7 @@ describe('fresh additive migrations and canonical constraints', () => {
     expect(diff).toContain('No difference');
     expect(await database.ready()).toBe(true);
     const applied = await database.client.$queryRaw<{ migration_name: string }[]>`SELECT migration_name FROM _prisma_migrations WHERE finished_at IS NOT NULL ORDER BY migration_name`;
-    expect(applied.map(row => row.migration_name)).toEqual(['20261010000000_foundation', '20261010010000_domain_tenancy', '20261010020000_guard_corrections', '20261010030000_auth_revocation_fences', '20261010040000_password_credentials', '20261010050000_credential_email_ownership', '20261010060000_email_verification', '20261011000000_password_recovery', '20261012000000_workspace_foundation', '20261013000000_workspace_memberships_invitations', '20261014000000_team_foundation', '20261014010000_team_management']);
+    expect(applied.map(row => row.migration_name)).toEqual(['20261010000000_foundation', '20261010010000_domain_tenancy', '20261010020000_guard_corrections', '20261010030000_auth_revocation_fences', '20261010040000_password_credentials', '20261010050000_credential_email_ownership', '20261010060000_email_verification', '20261011000000_password_recovery', '20261012000000_workspace_foundation', '20261013000000_workspace_memberships_invitations', '20261014000000_team_foundation', '20261014010000_team_management', '20261016000000_workspace_administration']);
   });
   test('identity keys are unique; users have no global role and email is not an authentication key', async () => {
     const f = await fixture();
@@ -327,13 +327,13 @@ describe('PR24 PostgreSQL guard regressions', () => {
       const f = await fixture(upgrade, false);
       const where = { workspaceId_id: { workspaceId: f.a, id: f.issue } };
       await upgrade.client.issue.update({ where, data: { assigneeMembershipId: f.member } });
-      await upgrade.client.workspaceMembership.update({ where: { workspaceId_id: { workspaceId: f.a, id: f.member } }, data: { status: 'SUSPENDED' } });
+      await upgrade.client.workspaceMembership.update({ where: { workspaceId_id: { workspaceId: f.a, id: f.member } }, data: { status: 'SUSPENDED' }, select: { id: true } });
       await expect(Promise.resolve(upgrade.client.issue.update({ where, data: { title: 'Before repair' } }))).rejects.toThrow('Assignee requires active');
       const history = await upgrade.client.$queryRaw<{ migration_name: string; checksum: string; finished_at: Date }[]>`SELECT migration_name, checksum, finished_at FROM _prisma_migrations ORDER BY migration_name`;
       await prisma(['migrate', 'deploy', '--schema', 'packages/database/prisma/schema.prisma'], upgradeUrl.toString());
       const after = await upgrade.client.$queryRaw<typeof history>`SELECT migration_name, checksum, finished_at FROM _prisma_migrations ORDER BY migration_name`;
       expect(after.slice(0, 2)).toEqual(history);
-      expect(after).toHaveLength(12);
+      expect(after).toHaveLength(13);
       expect(await upgrade.client.passwordCredential.count()).toBe(0); // No implicit credential/contact-email migration.
       expect((await upgrade.client.user.findUniqueOrThrow({ where: { id: f.actor } })).authEpoch).toBe(1n);
       expect(await upgrade.client.authSessionFamily.count()).toBe(0);

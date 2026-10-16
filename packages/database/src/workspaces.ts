@@ -4,7 +4,7 @@ import type { PrincipalAuthority } from './auth-fences';
 
 export interface WorkspaceKeys { readonly active: string; readonly cursors: Readonly<Record<string, string>>; readonly idempotency: string }
 export class WorkspaceFault extends Error {
-  constructor(readonly reason: 'NOT_FOUND' | 'CURSOR_STALE' | 'INVALID_REQUEST' | 'CONFLICT' | 'IDEMPOTENCY_RESULT_EXPIRED') { super(reason); this.name = 'WorkspaceFault'; }
+  constructor(readonly reason: 'NOT_FOUND' | 'CURSOR_STALE' | 'INVALID_REQUEST' | 'CONFLICT' | 'IDEMPOTENCY_RESULT_EXPIRED' | 'PRECONDITION_REQUIRED' | 'PRECONDITION_FAILED') { super(reason); this.name = 'WorkspaceFault'; }
 }
 type Row = { id: string; slug: string; name: string; status: RecordStatus; membershipRole: WorkspaceRole };
 const id = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;

@@ -1,5 +1,7 @@
 # BE-01B — Workspace administration contract and security design
 
+Historical Phase A snapshot below: its decision gate was resolved by [the PM/security approval](https://github.com/YounasKhan2/Unblok/pull/50#issuecomment-6211553401). Current implementation and verification status is in [BE-01B-IMPLEMENTATION.md](BE-01B-IMPLEMENTATION.md); statements below about unimplemented/proposed work describe the reviewed design HEAD, not the final branch state.
+
 Status: **Phase A design for PM/security review; no endpoints implemented.** Base `origin/main`: `57c4a1d03518c2623553e69150c0e943451ad25f` (merged PR #49). Branch: `codex/be-01b`. This document does not claim FE-INTEGRATION-01B is unblocked.
 
 ## Implementation gate: incompatible requirements
