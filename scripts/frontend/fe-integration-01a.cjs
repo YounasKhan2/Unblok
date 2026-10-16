@@ -31,7 +31,7 @@ async function main(){
   await mail.start();env.EMAIL_MAIL_ENDPOINT=mail.url('/api/v1/send');
   const migration=execFileSync('node',['packages/database/node_modules/prisma/build/index.js','migrate','deploy','--schema','packages/database/prisma/schema.prisma'],{cwd:root,env,encoding:'utf8',timeout:60000,stdio:['ignore','pipe','pipe']});
   const count=docker(['exec',names[0],'psql','-U','unblok','-d','unblok','-Atc','SELECT count(*) FROM "_prisma_migrations" WHERE finished_at IS NOT NULL AND rolled_back_at IS NULL;']);
-  if(count!=='12')throw Error('Expected all 12 migrations in owned test database');evidence.migrations={applied:Number(count),scope:'owned disposable test database only'};
+  if(count!=='13')throw Error('Expected all 13 migrations in owned test database');evidence.migrations={applied:Number(count),scope:'owned disposable test database only'};
   env.API_PORT=String(await port());const webPort=await port();env.CORS_ORIGINS='http://127.0.0.1:'+webPort;
   const api=start('api',['apps/api/src/main.ts']),worker=start('worker',['apps/worker/src/main.ts']);
   let ready=false;for(let i=0;i<100;i++){try{const r=await fetch('http://127.0.0.1:'+env.API_PORT+'/ready');if(r.status===200){ready=true;break;}}catch{}if(api.exitCode!==null)throw Error('Owned API stopped; inspect redacted API log');await pause(150);}if(!ready)throw Error('Owned API did not become ready');
@@ -39,10 +39,15 @@ async function main(){
   const viteModule=await import(pathToFileURL(require.resolve('vite',{paths:[path.join(root,'apps/web')]})).href);
   // Do not allow ignored QA env files or inherited VITE_AUTH_API_ORIGIN to
   // redirect this disposable browser suite away from its owned API proxy.
-  vite=await viteModule.createServer({root:path.join(root,'apps/web'),configFile:path.join(root,'apps/web/vite.config.ts'),envDir:false,define:{'import.meta.env.VITE_AUTH_API_ORIGIN':JSON.stringify('')},server:{host:'127.0.0.1',port:webPort,strictPort:true,hmr:false,watch:null,proxy:{'/api':{target:'http://127.0.0.1:'+env.API_PORT,changeOrigin:false}}}});await vite.listen();
+  if(process.argv.includes('--production')){
+   const config={root:path.join(root,'apps/web'),configFile:path.join(root,'apps/web/vite.config.ts'),envDir:false,define:{'import.meta.env.VITE_AUTH_API_ORIGIN':JSON.stringify('')},build:{outDir:path.join(out,'web-dist'),emptyOutDir:false}};
+   await viteModule.build(config);const preview=await viteModule.preview({...config,preview:{host:'127.0.0.1',port:webPort,strictPort:true,proxy:{'/api':{target:'http://127.0.0.1:'+env.API_PORT,changeOrigin:false}}}});vite={close:()=>new Promise((resolve,reject)=>preview.httpServer.close(error=>error?reject(error):resolve()))};
+  }else{
+  vite=await viteModule.createServer({root:path.join(root,'apps/web'),cacheDir:path.join(out,'vite-cache'),configFile:path.join(root,'apps/web/vite.config.ts'),envDir:false,define:{'import.meta.env.VITE_AUTH_API_ORIGIN':JSON.stringify('')},server:{host:'127.0.0.1',port:webPort,strictPort:true,hmr:false,watch:null,proxy:{'/api':{target:'http://127.0.0.1:'+env.API_PORT,changeOrigin:false}}}});await vite.listen();
+  }
   evidence.frontendIsolation={envFiles:false,authApiOrigin:'owned same-origin proxy',hmr:false,watch:false};
   if(process.argv.includes('--backend-only'))evidence.skipped=[{suite:'Chromium',reason:'Explicit --backend-only selection; browser gates are reported separately.'}];
-  else await require('./fe-integration-01a-journeys.cjs')({base:env.CORS_ORIGINS,out,mail,evidence,revokeOwnedMember:async(workspaceId,email)=>{
+  else await require(process.argv.includes('--01b')?'./fe-integration-01b-journeys.cjs':'./fe-integration-01a-journeys.cjs')({base:env.CORS_ORIGINS,out,mail,evidence,revokeOwnedMember:async(workspaceId,email)=>{
    if(!/^[0-9a-f-]{36}$/.test(workspaceId)||!/^fei-invite-[0-9a-f]+@example\.test$/.test(email))throw Error('Invalid owned revocation fixture');
    // Fixture mutation is restricted to this runner's own disposable PostgreSQL container.
    const changed=docker(['exec',names[0],'psql','-U','unblok','-d','unblok','-Atc',`UPDATE workspace_memberships SET status='SUSPENDED' WHERE workspace_id='${workspaceId}' AND user_id=(SELECT id FROM users WHERE email='${email}') AND role='MEMBER' AND status='ACTIVE' RETURNING id;`]);
@@ -53,10 +58,10 @@ async function main(){
   await vite.close();vite=undefined;
   for(const child of [api,worker]){if(child.exitCode===null){const exited=new Promise(resolve=>child.once('exit',resolve));child.kill();await exited;}}
   // Read-only source/regression checks run against owned infrastructure, never ignored QA config.
-  for(const [label,args] of [
+  for(const [label,args] of (process.argv.includes('--browser-only')?[]:[
    ['backend-unit',['test','apps/api/test','apps/worker/test','packages/backend-runtime/test','scripts/backend/architecture.test.ts']],
    ['auth-session',['test','apps/api/verification/authentication-integration.test.ts','apps/api/verification/session-integration.test.ts']],
-   ['tenancy-fences',['test','scripts/backend/tenancy.test.ts','scripts/backend/auth-fences.test.ts']]]){
+   ['tenancy-fences',['test','scripts/backend/tenancy.test.ts','scripts/backend/auth-fences.test.ts']]])){
     const child=start(label,args);const code=await new Promise((resolve,reject)=>{child.on('error',reject);child.on('exit',resolve);});evidence.commands.push({label,command:'bun test --no-env-file '+(label==='backend-unit'?'':'--preload <evidence>/prisma-node-preload.ts ')+args.slice(1).join(' '),exitCode:code});if(code!==0)evidence.failures.push(label);
   }
   await mail.assertSentinels();evidence.mail={sentinelsPreserved:2,sharedMailpitAccessed:false,deletions:0};

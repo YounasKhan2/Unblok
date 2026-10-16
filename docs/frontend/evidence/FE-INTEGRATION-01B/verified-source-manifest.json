@@ -1,0 +1,90 @@
+{
+  "baseline": "12403c798b5320490a11c359e0d32f1a442a2ef2",
+  "lineEndings": "LF canonicalization before hashing",
+  "cssBundles": [
+    {
+      "side": "baseline",
+      "file": "index-BSo_8b9W.css",
+      "sha256": "219e9d0180c254fe27c0a48a6cac9ca6fc2ea9e6f72adba24d4be5c37d4be51a"
+    },
+    {
+      "side": "current",
+      "file": "index-BSo_8b9W.css",
+      "sha256": "219e9d0180c254fe27c0a48a6cac9ca6fc2ea9e6f72adba24d4be5c37d4be51a"
+    }
+  ],
+  "frontendSourceFiles": [
+    {
+      "path": "apps/web/src/features/auth/api/authApi.ts",
+      "sha256Utf8LF": "fdb778a69e2c43039d6142195dfd656772a6f98026b21b5097a0849190570024"
+    },
+    {
+      "path": "apps/web/src/features/auth/components/InvitationMetadata.tsx",
+      "sha256Utf8LF": "1e60f9a449d2f40f1639f9e5d3ba862a7c438317aa5eb0e5bc64f25100a01dc9"
+    },
+    {
+      "path": "apps/web/src/features/auth/live/LiveRouter.tsx",
+      "sha256Utf8LF": "4bff55f30a8e39fe2d81caba710af162c60cf522964c71b026426fa56a16bec6"
+    },
+    {
+      "path": "apps/web/src/features/settings/components/InviteMemberModal.tsx",
+      "sha256Utf8LF": "f05a446d047d69c83f5c51248113ee9d6bc299d10d347e9d8d84703c4005cb43"
+    },
+    {
+      "path": "apps/web/src/features/settings/components/MemberActionMenu.tsx",
+      "sha256Utf8LF": "ba44a2efe5d589d6aeda064e5a8b7e7413af352108ea8e024704fd676fce0bbf"
+    },
+    {
+      "path": "apps/web/src/features/settings/components/MemberBindings.tsx",
+      "sha256Utf8LF": "66389a302a75372b5a140c033192071e35b958cd489b00fd116efcdcd90dad20"
+    },
+    {
+      "path": "apps/web/src/features/settings/components/MemberRow.tsx",
+      "sha256Utf8LF": "741a6f58e89fe475524f5133729e20b11d2c6ff65105a444e9ddde289b31a12d"
+    },
+    {
+      "path": "apps/web/src/features/settings/components/PendingInvitationRow.tsx",
+      "sha256Utf8LF": "1e91c3f0439a2c4d74d0dda4b139234df28b6796cf183ffbaaf76a6663134f7d"
+    },
+    {
+      "path": "apps/web/src/features/workspaces/live/Administration.test.ts",
+      "sha256Utf8LF": "42e084a8157b8d8d622bde229b0288d980767e30706a5775c5b8a9e73e53b792"
+    },
+    {
+      "path": "apps/web/src/features/workspaces/live/AdministrationApi.ts",
+      "sha256Utf8LF": "977563c3e38a25869263a317733a18348d06b0d97bf4b979088d24c0430936bf"
+    },
+    {
+      "path": "apps/web/src/features/workspaces/live/AdministrationPage.tsx",
+      "sha256Utf8LF": "2c8f510e78650d06e3e1237fe34ca558dc0e13533b5e7ed62b1754a9f7e18349"
+    },
+    {
+      "path": "apps/web/src/features/workspaces/live/AdministrationStore.ts",
+      "sha256Utf8LF": "c26a9b631ab6f5332435e7a73b81ddef8f349edcdfe560593f2b7f003af1a996"
+    },
+    {
+      "path": "apps/web/src/features/workspaces/live/InvitationPage.tsx",
+      "sha256Utf8LF": "850b6401a04b35480c0fee9e411419f66f9007cf3fd74532c929d21de45dc488"
+    },
+    {
+      "path": "apps/web/src/features/workspaces/live/InvitationStore.ts",
+      "sha256Utf8LF": "96d6b4844f87a2bb8d7b9b8849eb34b4a522fbd50b0ca8400f250de510572d80"
+    },
+    {
+      "path": "apps/web/src/features/workspaces/live/MembersContext.tsx",
+      "sha256Utf8LF": "f743923630c9e59c320842e25c91ec45494a7ac7067d6641a5b1db8b74ab6add"
+    },
+    {
+      "path": "apps/web/src/pages/auth/InvitePage.tsx",
+      "sha256Utf8LF": "97eec176e8e4eb33998903e5481450198159491161d555fed43c16ebd6e05181"
+    },
+    {
+      "path": "apps/web/src/pages/settings/MembersSettingsPage.tsx",
+      "sha256Utf8LF": "b67c3c4476a6a506004612be77423c404d2dd513a25ec315712ec6fb63203de0"
+    },
+    {
+      "path": "apps/web/src/pages/settings/MembersSettingsPageFrame.tsx",
+      "sha256Utf8LF": "b58f4edbe3d85272f290bf662061303b9b4d1337aaf6b32fd94b3654be1f3970"
+    }
+  ]
+}

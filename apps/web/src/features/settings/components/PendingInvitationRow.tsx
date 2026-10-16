@@ -4,27 +4,29 @@ import { Team } from '../../../types';
 import { RoleBadge } from './RoleBadge';
 import { Button } from '../../../components/ui/Button';
 import { RotateCcw, XCircle, Check } from 'lucide-react';
-import { useSettings } from '../context/SettingsContext';
+import {useMemberBindings,type InvitationView} from './MemberBindings';
 
 import { formatUserDate } from '../../../components/ui/formatDate';
 
 interface PendingInvitationRowProps {
-  invitation: PendingInvitation;
-  teams: Team[];
+  invitation: InvitationView;
+  teams: Pick<Team,'id'|'name'|'key'>[];
 }
 
 export const PendingInvitationRow: React.FC<PendingInvitationRowProps> = ({
   invitation,
   teams,
 }) => {
-  const { resendInvitation, revokeInvitation } = useSettings();
+  const binding=useMemberBindings();
+  const {resendInvitation,revokeInvitation}=binding;
   const [resendSuccess, setResendSuccess] = useState(false);
 
   const assignedTeams = teams.filter(t => invitation.teamIds.includes(t.id));
   const isRevoked = invitation.status === 'REVOKED';
 
-  const handleResend = () => {
-    resendInvitation(invitation.id);
+  const handleResend = async () => {
+    await resendInvitation(invitation.id);
+    if(binding.live)return;
     setResendSuccess(true);
     setTimeout(() => setResendSuccess(false), 2500);
   };
@@ -81,8 +83,9 @@ export const PendingInvitationRow: React.FC<PendingInvitationRowProps> = ({
           )}
         </div>
 
+        {binding.live&&invitation.delivery&&<span className="text-[10px] text-text-muted">{invitation.delivery}</span>}
         {/* Actions */}
-        {!isRevoked && (
+        {!isRevoked&&(!binding.live||['PENDING','EXPIRED'].includes(invitation.status)) && (
           <div className="flex items-center gap-1.5">
             <Button
               variant="secondary"
@@ -94,7 +97,8 @@ export const PendingInvitationRow: React.FC<PendingInvitationRowProps> = ({
                   <RotateCcw className="w-3.5 h-3.5 text-text-muted" />
                 )
               }
-              onClick={handleResend}
+              disabled={binding.live&&(!binding.canMutate||binding.busy)}
+              onClick={()=>void handleResend()}
               title="Resend invitation"
             >
               {resendSuccess ? 'Resent' : 'Resend'}
@@ -103,6 +107,7 @@ export const PendingInvitationRow: React.FC<PendingInvitationRowProps> = ({
               variant="danger"
               size="sm"
               icon={<XCircle className="w-3.5 h-3.5 text-danger" />}
+              disabled={binding.live&&(!binding.canMutate||binding.busy)}
               onClick={handleRevoke}
               title="Revoke invitation"
             >

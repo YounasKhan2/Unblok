@@ -1,3 +1,4 @@
+import {InvitationMetadata} from '../../features/auth/components/InvitationMetadata';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -258,50 +259,7 @@ export const InvitePage: React.FC = () => {
           </div>
         )}
 
-        {/* Invitation Metadata Card */}
-        <div className="p-4 rounded-xl bg-[var(--color-pub-surface-subtle)] border border-[var(--color-pub-border)] space-y-3 text-xs">
-          <div className="flex items-center justify-between pb-2 border-b border-[var(--color-pub-border)]">
-            <div className="flex items-center gap-2 text-[var(--color-pub-text-secondary)]">
-              <Building2 className="w-4 h-4 text-gray-500" />
-              <span>Workspace</span>
-            </div>
-            <span className="font-semibold text-[var(--color-pub-text-primary)]">
-              {invitation.workspaceName}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between pb-2 border-b border-[var(--color-pub-border)]">
-            <div className="flex items-center gap-2 text-[var(--color-pub-text-secondary)]">
-              <Mail className="w-4 h-4 text-gray-500" />
-              <span>Invited Email</span>
-            </div>
-            <span className="font-mono text-[var(--color-pub-text-primary)]">
-              {invitation.invitedEmail}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between pb-2 border-b border-[var(--color-pub-border)]">
-            <div className="flex items-center gap-2 text-[var(--color-pub-text-secondary)]">
-              <Shield className="w-4 h-4 text-gray-500" />
-              <span>Intended Role</span>
-            </div>
-            <span className="font-semibold px-2 py-0.5 rounded bg-white border border-[var(--color-pub-border)] text-[var(--color-pub-text-primary)]">
-              {invitation.intendedRole || 'MEMBER'}
-            </span>
-          </div>
-
-          {invitation.teamName && (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-[var(--color-pub-text-secondary)]">
-                <Users className="w-4 h-4 text-gray-500" />
-                <span>Assigned Team</span>
-              </div>
-              <span className="font-semibold text-[var(--color-pub-text-primary)]">
-                {invitation.teamName}
-              </span>
-            </div>
-          )}
-        </div>
+        <InvitationMetadata workspaceName={invitation.workspaceName} email={invitation.invitedEmail} role={invitation.intendedRole||'MEMBER'} teamName={invitation.teamName}/>
 
         {/* Context-aware Actions */}
         <div className="pt-2">
