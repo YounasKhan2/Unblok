@@ -1,0 +1,59 @@
+bun test v1.4.2 (744846f84)
+
+scripts\backend\auth-fences.test.ts:
+22 |   // Await termination on timeout; never leave a rejected waiter across tests.
+23 |   let timedOut = false;
+24 |   const timer = setTimeout(() => { timedOut = true; child.kill('SIGKILL'); }, 6000);
+25 |   try {
+26 |     const [output, , exit] = await Promise.all([new Response(child.stdout).text(), new Response(child.stderr).text(), child.exited]);
+27 |     if (timedOut || exit !== 0) throw new Error(timedOut ? 'Prisma verification command exceeded 6000ms' : 'Prisma verification failed; configuration withheld');
+                                               ^
+error: Prisma verification command exceeded 6000ms
+      at prisma (D:\Full_Stack_Apps\Unblok\scripts\backend\auth-fences.test.ts:27:43)
+      at async <anonymous> (D:\Full_Stack_Apps\Unblok\scripts\backend\auth-fences.test.ts:33:9)
+(fail) (unnamed) [6110.97ms]
+
+scripts\backend\tenancy.test.ts:
+(pass) fresh additive migrations and canonical constraints > replay is a no-op and Prisma schema matches migrated database [3222.81ms]
+(pass) fresh additive migrations and canonical constraints > identity keys are unique; users have no global role and email is not an authentication key [269.68ms]
+(pass) fresh additive migrations and canonical constraints > workspace slugs and scoped keys are canonical and unique, with same keys valid across tenants [128.51ms]
+(pass) fresh additive migrations and canonical constraints > membership references require real users and are unique per user/workspace [110.94ms]
+(pass) fresh additive migrations and canonical constraints > cross-workspace project/team, issue/project, and issue/membership references fail [124.48ms]
+(pass) fresh additive migrations and canonical constraints > positive issue sequences/versions, immutable origins, and unique project sequences [123.05ms]
+(pass) server-owned tenancy and negative authorization > same local IDs resolve only inside the authorized tenant; foreign reads/writes fail [235.50ms]
+(pass) server-owned tenancy and negative authorization > principal/role forgery and unknown verified identities fail closed [123.96ms]
+(pass) server-owned tenancy and negative authorization > INVITED membership rejects an already verified principal [118.47ms]
+(pass) server-owned tenancy and negative authorization > SUSPENDED membership rejects an already verified principal [111.93ms]
+(pass) server-owned tenancy and negative authorization > missing membership and invalid workspace selectors are denied [103.80ms]
+(pass) server-owned tenancy and negative authorization > policy defaults to denial; ADMIN never implies team access or ownership [171.10ms]
+(pass) server-owned tenancy and negative authorization > OBSERVER and read-only handles cannot write even with an explicit broad test policy [249.20ms]
+(pass) server-owned tenancy and negative authorization > bounded lists apply issue-level policy and return only selected internal projections [260.13ms]
+(pass) server-owned tenancy and negative authorization > escaped handles expire and workspace context cannot be replaced [167.28ms]
+(pass) server-owned tenancy and negative authorization > Team OBSERVER ceiling permits explicitly authorized reads but denies writes despite Workspace MEMBER and test policy [235.09ms]
+(pass) server-owned tenancy and negative authorization > authorized optimistic writes update only the scoped row and reject stale versions [230.39ms]
+(pass) archival, deletion, and concurrent integrity > restrictive deletes retain workspace, user, team, project, and membership graphs [145.34ms]
+(pass) archival, deletion, and concurrent integrity > archived workspace is readable through policy but rejects helper and direct writes [194.76ms]
+(pass) archival, deletion, and concurrent integrity > team archival rejects active owned projects; archived project is not visible or writable [320.60ms]
+(pass) archival, deletion, and concurrent integrity > last active administrator cannot be demoted, suspended, or deleted [203.92ms]
+(pass) archival, deletion, and concurrent integrity > concurrent administrator demotions preserve at least one active admin [204.97ms]
+(pass) archival, deletion, and concurrent integrity > sequence allocation is atomic; failed writes roll back allocation and retries are explicit [399.85ms]
+(pass) archival, deletion, and concurrent integrity > membership revocation serializes with a scoped transaction and later access is denied [166.24ms]
+(pass) dependency DAG foundation is not prematurely writable > normal valid, invalid, and bulk writes all remain disabled [121.36ms]
+(pass) dependency DAG foundation is not prematurely writable > latent composite FKs, self-link check, and directed uniqueness enforce structure under isolated administrative inspection [206.03ms]
+(pass) keyset pagination is bounded and foreign or out-of-project cursors cannot alter scope [254.36ms]
+(pass) verifier exceptions and non-boolean policy grants remain generic and fail closed [148.62ms]
+(pass) inactive membership cannot become an assignee or create new issue history [116.96ms]
+(pass) PR24 PostgreSQL guard regressions > already-migrated upgrade preserves rows and original history and repairs suspended assignee updates [8616.03ms]
+(pass) PR24 PostgreSQL guard regressions > all five tenant-guarded DELETE operations permit unreferenced nonowner records and restrict owned Team graphs [219.50ms]
+(pass) PR24 PostgreSQL guard regressions > all five tenant-guarded DELETE operations reject archived workspaces [216.36ms]
+(pass) PR24 PostgreSQL guard regressions > unchanged SUSPENDED assignees retain history; new assignments on INSERT and UPDATE are denied [202.32ms]
+(pass) PR24 PostgreSQL guard regressions > unchanged INVITED assignees retain history; new assignments on INSERT and UPDATE are denied [193.37ms]
+(pass) PR24 PostgreSQL guard regressions > issue restoration requires both active project and active team [115.95ms]
+
+1 tests failed:
+(fail) (unnamed) [6110.97ms]
+
+ 35 pass
+ 1 fail
+ 135 expect() calls
+Ran 36 tests across 2 files. [30.36s]

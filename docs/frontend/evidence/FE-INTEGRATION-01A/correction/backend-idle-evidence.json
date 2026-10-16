@@ -1,0 +1,42 @@
+{
+  "base": "76b9391296804265913aa93a838d1381d85d1972",
+  "isolation": "Owned PostgreSQL + Valkey + disposable sentinel-protected Mailpit; ephemeral loopback ports; no shared volumes or QA environment files",
+  "commands": [
+    {
+      "label": "backend-unit",
+      "command": "bun test --no-env-file apps/api/test apps/worker/test packages/backend-runtime/test scripts/backend/architecture.test.ts",
+      "exitCode": 0
+    },
+    {
+      "label": "auth-session",
+      "command": "bun test --no-env-file --preload <evidence>/prisma-node-preload.ts apps/api/verification/authentication-integration.test.ts apps/api/verification/session-integration.test.ts",
+      "exitCode": 0
+    },
+    {
+      "label": "tenancy-fences",
+      "command": "bun test --no-env-file --preload <evidence>/prisma-node-preload.ts scripts/backend/tenancy.test.ts scripts/backend/auth-fences.test.ts",
+      "exitCode": 0
+    }
+  ],
+  "passed": [],
+  "failures": [],
+  "migrations": {
+    "applied": 12,
+    "scope": "owned disposable test database only"
+  },
+  "api": {
+    "ready": 200,
+    "live": 200
+  },
+  "skipped": [
+    {
+      "suite": "Chromium",
+      "reason": "Explicit --backend-only selection; browser gates are reported separately."
+    }
+  ],
+  "mail": {
+    "sentinelsPreserved": 2,
+    "sharedMailpitAccessed": false,
+    "deletions": 0
+  }
+}

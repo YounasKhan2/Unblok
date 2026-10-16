@@ -1,0 +1,2 @@
+$ bun --filter @unblok/web lint
+@unblok/web lint: Exited with code 0

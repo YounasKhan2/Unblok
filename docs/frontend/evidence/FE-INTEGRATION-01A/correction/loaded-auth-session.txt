@@ -1,0 +1,58 @@
+bun test v1.4.2 (744846f84)
+
+apps\api\verification\authentication-integration.test.ts:
+21 |   const child = Bun.spawn([process.execPath, 'packages/database/node_modules/prisma/build/index.js', ...args],
+22 |     { cwd: root, env: { ...process.env, DATABASE_URL: url.toString() }, stdout: 'pipe', stderr: 'pipe' });
+23 |   let timedOut = false; const timer = setTimeout(() => { timedOut = true; child.kill('SIGKILL'); }, 6000);
+24 |   try {
+25 |     const [exit, out] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()]);
+26 |     if (timedOut || exit !== 0) throw new Error('Owned migration verification failed; configuration withheld');
+                                               ^
+error: Owned migration verification failed; configuration withheld
+      at prisma (D:\Full_Stack_Apps\Unblok\apps\api\verification\authentication-integration.test.ts:26:43)
+      at async <anonymous> (D:\Full_Stack_Apps\Unblok\apps\api\verification\authentication-integration.test.ts:32:9)
+(fail) (unnamed) [6442.99ms]
+371 |             // https://github.com/iojs/io.js/pull/1217
+372 |             writable = false;
+373 |         }
+374 |         if (!writable) {
+375 |             if (!this.options.enableOfflineQueue) {
+376 |                 command.reject(new Error("Stream isn't writeable and enableOfflineQueue options is false"));
+                                         ^
+error: Stream isn't writeable and enableOfflineQueue options is false
+      at sendCommand (D:\Full_Stack_Apps\Unblok\node_modules\.bun\ioredis@5.11.1+759ce506b1ed1a42\node_modules\ioredis\built\Redis.js:376:36)
+      at <anonymous> (D:\Full_Stack_Apps\Unblok\apps\api\verification\authentication-integration.test.ts:38:36)
+(fail) (unnamed) [304.52ms]
+
+apps\api\verification\session-integration.test.ts:
+31 |   const child = Bun.spawn([process.execPath, 'packages/database/node_modules/prisma/build/index.js', 'migrate', 'deploy', '--schema', 'packages/database/prisma/schema.prisma'],
+32 |     { cwd: root, env: { ...process.env, DATABASE_URL: dbUrl.toString() }, stdout: 'pipe', stderr: 'pipe' });
+33 |   let timeout = false; const timer = setTimeout(() => { timeout = true; child.kill('SIGKILL'); }, 6000);
+34 |   try {
+35 |     const [code] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()]);
+36 |     if (timeout || code !== 0) throw new Error('Owned migration failed; credentials withheld');
+                                              ^
+error: Owned migration failed; credentials withheld
+      at <anonymous> (D:\Full_Stack_Apps\Unblok\apps\api\verification\session-integration.test.ts:36:42)
+(fail) (unnamed) [6201.10ms]
+[ioredis] Unhandled error event: Error: Stream isn't writeable and enableOfflineQueue options is false
+    at sendCommand (D:\Full_Stack_Apps\Unblok\node_modules\.bun\ioredis@5.11.1+759ce506b1ed1a42\node_modules\ioredis\built\Redis.js:376:36)
+    at <anonymous> (D:\Full_Stack_Apps\Unblok\node_modules\.bun\ioredis@5.11.1+759ce506b1ed1a42\node_modules\ioredis\built\redis\event_handler.js:19:18)
+    at emit (node:events:118:23)
+    at afterConnect (node:net:1826:18)
+    at open (node:net:627:21)
+371 |             // https://github.com/iojs/io.js/pull/1217
+372 |             writable = false;
+373 |         }
+374 |         if (!writable) {
+375 |             if (!this.options.enableOfflineQueue) {
+376 |                 command.reject(new Error("Stream isn't writeable and enableOfflineQueue options is false"));
+                                         ^
+error: Stream isn't writeable and enableOfflineQueue options is false
+      at sendCommand (D:\Full_Stack_Apps\Unblok\node_modules\.bun\ioredis@5.11.1+759ce506b1ed1a42\node_modules\ioredis\built\Redis.js:376:36)
+      at <anonymous> (D:\Full_Stack_Apps\Unblok\apps\api\verification\session-integration.test.ts:43:36)
+(fail) (unnamed) [17.43ms]
+
+ 0 pass
+ 4 fail
+Ran 4 tests across 2 files. [15.20s]

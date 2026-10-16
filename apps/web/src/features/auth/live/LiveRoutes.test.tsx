@@ -49,4 +49,25 @@ describe('real account surfaces and guards',()=>{
     expect(page(anonymous,'/login?returnTo=https%3A%2F%2Fevil.example')).not.toContain('evil.example');
   });
 
+  it('keeps verified Workspace creation available across a delayed read-only session refresh',async()=>{
+    let restore:((response:Response)=>void)|undefined;
+    let first=true;
+    const verified={...user,emailVerified:true};
+    const store=new SessionStore(new AuthApi('',(async()=>{
+      if(first){first=false;return new Response(JSON.stringify({user:verified}));}
+      return new Promise<Response>(resolve=>{restore=resolve;});
+    }) as typeof fetch));
+    await store.refresh();
+    const refreshing=store.refresh();
+    for(const path of ['/onboarding/workspace','/onboarding/workspace?mode=create']){
+      const html=page(store,path);
+      expect(html).toContain('Create your workspace');
+      expect(html).toContain('id="workspace-name"');
+      expect(html).not.toContain('Checking your session');
+      expect(html).not.toContain('Application Navigation');
+    }
+    restore!(new Response(JSON.stringify({user:verified})));await refreshing;
+    expect(page(store,'/onboarding/workspace')).toContain('Create your workspace');
+  });
+
 });

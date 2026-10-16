@@ -1,0 +1,1438 @@
+{
+  "base": "76b9391296804265913aa93a838d1381d85d1972",
+  "isolation": "Owned PostgreSQL + Valkey + disposable sentinel-protected Mailpit; ephemeral loopback ports; no shared volumes or QA environment files",
+  "commands": [
+    {
+      "label": "backend-unit",
+      "command": "bun test --no-env-file apps/api/test apps/worker/test packages/backend-runtime/test scripts/backend/architecture.test.ts",
+      "exitCode": 1
+    },
+    {
+      "label": "auth-session",
+      "command": "bun test --no-env-file --preload <evidence>/prisma-node-preload.ts apps/api/verification/authentication-integration.test.ts apps/api/verification/session-integration.test.ts",
+      "exitCode": 1
+    },
+    {
+      "label": "tenancy-fences",
+      "command": "bun test --no-env-file --preload <evidence>/prisma-node-preload.ts scripts/backend/tenancy.test.ts scripts/backend/auth-fences.test.ts",
+      "exitCode": 1
+    }
+  ],
+  "passed": [
+    "anonymous protected navigation",
+    "unknown account invalid credentials without expiry",
+    "new and duplicate signup identical neutral receipt",
+    "unverified recovery eligibility and no delivery promise",
+    "wrong password same public denial",
+    "real login and explicit verification",
+    "verified account creation navigation survives delayed session restoration",
+    "real Workspace creation and immediate discovery",
+    "lost creation response keeps exact idempotency key and body",
+    "switching, real identity, no demo controls or fabricated counts",
+    "unsupported destinations preserve visible navigation and deny business actions",
+    "existing light/dark preference controls and responsive shell",
+    "keyboard rail toggle, sequence and switcher focus",
+    "existing real Team route remains functional",
+    "real Team creation and metadata editing retain server authority",
+    "delayed Team projection cannot restore old Workspace state",
+    "invitation requires real verified identity and manual proof",
+    "account switching and real invitation continuation",
+    "real member authorization denial",
+    "observed membership revocation removes private projections",
+    "verified recovery requires code; generic receipt is not success",
+    "genuine session revocation uses expiry feedback",
+    "all browser mutations retain same-origin CSRF; no browser runtime errors"
+  ],
+  "failures": [
+    "backend-unit",
+    "auth-session",
+    "tenancy-fences"
+  ],
+  "migrations": {
+    "applied": 12,
+    "scope": "owned disposable test database only"
+  },
+  "api": {
+    "ready": 200,
+    "live": 200
+  },
+  "navigation": [
+    {
+      "step": "anonymous protected navigation",
+      "path": "/my-work"
+    },
+    {
+      "step": "anonymous protected navigation",
+      "path": "/my-work"
+    },
+    {
+      "step": "anonymous protected navigation",
+      "path": "/login"
+    },
+    {
+      "step": "new and duplicate signup identical neutral receipt",
+      "path": "/signup"
+    },
+    {
+      "step": "new and duplicate signup identical neutral receipt",
+      "path": "/signup"
+    },
+    {
+      "step": "new and duplicate signup identical neutral receipt",
+      "path": "/signup"
+    },
+    {
+      "step": "unverified recovery eligibility and no delivery promise",
+      "path": "/forgot-password"
+    },
+    {
+      "step": "unverified recovery eligibility and no delivery promise",
+      "path": "/forgot-password"
+    },
+    {
+      "step": "wrong password same public denial",
+      "path": "/login"
+    },
+    {
+      "step": "wrong password same public denial",
+      "path": "/login"
+    },
+    {
+      "step": "real login and explicit verification",
+      "path": "/login"
+    },
+    {
+      "step": "real login and explicit verification",
+      "path": "/account"
+    },
+    {
+      "step": "real login and explicit verification",
+      "path": "/account"
+    },
+    {
+      "step": "real login and explicit verification",
+      "path": "/verify-email"
+    },
+    {
+      "step": "real login and explicit verification",
+      "path": "/account"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/onboarding/workspace"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/account"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/account"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/onboarding/workspace"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/account"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/account"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/onboarding/workspace"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/account"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/account"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/onboarding/workspace"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/account"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/account"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/onboarding/workspace"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/account"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/account"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/onboarding/workspace"
+    },
+    {
+      "step": "real Workspace creation and immediate discovery",
+      "path": "/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a"
+    },
+    {
+      "step": "real Workspace creation and immediate discovery",
+      "path": "/my-work"
+    },
+    {
+      "step": "lost creation response keeps exact idempotency key and body",
+      "path": "/onboarding/workspace"
+    },
+    {
+      "step": "lost creation response keeps exact idempotency key and body",
+      "path": "/workspaces/e662b481-3cb5-478a-8111-2e701f2e34c4"
+    },
+    {
+      "step": "lost creation response keeps exact idempotency key and body",
+      "path": "/my-work"
+    },
+    {
+      "step": "switching, real identity, no demo controls or fabricated counts",
+      "path": "/my-work"
+    },
+    {
+      "step": "unsupported destinations preserve visible navigation and deny business actions",
+      "path": "/projects"
+    },
+    {
+      "step": "unsupported destinations preserve visible navigation and deny business actions",
+      "path": "/cycles"
+    },
+    {
+      "step": "unsupported destinations preserve visible navigation and deny business actions",
+      "path": "/milestones"
+    },
+    {
+      "step": "unsupported destinations preserve visible navigation and deny business actions",
+      "path": "/roadmap"
+    },
+    {
+      "step": "unsupported destinations preserve visible navigation and deny business actions",
+      "path": "/dependencies"
+    },
+    {
+      "step": "unsupported destinations preserve visible navigation and deny business actions",
+      "path": "/insights"
+    },
+    {
+      "step": "unsupported destinations preserve visible navigation and deny business actions",
+      "path": "/inbox"
+    },
+    {
+      "step": "unsupported destinations preserve visible navigation and deny business actions",
+      "path": "/my-work"
+    },
+    {
+      "step": "existing light/dark preference controls and responsive shell",
+      "path": "/settings/preferences"
+    },
+    {
+      "step": "keyboard rail toggle, sequence and switcher focus",
+      "path": "/my-work"
+    },
+    {
+      "step": "existing real Team route remains functional",
+      "path": "/teams"
+    },
+    {
+      "step": "existing real Team route remains functional",
+      "path": "/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/teams"
+    },
+    {
+      "step": "real Team creation and metadata editing retain server authority",
+      "path": "/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/teams/f635ed1a-83d4-407b-b496-a0f7ac148ca2"
+    },
+    {
+      "step": "delayed Team projection cannot restore old Workspace state",
+      "path": "/teams"
+    },
+    {
+      "step": "delayed Team projection cannot restore old Workspace state",
+      "path": "/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/teams"
+    },
+    {
+      "step": "delayed Team projection cannot restore old Workspace state",
+      "path": "/my-work"
+    },
+    {
+      "step": "invitation requires real verified identity and manual proof",
+      "path": "/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/members"
+    },
+    {
+      "step": "invitation requires real verified identity and manual proof",
+      "path": "/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/members"
+    },
+    {
+      "step": "invitation requires real verified identity and manual proof",
+      "path": "/invite"
+    },
+    {
+      "step": "invitation requires real verified identity and manual proof",
+      "path": "/invite"
+    },
+    {
+      "step": "invitation requires real verified identity and manual proof",
+      "path": "/account"
+    },
+    {
+      "step": "invitation requires real verified identity and manual proof",
+      "path": "/account"
+    },
+    {
+      "step": "invitation requires real verified identity and manual proof",
+      "path": "/login"
+    },
+    {
+      "step": "invitation requires real verified identity and manual proof",
+      "path": "/login"
+    },
+    {
+      "step": "invitation requires real verified identity and manual proof",
+      "path": "/login"
+    },
+    {
+      "step": "account switching and real invitation continuation",
+      "path": "/invite"
+    },
+    {
+      "step": "account switching and real invitation continuation",
+      "path": "/invite"
+    },
+    {
+      "step": "account switching and real invitation continuation",
+      "path": "/signup"
+    },
+    {
+      "step": "account switching and real invitation continuation",
+      "path": "/login"
+    },
+    {
+      "step": "account switching and real invitation continuation",
+      "path": "/invite"
+    },
+    {
+      "step": "account switching and real invitation continuation",
+      "path": "/invite"
+    },
+    {
+      "step": "account switching and real invitation continuation",
+      "path": "/verify-email"
+    },
+    {
+      "step": "account switching and real invitation continuation",
+      "path": "/invite"
+    },
+    {
+      "step": "account switching and real invitation continuation",
+      "path": "/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a"
+    },
+    {
+      "step": "account switching and real invitation continuation",
+      "path": "/my-work"
+    },
+    {
+      "step": "real member authorization denial",
+      "path": "/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/members"
+    },
+    {
+      "step": "real member authorization denial",
+      "path": "/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/members"
+    },
+    {
+      "step": "observed membership revocation removes private projections",
+      "path": "/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a"
+    },
+    {
+      "step": "observed membership revocation removes private projections",
+      "path": "/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a"
+    },
+    {
+      "step": "observed membership revocation removes private projections",
+      "path": "/my-work"
+    },
+    {
+      "step": "observed membership revocation removes private projections",
+      "path": "/account"
+    },
+    {
+      "step": "verified recovery requires code; generic receipt is not success",
+      "path": "/account"
+    },
+    {
+      "step": "verified recovery requires code; generic receipt is not success",
+      "path": "/login"
+    },
+    {
+      "step": "verified recovery requires code; generic receipt is not success",
+      "path": "/login"
+    },
+    {
+      "step": "verified recovery requires code; generic receipt is not success",
+      "path": "/login"
+    },
+    {
+      "step": "verified recovery requires code; generic receipt is not success",
+      "path": "/forgot-password"
+    },
+    {
+      "step": "verified recovery requires code; generic receipt is not success",
+      "path": "/forgot-password"
+    },
+    {
+      "step": "verified recovery requires code; generic receipt is not success",
+      "path": "/reset-password"
+    },
+    {
+      "step": "verified recovery requires code; generic receipt is not success",
+      "path": "/login"
+    },
+    {
+      "step": "verified recovery requires code; generic receipt is not success",
+      "path": "/login"
+    },
+    {
+      "step": "verified recovery requires code; generic receipt is not success",
+      "path": "/account"
+    },
+    {
+      "step": "verified recovery requires code; generic receipt is not success",
+      "path": "/account"
+    },
+    {
+      "step": "genuine session revocation uses expiry feedback",
+      "path": "/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a"
+    },
+    {
+      "step": "genuine session revocation uses expiry feedback",
+      "path": "/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a"
+    },
+    {
+      "step": "genuine session revocation uses expiry feedback",
+      "path": "/my-work"
+    },
+    {
+      "step": "genuine session revocation uses expiry feedback",
+      "path": "/login"
+    }
+  ],
+  "unavailableControls": [
+    {
+      "page": "Projects",
+      "controls": [
+        {
+          "tag": "INPUT",
+          "label": "Filter projects... (/)",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "",
+          "disabled": true
+        },
+        {
+          "tag": "SELECT",
+          "label": "Filter by team",
+          "disabled": true
+        },
+        {
+          "tag": "SELECT",
+          "label": "Filter by execution posture",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Reset",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Create project",
+          "disabled": true
+        }
+      ]
+    },
+    {
+      "page": "Cycles",
+      "controls": [
+        {
+          "tag": "SELECT",
+          "label": "All Teams",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Create Cycle",
+          "disabled": true
+        }
+      ]
+    },
+    {
+      "page": "Milestones",
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "label": "Create Milestone",
+          "disabled": true
+        }
+      ]
+    },
+    {
+      "page": "Roadmap",
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "label": "By Team",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "By Assignee",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Previous date range",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Today",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Next date range",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Schedule Work",
+          "disabled": true
+        },
+        {
+          "tag": "INPUT",
+          "label": "Filter by key or title...",
+          "disabled": true
+        },
+        {
+          "tag": "SELECT",
+          "label": "All Teams",
+          "disabled": true
+        },
+        {
+          "tag": "SELECT",
+          "label": "All Assignees",
+          "disabled": true
+        },
+        {
+          "tag": "SELECT",
+          "label": "All Cycles",
+          "disabled": true
+        },
+        {
+          "tag": "SELECT",
+          "label": "All Milestones",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Blocked Only",
+          "disabled": true
+        }
+      ]
+    },
+    {
+      "page": "Dependencies",
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "label": "Add Dependency",
+          "disabled": true
+        }
+      ]
+    },
+    {
+      "page": "Insights",
+      "controls": []
+    },
+    {
+      "page": "Inbox",
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "label": "Mark all read",
+          "disabled": true
+        }
+      ]
+    },
+    {
+      "page": "My Work",
+      "controls": [
+        {
+          "tag": "INPUT",
+          "label": "Filter tasks... (/)",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "",
+          "disabled": true
+        },
+        {
+          "tag": "SELECT",
+          "label": "Filter by state",
+          "disabled": true
+        },
+        {
+          "tag": "SELECT",
+          "label": "Filter by priority",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Create TaskNewC",
+          "disabled": true
+        }
+      ]
+    }
+  ],
+  "http": [
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "status": 401,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/signup",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/signup",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/password-recovery/request",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "status": 401,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/email-verification/request",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/email-verification/confirm",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/email-verification/status",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 201,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 201,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces/e662b481-3cb5-478a-8111-2e701f2e34c4",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/e662b481-3cb5-478a-8111-2e701f2e34c4/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/e662b481-3cb5-478a-8111-2e701f2e34c4/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/e662b481-3cb5-478a-8111-2e701f2e34c4/teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/teams",
+      "status": 201,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/teams/f635ed1a-83d4-407b-b496-a0f7ac148ca2",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/teams/f635ed1a-83d4-407b-b496-a0f7ac148ca2",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/teams/f635ed1a-83d4-407b-b496-a0f7ac148ca2",
+      "status": 200,
+      "method": "PATCH"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/e662b481-3cb5-478a-8111-2e701f2e34c4",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/e662b481-3cb5-478a-8111-2e701f2e34c4/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/e662b481-3cb5-478a-8111-2e701f2e34c4/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/e662b481-3cb5-478a-8111-2e701f2e34c4/teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/invitations",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/logout",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/signup",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/email-verification/request",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/email-verification/confirm",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/email-verification/status",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspace-invitations/accept",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/memberships",
+      "status": 404,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/e662b481-3cb5-478a-8111-2e701f2e34c4",
+      "status": 404,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/me",
+      "status": 404,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a",
+      "status": 404,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/logout",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/password-recovery/request",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/password-recovery/confirm",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/logout-all",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    }
+  ],
+  "mutationSecurity": [
+    {
+      "path": "/api/v1/auth/login",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/auth/signup",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/auth/signup",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/auth/password-recovery/request",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/auth/email-verification/request",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/auth/email-verification/confirm",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/teams",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/teams/f635ed1a-83d4-407b-b496-a0f7ac148ca2",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/workspaces/38607a43-0732-42f3-9972-dc19694a0e9a/invitations",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/auth/logout",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/auth/signup",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/auth/email-verification/request",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/auth/email-verification/confirm",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/workspace-invitations/accept",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/auth/logout",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/auth/password-recovery/request",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/auth/password-recovery/confirm",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/auth/logout-all",
+      "csrf": true,
+      "origin": true
+    }
+  ],
+  "mail": {
+    "sentinelsPreserved": 2,
+    "sharedMailpitAccessed": false,
+    "deletions": 0
+  }
+}

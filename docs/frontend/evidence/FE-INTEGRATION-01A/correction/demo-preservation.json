@@ -1,0 +1,2358 @@
+{
+  "scope": "Fresh isolated browser contexts; /demo only; API requests blocked",
+  "sides": {
+    "baseline": {
+      "passed": [
+        "original ten destinations, SVG icons, separators and shell dimensions",
+        "drawer and Escape interaction",
+        "original Create Issue form and cancel",
+        "command palette shortcut and help overlay",
+        "rail keyboard dimensions and G P navigation",
+        "three flagged dark pages, repeated raster and point diagnostics",
+        "dependency graph, view shortcuts and filters",
+        "Workspace selection, keyboard dismissal and real original menu",
+        "demo reset, restore and test-role controls",
+        "light/dark and mobile navigation retain original layout"
+      ],
+      "captures": [
+        "drawer",
+        "create-issue",
+        "palette",
+        "help",
+        "project-filter",
+        "projects-0",
+        "projects-1",
+        "projects-2",
+        "teams-0",
+        "teams-1",
+        "teams-2",
+        "dependencies-0",
+        "dependencies-1",
+        "dependencies-2",
+        "dependency-matrix",
+        "dependency-blockers",
+        "test-roles",
+        "mobile-light",
+        "mobile-dark"
+      ],
+      "contracts": {
+        "shell": {
+          "classes": "w-[220px] shrink-0 bg-surface-subtle border-r border-border h-full hidden md:flex flex-col justify-between select-none transition-all duration-150 z-30",
+          "width": 220,
+          "height": 1000,
+          "links": [
+            {
+              "text": "My Work",
+              "href": "/demo/my-work",
+              "classes": "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[5px] transition-colors cursor-pointer group relative bg-surface-muted font-semibold text-text-primary active",
+              "icons": [
+                "<path d=\"M21 10.656V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12.344\"></path><path d=\"m9 11 3 3L22 4\"></path>"
+              ]
+            },
+            {
+              "text": "Inbox5",
+              "href": "/demo/inbox",
+              "classes": "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[5px] transition-colors cursor-pointer group relative text-text-secondary hover:bg-surface-muted hover:text-text-primary",
+              "icons": [
+                "<polyline points=\"22 12 16 12 14 15 10 15 8 12 2 12\"></polyline><path d=\"M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z\"></path>"
+              ]
+            },
+            {
+              "text": "Projects",
+              "href": "/demo/projects",
+              "classes": "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[5px] transition-colors cursor-pointer group relative text-text-secondary hover:bg-surface-muted hover:text-text-primary",
+              "icons": [
+                "<path d=\"M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z\"></path><path d=\"M8 10v4\"></path><path d=\"M12 10v2\"></path><path d=\"M16 10v6\"></path>"
+              ]
+            },
+            {
+              "text": "Teams",
+              "href": "/demo/teams",
+              "classes": "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[5px] transition-colors cursor-pointer group relative text-text-secondary hover:bg-surface-muted hover:text-text-primary",
+              "icons": [
+                "<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"></path><path d=\"M16 3.128a4 4 0 0 1 0 7.744\"></path><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"></path><circle cx=\"9\" cy=\"7\" r=\"4\"></circle>"
+              ]
+            },
+            {
+              "text": "Cycles24",
+              "href": "/demo/cycles",
+              "classes": "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[5px] transition-colors cursor-pointer group relative text-text-secondary hover:bg-surface-muted hover:text-text-primary",
+              "icons": [
+                "<path d=\"M12 6v6l4 2\"></path><circle cx=\"12\" cy=\"12\" r=\"10\"></circle>"
+              ]
+            },
+            {
+              "text": "Milestones3",
+              "href": "/demo/milestones",
+              "classes": "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[5px] transition-colors cursor-pointer group relative text-text-secondary hover:bg-surface-muted hover:text-text-primary",
+              "icons": [
+                "<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><circle cx=\"12\" cy=\"12\" r=\"6\"></circle><circle cx=\"12\" cy=\"12\" r=\"2\"></circle>"
+              ]
+            },
+            {
+              "text": "Roadmap",
+              "href": "/demo/roadmap",
+              "classes": "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[5px] transition-colors cursor-pointer group relative text-text-secondary hover:bg-surface-muted hover:text-text-primary",
+              "icons": [
+                "<rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\"></rect><path d=\"M16 2v4\"></path><path d=\"M3 10h18\"></path><path d=\"M8 2v4\"></path><path d=\"M17 14h-6\"></path><path d=\"M13 18H7\"></path><path d=\"M7 14h.01\"></path><path d=\"M17 18h.01\"></path>"
+              ]
+            },
+            {
+              "text": "Dependencies14",
+              "href": "/demo/dependencies",
+              "classes": "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[5px] transition-colors cursor-pointer group relative text-text-secondary hover:bg-surface-muted hover:text-text-primary",
+              "icons": [
+                "<circle cx=\"12\" cy=\"18\" r=\"3\"></circle><circle cx=\"6\" cy=\"6\" r=\"3\"></circle><circle cx=\"18\" cy=\"6\" r=\"3\"></circle><path d=\"M18 9v2c0 .6-.4 1-1 1H7c-.6 0-1-.4-1-1V9\"></path><path d=\"M12 12v3\"></path>"
+              ]
+            },
+            {
+              "text": "Insights",
+              "href": "/demo/insights",
+              "classes": "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[5px] transition-colors cursor-pointer group relative text-text-secondary hover:bg-surface-muted hover:text-text-primary",
+              "icons": [
+                "<path d=\"M3 3v16a2 2 0 0 0 2 2h16\"></path><path d=\"M18 17V9\"></path><path d=\"M13 17V5\"></path><path d=\"M8 17v-3\"></path>"
+              ]
+            },
+            {
+              "text": "Settings",
+              "href": "/demo/settings",
+              "classes": "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[5px] transition-colors cursor-pointer text-text-secondary hover:bg-surface-muted hover:text-text-primary",
+              "icons": [
+                "<path d=\"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915\"></path><circle cx=\"12\" cy=\"12\" r=\"3\"></circle>"
+              ]
+            },
+            {
+              "text": "ARAlex RiveraMEMBER",
+              "href": "/demo/settings/preferences",
+              "classes": "flex items-center gap-2 flex-1 min-w-0",
+              "icons": []
+            }
+          ],
+          "separators": [
+            "my-1 border-t border-border mx-1",
+            "my-1 border-t border-border mx-1",
+            "my-1 border-t border-border mx-1",
+            "p-1.5 border-t border-border space-y-0.5 text-xs",
+            "pt-1 border-t border-border mt-1 relative"
+          ]
+        },
+        "filteredProjects": "Projects Directory\n·\nEngineering Projects & Delivery Streams\n0 projects\nAll Teams\nCommerce Platform (CORE)\nStorefront Experience (WEB)\nCommerce Services (SERV)\nPayments & Risk (PAY)\nInfrastructure & Reliability (INF)\nQuality Engineering (QA)\nAll Statuses\nHas Blockers\nActive Work\nReset\nCreate project\nNo projects match your active filters\n\nTry adjusting your search terms or clearing the team/status filters.\n\nClear All Filters",
+        "projects": {
+          "text": "Projects Directory\n·\nEngineering Projects & Delivery Streams\n1 project\nAll Teams\nCommerce Platform (CORE)\nStorefront Experience (WEB)\nCommerce Services (SERV)\nPayments & Risk (PAY)\nInfrastructure & Reliability (INF)\nQuality Engineering (QA)\nAll Statuses\nHas Blockers\nActive Work\nCreate project\nKEY\nPROJECT & DESCRIPTION\nOWNING TEAM\nACTIVE WORK\nBLOCKERS\nACTIVE CYCLE\nPROGRESS\nNEX\nNEXUS — Omnichannel Commerce Platform\nUnify storefront, catalog, checkout, payments, orders, inventory, and fulfillment behind reliable commerce services.\nCommerce Platform\n180/ 300\n14 blocked\nNEXUS Cycle 11\n35%",
+          "classes": "flex-1 flex min-w-0 overflow-hidden relative",
+          "controls": [
+            {
+              "tag": "INPUT",
+              "text": "",
+              "label": null,
+              "placeholder": "Filter projects... (/)",
+              "disabled": false,
+              "classes": "h-7 w-36 sm:w-48 pl-8 pr-7 bg-surface-muted border border-border rounded-[5px] text-xs text-text-primary placeholder:text-text-muted focus:bg-surface-base focus:border-accent focus:outline-none transition-all"
+            },
+            {
+              "tag": "SELECT",
+              "text": "All TeamsCommerce Platform (CORE)Storefront Experience (WEB)Commerce Services (SERV)Payments & Risk (PAY)Infrastructure & Reliability (INF)Quality Engineering (QA)",
+              "label": "Filter by team",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "h-7 px-2 bg-surface-muted border border-border rounded-[5px] text-xs text-text-secondary hover:border-border-strong focus:outline-none cursor-pointer"
+            },
+            {
+              "tag": "SELECT",
+              "text": "All StatusesHas BlockersActive Work",
+              "label": "Filter by execution posture",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "h-7 px-2 bg-surface-muted border border-border rounded-[5px] text-xs text-text-secondary hover:border-border-strong focus:outline-none cursor-pointer"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Create project",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "inline-flex items-center justify-center font-medium transition-colors select-none rounded-[6px] focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-xs px-2.5 py-1 gap-1.5 h-7 bg-accent hover:opacity-90 active:opacity-80 text-white shadow-xs "
+            }
+          ],
+          "points": [
+            {
+              "point": [
+                257,
+                14
+              ],
+              "tag": "DIV",
+              "classes": "w-6 h-6 rounded-[5px] bg-accent text-white flex items-center justify-center font-bold text-xs shadow-2xs hover:opacity-90 transition-opacity",
+              "box": [
+                234,
+                9.5,
+                24,
+                24
+              ],
+              "background": "rgb(124, 108, 240)",
+              "color": "rgb(255, 255, 255)",
+              "border": "rgb(255, 255, 255)"
+            },
+            {
+              "point": [
+                971,
+                77
+              ],
+              "tag": "INPUT",
+              "classes": "h-7 w-36 sm:w-48 pl-8 pr-7 bg-surface-muted border border-border rounded-[5px] text-xs text-text-primary placeholder:text-text-muted focus:bg-surface-base focus:border-accent focus:outline-none transition-all",
+              "box": [
+                781.40625,
+                52,
+                192,
+                28
+              ],
+              "background": "rgb(39, 39, 42)",
+              "color": "rgb(244, 244, 245)",
+              "border": "rgb(46, 46, 50)"
+            },
+            {
+              "point": [
+                15,
+                968
+              ],
+              "tag": "DIV",
+              "classes": "rounded-full bg-[#e6e0f5] text-[#5645d4] font-semibold flex items-center justify-center shrink-0 border border-[#d2c6ed] w-4 h-4 text-[9px] ",
+              "box": [
+                10,
+                967.828125,
+                16,
+                16
+              ],
+              "background": "rgb(230, 224, 245)",
+              "color": "rgb(86, 69, 212)",
+              "border": "rgb(210, 198, 237)"
+            },
+            {
+              "point": [
+                740,
+                212
+              ],
+              "tag": "DIV",
+              "classes": "flex-1 overflow-y-auto min-h-0 bg-canvas",
+              "box": [
+                220,
+                89,
+                1220,
+                911
+              ],
+              "background": "rgb(15, 15, 17)",
+              "color": "rgb(244, 244, 245)",
+              "border": "rgb(244, 244, 245)"
+            }
+          ]
+        },
+        "teams": {
+          "text": "Teams\n·\n6 total\n\nBrowse teams, their members, and owned projects across this workspace.\n\nAdmin required to create teams\nAll Teams\nActive Teams\nArchived Teams\nTEAM\tMEMBERS\tPROJECTS\tACTIVE WORK\tACTION\n\nCO\nCommerce Platform\nCORE\n\nCommerce Platform owns its functional delivery work and contributes to the NEXUS platform through shared contracts and release coordination.\n\n\t\n8 members\n\t\n1 projects\n\t\n14 active\n\t\nView Hub\n\n\nWE\nStorefront Experience\nWEB\n\nStorefront Experience owns its functional delivery work and contributes to the NEXUS platform through shared contracts and release coordination.\n\n\t\n7 members\n\t\n0 projects\n\t\n41 active\n\t\nView Hub\n\n\nSE\nCommerce Services\nSERV\n\nCommerce Services owns its functional delivery work and contributes to the NEXUS platform through shared contracts and release coordination.\n\n\t\n6 members\n\t\n0 projects\n\t\n69 active\n\t\nView Hub\n\n\nPA\nPayments & Risk\nPAY\n\nPayments & Risk owns its functional delivery work and contributes to the NEXUS platform through shared contracts and release coordination.\n\n\t\n5 members\n\t\n0 projects\n\t\n14 active\n\t\nView Hub\n\n\nIN\nInfrastructure & Reliability\nINF\n\nInfrastructure & Reliability owns its functional delivery work and contributes to the NEXUS platform through shared contracts and release coordination.\n\n\t\n6 members\n\t\n0 projects\n\t\n28 active\n\t\nView Hub\n\n\nQA\nQuality Engineering\nQA\n\nQuality Engineering owns its functional delivery work and contributes to the NEXUS platform through shared contracts and release coordination.\n\n\t\n5 members\n\t\n0 projects\n\t\n14 active\n\t\nView Hub",
+          "classes": "flex-1 flex min-w-0 overflow-hidden relative",
+          "controls": [
+            {
+              "tag": "INPUT",
+              "text": "",
+              "label": null,
+              "placeholder": "Search teams...",
+              "disabled": false,
+              "classes": "w-full text-xs pl-8 pr-3 py-1.5 bg-surface-base border border-border rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "all teams",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "px-3 py-1 rounded-md font-medium capitalize transition-colors cursor-pointer bg-surface-elevated text-text-primary shadow-xs"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "active teams",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "px-3 py-1 rounded-md font-medium capitalize transition-colors cursor-pointer text-text-muted hover:text-text-primary"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "archived teams",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "px-3 py-1 rounded-md font-medium capitalize transition-colors cursor-pointer text-text-muted hover:text-text-primary"
+            }
+          ],
+          "points": [
+            {
+              "point": [
+                257,
+                14
+              ],
+              "tag": "DIV",
+              "classes": "w-6 h-6 rounded-[5px] bg-accent text-white flex items-center justify-center font-bold text-xs shadow-2xs hover:opacity-90 transition-opacity",
+              "box": [
+                234,
+                9.5,
+                24,
+                24
+              ],
+              "background": "rgb(124, 108, 240)",
+              "color": "rgb(255, 255, 255)",
+              "border": "rgb(255, 255, 255)"
+            },
+            {
+              "point": [
+                971,
+                77
+              ],
+              "tag": "DIV",
+              "classes": "border-b border-border bg-surface-base px-4 py-2 shrink-0 flex flex-wrap items-center justify-between gap-3",
+              "box": [
+                220,
+                44,
+                1220,
+                55
+              ],
+              "background": "rgb(24, 24, 27)",
+              "color": "rgb(244, 244, 245)",
+              "border": "rgb(46, 46, 50)"
+            },
+            {
+              "point": [
+                15,
+                968
+              ],
+              "tag": "DIV",
+              "classes": "rounded-full bg-[#e6e0f5] text-[#5645d4] font-semibold flex items-center justify-center shrink-0 border border-[#d2c6ed] w-4 h-4 text-[9px] ",
+              "box": [
+                10,
+                967.828125,
+                16,
+                16
+              ],
+              "background": "rgb(230, 224, 245)",
+              "color": "rgb(86, 69, 212)",
+              "border": "rgb(210, 198, 237)"
+            },
+            {
+              "point": [
+                740,
+                212
+              ],
+              "tag": "TD",
+              "classes": "py-3 px-4",
+              "box": [
+                245,
+                212,
+                640.28125,
+                60.984375
+              ],
+              "background": "rgba(0, 0, 0, 0)",
+              "color": "rgb(244, 244, 245)",
+              "border": "rgb(244, 244, 245)"
+            }
+          ]
+        },
+        "dependencies": {
+          "text": "Dependency Intelligence\n\nWorkspace execution graph and blocker analysis\n·\n15 Active Blockers\n·\n14 Cross-Team\n·\n5 Bottlenecks\n\nAdd Dependency\n15 Active Edges\n14 Blocked Issues\n14 Cross-Team\n0 Cross-Project\n5 Bottlenecks\nDepth: 3\n0 Resolved History\nGraph Canvas\n1\nCross-Team Matrix\n2\nActive Blockers\n3\nAll Teams\nCommerce Platform (CORE)\nStorefront Experience (WEB)\nCommerce Services (SERV)\nPayments & Risk (PAY)\nInfrastructure & Reliability (INF)\nQuality Engineering (QA)\nAll Projects\nNEXUS — Omnichannel Commerce Platform (NEX)\nActive Only\nResolved Only\nActive & Resolved\nCross-Team\nAdd Dependency\n100%\nCritical Path (dependency depth)\n3\nTopological depth\nNEX-131\nIN REVIEW\nAdd session revocation — Identity\nUnblocked\n2\nCORE\nNEX-246\nBACKLOG\nHarden audit integrity — Security\nUnblocked\nINF\nNEX-213\nTODO\nHarden 3DS challenge — Payments\nUnblocked\n2\nPAY\nNEX-156\nIN PROGRESS\nAdd browser matrix — Quality\nUnblocked\n2\nQA\nNEX-182\nIN PROGRESS\nAdd load testing — Quality\nUnblocked\nQA\nNEX-157\nIN PROGRESS\nAdd merchant permissions — Identity\nBlocked (1)\nCORE\nNEX-183\nIN PROGRESS\nAdd address permissions — Identity\nBlocked (1)\nCORE\nNEX-247\nBACKLOG\nHarden load testing — Quality\nBlocked (1)\nQA\nNEX-132\nIN REVIEW\nAdd variant indexing — Catalog\nBlocked (1)\nSERV\nNEX-214\nTODO\nHarden returns intake — Orders\nBlocked (1)\nSERV\nNEX-216\nTODO\nHarden label purchase — Fulfillment\nBlocked (1)\nSERV\nNEX-134\nIN REVIEW\nAdd cart merge — Checkout\nBlocked (1)\nWEB\nNEX-159\nIN PROGRESS\nAdd autocomplete — Search\nBlocked (1)\nWEB\nNEX-248\nBACKLOG\nHarden address permissions — Identity\nBlocked (1)\nCORE\nNEX-158\nIN PROGRESS\nAdd product import — Catalog\nBlocked (1)\nSERV\nNEX-184\nIN PROGRESS\nAdd stock signals — Catalog\nBlocked (1)\nSERV\nNEX-215\nTODO\nHarden warehouse routing — Inventory\nBlocked (1)\nSERV\nNEX-133\nIN REVIEW\nAdd facet filtering — Search\nBlocked (1)\nWEB\nNEX-135\nIN REVIEW\nAdd authorization retries — Payments\nBlocked (2)\nPAY\nDAG Legend\nA BLOCKS B\nActive Blocker\nResolved History\nBlocked Issue\nBottleneck\nHigh Impact Bottlenecks\nRanked deterministically by active transitive downstream blast radius.\n#1\nNEX-131\nIN REVIEW\n\nAdd session revocation — Identity\n\nBlocks 4 downstream issues\n3 teams\n1 project\n#2\nNEX-156\nIN PROGRESS\n\nAdd browser matrix — Quality\n\nBlocks 3 downstream issues\n3 teams\n1 project\n#3\nNEX-213\nTODO\n\nHarden 3DS challenge — Payments\n\nBlocks 3 downstream issues\n1 team\n1 project\n#4\nNEX-132\nIN REVIEW\n\nAdd variant indexing — Catalog\n\nBlocks 2 downstream issues\n2 teams\n1 project\n#5\nNEX-182\nIN PROGRESS\n\nAdd load testing — Quality\n\nBlocks 2 downstream issues\n2 teams\n1 project",
+          "classes": "flex-1 flex min-w-0 overflow-hidden relative",
+          "controls": [
+            {
+              "tag": "BUTTON",
+              "text": "Add Dependency",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] bg-accent hover:bg-primary-pressed text-white text-xs font-semibold cursor-pointer shadow-xs transition-colors"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Graph Canvas1",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "inline-flex items-center gap-1.5 px-3 py-1 rounded-[4px] text-xs font-medium cursor-pointer transition-colors bg-surface-base text-text-primary shadow-xs border border-border"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Cross-Team Matrix2",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "inline-flex items-center gap-1.5 px-3 py-1 rounded-[4px] text-xs font-medium cursor-pointer transition-colors text-text-secondary hover:text-text-primary"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Active Blockers3",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "inline-flex items-center gap-1.5 px-3 py-1 rounded-[4px] text-xs font-medium cursor-pointer transition-colors text-text-secondary hover:text-text-primary"
+            },
+            {
+              "tag": "INPUT",
+              "text": "",
+              "label": "Filter dependencies by issue key or title",
+              "placeholder": "Search key or title...",
+              "disabled": false,
+              "classes": "pl-8 pr-2.5 py-1 text-xs rounded-[4px] border border-border bg-surface-subtle focus:bg-surface-base focus:outline-none focus:ring-1 focus:ring-accent w-36 sm:w-44 text-text-primary"
+            },
+            {
+              "tag": "SELECT",
+              "text": "All TeamsCommerce Platform (CORE)Storefront Experience (WEB)Commerce Services (SERV)Payments & Risk (PAY)Infrastructure & Reliability (INF)Quality Engineering (QA)",
+              "label": "Filter by Team",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "px-2 py-1 text-xs rounded-[4px] border border-border bg-surface-subtle text-text-primary hover:bg-surface-base focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer"
+            },
+            {
+              "tag": "SELECT",
+              "text": "All ProjectsNEXUS — Omnichannel Commerce Platform (NEX)",
+              "label": "Filter by Project",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "px-2 py-1 text-xs rounded-[4px] border border-border bg-surface-subtle text-text-primary hover:bg-surface-base focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer"
+            },
+            {
+              "tag": "SELECT",
+              "text": "Active OnlyResolved OnlyActive & Resolved",
+              "label": "Filter by dependency status",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "px-2 py-1 text-xs rounded-[4px] border border-border bg-surface-subtle text-text-primary hover:bg-surface-base focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Cross-Team",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] border text-xs font-medium cursor-pointer transition-colors bg-surface-base border-border text-text-secondary hover:bg-surface-subtle"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Add Dependency",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "inline-flex items-center gap-1.5 px-3 py-1 rounded-[4px] bg-accent hover:bg-primary-pressed text-white text-xs font-semibold cursor-pointer shadow-xs transition-colors shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Zoom in",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1.5 hover:bg-surface-subtle text-text-secondary hover:text-text-primary rounded-[4px] cursor-pointer transition-colors"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Zoom out",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1.5 hover:bg-surface-subtle text-text-secondary hover:text-text-primary rounded-[4px] cursor-pointer transition-colors"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Reset zoom and pan",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1.5 hover:bg-surface-subtle text-text-secondary hover:text-text-primary rounded-[4px] cursor-pointer transition-colors"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Fit graph to canvas",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1.5 hover:bg-surface-subtle text-text-secondary hover:text-text-primary rounded-[4px] cursor-pointer transition-colors"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Critical Path (dependency depth)3",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[6px] border text-xs font-medium cursor-pointer shadow-xs transition-colors backdrop-blur-xs bg-surface-base/95 border-border text-text-secondary hover:text-text-primary hover:bg-surface-subtle"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-131 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-246 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-213 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-156 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-182 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-157 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-183 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-247 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-132 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-214 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-216 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-134 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-159 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-248 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-158 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-184 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-215 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-133 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-135 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Collapse Bottlenecks Panel",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted rounded-[4px] cursor-pointer"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-131 in drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] cursor-pointer"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-156 in drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] cursor-pointer"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-213 in drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] cursor-pointer"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-132 in drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] cursor-pointer"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-182 in drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] cursor-pointer"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-131",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-132",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-131 and NEX-132",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-132",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-133",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-132 and NEX-133",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-131",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-134",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-131 and NEX-134",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-133",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-135",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-133 and NEX-135",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-134",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-135",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-134 and NEX-135",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-156",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-157",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-156 and NEX-157",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-157",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-158",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-157 and NEX-158",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-156",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-159",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-156 and NEX-159",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-182",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-183",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-182 and NEX-183",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-183",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-184",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-183 and NEX-184",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-213",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-214",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-213 and NEX-214",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-214",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-215",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-214 and NEX-215",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-213",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-216",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-213 and NEX-216",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-246",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-247",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-246 and NEX-247",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-247",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-248",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-247 and NEX-248",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            }
+          ],
+          "points": [
+            {
+              "point": [
+                257,
+                14
+              ],
+              "tag": "DIV",
+              "classes": "w-6 h-6 rounded-[5px] bg-accent text-white flex items-center justify-center font-bold text-xs shadow-2xs hover:opacity-90 transition-opacity",
+              "box": [
+                234,
+                9.5,
+                24,
+                24
+              ],
+              "background": "rgb(124, 108, 240)",
+              "color": "rgb(255, 255, 255)",
+              "border": "rgb(255, 255, 255)"
+            },
+            {
+              "point": [
+                971,
+                77
+              ],
+              "tag": "HEADER",
+              "classes": "border-b border-border bg-surface-base px-4 py-2.5 flex items-center justify-between shrink-0 select-none",
+              "box": [
+                220,
+                44,
+                1220,
+                59.5
+              ],
+              "background": "rgb(24, 24, 27)",
+              "color": "rgb(244, 244, 245)",
+              "border": "rgb(46, 46, 50)"
+            },
+            {
+              "point": [
+                15,
+                968
+              ],
+              "tag": "DIV",
+              "classes": "rounded-full bg-[#e6e0f5] text-[#5645d4] font-semibold flex items-center justify-center shrink-0 border border-[#d2c6ed] w-4 h-4 text-[9px] ",
+              "box": [
+                10,
+                967.828125,
+                16,
+                16
+              ],
+              "background": "rgb(230, 224, 245)",
+              "color": "rgb(86, 69, 212)",
+              "border": "rgb(210, 198, 237)"
+            },
+            {
+              "point": [
+                740,
+                212
+              ],
+              "tag": "BUTTON",
+              "classes": "inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] border text-xs font-medium cursor-pointer transition-colors bg-surface-base border-border text-text-secondary hover:bg-surface-subtle",
+              "box": [
+                737.875,
+                187.5,
+                102.859375,
+                26
+              ],
+              "background": "rgb(24, 24, 27)",
+              "color": "rgb(212, 212, 216)",
+              "border": "rgb(46, 46, 50)"
+            }
+          ]
+        },
+        "filteredDependencies": "Dependency Intelligence\n\nWorkspace execution graph and blocker analysis\n·\n15 Active Blockers\n·\n14 Cross-Team\n·\n5 Bottlenecks\n\nAdd Dependency\n15 Active Edges\n14 Blocked Issues\n14 Cross-Team\n0 Cross-Project\n5 Bottlenecks\nDepth: 3\n0 Resolved History\nClear (1)\nGraph Canvas\n1\nCross-Team Matrix\n2\nActive Blockers\n3\nAll Teams\nCommerce Platform (CORE)\nStorefront Experience (WEB)\nCommerce Services (SERV)\nPayments & Risk (PAY)\nInfrastructure & Reliability (INF)\nQuality Engineering (QA)\nAll Projects\nNEXUS — Omnichannel Commerce Platform (NEX)\nActive Only\nResolved Only\nActive & Resolved\nCross-Team\nAdd Dependency\nNo Dependencies to Display\n\nThere are no dependencies matching the current filters, or no dependency relationships have been created yet.\n\nHigh Impact Bottlenecks\nRanked deterministically by active transitive downstream blast radius.\n#1\nNEX-131\nIN REVIEW\n\nAdd session revocation — Identity\n\nBlocks 4 downstream issues\n3 teams\n1 project\n#2\nNEX-156\nIN PROGRESS\n\nAdd browser matrix — Quality\n\nBlocks 3 downstream issues\n3 teams\n1 project\n#3\nNEX-213\nTODO\n\nHarden 3DS challenge — Payments\n\nBlocks 3 downstream issues\n1 team\n1 project\n#4\nNEX-132\nIN REVIEW\n\nAdd variant indexing — Catalog\n\nBlocks 2 downstream issues\n2 teams\n1 project\n#5\nNEX-182\nIN PROGRESS\n\nAdd load testing — Quality\n\nBlocks 2 downstream issues\n2 teams\n1 project",
+        "workspaces": [
+          "🛒NEXUS CommerceMember",
+          "🚀Comparison workspaceAdmin"
+        ],
+        "selectedWorkspace": "🛒\nNEXUS Commerce",
+        "roles": [
+          "SCSarah ChenADMIN",
+          "MVMarcus VanceMEMBER",
+          "ERElena RostovaMEMBER",
+          "DKDavid KimMEMBER",
+          "APAisha PatelOBSERVER",
+          "ARAlex RiveraMEMBER",
+          "MBMaya BrooksMEMBER",
+          "OPOwen ParkMEMBER",
+          "PSPriya ShahMEMBER",
+          "NBNoah BennettMEMBER",
+          "LHLeila HaddadMEMBER",
+          "ECEthan ColeMEMBER",
+          "ZMZoe MorganMEMBER",
+          "ARAmir RahmanMEMBER",
+          "ITIsabel TorresMEMBER",
+          "HMHugo MartinsMEMBER",
+          "NKNina KovacMEMBER",
+          "ACAvery ChenMEMBER",
+          "HMHassan MalikMEMBER",
+          "SASofia AlvarezMEMBER",
+          "LRLuca RossiMEMBER",
+          "IBIvy BennettMEMBER",
+          "RNRavi NairMEMBER",
+          "MPMina ParkMEMBER",
+          "OFOmar FaroukMEMBER",
+          "ELEva LindMEMBER",
+          "TCTheo CampbellMEMBER",
+          "AYAmina YusufMEMBER",
+          "JRJonah ReedMEMBER",
+          "MTMei TanMEMBER",
+          "FBFelix BauerMEMBER",
+          "SISara IbrahimMEMBER",
+          "ARAnika RaoMEMBER",
+          "DODaniel OrtizMEMBER",
+          "YHYara HassanMEMBER"
+        ],
+        "switchedActor": "Navigation\nMy Work\nInbox\n5\nProjects\nTeams\nCycles\n24\nMilestones\n3\nRoadmap\nDependencies\n14\nInsights\nSettings\nShortcuts (?)\nReset to NEXUS\nRestore previous state\nYH\nYara Hassan\nMEMBER"
+      },
+      "errors": []
+    },
+    "current": {
+      "passed": [
+        "original ten destinations, SVG icons, separators and shell dimensions",
+        "drawer and Escape interaction",
+        "original Create Issue form and cancel",
+        "command palette shortcut and help overlay",
+        "rail keyboard dimensions and G P navigation",
+        "three flagged dark pages, repeated raster and point diagnostics",
+        "dependency graph, view shortcuts and filters",
+        "Workspace selection, keyboard dismissal and real original menu",
+        "demo reset, restore and test-role controls",
+        "light/dark and mobile navigation retain original layout"
+      ],
+      "captures": [
+        "drawer",
+        "create-issue",
+        "palette",
+        "help",
+        "project-filter",
+        "projects-0",
+        "projects-1",
+        "projects-2",
+        "teams-0",
+        "teams-1",
+        "teams-2",
+        "dependencies-0",
+        "dependencies-1",
+        "dependencies-2",
+        "dependency-matrix",
+        "dependency-blockers",
+        "test-roles",
+        "mobile-light",
+        "mobile-dark"
+      ],
+      "contracts": {
+        "shell": {
+          "classes": "w-[220px] shrink-0 bg-surface-subtle border-r border-border h-full hidden md:flex flex-col justify-between select-none transition-all duration-150 z-30",
+          "width": 220,
+          "height": 1000,
+          "links": [
+            {
+              "text": "My Work",
+              "href": "/demo/my-work",
+              "classes": "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[5px] transition-colors cursor-pointer group relative bg-surface-muted font-semibold text-text-primary active",
+              "icons": [
+                "<path d=\"M21 10.656V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12.344\"></path><path d=\"m9 11 3 3L22 4\"></path>"
+              ]
+            },
+            {
+              "text": "Inbox5",
+              "href": "/demo/inbox",
+              "classes": "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[5px] transition-colors cursor-pointer group relative text-text-secondary hover:bg-surface-muted hover:text-text-primary",
+              "icons": [
+                "<polyline points=\"22 12 16 12 14 15 10 15 8 12 2 12\"></polyline><path d=\"M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z\"></path>"
+              ]
+            },
+            {
+              "text": "Projects",
+              "href": "/demo/projects",
+              "classes": "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[5px] transition-colors cursor-pointer group relative text-text-secondary hover:bg-surface-muted hover:text-text-primary",
+              "icons": [
+                "<path d=\"M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z\"></path><path d=\"M8 10v4\"></path><path d=\"M12 10v2\"></path><path d=\"M16 10v6\"></path>"
+              ]
+            },
+            {
+              "text": "Teams",
+              "href": "/demo/teams",
+              "classes": "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[5px] transition-colors cursor-pointer group relative text-text-secondary hover:bg-surface-muted hover:text-text-primary",
+              "icons": [
+                "<path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"></path><path d=\"M16 3.128a4 4 0 0 1 0 7.744\"></path><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"></path><circle cx=\"9\" cy=\"7\" r=\"4\"></circle>"
+              ]
+            },
+            {
+              "text": "Cycles24",
+              "href": "/demo/cycles",
+              "classes": "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[5px] transition-colors cursor-pointer group relative text-text-secondary hover:bg-surface-muted hover:text-text-primary",
+              "icons": [
+                "<path d=\"M12 6v6l4 2\"></path><circle cx=\"12\" cy=\"12\" r=\"10\"></circle>"
+              ]
+            },
+            {
+              "text": "Milestones3",
+              "href": "/demo/milestones",
+              "classes": "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[5px] transition-colors cursor-pointer group relative text-text-secondary hover:bg-surface-muted hover:text-text-primary",
+              "icons": [
+                "<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><circle cx=\"12\" cy=\"12\" r=\"6\"></circle><circle cx=\"12\" cy=\"12\" r=\"2\"></circle>"
+              ]
+            },
+            {
+              "text": "Roadmap",
+              "href": "/demo/roadmap",
+              "classes": "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[5px] transition-colors cursor-pointer group relative text-text-secondary hover:bg-surface-muted hover:text-text-primary",
+              "icons": [
+                "<rect width=\"18\" height=\"18\" x=\"3\" y=\"4\" rx=\"2\"></rect><path d=\"M16 2v4\"></path><path d=\"M3 10h18\"></path><path d=\"M8 2v4\"></path><path d=\"M17 14h-6\"></path><path d=\"M13 18H7\"></path><path d=\"M7 14h.01\"></path><path d=\"M17 18h.01\"></path>"
+              ]
+            },
+            {
+              "text": "Dependencies14",
+              "href": "/demo/dependencies",
+              "classes": "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[5px] transition-colors cursor-pointer group relative text-text-secondary hover:bg-surface-muted hover:text-text-primary",
+              "icons": [
+                "<circle cx=\"12\" cy=\"18\" r=\"3\"></circle><circle cx=\"6\" cy=\"6\" r=\"3\"></circle><circle cx=\"18\" cy=\"6\" r=\"3\"></circle><path d=\"M18 9v2c0 .6-.4 1-1 1H7c-.6 0-1-.4-1-1V9\"></path><path d=\"M12 12v3\"></path>"
+              ]
+            },
+            {
+              "text": "Insights",
+              "href": "/demo/insights",
+              "classes": "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[5px] transition-colors cursor-pointer group relative text-text-secondary hover:bg-surface-muted hover:text-text-primary",
+              "icons": [
+                "<path d=\"M3 3v16a2 2 0 0 0 2 2h16\"></path><path d=\"M18 17V9\"></path><path d=\"M13 17V5\"></path><path d=\"M8 17v-3\"></path>"
+              ]
+            },
+            {
+              "text": "Settings",
+              "href": "/demo/settings",
+              "classes": "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[5px] transition-colors cursor-pointer text-text-secondary hover:bg-surface-muted hover:text-text-primary",
+              "icons": [
+                "<path d=\"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915\"></path><circle cx=\"12\" cy=\"12\" r=\"3\"></circle>"
+              ]
+            },
+            {
+              "text": "ARAlex RiveraMEMBER",
+              "href": "/demo/settings/preferences",
+              "classes": "flex items-center gap-2 flex-1 min-w-0",
+              "icons": []
+            }
+          ],
+          "separators": [
+            "my-1 border-t border-border mx-1",
+            "my-1 border-t border-border mx-1",
+            "my-1 border-t border-border mx-1",
+            "p-1.5 border-t border-border space-y-0.5 text-xs",
+            "pt-1 border-t border-border mt-1 relative"
+          ]
+        },
+        "filteredProjects": "Projects Directory\n·\nEngineering Projects & Delivery Streams\n0 projects\nAll Teams\nCommerce Platform (CORE)\nStorefront Experience (WEB)\nCommerce Services (SERV)\nPayments & Risk (PAY)\nInfrastructure & Reliability (INF)\nQuality Engineering (QA)\nAll Statuses\nHas Blockers\nActive Work\nReset\nCreate project\nNo projects match your active filters\n\nTry adjusting your search terms or clearing the team/status filters.\n\nClear All Filters",
+        "projects": {
+          "text": "Projects Directory\n·\nEngineering Projects & Delivery Streams\n1 project\nAll Teams\nCommerce Platform (CORE)\nStorefront Experience (WEB)\nCommerce Services (SERV)\nPayments & Risk (PAY)\nInfrastructure & Reliability (INF)\nQuality Engineering (QA)\nAll Statuses\nHas Blockers\nActive Work\nCreate project\nKEY\nPROJECT & DESCRIPTION\nOWNING TEAM\nACTIVE WORK\nBLOCKERS\nACTIVE CYCLE\nPROGRESS\nNEX\nNEXUS — Omnichannel Commerce Platform\nUnify storefront, catalog, checkout, payments, orders, inventory, and fulfillment behind reliable commerce services.\nCommerce Platform\n180/ 300\n14 blocked\nNEXUS Cycle 11\n35%",
+          "classes": "flex-1 flex min-w-0 overflow-hidden relative",
+          "controls": [
+            {
+              "tag": "INPUT",
+              "text": "",
+              "label": null,
+              "placeholder": "Filter projects... (/)",
+              "disabled": false,
+              "classes": "h-7 w-36 sm:w-48 pl-8 pr-7 bg-surface-muted border border-border rounded-[5px] text-xs text-text-primary placeholder:text-text-muted focus:bg-surface-base focus:border-accent focus:outline-none transition-all"
+            },
+            {
+              "tag": "SELECT",
+              "text": "All TeamsCommerce Platform (CORE)Storefront Experience (WEB)Commerce Services (SERV)Payments & Risk (PAY)Infrastructure & Reliability (INF)Quality Engineering (QA)",
+              "label": "Filter by team",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "h-7 px-2 bg-surface-muted border border-border rounded-[5px] text-xs text-text-secondary hover:border-border-strong focus:outline-none cursor-pointer"
+            },
+            {
+              "tag": "SELECT",
+              "text": "All StatusesHas BlockersActive Work",
+              "label": "Filter by execution posture",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "h-7 px-2 bg-surface-muted border border-border rounded-[5px] text-xs text-text-secondary hover:border-border-strong focus:outline-none cursor-pointer"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Create project",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "inline-flex items-center justify-center font-medium transition-colors select-none rounded-[6px] focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-xs px-2.5 py-1 gap-1.5 h-7 bg-accent hover:opacity-90 active:opacity-80 text-white shadow-xs "
+            }
+          ],
+          "points": [
+            {
+              "point": [
+                257,
+                14
+              ],
+              "tag": "DIV",
+              "classes": "w-6 h-6 rounded-[5px] bg-accent text-white flex items-center justify-center font-bold text-xs shadow-2xs hover:opacity-90 transition-opacity",
+              "box": [
+                234,
+                9.5,
+                24,
+                24
+              ],
+              "background": "rgb(124, 108, 240)",
+              "color": "rgb(255, 255, 255)",
+              "border": "rgb(255, 255, 255)"
+            },
+            {
+              "point": [
+                971,
+                77
+              ],
+              "tag": "INPUT",
+              "classes": "h-7 w-36 sm:w-48 pl-8 pr-7 bg-surface-muted border border-border rounded-[5px] text-xs text-text-primary placeholder:text-text-muted focus:bg-surface-base focus:border-accent focus:outline-none transition-all",
+              "box": [
+                781.40625,
+                52,
+                192,
+                28
+              ],
+              "background": "rgb(39, 39, 42)",
+              "color": "rgb(244, 244, 245)",
+              "border": "rgb(46, 46, 50)"
+            },
+            {
+              "point": [
+                15,
+                968
+              ],
+              "tag": "DIV",
+              "classes": "rounded-full bg-[#e6e0f5] text-[#5645d4] font-semibold flex items-center justify-center shrink-0 border border-[#d2c6ed] w-4 h-4 text-[9px] ",
+              "box": [
+                10,
+                967.828125,
+                16,
+                16
+              ],
+              "background": "rgb(230, 224, 245)",
+              "color": "rgb(86, 69, 212)",
+              "border": "rgb(210, 198, 237)"
+            },
+            {
+              "point": [
+                740,
+                212
+              ],
+              "tag": "DIV",
+              "classes": "flex-1 overflow-y-auto min-h-0 bg-canvas",
+              "box": [
+                220,
+                89,
+                1220,
+                911
+              ],
+              "background": "rgb(15, 15, 17)",
+              "color": "rgb(244, 244, 245)",
+              "border": "rgb(244, 244, 245)"
+            }
+          ]
+        },
+        "teams": {
+          "text": "Teams\n·\n6 total\n\nBrowse teams, their members, and owned projects across this workspace.\n\nAdmin required to create teams\nAll Teams\nActive Teams\nArchived Teams\nTEAM\tMEMBERS\tPROJECTS\tACTIVE WORK\tACTION\n\nCO\nCommerce Platform\nCORE\n\nCommerce Platform owns its functional delivery work and contributes to the NEXUS platform through shared contracts and release coordination.\n\n\t\n8 members\n\t\n1 projects\n\t\n14 active\n\t\nView Hub\n\n\nWE\nStorefront Experience\nWEB\n\nStorefront Experience owns its functional delivery work and contributes to the NEXUS platform through shared contracts and release coordination.\n\n\t\n7 members\n\t\n0 projects\n\t\n41 active\n\t\nView Hub\n\n\nSE\nCommerce Services\nSERV\n\nCommerce Services owns its functional delivery work and contributes to the NEXUS platform through shared contracts and release coordination.\n\n\t\n6 members\n\t\n0 projects\n\t\n69 active\n\t\nView Hub\n\n\nPA\nPayments & Risk\nPAY\n\nPayments & Risk owns its functional delivery work and contributes to the NEXUS platform through shared contracts and release coordination.\n\n\t\n5 members\n\t\n0 projects\n\t\n14 active\n\t\nView Hub\n\n\nIN\nInfrastructure & Reliability\nINF\n\nInfrastructure & Reliability owns its functional delivery work and contributes to the NEXUS platform through shared contracts and release coordination.\n\n\t\n6 members\n\t\n0 projects\n\t\n28 active\n\t\nView Hub\n\n\nQA\nQuality Engineering\nQA\n\nQuality Engineering owns its functional delivery work and contributes to the NEXUS platform through shared contracts and release coordination.\n\n\t\n5 members\n\t\n0 projects\n\t\n14 active\n\t\nView Hub",
+          "classes": "flex-1 flex min-w-0 overflow-hidden relative",
+          "controls": [
+            {
+              "tag": "INPUT",
+              "text": "",
+              "label": null,
+              "placeholder": "Search teams...",
+              "disabled": false,
+              "classes": "w-full text-xs pl-8 pr-3 py-1.5 bg-surface-base border border-border rounded-lg text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "all teams",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "px-3 py-1 rounded-md font-medium capitalize transition-colors cursor-pointer bg-surface-elevated text-text-primary shadow-xs"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "active teams",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "px-3 py-1 rounded-md font-medium capitalize transition-colors cursor-pointer text-text-muted hover:text-text-primary"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "archived teams",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "px-3 py-1 rounded-md font-medium capitalize transition-colors cursor-pointer text-text-muted hover:text-text-primary"
+            }
+          ],
+          "points": [
+            {
+              "point": [
+                257,
+                14
+              ],
+              "tag": "DIV",
+              "classes": "w-6 h-6 rounded-[5px] bg-accent text-white flex items-center justify-center font-bold text-xs shadow-2xs hover:opacity-90 transition-opacity",
+              "box": [
+                234,
+                9.5,
+                24,
+                24
+              ],
+              "background": "rgb(124, 108, 240)",
+              "color": "rgb(255, 255, 255)",
+              "border": "rgb(255, 255, 255)"
+            },
+            {
+              "point": [
+                971,
+                77
+              ],
+              "tag": "DIV",
+              "classes": "border-b border-border bg-surface-base px-4 py-2 shrink-0 flex flex-wrap items-center justify-between gap-3",
+              "box": [
+                220,
+                44,
+                1220,
+                55
+              ],
+              "background": "rgb(24, 24, 27)",
+              "color": "rgb(244, 244, 245)",
+              "border": "rgb(46, 46, 50)"
+            },
+            {
+              "point": [
+                15,
+                968
+              ],
+              "tag": "DIV",
+              "classes": "rounded-full bg-[#e6e0f5] text-[#5645d4] font-semibold flex items-center justify-center shrink-0 border border-[#d2c6ed] w-4 h-4 text-[9px] ",
+              "box": [
+                10,
+                967.828125,
+                16,
+                16
+              ],
+              "background": "rgb(230, 224, 245)",
+              "color": "rgb(86, 69, 212)",
+              "border": "rgb(210, 198, 237)"
+            },
+            {
+              "point": [
+                740,
+                212
+              ],
+              "tag": "TD",
+              "classes": "py-3 px-4",
+              "box": [
+                245,
+                212,
+                640.28125,
+                60.984375
+              ],
+              "background": "rgba(0, 0, 0, 0)",
+              "color": "rgb(244, 244, 245)",
+              "border": "rgb(244, 244, 245)"
+            }
+          ]
+        },
+        "dependencies": {
+          "text": "Dependency Intelligence\n\nWorkspace execution graph and blocker analysis\n·\n15 Active Blockers\n·\n14 Cross-Team\n·\n5 Bottlenecks\n\nAdd Dependency\n15 Active Edges\n14 Blocked Issues\n14 Cross-Team\n0 Cross-Project\n5 Bottlenecks\nDepth: 3\n0 Resolved History\nGraph Canvas\n1\nCross-Team Matrix\n2\nActive Blockers\n3\nAll Teams\nCommerce Platform (CORE)\nStorefront Experience (WEB)\nCommerce Services (SERV)\nPayments & Risk (PAY)\nInfrastructure & Reliability (INF)\nQuality Engineering (QA)\nAll Projects\nNEXUS — Omnichannel Commerce Platform (NEX)\nActive Only\nResolved Only\nActive & Resolved\nCross-Team\nAdd Dependency\n100%\nCritical Path (dependency depth)\n3\nTopological depth\nNEX-131\nIN REVIEW\nAdd session revocation — Identity\nUnblocked\n2\nCORE\nNEX-246\nBACKLOG\nHarden audit integrity — Security\nUnblocked\nINF\nNEX-213\nTODO\nHarden 3DS challenge — Payments\nUnblocked\n2\nPAY\nNEX-156\nIN PROGRESS\nAdd browser matrix — Quality\nUnblocked\n2\nQA\nNEX-182\nIN PROGRESS\nAdd load testing — Quality\nUnblocked\nQA\nNEX-157\nIN PROGRESS\nAdd merchant permissions — Identity\nBlocked (1)\nCORE\nNEX-183\nIN PROGRESS\nAdd address permissions — Identity\nBlocked (1)\nCORE\nNEX-247\nBACKLOG\nHarden load testing — Quality\nBlocked (1)\nQA\nNEX-132\nIN REVIEW\nAdd variant indexing — Catalog\nBlocked (1)\nSERV\nNEX-214\nTODO\nHarden returns intake — Orders\nBlocked (1)\nSERV\nNEX-216\nTODO\nHarden label purchase — Fulfillment\nBlocked (1)\nSERV\nNEX-134\nIN REVIEW\nAdd cart merge — Checkout\nBlocked (1)\nWEB\nNEX-159\nIN PROGRESS\nAdd autocomplete — Search\nBlocked (1)\nWEB\nNEX-248\nBACKLOG\nHarden address permissions — Identity\nBlocked (1)\nCORE\nNEX-158\nIN PROGRESS\nAdd product import — Catalog\nBlocked (1)\nSERV\nNEX-184\nIN PROGRESS\nAdd stock signals — Catalog\nBlocked (1)\nSERV\nNEX-215\nTODO\nHarden warehouse routing — Inventory\nBlocked (1)\nSERV\nNEX-133\nIN REVIEW\nAdd facet filtering — Search\nBlocked (1)\nWEB\nNEX-135\nIN REVIEW\nAdd authorization retries — Payments\nBlocked (2)\nPAY\nDAG Legend\nA BLOCKS B\nActive Blocker\nResolved History\nBlocked Issue\nBottleneck\nHigh Impact Bottlenecks\nRanked deterministically by active transitive downstream blast radius.\n#1\nNEX-131\nIN REVIEW\n\nAdd session revocation — Identity\n\nBlocks 4 downstream issues\n3 teams\n1 project\n#2\nNEX-156\nIN PROGRESS\n\nAdd browser matrix — Quality\n\nBlocks 3 downstream issues\n3 teams\n1 project\n#3\nNEX-213\nTODO\n\nHarden 3DS challenge — Payments\n\nBlocks 3 downstream issues\n1 team\n1 project\n#4\nNEX-132\nIN REVIEW\n\nAdd variant indexing — Catalog\n\nBlocks 2 downstream issues\n2 teams\n1 project\n#5\nNEX-182\nIN PROGRESS\n\nAdd load testing — Quality\n\nBlocks 2 downstream issues\n2 teams\n1 project",
+          "classes": "flex-1 flex min-w-0 overflow-hidden relative",
+          "controls": [
+            {
+              "tag": "BUTTON",
+              "text": "Add Dependency",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] bg-accent hover:bg-primary-pressed text-white text-xs font-semibold cursor-pointer shadow-xs transition-colors"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Graph Canvas1",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "inline-flex items-center gap-1.5 px-3 py-1 rounded-[4px] text-xs font-medium cursor-pointer transition-colors bg-surface-base text-text-primary shadow-xs border border-border"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Cross-Team Matrix2",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "inline-flex items-center gap-1.5 px-3 py-1 rounded-[4px] text-xs font-medium cursor-pointer transition-colors text-text-secondary hover:text-text-primary"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Active Blockers3",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "inline-flex items-center gap-1.5 px-3 py-1 rounded-[4px] text-xs font-medium cursor-pointer transition-colors text-text-secondary hover:text-text-primary"
+            },
+            {
+              "tag": "INPUT",
+              "text": "",
+              "label": "Filter dependencies by issue key or title",
+              "placeholder": "Search key or title...",
+              "disabled": false,
+              "classes": "pl-8 pr-2.5 py-1 text-xs rounded-[4px] border border-border bg-surface-subtle focus:bg-surface-base focus:outline-none focus:ring-1 focus:ring-accent w-36 sm:w-44 text-text-primary"
+            },
+            {
+              "tag": "SELECT",
+              "text": "All TeamsCommerce Platform (CORE)Storefront Experience (WEB)Commerce Services (SERV)Payments & Risk (PAY)Infrastructure & Reliability (INF)Quality Engineering (QA)",
+              "label": "Filter by Team",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "px-2 py-1 text-xs rounded-[4px] border border-border bg-surface-subtle text-text-primary hover:bg-surface-base focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer"
+            },
+            {
+              "tag": "SELECT",
+              "text": "All ProjectsNEXUS — Omnichannel Commerce Platform (NEX)",
+              "label": "Filter by Project",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "px-2 py-1 text-xs rounded-[4px] border border-border bg-surface-subtle text-text-primary hover:bg-surface-base focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer"
+            },
+            {
+              "tag": "SELECT",
+              "text": "Active OnlyResolved OnlyActive & Resolved",
+              "label": "Filter by dependency status",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "px-2 py-1 text-xs rounded-[4px] border border-border bg-surface-subtle text-text-primary hover:bg-surface-base focus:outline-none focus:ring-1 focus:ring-accent cursor-pointer"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Cross-Team",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] border text-xs font-medium cursor-pointer transition-colors bg-surface-base border-border text-text-secondary hover:bg-surface-subtle"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Add Dependency",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "inline-flex items-center gap-1.5 px-3 py-1 rounded-[4px] bg-accent hover:bg-primary-pressed text-white text-xs font-semibold cursor-pointer shadow-xs transition-colors shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Zoom in",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1.5 hover:bg-surface-subtle text-text-secondary hover:text-text-primary rounded-[4px] cursor-pointer transition-colors"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Zoom out",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1.5 hover:bg-surface-subtle text-text-secondary hover:text-text-primary rounded-[4px] cursor-pointer transition-colors"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Reset zoom and pan",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1.5 hover:bg-surface-subtle text-text-secondary hover:text-text-primary rounded-[4px] cursor-pointer transition-colors"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Fit graph to canvas",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1.5 hover:bg-surface-subtle text-text-secondary hover:text-text-primary rounded-[4px] cursor-pointer transition-colors"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "Critical Path (dependency depth)3",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[6px] border text-xs font-medium cursor-pointer shadow-xs transition-colors backdrop-blur-xs bg-surface-base/95 border-border text-text-secondary hover:text-text-primary hover:bg-surface-subtle"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-131 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-246 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-213 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-156 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-182 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-157 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-183 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-247 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-132 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-214 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-216 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-134 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-159 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-248 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-158 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-184 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-215 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-133 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-135 drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] opacity-70 group-hover:opacity-100 transition-opacity"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Collapse Bottlenecks Panel",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted rounded-[4px] cursor-pointer"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-131 in drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] cursor-pointer"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-156 in drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] cursor-pointer"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-213 in drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] cursor-pointer"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-132 in drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] cursor-pointer"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Open NEX-182 in drawer",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-surface-muted text-text-muted hover:text-text-primary rounded-[4px] cursor-pointer"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-131",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-132",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-131 and NEX-132",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-132",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-133",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-132 and NEX-133",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-131",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-134",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-131 and NEX-134",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-133",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-135",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-133 and NEX-135",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-134",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-135",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-134 and NEX-135",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-156",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-157",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-156 and NEX-157",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-157",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-158",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-157 and NEX-158",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-156",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-159",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-156 and NEX-159",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-182",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-183",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-182 and NEX-183",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-183",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-184",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-183 and NEX-184",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-213",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-214",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-213 and NEX-214",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-214",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-215",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-214 and NEX-215",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-213",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-216",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-213 and NEX-216",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-246",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-247",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-246 and NEX-247",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-247",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "NEX-248",
+              "label": null,
+              "placeholder": null,
+              "disabled": false,
+              "classes": "font-mono font-bold text-xs text-text-primary hover:text-accent hover:underline cursor-pointer shrink-0"
+            },
+            {
+              "tag": "BUTTON",
+              "text": "",
+              "label": "Remove dependency between NEX-247 and NEX-248",
+              "placeholder": null,
+              "disabled": false,
+              "classes": "p-1 hover:bg-danger/10 text-text-muted hover:text-danger rounded-[4px] cursor-pointer transition-colors opacity-60 group-hover:opacity-100"
+            }
+          ],
+          "points": [
+            {
+              "point": [
+                257,
+                14
+              ],
+              "tag": "DIV",
+              "classes": "w-6 h-6 rounded-[5px] bg-accent text-white flex items-center justify-center font-bold text-xs shadow-2xs hover:opacity-90 transition-opacity",
+              "box": [
+                234,
+                9.5,
+                24,
+                24
+              ],
+              "background": "rgb(124, 108, 240)",
+              "color": "rgb(255, 255, 255)",
+              "border": "rgb(255, 255, 255)"
+            },
+            {
+              "point": [
+                971,
+                77
+              ],
+              "tag": "HEADER",
+              "classes": "border-b border-border bg-surface-base px-4 py-2.5 flex items-center justify-between shrink-0 select-none",
+              "box": [
+                220,
+                44,
+                1220,
+                59.5
+              ],
+              "background": "rgb(24, 24, 27)",
+              "color": "rgb(244, 244, 245)",
+              "border": "rgb(46, 46, 50)"
+            },
+            {
+              "point": [
+                15,
+                968
+              ],
+              "tag": "DIV",
+              "classes": "rounded-full bg-[#e6e0f5] text-[#5645d4] font-semibold flex items-center justify-center shrink-0 border border-[#d2c6ed] w-4 h-4 text-[9px] ",
+              "box": [
+                10,
+                967.828125,
+                16,
+                16
+              ],
+              "background": "rgb(230, 224, 245)",
+              "color": "rgb(86, 69, 212)",
+              "border": "rgb(210, 198, 237)"
+            },
+            {
+              "point": [
+                740,
+                212
+              ],
+              "tag": "BUTTON",
+              "classes": "inline-flex items-center gap-1 px-2.5 py-1 rounded-[4px] border text-xs font-medium cursor-pointer transition-colors bg-surface-base border-border text-text-secondary hover:bg-surface-subtle",
+              "box": [
+                737.875,
+                187.5,
+                102.859375,
+                26
+              ],
+              "background": "rgb(24, 24, 27)",
+              "color": "rgb(212, 212, 216)",
+              "border": "rgb(46, 46, 50)"
+            }
+          ]
+        },
+        "filteredDependencies": "Dependency Intelligence\n\nWorkspace execution graph and blocker analysis\n·\n15 Active Blockers\n·\n14 Cross-Team\n·\n5 Bottlenecks\n\nAdd Dependency\n15 Active Edges\n14 Blocked Issues\n14 Cross-Team\n0 Cross-Project\n5 Bottlenecks\nDepth: 3\n0 Resolved History\nClear (1)\nGraph Canvas\n1\nCross-Team Matrix\n2\nActive Blockers\n3\nAll Teams\nCommerce Platform (CORE)\nStorefront Experience (WEB)\nCommerce Services (SERV)\nPayments & Risk (PAY)\nInfrastructure & Reliability (INF)\nQuality Engineering (QA)\nAll Projects\nNEXUS — Omnichannel Commerce Platform (NEX)\nActive Only\nResolved Only\nActive & Resolved\nCross-Team\nAdd Dependency\nNo Dependencies to Display\n\nThere are no dependencies matching the current filters, or no dependency relationships have been created yet.\n\nHigh Impact Bottlenecks\nRanked deterministically by active transitive downstream blast radius.\n#1\nNEX-131\nIN REVIEW\n\nAdd session revocation — Identity\n\nBlocks 4 downstream issues\n3 teams\n1 project\n#2\nNEX-156\nIN PROGRESS\n\nAdd browser matrix — Quality\n\nBlocks 3 downstream issues\n3 teams\n1 project\n#3\nNEX-213\nTODO\n\nHarden 3DS challenge — Payments\n\nBlocks 3 downstream issues\n1 team\n1 project\n#4\nNEX-132\nIN REVIEW\n\nAdd variant indexing — Catalog\n\nBlocks 2 downstream issues\n2 teams\n1 project\n#5\nNEX-182\nIN PROGRESS\n\nAdd load testing — Quality\n\nBlocks 2 downstream issues\n2 teams\n1 project",
+        "workspaces": [
+          "🛒NEXUS CommerceMember",
+          "🚀Comparison workspaceAdmin"
+        ],
+        "selectedWorkspace": "🛒\nNEXUS Commerce",
+        "roles": [
+          "SCSarah ChenADMIN",
+          "MVMarcus VanceMEMBER",
+          "ERElena RostovaMEMBER",
+          "DKDavid KimMEMBER",
+          "APAisha PatelOBSERVER",
+          "ARAlex RiveraMEMBER",
+          "MBMaya BrooksMEMBER",
+          "OPOwen ParkMEMBER",
+          "PSPriya ShahMEMBER",
+          "NBNoah BennettMEMBER",
+          "LHLeila HaddadMEMBER",
+          "ECEthan ColeMEMBER",
+          "ZMZoe MorganMEMBER",
+          "ARAmir RahmanMEMBER",
+          "ITIsabel TorresMEMBER",
+          "HMHugo MartinsMEMBER",
+          "NKNina KovacMEMBER",
+          "ACAvery ChenMEMBER",
+          "HMHassan MalikMEMBER",
+          "SASofia AlvarezMEMBER",
+          "LRLuca RossiMEMBER",
+          "IBIvy BennettMEMBER",
+          "RNRavi NairMEMBER",
+          "MPMina ParkMEMBER",
+          "OFOmar FaroukMEMBER",
+          "ELEva LindMEMBER",
+          "TCTheo CampbellMEMBER",
+          "AYAmina YusufMEMBER",
+          "JRJonah ReedMEMBER",
+          "MTMei TanMEMBER",
+          "FBFelix BauerMEMBER",
+          "SISara IbrahimMEMBER",
+          "ARAnika RaoMEMBER",
+          "DODaniel OrtizMEMBER",
+          "YHYara HassanMEMBER"
+        ],
+        "switchedActor": "Navigation\nMy Work\nInbox\n5\nProjects\nTeams\nCycles\n24\nMilestones\n3\nRoadmap\nDependencies\n14\nInsights\nSettings\nShortcuts (?)\nReset to NEXUS\nRestore previous state\nYH\nYara Hassan\nMEMBER"
+      },
+      "errors": []
+    }
+  },
+  "comparisons": [
+    {
+      "name": "shell",
+      "equal": true
+    },
+    {
+      "name": "filteredProjects",
+      "equal": true
+    },
+    {
+      "name": "projects",
+      "equal": true
+    },
+    {
+      "name": "teams",
+      "equal": true
+    },
+    {
+      "name": "dependencies",
+      "equal": true
+    },
+    {
+      "name": "filteredDependencies",
+      "equal": true
+    },
+    {
+      "name": "workspaces",
+      "equal": true
+    },
+    {
+      "name": "selectedWorkspace",
+      "equal": true
+    },
+    {
+      "name": "roles",
+      "equal": true
+    },
+    {
+      "name": "switchedActor",
+      "equal": true
+    }
+  ],
+  "failures": []
+}

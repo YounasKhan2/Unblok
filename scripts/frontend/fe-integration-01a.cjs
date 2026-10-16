@@ -37,7 +37,10 @@ async function main(){
   let ready=false;for(let i=0;i<100;i++){try{const r=await fetch('http://127.0.0.1:'+env.API_PORT+'/ready');if(r.status===200){ready=true;break;}}catch{}if(api.exitCode!==null)throw Error('Owned API stopped; inspect redacted API log');await pause(150);}if(!ready)throw Error('Owned API did not become ready');
   evidence.api={ready:200,live:(await fetch('http://127.0.0.1:'+env.API_PORT+'/live')).status};if(evidence.api.live!==200)throw Error('Owned API liveness failed');
   const viteModule=await import(pathToFileURL(require.resolve('vite',{paths:[path.join(root,'apps/web')]})).href);
-  vite=await viteModule.createServer({root:path.join(root,'apps/web'),configFile:path.join(root,'apps/web/vite.config.ts'),server:{host:'127.0.0.1',port:webPort,strictPort:true,proxy:{'/api':{target:'http://127.0.0.1:'+env.API_PORT,changeOrigin:false}}}});await vite.listen();
+  // Do not allow ignored QA env files or inherited VITE_AUTH_API_ORIGIN to
+  // redirect this disposable browser suite away from its owned API proxy.
+  vite=await viteModule.createServer({root:path.join(root,'apps/web'),configFile:path.join(root,'apps/web/vite.config.ts'),envDir:false,define:{'import.meta.env.VITE_AUTH_API_ORIGIN':JSON.stringify('')},server:{host:'127.0.0.1',port:webPort,strictPort:true,hmr:false,watch:null,proxy:{'/api':{target:'http://127.0.0.1:'+env.API_PORT,changeOrigin:false}}}});await vite.listen();
+  evidence.frontendIsolation={envFiles:false,authApiOrigin:'owned same-origin proxy',hmr:false,watch:false};
   if(process.argv.includes('--backend-only'))evidence.skipped=[{suite:'Chromium',reason:'Explicit --backend-only selection; browser gates are reported separately.'}];
   else await require('./fe-integration-01a-journeys.cjs')({base:env.CORS_ORIGINS,out,mail,evidence,revokeOwnedMember:async(workspaceId,email)=>{
    if(!/^[0-9a-f-]{36}$/.test(workspaceId)||!/^fei-invite-[0-9a-f]+@example\.test$/.test(email))throw Error('Invalid owned revocation fixture');

@@ -2,6 +2,8 @@
 
 Prepared 2026-10-16 (Asia/Karachi). **Draft PR for human/PM review. Do not merge or deploy.**
 
+**Latest review pass:** see [PR #49 final correction findings and current results](FE-INTEGRATION-01A-CORRECTION.md). The original implementation results below are retained as historical evidence. The correction changes test infrastructure/documentation only; navigation uncertainty and exact screenshot differences remain explicitly qualified.
+
 ## Baseline and approved scope
 
 Repository: `D:\Full_Stack_Apps\Unblok`. Implementation branch: `codex/fe-integration-01a`. Clean starting HEAD and fetched `origin/main`: `8f83887f11a4b84f3500934847d757301023d4ef`. PR #46 was verified merged at `3cf2de0f0da8f72b92a5108ea4a46578006a494a`; PR #48 was verified merged at the base tip. No prior rejected separate-shell source or recovery archive was reused. No existing local work was discarded.
