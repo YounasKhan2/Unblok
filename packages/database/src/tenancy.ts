@@ -1,3 +1,4 @@
+import {administrationMembers,administrationTeams,administrationInvitations,administrationMutation,administrationPreview,administrationSelectors,type AdministrationQuery,type AdministrationAction,type AdministrationInput} from './workspace-administration';
 import {managementSelectors,manageTeam,teamDirectory,transferDetail,type TeamManagementAction,type ManagementInput,type MemberQuery} from './team-management';
 import { TeamFault, listTeams, detailTeam, mutateTeam, type TeamQuery, type TeamInput, type TeamPatch } from './teams';
 import {listMemberships,type MembershipQuery} from './workspace-memberships';
@@ -217,6 +218,11 @@ export class Tenancy {
   workspaceContext(principal: VerifiedPrincipal, workspaceId: string) {
     return this.workspaceBoundary(principal, (tx, authority) => workspaceContext(tx, authority.userId, workspaceId));
   }
+  administrationMembers(principal:VerifiedPrincipal,ws:string,q:AdministrationQuery){return this.workspaceBoundary(principal,(tx,a)=>administrationMembers(tx,a,ws,q,this.teamKeys(),this.invitationKey));}
+  administrationTeams(principal:VerifiedPrincipal,ws:string,q:AdministrationQuery,member?:string){return this.workspaceBoundary(principal,(tx,a)=>administrationTeams(tx,a,ws,q,this.teamKeys(),member));}
+  administrationInvitations(principal:VerifiedPrincipal,ws:string,q:AdministrationQuery,id?:string){return this.workspaceBoundary(principal,(tx,a)=>administrationInvitations(tx,a,ws,q,this.teamKeys(),id,this.invitationKey));}
+  administrationMutation(principal:VerifiedPrincipal,ws:string,action:AdministrationAction,input:AdministrationInput,key:string,target?:string,match?:string){return this.workspaceBoundary(principal,(tx,a)=>{if(!this.invitationKey)throw new AuthUnavailableError();return administrationMutation(tx,a,ws,action,input,key,this.teamKeys(),this.invitationKey,target,match);},tx=>administrationSelectors(tx,ws,target));}
+  administrationPreview(principal:VerifiedPrincipal,token:string){const selector=invitationSelector(token);return this.workspaceBoundary(principal,(tx,a)=>{if(!this.invitationKey)throw new AuthUnavailableError();return administrationPreview(tx,a,token,this.invitationKey);},async tx=>{const row=selector?await tx.workspaceInvitation.findUnique({where:{id:selector},select:{inviterId:true}}):null;return row?[row.inviterId]:[];});}
   memberships(principal:VerifiedPrincipal,workspaceId:string,query:MembershipQuery){return this.workspaceBoundary(principal,(tx,a)=>{
     if(!this.workspaceKeys||!validWorkspaceKeys(this.workspaceKeys))throw new AuthUnavailableError();return listMemberships(tx,a.userId,workspaceId,query,this.workspaceKeys);
   });}

@@ -135,6 +135,7 @@ model Workspace {
   teams       Team[]
   creationResults WorkspaceCreationResult[]
   policyRevision WorkspacePolicyRevision?
+  administrationRevision WorkspaceAdministrationRevision?
   invitations WorkspaceInvitation[]
 
   @@map("workspaces")
@@ -165,6 +166,8 @@ model WorkspaceCreationResult {
 }
 
 model WorkspaceMembership {
+  removedAt DateTime? @map("removed_at") @db.Timestamptz(3)
+  administrationVersion BigInt @default(1) @map("administration_version")
   initiatedTransfers TeamTransferIntent[] @relation("TransferInitiator")
   addressedTransfers TeamTransferIntent[] @relation("TransferSuccessor")
   workspaceId    String           @map("workspace_id") @db.Uuid
@@ -191,6 +194,7 @@ model WorkspaceMembership {
 }
 
 model Team {
+  invitationAssignments WorkspaceInvitationTeam[]
   workspaceId String           @map("workspace_id") @db.Uuid
   id          String           @default(uuid()) @db.Uuid
   key         String           @db.VarChar(6)
@@ -368,6 +372,13 @@ model WorkspacePolicyRevision {
   @@map("workspace_policy_revisions")
 }
 model WorkspaceInvitation {
+  previous WorkspaceInvitation? @relation("InvitationGeneration",fields:[workspaceId,previousId],references:[workspaceId,id],onDelete:Restrict,onUpdate:Restrict,map:"invitation_previous_fk")
+  successor WorkspaceInvitation[] @relation("InvitationGeneration")
+  initialTeams WorkspaceInvitationTeam[]
+  proofVersion Int @default(1) @map("proof_version")
+  assignmentDigest String? @map("assignment_digest") @db.VarChar(64)
+  previousId String? @unique @map("previous_id") @db.Uuid
+  createdTransaction BigInt @default(dbgenerated("txid_current()")) @map("created_transaction")
   id String @id @db.Uuid
   workspaceId String @map("workspace_id") @db.Uuid
   inviterId String @map("inviter_id") @db.Uuid
@@ -388,7 +399,26 @@ model WorkspaceInvitation {
   inviterMembership WorkspaceMembership @relation(fields:[workspaceId,inviterMembershipId,inviterId],references:[workspaceId,id,userId],onDelete:Restrict,onUpdate:Restrict)
   delivery WorkspaceInvitationOutbox?
   @@index([workspaceId, email, expiresAt])
+  @@unique([workspaceId,id],map:"invitation_scoped_id")
+  @@index([workspaceId,issuedAt,id],map:"administration_invitations_keyset")
   @@map("workspace_invitations")
+}
+model WorkspaceInvitationTeam {
+ teamVersion BigInt @map("team_version")
+ workspaceId String @map("workspace_id") @db.Uuid
+ invitationId String @map("invitation_id") @db.Uuid
+ teamId String @map("team_id") @db.Uuid
+ invitation WorkspaceInvitation @relation(fields:[workspaceId,invitationId],references:[workspaceId,id],onDelete:Restrict,onUpdate:Restrict,map:"workspace_invitation_teams_workspace_id_invitation_id_fkey")
+ team Team @relation(fields:[workspaceId,teamId],references:[workspaceId,id],onDelete:Restrict,onUpdate:Restrict,map:"workspace_invitation_teams_workspace_id_team_id_fkey")
+ @@id([workspaceId,invitationId,teamId])
+ @@index([workspaceId,teamId,invitationId],map:"administration_invitation_plan_team")
+ @@map("workspace_invitation_teams")
+}
+model WorkspaceAdministrationRevision {
+ workspaceId String @id @map("workspace_id") @db.Uuid
+ revision BigInt @default(1)
+ workspace Workspace @relation(fields:[workspaceId],references:[id],onDelete:Restrict,onUpdate:Restrict)
+ @@map("workspace_administration_revisions")
 }
 model WorkspaceInvitationOutbox {
   invitationId String @id @map("invitation_id") @db.Uuid
