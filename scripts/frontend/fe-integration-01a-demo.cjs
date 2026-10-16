@@ -10,7 +10,7 @@ fs.mkdirSync(out,{recursive:true});
 const result={scope:'Fresh isolated browser contexts; /demo only; API requests blocked',sides:{},comparisons:[],failures:[]};
 async function main(){
  const browser=await chromium.launch({headless:true});
- try{for(const [kind,origin] of origins){
+ try{if(process.env.FE_DEMO_TEAMS_ONLY==='true'){await require('./fe-integration-01c-demo.cjs')({browser,origins,out,result});if(result.failures.length)process.exitCode=1;return;}for(const [kind,origin] of origins){
   const context=await browser.newContext({viewport:{width:1440,height:1000},colorScheme:'dark'});
   await context.route('**/fonts.googleapis.com/**',r=>r.abort());await context.route('**/fonts.gstatic.com/**',r=>r.abort());
   await context.route('**/api/v1/**',r=>r.abort());
@@ -121,6 +121,7 @@ async function main(){
   }catch(error){result.failures.push(kind+': '+error.message);await capture('failure').catch(()=>{});}
   finally{await context.close();}
  }
+ if(process.env.FE_DEMO_TEAMS==='true')await require('./fe-integration-01c-demo.cjs')({browser,origins,out,result});
  if(process.env.FE_DEMO_MEMBERS==='true')await require('./fe-integration-01b-demo.cjs')({browser,origins,out,result});
  for(const key of Object.keys(result.sides.baseline.contracts)){
   try{assert.deepEqual(result.sides.current.contracts[key],result.sides.baseline.contracts[key]);result.comparisons.push({name:key,equal:true});}

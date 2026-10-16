@@ -2,12 +2,15 @@ import { createTeamSchema, patchTeamSchema } from '@unblok/contracts';
 import { AuthApiError } from '../../auth/api/authApi';
 import { SessionStore } from '../../auth/session/SessionStore';
 import { WorkspaceStore } from '../../workspaces/live/WorkspaceStore';
-import { TeamsApi, type TeamPage, type LiveTeam, type TeamFilter, type CreateInput, type PatchInput } from './TeamsApi';
+import { TeamsApi, type TeamPage, type MemberPage, type LiveTeam, type TeamFilter, type CreateInput, type PatchInput } from './TeamsApi';
 import type { TeamJournal, TeamAttempt } from './TeamJournal';
 export interface TeamsState {
     workspace: string;
     page: TeamPage | null;
     team: LiveTeam | null;
+    members: MemberPage | null;
+    membersLoading:boolean;
+    membersError:string;
     filter: TeamFilter;
     loading: boolean;
     opening: boolean;
@@ -23,28 +26,29 @@ export interface TeamsState {
     retryAfter: number;
     notice: string;
 }
-const empty = (): TeamsState => ({ workspace: '', page: null, team: null, filter: 'ACTIVE', loading: false, opening: false, sending: false, allowed: false, canCreate: false, error: '', detailError: '', mutationError: '', attempt: undefined, blocked: false, conflict: false, retryAfter: 0, notice: '' });
+const empty = (): TeamsState => ({ workspace: '', page: null, team: null, members:null, membersLoading:false, membersError:'', filter: 'ACTIVE', loading: false, opening: false, sending: false, allowed: false, canCreate: false, error: '', detailError: '', mutationError: '', attempt: undefined, blocked: false, conflict: false, retryAfter: 0, notice: '' });
 export class TeamsStore {
     private state = empty();
     private listeners = new Set<() => void>();
     // Server context hints gate the UI; every API call still requires live server authority.
     private identity = '';
     private actor = '';
-    private logout = 0;
+    private membership = '';
+    private membersRead?:AbortController;
     private version = 0;
     private target: string | undefined;
     private read?: AbortController;
     private detailRead?: AbortController;
     private mutation?: AbortController;
-    constructor(private readonly session: SessionStore, private readonly workspaces: WorkspaceStore, private readonly api = new TeamsApi(session.api), private readonly journal?: TeamJournal, private readonly key = () => crypto.randomUUID()) { this.logout = session.explicitLogoutGeneration(); }
+    constructor(private readonly session: SessionStore, private readonly workspaces: WorkspaceStore, private readonly api = new TeamsApi(session.api), private readonly journal?: TeamJournal, private readonly key = () => crypto.randomUUID()) {}
     snapshot = () => this.state;
     subscribe = (fn: () => void) => { this.listeners.add(fn); return () => { this.listeners.delete(fn); }; };
     private publish(change: Partial<TeamsState>) { this.state = { ...this.state, ...change }; for (const fn of this.listeners)
         fn(); }
-    private abort() { this.read?.abort(); this.detailRead?.abort(); this.mutation?.abort(); }
+    private abort() { this.read?.abort(); this.detailRead?.abort(); this.mutation?.abort(); this.membersRead?.abort(); }
     start() { this.sync(); const off = [this.session.subscribe(() => this.sync()), this.workspaces.subscribe(() => this.sync())]; return () => { off.forEach(f => f()); this.version++; this.identity = ''; this.abort(); }; }
     private restoreAttempt() { try {
-        const attempt = this.journal?.read(this.actor, this.state.workspace, this.target);
+        const attempt = this.journal?.read(this.actor, this.state.workspace, this.target, this.membership);
         this.publish({ attempt, conflict: attempt?.operation === 'update' && !!attempt.conflict });
     }
     catch {
@@ -52,14 +56,6 @@ export class TeamsStore {
     } }
     private sync() {
         const s = this.session.snapshot(), w = this.workspaces.snapshot(), actor = s.status === 'authenticated' ? s.user!.id : '';
-        if (this.logout !== this.session.explicitLogoutGeneration() || actor && this.actor && actor !== this.actor) {
-            try {
-                this.journal?.clear();
-            }
-            catch { }
-            this.actor = '';
-        }
-        this.logout = this.session.explicitLogoutGeneration();
         if (actor)
             this.actor = actor;
         const c = w.context, allowed = !!actor && !s.pending && !!c && w.selected === c.workspace.id && c.self.membershipStatus === 'ACTIVE';
@@ -71,6 +67,7 @@ export class TeamsStore {
         this.version++;
         this.abort();
         this.state = empty();
+        this.membership=allowed?c!.self.membershipId:'';
         if (allowed) {
             if (previous && previous !== c!.workspace.id)
                 this.target = undefined;
@@ -85,7 +82,7 @@ export class TeamsStore {
             this.publish({});
     }
     route(id?: string) { if (this.target === id)
-        return; this.target = id; this.version++; this.abort(); this.publish({ page: null, team: null, loading: false, opening: false, sending: false, detailError: '', mutationError: '', attempt: undefined, conflict: false, blocked: false, notice: '' }); if (this.state.allowed) {
+        return; this.target = id; this.version++; this.abort(); this.publish({ page: null, team: null, members:null,membersLoading:false,membersError:'', loading: false, opening: false, sending: false, detailError: '', mutationError: '', attempt: undefined, conflict: false, blocked: false, notice: '' }); if (this.state.allowed) {
         this.restoreAttempt();
         if (id)
             void this.open(id);
@@ -127,9 +124,9 @@ export class TeamsStore {
     async open(id: string, retain = false) {
         if (!this.state.allowed || this.target !== id)
             return;
-        this.detailRead?.abort();
+        this.detailRead?.abort();this.membersRead?.abort();
         const c = this.detailRead = new AbortController(), v = this.version;
-        this.publish({ opening: true, team: retain ? this.state.team : null, detailError: '' });
+        this.publish({ opening: true, team: retain ? this.state.team : null, members:null,membersLoading:false,membersError:'', detailError: '' });
         try {
             const team = await this.api.detail(this.state.workspace, id, c.signal);
             if (this.current(v, c) && this.target === id)
@@ -137,12 +134,21 @@ export class TeamsStore {
         }
         catch (e) {
             if (this.current(v, c))
-                this.publish({ team: null, detailError: e instanceof AuthApiError ? e.message : 'This Team is unavailable.' });
+                this.publish({ team: null, members:null,detailError: e instanceof AuthApiError ? e.message : 'This Team is unavailable.' });
         }
         finally {
             if (this.current(v, c))
-                this.publish({ opening: false });
+                {this.publish({ opening: false });if(this.state.team)void this.loadMembers();}
         }
+    }
+    async loadMembers(next=false){
+        const team=this.state.team;if(!team||!this.state.allowed||this.state.opening||this.state.membersLoading)return;
+        const after=next?this.state.members?.page.nextCursor:undefined;if(next&&!after)return;
+        this.membersRead?.abort();const c=this.membersRead=new AbortController(),v=this.version;
+        this.publish({members:null,membersLoading:true,membersError:''});
+        try{const members=await this.api.members(this.state.workspace,team.id,c.signal,after??undefined);if(this.current(v,c)&&this.state.team?.id===team.id)this.publish({members});}
+        catch(e){if(this.current(v,c))this.publish({members:null,membersError:e instanceof AuthApiError&&[403,404].includes(e.status)?'Team membership details are unavailable.':e instanceof AuthApiError?e.message:'Team membership details are unavailable.'});}
+        finally{if(this.current(v,c))this.publish({membersLoading:false});}
     }
     async create(input: CreateInput) { if (!this.state.canCreate)
         return null; return this.send(createTeamSchema.parse(input)); }
@@ -152,7 +158,7 @@ export class TeamsStore {
     private async send(body: CreateInput | PatchInput, team?: LiveTeam) {
         if (!this.state.allowed || this.state.sending || this.state.blocked || Date.now() < this.state.retryAfter)
             return null;
-        const attempt = this.state.attempt ?? (team ? { operation: 'update' as const, actor: this.actor, workspace: this.state.workspace, team: team.id, key: this.key(), body: body as PatchInput, match: `"team-${team.version}"` } : { operation: 'create' as const, actor: this.actor, workspace: this.state.workspace, key: this.key(), body: body as CreateInput });
+        const attempt = this.state.attempt ?? (team ? { operation: 'update' as const, actor: this.actor, membership:this.membership, workspace: this.state.workspace, team: team.id, key: this.key(), body: body as PatchInput, match: `"team-${team.version}"` } : { operation: 'create' as const, actor: this.actor, membership:this.membership, workspace: this.state.workspace, key: this.key(), body: body as CreateInput });
         if (JSON.stringify(attempt.body) !== JSON.stringify(body) || attempt.operation !== (team ? 'update' : 'create'))
             return null;
         try {
@@ -182,6 +188,7 @@ export class TeamsStore {
             this.publish({ attempt: undefined, conflict: false, team: attempt.operation === 'update' ? result : this.state.team, notice: attempt.operation === 'create' ? 'Team created.' : 'Team metadata saved.' });
             if (!this.target)
                 void this.load();
+            else if(attempt.operation==='update')void this.open(attempt.team,true);
             return result;
         }
         catch (e) {
@@ -196,10 +203,10 @@ export class TeamsStore {
                     catch {
                         this.publish({ blocked: true });
                     }
-                    void this.open(attempt.team);
+                    void this.open(attempt.team,true);
                 }
                 if (a?.status === 404 || a?.status === 403) {
-                    this.publish({ team: null });
+                    this.publish({ team: null, members:null });
                     if (attempt.operation === 'update')
                         void this.open(attempt.team);
                     else

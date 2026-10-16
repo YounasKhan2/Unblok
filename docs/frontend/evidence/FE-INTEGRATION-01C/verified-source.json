@@ -1,0 +1,68 @@
+{
+  "baseline": "894488746e134bd3cebb21091edbae2cb12dfb19",
+  "sha256Utf8LF": {
+    "apps/web/src/features/settings/components/EditTeamModal.tsx": "6e96e6623731d0811b2e5a9c3db2ea14c5fd24414667f6e4c770a9a863476d05",
+    "apps/web/src/features/settings/components/EditTeamModalFrame.tsx": "71a34238c48e42020576575dae1298ac2ab8e7f02b51084a472a00b5b80c94b6",
+    "apps/web/src/features/teams/components/CreateTeamModal.tsx": "55a2a61a8e28da95e39588a8fc46e7f1401e6e5a846745b96e8ca1cf3ee31403",
+    "apps/web/src/features/teams/components/CreateTeamModalFrame.tsx": "658eee160b1f3f2a601116c179d7a3b50fee2d4748a8a0ba635db333ba68e4a8",
+    "apps/web/src/features/teams/live/TeamDialog.tsx": "b2c672fcb9f492ebac62f1252b00890ac612b9e3172557049c5ddddd664a0203",
+    "apps/web/src/features/teams/live/TeamJournal.ts": "dcc99f4b5f3dc14a1efdf741d5864bacb242ce0df1b22adb5590c5d9905ea4f1",
+    "apps/web/src/features/teams/live/Teams.test.tsx": "040afc1738a9f919c00d515d5ffd72e2e6c88a91db2ed3c379f9265a9c5adf2f",
+    "apps/web/src/features/teams/live/TeamsApi.ts": "5b8a23673396edf2f8fb15efd022f9296fee6f43a7cbf8f4e00400782ebf866e",
+    "apps/web/src/features/teams/live/TeamsPages.tsx": "346c10106b19de2b14e055f82089fade50f4323641e28b636300cb1fedceaae1",
+    "apps/web/src/features/teams/live/TeamsStore.ts": "890e86bdf0f67fc0798c8125a9d65df2dbeeef03629d444d7c38770b197813b5",
+    "apps/web/src/pages/teams/TeamHubPage.tsx": "7e537319bd1602794eb86136b8e025d96dd2306200e8157ec97d089f76fbcb27",
+    "apps/web/src/pages/teams/TeamHubPageFrame.tsx": "b3d78276cf2b7f773ca036c3229a461bf1005ea3e09ad98b3a42872b47460403",
+    "apps/web/src/pages/teams/TeamsDirectoryPage.tsx": "e33f3387a367767e56c4be9fa8774f9c2e03d38e5a4512c04cd7dead6227e068",
+    "apps/web/src/pages/teams/TeamsDirectoryPageFrame.tsx": "feb02d73856840c16f80eecc1ad77643df70e61579c7204fc119cd733b84d6ad",
+    "scripts/frontend/fe-integration-01a-demo.cjs": "549da90f50b5878d64605efe5eee4c6872eb9155efe18a8316e53eba9d3968b2",
+    "scripts/frontend/fe-integration-01a.cjs": "7d4a3e8d3a04c539f5f7facba9eec1a1f44d53d6ef330bd21163f2252dff7c43",
+    "scripts/frontend/fe-integration-01b-visual.cjs": "ac6c10b43e0934227d686a69ae587031de034c07ca3db922c0adbd8390470fee",
+    "scripts/frontend/fe-integration-01c-compare.py": "ee17e5c5e91afbc7b7a8917180a5fa41024a2188ba134197025fda20c1a19942",
+    "scripts/frontend/fe-integration-01c-demo.cjs": "6393035675497456328c92793e9a0edceaba8c6fab61155b8a488a31dafa2cee",
+    "scripts/frontend/fe-integration-01c-journeys.cjs": "86afbf8f8cf786d2285bb49e0123da77b2fda88e21701574e6bf320d6d9eaed2"
+  },
+  "checks": {
+    "focusedFrontend": {
+      "passed": 84,
+      "failed": 0
+    },
+    "fullFrontend": {
+      "passed": 960,
+      "historicalFailures": 3,
+      "tests": 963
+    },
+    "typecheck": "pass",
+    "productionBuild": "pass",
+    "backend": {
+      "passed": 127,
+      "failed": 0,
+      "assertions": 2073
+    },
+    "fullChromium": {
+      "passed": 13,
+      "failed": 0,
+      "note": "preceded final live Lead label only; final settled-data capture verifies new label"
+    },
+    "finalCapture": {
+      "passed": 1,
+      "screenshots": 16,
+      "failed": 0
+    },
+    "strictPixels": {
+      "identical": 15,
+      "pairs": 16,
+      "differentPixels": 1,
+      "exitCode": 1
+    },
+    "prototypeCssIdentical": true
+  },
+  "boundaries": {
+    "sharedQaTouched": false,
+    "backendSchemaChanged": false,
+    "membershipReplacement": "store fixture simulation",
+    "delayedResponses": "store fixture simulations",
+    "otherBrowsers": "not executed",
+    "fullWorkerQueueLifecycle": "not executed"
+  }
+}

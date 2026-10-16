@@ -1,0 +1,119 @@
+[
+  {
+    "left": "baseline-team-create-1440-light",
+    "right": "baseline-team-create-1440-light-repeat",
+    "pixels": 23,
+    "box": [
+      536,
+      525,
+      562,
+      544
+    ]
+  },
+  {
+    "left": "current-team-create-1440-light",
+    "right": "current-team-create-1440-light-repeat",
+    "pixels": 23,
+    "box": [
+      536,
+      525,
+      562,
+      544
+    ]
+  },
+  {
+    "left": "baseline-team-create-1440-light-repeat",
+    "right": "current-team-create-1440-light-repeat",
+    "pixels": 0,
+    "box": null
+  },
+  {
+    "left": "baseline-team-create-390-light",
+    "right": "baseline-team-create-390-light-repeat",
+    "pixels": 24,
+    "box": [
+      52,
+      447,
+      78,
+      466
+    ]
+  },
+  {
+    "left": "current-team-create-390-light",
+    "right": "current-team-create-390-light-repeat",
+    "pixels": 0,
+    "box": null
+  },
+  {
+    "left": "baseline-team-create-390-light-repeat",
+    "right": "current-team-create-390-light-repeat",
+    "pixels": 24,
+    "box": [
+      52,
+      447,
+      78,
+      466
+    ]
+  },
+  {
+    "left": "baseline-team-create-1440-dark",
+    "right": "baseline-team-create-1440-dark-repeat",
+    "pixels": 0,
+    "box": null
+  },
+  {
+    "left": "current-team-create-1440-dark",
+    "right": "current-team-create-1440-dark-repeat",
+    "pixels": 25,
+    "box": [
+      536,
+      525,
+      562,
+      590
+    ]
+  },
+  {
+    "left": "baseline-team-create-1440-dark-repeat",
+    "right": "current-team-create-1440-dark-repeat",
+    "pixels": 24,
+    "box": [
+      536,
+      525,
+      562,
+      544
+    ]
+  },
+  {
+    "left": "baseline-team-create-390-dark",
+    "right": "baseline-team-create-390-dark-repeat",
+    "pixels": 28,
+    "box": [
+      62,
+      443,
+      282,
+      472
+    ]
+  },
+  {
+    "left": "current-team-create-390-dark",
+    "right": "current-team-create-390-dark-repeat",
+    "pixels": 26,
+    "box": [
+      8,
+      187,
+      78,
+      466
+    ]
+  },
+  {
+    "left": "baseline-team-create-390-dark-repeat",
+    "right": "current-team-create-390-dark-repeat",
+    "pixels": 50,
+    "box": [
+      8,
+      187,
+      282,
+      472
+    ]
+  }
+]

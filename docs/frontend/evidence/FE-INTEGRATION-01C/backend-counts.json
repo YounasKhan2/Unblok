@@ -1,0 +1,22 @@
+{
+  "auth-fences": {
+    "pass": 24,
+    "fail": 0,
+    "expect()": 134
+  },
+  "team-management": {
+    "pass": 35,
+    "fail": 0,
+    "expect()": 1031
+  },
+  "teams": {
+    "pass": 33,
+    "fail": 0,
+    "expect()": 773
+  },
+  "tenancy": {
+    "pass": 35,
+    "fail": 0,
+    "expect()": 135
+  }
+}
