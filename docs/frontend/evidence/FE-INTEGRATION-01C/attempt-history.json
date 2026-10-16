@@ -1,0 +1,241 @@
+[
+  {
+    "run": "browser-1",
+    "passed": [],
+    "failures": [
+      "actor 0 actual prototype creation with committed response loss: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Send verification email', exact: true })\u001b[22m\n\u001b[2m    - locator resolved to <button aria-describedby=\"verification-guidance\" class=\"inline-flex items-center justify-center font-medium transition-colors select-none rounded-[6px] focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer text-sm px-3.5 py-1.5 gap-2 h-8 bg-accent hover:opacity-90 active:opacity-80 text-white shadow-xs \">Send verification email</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n"
+    ],
+    "commands": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "sceneChecks": {}
+  },
+  {
+    "run": "browser-2",
+    "passed": [
+      "actor 0 actual prototype creation with committed response loss",
+      "actor 1 actual prototype creation with committed response loss",
+      "actor 0 returns and reconciles exact original Team creation"
+    ],
+    "failures": [
+      "actor 1 returns and reconciles exact original Team creation: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('heading', { name: 'Teams', exact: true }) to be visible\u001b[22m\n"
+    ],
+    "commands": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "sceneChecks": {}
+  },
+  {
+    "run": "browser-3",
+    "passed": [
+      "actor 0 actual prototype creation with committed response loss",
+      "actor 1 actual prototype creation with committed response loss",
+      "actor 0 returns and reconciles exact original Team creation",
+      "actor 1 returns and reconciles exact original Team creation",
+      "prototype metadata editor immutable key, unavailable assignments, explicit stale-version review",
+      "lost metadata acknowledgment retains exact key, canonical body and original If-Match"
+    ],
+    "failures": [
+      "live prototype responsive light dark surfaces and unsupported metrics: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Light', exact: true })\u001b[22m\n"
+    ],
+    "commands": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "sceneChecks": {}
+  },
+  {
+    "run": "browser-4",
+    "passed": [
+      "actor 0 actual prototype creation with committed response loss",
+      "actor 1 actual prototype creation with committed response loss",
+      "actor 0 returns and reconciles exact original Team creation",
+      "actor 1 returns and reconciles exact original Team creation",
+      "prototype metadata editor immutable key, unavailable assignments, explicit stale-version review",
+      "lost metadata acknowledgment retains exact key, canonical body and original If-Match"
+    ],
+    "failures": [
+      "real bounded server pagination and status filtering: Expected values to be strictly equal:\n\n0 !== 2\n"
+    ],
+    "commands": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "sceneChecks": {}
+  },
+  {
+    "run": "visual-1",
+    "status": "Interrupted; normal evidence file unavailable",
+    "observed": "Windows resource/allocation failures; raw original artifacts retained outside repository"
+  },
+  {
+    "run": "visual-2",
+    "passed": [],
+    "failures": [
+      "baseline Team preservation: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('heading', { name: 'Teams', exact: true }) to be visible\u001b[22m\n",
+      "current Team preservation: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('heading', { name: 'Teams', exact: true }) to be visible\u001b[22m\n"
+    ],
+    "commands": [],
+    "mail": null,
+    "sceneChecks": {
+      "baseline": [],
+      "current": []
+    }
+  },
+  {
+    "run": "visual-3",
+    "passed": [],
+    "failures": [
+      "baseline Team preservation: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Create team', exact: true }).first()\u001b[22m\n",
+      "current Team preservation: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Create team', exact: true }).first()\u001b[22m\n"
+    ],
+    "commands": [],
+    "mail": null,
+    "sceneChecks": {
+      "baseline": [],
+      "current": []
+    }
+  },
+  {
+    "run": "visual-4",
+    "passed": [],
+    "failures": [
+      "baseline Team preservation: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('navigation', { name: 'Settings navigation' }).getByRole('link', { name: 'Teams', exact: true })\u001b[22m\n",
+      "current Team preservation: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('navigation', { name: 'Settings navigation' }).getByRole('link', { name: 'Teams', exact: true })\u001b[22m\n"
+    ],
+    "commands": [],
+    "mail": null,
+    "sceneChecks": {
+      "baseline": [
+        "1440-light actual directory, create key suggestion, hub tabs and editable demo metadata"
+      ],
+      "current": [
+        "1440-light actual directory, create key suggestion, hub tabs and editable demo metadata"
+      ]
+    }
+  },
+  {
+    "run": "visual-5",
+    "passed": [],
+    "failures": [
+      "baseline Team preservation: page.screenshot: Protocol error (Page.captureScreenshot): Unable to capture screenshot\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n"
+    ],
+    "commands": [],
+    "mail": null,
+    "sceneChecks": {
+      "baseline": [
+        "1440-light actual directory, create key suggestion, hub tabs and editable demo metadata",
+        "390-light actual directory, create key suggestion, hub tabs and editable demo metadata"
+      ],
+      "current": [
+        "1440-light actual directory, create key suggestion, hub tabs and editable demo metadata",
+        "390-light actual directory, create key suggestion, hub tabs and editable demo metadata",
+        "1440-dark actual directory, create key suggestion, hub tabs and editable demo metadata",
+        "390-dark actual directory, create key suggestion, hub tabs and editable demo metadata"
+      ]
+    }
+  },
+  {
+    "run": "visual-6",
+    "passed": [],
+    "failures": [],
+    "commands": [],
+    "mail": null,
+    "sceneChecks": {
+      "baseline": [
+        "1440-light actual directory, create key suggestion, hub tabs and editable demo metadata",
+        "390-light actual directory, create key suggestion, hub tabs and editable demo metadata",
+        "1440-dark actual directory, create key suggestion, hub tabs and editable demo metadata",
+        "390-dark actual directory, create key suggestion, hub tabs and editable demo metadata"
+      ],
+      "current": [
+        "1440-light actual directory, create key suggestion, hub tabs and editable demo metadata",
+        "390-light actual directory, create key suggestion, hub tabs and editable demo metadata",
+        "1440-dark actual directory, create key suggestion, hub tabs and editable demo metadata",
+        "390-dark actual directory, create key suggestion, hub tabs and editable demo metadata"
+      ]
+    }
+  },
+  {
+    "run": "backend-1",
+    "status": "Interrupted; normal evidence file unavailable",
+    "observed": "Windows resource/allocation failures; raw original artifacts retained outside repository"
+  },
+  {
+    "run": "backend-2",
+    "passed": [],
+    "failures": [],
+    "commands": [
+      {
+        "label": "teams",
+        "command": "bun test --no-env-file --preload <evidence>/prisma-node-preload.ts scripts/backend/teams.test.ts",
+        "exitCode": 0
+      },
+      {
+        "label": "team-management",
+        "command": "bun test --no-env-file --preload <evidence>/prisma-node-preload.ts scripts/backend/team-management.test.ts",
+        "exitCode": 0
+      },
+      {
+        "label": "tenancy",
+        "command": "bun test --no-env-file --preload <evidence>/prisma-node-preload.ts scripts/backend/tenancy.test.ts",
+        "exitCode": 0
+      },
+      {
+        "label": "auth-fences",
+        "command": "bun test --no-env-file --preload <evidence>/prisma-node-preload.ts scripts/backend/auth-fences.test.ts",
+        "exitCode": 0
+      }
+    ],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "sceneChecks": {}
+  },
+  {
+    "run": "visual-7",
+    "failures": [],
+    "sceneChecks": {
+      "baseline": [
+        "1440-light actual directory, create key suggestion, hub tabs and editable demo metadata",
+        "390-light actual directory, create key suggestion, hub tabs and editable demo metadata",
+        "1440-dark actual directory, create key suggestion, hub tabs and editable demo metadata",
+        "390-dark actual directory, create key suggestion, hub tabs and editable demo metadata"
+      ],
+      "current": [
+        "1440-light actual directory, create key suggestion, hub tabs and editable demo metadata",
+        "390-light actual directory, create key suggestion, hub tabs and editable demo metadata",
+        "1440-dark actual directory, create key suggestion, hub tabs and editable demo metadata",
+        "390-dark actual directory, create key suggestion, hub tabs and editable demo metadata"
+      ]
+    },
+    "pixelComparisonExit": 1,
+    "pixelSummary": "15/16 exact; 1 pixel differs in dark desktop creation; CSS identical; within-build repeat variation documented"
+  },
+  {
+    "run": "capture-1",
+    "passed": 1,
+    "screenshots": 16,
+    "failures": [],
+    "scope": "settled-data captures before live Lead-label clarification"
+  },
+  {
+    "run": "backend-3",
+    "commands": "all4 exit0",
+    "tests": 127,
+    "assertions": 2073,
+    "failures": []
+  }
+]

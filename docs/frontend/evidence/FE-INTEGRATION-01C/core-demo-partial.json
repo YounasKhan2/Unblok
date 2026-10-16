@@ -1,0 +1,81 @@
+{
+  "sides": {
+    "baseline": {
+      "passed": [
+        "original ten destinations, SVG icons, separators and shell dimensions",
+        "drawer and Escape interaction",
+        "original Create Issue form and cancel",
+        "command palette shortcut and help overlay",
+        "rail keyboard dimensions and G P navigation",
+        "three flagged dark pages, repeated raster and point diagnostics",
+        "dependency graph, view shortcuts and filters",
+        "Workspace selection, keyboard dismissal and real original menu",
+        "demo reset, restore and test-role controls",
+        "light/dark and mobile navigation retain original layout"
+      ],
+      "errors": []
+    },
+    "current": {
+      "passed": [
+        "original ten destinations, SVG icons, separators and shell dimensions",
+        "drawer and Escape interaction",
+        "original Create Issue form and cancel",
+        "command palette shortcut and help overlay",
+        "rail keyboard dimensions and G P navigation",
+        "three flagged dark pages, repeated raster and point diagnostics",
+        "dependency graph, view shortcuts and filters",
+        "Workspace selection, keyboard dismissal and real original menu",
+        "demo reset, restore and test-role controls",
+        "light/dark and mobile navigation retain original layout"
+      ],
+      "errors": []
+    }
+  },
+  "comparisons": [
+    {
+      "name": "shell",
+      "equal": true
+    },
+    {
+      "name": "filteredProjects",
+      "equal": true
+    },
+    {
+      "name": "projects",
+      "equal": true
+    },
+    {
+      "name": "teams",
+      "equal": true
+    },
+    {
+      "name": "dependencies",
+      "equal": true
+    },
+    {
+      "name": "filteredDependencies",
+      "equal": true
+    },
+    {
+      "name": "workspaces",
+      "equal": true
+    },
+    {
+      "name": "selectedWorkspace",
+      "equal": true
+    },
+    {
+      "name": "roles",
+      "equal": true
+    },
+    {
+      "name": "switchedActor",
+      "equal": true
+    }
+  ],
+  "failures": [
+    "baseline Team preservation: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('heading', { name: 'Teams', exact: true }) to be visible\u001b[22m\n",
+    "current Team preservation: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('heading', { name: 'Teams', exact: true }) to be visible\u001b[22m\n"
+  ],
+  "scope": "Core demo checks pass; supplemental setup fails on both sides. Whole run exit1 retained."
+}

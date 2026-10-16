@@ -1,0 +1,223 @@
+{
+  "baseline": "894488746e134bd3cebb21091edbae2cb12dfb19",
+  "pairs": [
+    {
+      "scene": "team-directory-1440-light",
+      "sameDimensions": true,
+      "baselineSize": [
+        1440,
+        1000
+      ],
+      "currentSize": [
+        1440,
+        1000
+      ],
+      "differentPixels": 0
+    },
+    {
+      "scene": "team-hub-1440-light",
+      "sameDimensions": true,
+      "baselineSize": [
+        1440,
+        1000
+      ],
+      "currentSize": [
+        1440,
+        1000
+      ],
+      "differentPixels": 0
+    },
+    {
+      "scene": "team-create-1440-light",
+      "sameDimensions": true,
+      "baselineSize": [
+        1440,
+        1000
+      ],
+      "currentSize": [
+        1440,
+        1000
+      ],
+      "differentPixels": 0
+    },
+    {
+      "scene": "team-edit-1440-light",
+      "sameDimensions": true,
+      "baselineSize": [
+        1440,
+        1000
+      ],
+      "currentSize": [
+        1440,
+        1000
+      ],
+      "differentPixels": 0
+    },
+    {
+      "scene": "team-directory-390-light",
+      "sameDimensions": true,
+      "baselineSize": [
+        390,
+        844
+      ],
+      "currentSize": [
+        390,
+        844
+      ],
+      "differentPixels": 0
+    },
+    {
+      "scene": "team-hub-390-light",
+      "sameDimensions": true,
+      "baselineSize": [
+        390,
+        844
+      ],
+      "currentSize": [
+        390,
+        844
+      ],
+      "differentPixels": 0
+    },
+    {
+      "scene": "team-create-390-light",
+      "sameDimensions": true,
+      "baselineSize": [
+        390,
+        844
+      ],
+      "currentSize": [
+        390,
+        844
+      ],
+      "differentPixels": 0
+    },
+    {
+      "scene": "team-edit-390-light",
+      "sameDimensions": true,
+      "baselineSize": [
+        390,
+        844
+      ],
+      "currentSize": [
+        390,
+        844
+      ],
+      "differentPixels": 0
+    },
+    {
+      "scene": "team-directory-1440-dark",
+      "sameDimensions": true,
+      "baselineSize": [
+        1440,
+        1000
+      ],
+      "currentSize": [
+        1440,
+        1000
+      ],
+      "differentPixels": 0
+    },
+    {
+      "scene": "team-hub-1440-dark",
+      "sameDimensions": true,
+      "baselineSize": [
+        1440,
+        1000
+      ],
+      "currentSize": [
+        1440,
+        1000
+      ],
+      "differentPixels": 0
+    },
+    {
+      "scene": "team-create-1440-dark",
+      "sameDimensions": true,
+      "baselineSize": [
+        1440,
+        1000
+      ],
+      "currentSize": [
+        1440,
+        1000
+      ],
+      "differentPixels": 1
+    },
+    {
+      "scene": "team-edit-1440-dark",
+      "sameDimensions": true,
+      "baselineSize": [
+        1440,
+        1000
+      ],
+      "currentSize": [
+        1440,
+        1000
+      ],
+      "differentPixels": 0
+    },
+    {
+      "scene": "team-directory-390-dark",
+      "sameDimensions": true,
+      "baselineSize": [
+        390,
+        844
+      ],
+      "currentSize": [
+        390,
+        844
+      ],
+      "differentPixels": 0
+    },
+    {
+      "scene": "team-hub-390-dark",
+      "sameDimensions": true,
+      "baselineSize": [
+        390,
+        844
+      ],
+      "currentSize": [
+        390,
+        844
+      ],
+      "differentPixels": 0
+    },
+    {
+      "scene": "team-create-390-dark",
+      "sameDimensions": true,
+      "baselineSize": [
+        390,
+        844
+      ],
+      "currentSize": [
+        390,
+        844
+      ],
+      "differentPixels": 0
+    },
+    {
+      "scene": "team-edit-390-dark",
+      "sameDimensions": true,
+      "baselineSize": [
+        390,
+        844
+      ],
+      "currentSize": [
+        390,
+        844
+      ],
+      "differentPixels": 0
+    }
+  ],
+  "css": {
+    "baseline": {
+      "index-BSo_8b9W.css": "219e9d0180c254fe27c0a48a6cac9ca6fc2ea9e6f72adba24d4be5c37d4be51a"
+    },
+    "current": {
+      "index-BSo_8b9W.css": "219e9d0180c254fe27c0a48a6cac9ca6fc2ea9e6f72adba24d4be5c37d4be51a"
+    }
+  },
+  "cssIdentical": true,
+  "tolerance": 0
+}

@@ -17,7 +17,7 @@ async function main(){
  const env={...process.env,FE_NODE_EXECUTABLE:process.execPath,NODE_ENV:'test',LOG_LEVEL:'warn',API_HOST:'127.0.0.1',SESSION_NAMESPACE:'fei-'+run.replaceAll('-',''),SESSION_TRUSTED_PROXIES:'',SESSION_CROSS_ORIGIN:'false',EMAIL_VERIFICATION_KEY_ID:'v1',PASSWORD_RECOVERY_KEY_ID:'v1',WORKSPACE_INVITATION_KEY_ID:'v1',WORKSPACE_CURSOR_KEY_ID:'v1',WORKSPACE_CURSOR_PREVIOUS_KEY:'',WORKSPACE_CURSOR_PREVIOUS_KEY_ID:'',EMAIL_MAIL_FROM:'noreply@example.test',EMAIL_MAIL_USERNAME:'',EMAIL_MAIL_PASSWORD:''};
  for(const key of ['SESSION_SECRETS','EMAIL_VERIFICATION_KEY','PASSWORD_RECOVERY_KEY','WORKSPACE_INVITATION_KEY','WORKSPACE_CURSOR_KEY','WORKSPACE_IDEMPOTENCY_KEY'])env[key]=randomBytes(32).toString('hex');
  const docker=(args,extra={})=>execFileSync('docker',args,{encoding:'utf8',timeout:30000,env:{...env,...extra},stdio:['ignore','pipe','pipe']}).trim();
- const start=(name,args)=>{const file=fs.openSync(path.join(out,name+'.log'),'w');logs.push(file);const child=spawn('bun',args[0]==='test'?['test','--no-env-file',...(name==='backend-unit'?[]:['--preload',preload]),...args.slice(1)]:['--no-env-file',...args],{cwd:root,env,stdio:['ignore',file,file],windowsHide:true});children.push(child);return child;};
+ const start=(name,args)=>{const file=path.join(out,name+'.log');fs.writeFileSync(file,'');const child=spawn('bun',args[0]==='test'?['test','--no-env-file',...(name==='backend-unit'?[]:['--preload',preload]),...args.slice(1)]:['--no-env-file',...args],{cwd:root,env,stdio:['ignore','pipe','pipe'],windowsHide:true});child.stdout.on('data',chunk=>fs.appendFileSync(file,chunk));child.stderr.on('data',chunk=>fs.appendFileSync(file,chunk));children.push(child);return child;};
  const evidence={base:execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),isolation:'Owned PostgreSQL + Valkey + disposable sentinel-protected Mailpit; ephemeral loopback ports; no shared volumes or QA environment files',commands:[],passed:[],failures:[]};
  try{
   for(const [kind,image,containerPort,extra,args] of [
@@ -36,6 +36,7 @@ async function main(){
   const api=start('api',['apps/api/src/main.ts']),worker=start('worker',['apps/worker/src/main.ts']);
   let ready=false;for(let i=0;i<100;i++){try{const r=await fetch('http://127.0.0.1:'+env.API_PORT+'/ready');if(r.status===200){ready=true;break;}}catch{}if(api.exitCode!==null)throw Error('Owned API stopped; inspect redacted API log');await pause(150);}if(!ready)throw Error('Owned API did not become ready');
   evidence.api={ready:200,live:(await fetch('http://127.0.0.1:'+env.API_PORT+'/live')).status};if(evidence.api.live!==200)throw Error('Owned API liveness failed');
+  if(!process.argv.includes('--backend-only')){
   const viteModule=await import(pathToFileURL(require.resolve('vite',{paths:[path.join(root,'apps/web')]})).href);
   // Do not allow ignored QA env files or inherited VITE_AUTH_API_ORIGIN to
   // redirect this disposable browser suite away from its owned API proxy.
@@ -46,8 +47,20 @@ async function main(){
   vite=await viteModule.createServer({root:path.join(root,'apps/web'),cacheDir:path.join(out,'vite-cache'),configFile:path.join(root,'apps/web/vite.config.ts'),envDir:false,define:{'import.meta.env.VITE_AUTH_API_ORIGIN':JSON.stringify('')},server:{host:'127.0.0.1',port:webPort,strictPort:true,hmr:false,watch:null,proxy:{'/api':{target:'http://127.0.0.1:'+env.API_PORT,changeOrigin:false}}}});await vite.listen();
   }
   evidence.frontendIsolation={envFiles:false,authApiOrigin:'owned same-origin proxy',hmr:false,watch:false};
+  }
   if(process.argv.includes('--backend-only'))evidence.skipped=[{suite:'Chromium',reason:'Explicit --backend-only selection; browser gates are reported separately.'}];
-  else await require(process.argv.includes('--01b')?'./fe-integration-01b-journeys.cjs':'./fe-integration-01a-journeys.cjs')({base:env.CORS_ORIGINS,out,mail,evidence,revokeOwnedMember:async(workspaceId,email)=>{
+  else await require(process.argv.includes('--01c')?'./fe-integration-01c-journeys.cjs':process.argv.includes('--01b')?'./fe-integration-01b-journeys.cjs':'./fe-integration-01a-journeys.cjs')({base:env.CORS_ORIGINS,out,mail,evidence,seedOwnedTeams:async(workspace,membership)=>{
+   if(![workspace,membership].every(v=>/^[0-9a-f]{8}-[0-9a-f-]{27}$/.test(v)))throw Error('Invalid owned Team fixture scope');
+   if(docker(['inspect','--format','{{index .Config.Labels "unblok.fe-integration.run"}}',names[0]])!==run)throw Error('Owned database label mismatch');
+   const eligible=docker(['exec',names[0],'psql','-U','unblok','-d','unblok','-Atc',`SELECT EXISTS(SELECT 1 FROM workspace_memberships m JOIN users u ON u.id=m.user_id WHERE m.workspace_id='${workspace}' AND m.id='${membership}' AND m.status='ACTIVE' AND m.role='ADMIN' AND u.email LIKE 'fe01c-%@example.test');`]);if(eligible!=='t')throw Error('Expected owned QA actor');
+   docker(['exec',names[0],'psql','-v','ON_ERROR_STOP=1','-U','unblok','-d','unblok','-Atc',`BEGIN; CREATE TEMP TABLE fe_team_pages AS SELECT gen_random_uuid() id,g FROM generate_series(1,21) g; INSERT INTO teams(workspace_id,id,key,name,owner_membership_id) SELECT '${workspace}'::uuid,id,'PG'||lpad(g::text,3,'0'),'Owned pagination Team '||g,'${membership}'::uuid FROM fe_team_pages; INSERT INTO team_memberships(workspace_id,team_id,membership_id) SELECT '${workspace}'::uuid,id,'${membership}'::uuid FROM fe_team_pages; COMMIT;`]);evidence.fixtureSeed={teams:21,scope:'owned disposable database only; all Team reads and creation/metadata journeys still use real APIs'};
+  },seedOwnedMembers:async(workspace,team,membership)=>{
+   if(![workspace,team,membership].every(v=>/^[0-9a-f]{8}-[0-9a-f-]{27}$/.test(v)))throw Error('Invalid owned member fixture scope');
+   if(docker(['inspect','--format','{{index .Config.Labels "unblok.fe-integration.run"}}',names[0]])!==run)throw Error('Owned database label mismatch');
+   const eligible=docker(['exec',names[0],'psql','-U','unblok','-d','unblok','-Atc',`SELECT EXISTS(SELECT 1 FROM teams t JOIN workspace_memberships m ON m.workspace_id=t.workspace_id AND m.id=t.owner_membership_id JOIN users u ON u.id=m.user_id WHERE t.workspace_id='${workspace}' AND t.id='${team}' AND m.id='${membership}' AND m.status='ACTIVE' AND m.role='ADMIN' AND u.email LIKE 'fe01c-%@example.test');`]);if(eligible!=='t')throw Error('Expected owned Team owner');
+   docker(['exec',names[0],'psql','-v','ON_ERROR_STOP=1','-U','unblok','-d','unblok','-Atc',`BEGIN; CREATE TEMP TABLE fe_member_pages AS SELECT gen_random_uuid() uid,gen_random_uuid() mid,g FROM generate_series(1,21) g; INSERT INTO users(id,name,email) SELECT uid,'Owned pagination member '||lpad(g::text,2,'0'),'fe01c-member-'||uid||'@example.test' FROM fe_member_pages; INSERT INTO workspace_memberships(workspace_id,id,user_id,role,status,joined_at) SELECT '${workspace}'::uuid,mid,uid,'MEMBER','ACTIVE',now() FROM fe_member_pages; INSERT INTO team_memberships(workspace_id,team_id,membership_id) SELECT '${workspace}'::uuid,'${team}'::uuid,mid FROM fe_member_pages; COMMIT;`]);
+   evidence.memberFixtureSeed={members:21,scope:'owned disposable database only; real owner plus 21 fixture members; real bounded API reads'};
+  },revokeOwnedMember:async(workspaceId,email)=>{
    if(!/^[0-9a-f-]{36}$/.test(workspaceId)||!/^fei-invite-[0-9a-f]+@example\.test$/.test(email))throw Error('Invalid owned revocation fixture');
    // Fixture mutation is restricted to this runner's own disposable PostgreSQL container.
    const changed=docker(['exec',names[0],'psql','-U','unblok','-d','unblok','-Atc',`UPDATE workspace_memberships SET status='SUSPENDED' WHERE workspace_id='${workspaceId}' AND user_id=(SELECT id FROM users WHERE email='${email}') AND role='MEMBER' AND status='ACTIVE' RETURNING id;`]);
@@ -55,14 +68,19 @@ async function main(){
   }});
   // Browser-only processes are no longer needed. Do not contend with or write
   // alongside the independent backend regression fixtures.
-  await vite.close();vite=undefined;
+  if(vite){await vite.close();vite=undefined;}
   for(const child of [api,worker]){if(child.exitCode===null){const exited=new Promise(resolve=>child.once('exit',resolve));child.kill();await exited;}}
   // Read-only source/regression checks run against owned infrastructure, never ignored QA config.
-  for(const [label,args] of (process.argv.includes('--browser-only')?[]:[
+  for(const [label,args] of (process.argv.includes('--browser-only')?[]:process.argv.includes('--01c')?[
+   ['teams',['test','scripts/backend/teams.test.ts']],
+   ['team-management',['test','scripts/backend/team-management.test.ts']],
+   ['tenancy',['test','scripts/backend/tenancy.test.ts']],
+   ['auth-fences',['test','scripts/backend/auth-fences.test.ts']]
+  ]:[
    ['backend-unit',['test','apps/api/test','apps/worker/test','packages/backend-runtime/test','scripts/backend/architecture.test.ts']],
    ['auth-session',['test','apps/api/verification/authentication-integration.test.ts','apps/api/verification/session-integration.test.ts']],
    ['tenancy-fences',['test','scripts/backend/tenancy.test.ts','scripts/backend/auth-fences.test.ts']]])){
-    const child=start(label,args);const code=await new Promise((resolve,reject)=>{child.on('error',reject);child.on('exit',resolve);});evidence.commands.push({label,command:'bun test --no-env-file '+(label==='backend-unit'?'':'--preload <evidence>/prisma-node-preload.ts ')+args.slice(1).join(' '),exitCode:code});if(code!==0)evidence.failures.push(label);
+    const child=start(label,args);const code=await new Promise((resolve,reject)=>{child.on('error',reject);child.on('close',resolve);});evidence.commands.push({label,command:'bun test --no-env-file '+(label==='backend-unit'?'':'--preload <evidence>/prisma-node-preload.ts ')+args.slice(1).join(' '),exitCode:code});if(code!==0)evidence.failures.push(label);
   }
   await mail.assertSentinels();evidence.mail={sentinelsPreserved:2,sharedMailpitAccessed:false,deletions:0};
  }catch(error){evidence.failures.push(error.message);process.exitCode=1;}
