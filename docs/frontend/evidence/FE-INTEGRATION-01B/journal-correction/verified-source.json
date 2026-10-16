@@ -1,0 +1,42 @@
+{
+  "reviewedHead": "548946490bcf3fb5394bf82120e3a163ea8e3fa6",
+  "sha256Utf8LF": {
+    "apps/web/src/features/workspaces/live/AdministrationStore.ts": "332dbfc7ede5a4a333ddff2db1241eb0a44feddcaaca8e9adff82ee4fc960e40",
+    "apps/web/src/features/workspaces/live/Administration.test.ts": "8b948c432c9d3b5cbb2595930a8fea9c8f04c5b4a9bfdf3e005962b0e10c4aa1",
+    "apps/web/src/features/auth/session/SessionStore.ts": "dd4f3601045406fccbf4c00adc6fdfaed17ac60f3de996c15f65bd74ff1526bd",
+    "scripts/frontend/fe-integration-01b-journeys.cjs": "119087ec4d370f3a4aa5795d0eee5553ca9e0b8b44d75f932005d44cde10b531",
+    "scripts/frontend/fe-integration-01b-journal.cjs": "8143b99b23a9dc2a48886dd18a729d69451022de657f041bc982e89a760d362c"
+  },
+  "checks": {
+    "focusedFrontend": {
+      "passed": 87,
+      "failed": 0
+    },
+    "fullFrontend": {
+      "passed": 932,
+      "failed": 3,
+      "failures": "unchanged historical NEXUS fixtures"
+    },
+    "typecheck": "pass",
+    "productionBuild": "pass",
+    "focusedBrowser": {
+      "passed": 5,
+      "failed": 0,
+      "evidence": "focused-browser.json"
+    },
+    "broadBrowser": {
+      "passed": 15,
+      "failed": 1,
+      "reason": "Added final issuance replay exceeded unchanged five/hour actor administration budget",
+      "evidence": "broad-browser-failed.json"
+    }
+  },
+  "browserAttempt1": {
+    "status": "failed/incomplete",
+    "observedPassingGates": 6,
+    "terminalError": "Owned Valkey container missing during teardown; normal final evidence.json was not written.",
+    "cause": "Unresolved infrastructure interruption; recently restarted Docker development containers were observed afterward.",
+    "sentinelResult": "Not established for this interrupted attempt",
+    "sharedQaMutations": false
+  }
+}

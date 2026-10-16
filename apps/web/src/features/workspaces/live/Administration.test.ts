@@ -39,3 +39,39 @@ it('preserves the embedded member-Team cursor page-size binding',async()=>{const
 it('explicitly abandoning a reconciled pending intent never sends or retries a mutation',async()=>{const f=await fixture((url,o)=>o.method==='GET'?response(url.includes('/memberships?')?page:url.includes('/invitations?')?invitations:{items:[],page:{hasMore:false,nextCursor:null}}):response({},409));await f.store.change({action:'remove',target:id,match:'"2"'});expect(f.store.snapshot().attempt).toBeDefined();await f.store.load();f.store.abandonAttempt();expect(f.store.snapshot().attempt).toBeUndefined();expect(f.store.snapshot().notice).toContain('Retry canceled');expect(f.calls.filter(c=>c.o.method==='DELETE')).toHaveLength(1);f.stop();});
 
 it('blocks new administration mutations until a legacy pending invitation reconciles at its original endpoint',async()=>{const f=await fixture((url,o)=>o.method==='GET'?response(url.includes('/memberships?')?page:url.includes('/invitations?')?invitations:{items:[],page:{hasMore:false,nextCursor:null}}):response({status:'accepted'},202));const legacy=new TabInviteJournal({getItem:k=>f.storage.get(k)??null,setItem:(k,v)=>{f.storage.set(k,v);},removeItem:k=>{f.storage.delete(k);}});legacy.write({actor:id,workspace:id,key:other,body:{email:'legacy@example.test',role:'MEMBER'}});const store=new AdministrationStore(f.session,f.workspace,undefined,f.journal,()=>id,legacy),stop=store.start();expect(store.snapshot().legacyAttempt?.key).toBe(other);expect(await store.change({action:'invite',body:{email:'legacy@example.test',role:'ADMIN',teamIds:[]}})).toBe(false);expect(await store.retryLegacy()).toBe(true);const request=f.calls.find(c=>c.o.method==='POST'&&c.url.endsWith('/'+id+'/invitations'))!;expect(request).toBeDefined();expect((request.o.headers as Record<string,string>)['Idempotency-Key']).toBe(other);expect(JSON.parse(request.o.body as string)).toEqual({email:'legacy@example.test',role:'MEMBER'});expect(legacy.read(id,id)).toBeUndefined();stop();f.stop();});
+
+const journalSlot='unblok:pending-administration:v1';
+const third='32345678-1234-4234-8234-123456789012';
+const saved=(actor=id,workspace=id,membership=id)=>({actor,workspace,membership,key:id,action:'role' as const,target:other,match:'"2"',body:{role:'OBSERVER' as const}});
+function journalFixture(){const storage=new Map<string,string>();return {storage,journal:new AdministrationJournal({getItem:k=>storage.get(k)??null,setItem:(k,v)=>{storage.set(k,v);},removeItem:k=>{storage.delete(k);}})};}
+it('isolates two actors, multiple Workspaces and membership lifecycles on write and independent cancellation',()=>{
+ const {journal,storage}=journalFixture(),entries=[saved(),saved(id,other),saved(other,id),saved(other,other),saved(id,id,other)];
+ entries.forEach(op=>journal.write(op));const original=storage.get(journalSlot);
+ entries.forEach(op=>{expect(journal.read(op.actor,op.workspace,op.membership)).toEqual(op);journal.write(op);});expect(storage.get(journalSlot)).toBe(original);
+ journal.remove(entries[0]);expect(journal.read(id,id,id)).toBeUndefined();entries.slice(1).forEach(op=>expect(journal.read(op.actor,op.workspace,op.membership)).toEqual(op));
+ journal.remove(entries[2]);expect(journal.read(other,id,id)).toBeUndefined();expect(journal.read(other,other,id)).toEqual(entries[3]);
+});
+it.each(['key','body','match','action'] as const)('cannot overwrite or cancel an unresolved intent with changed %s',field=>{
+ const {journal,storage}=journalFixture(),op=saved();journal.write(op);const before=storage.get(journalSlot);
+ const changed={...op,...(field==='key'?{key:other}:field==='body'?{body:{role:'MEMBER' as const}}:field==='match'?{match:'"3"'}:{action:'remove' as const,body:undefined})};
+ expect(()=>journal.write(changed)).toThrow();expect(()=>journal.remove(changed)).toThrow();expect(storage.get(journalSlot)).toBe(before);
+});
+it('enforces a global eight-entry cap without evicting other actors or blocking an exact retry',()=>{
+ const {journal,storage}=journalFixture();for(let n=1;n<=8;n++)journal.write(saved(id,`${n}2345678-1234-4234-8234-123456789012`));
+ const before=storage.get(journalSlot);journal.write(saved());expect(()=>journal.write(saved(other,third))).toThrow('limit');expect(storage.get(journalSlot)).toBe(before);
+ journal.remove(saved());journal.write(saved(other,third));expect(journal.read(other,third,id)).toEqual(saved(other,third));
+});
+it.each(['','{','{}','[null]',JSON.stringify([saved(),saved()]),JSON.stringify([{...saved(),key:'invalid'}]),JSON.stringify([{...saved(),extra:true}]),JSON.stringify(Array.from({length:9},()=>saved())),' '.repeat(40001)])('malformed or ambiguous journal fails closed without changing stored bytes (%#)',raw=>{
+ const {journal,storage}=journalFixture();storage.set(journalSlot,raw);expect(()=>journal.read(id,id,id)).toThrow();expect(()=>journal.write(saved())).toThrow();expect(()=>journal.remove(saved())).toThrow();expect(storage.get(journalSlot)).toBe(raw);
+});
+it.each([0,503])('retains uncertain %s intent across account switch, another actor cancellation, logout and exact-key return',async status=>{
+ let fail=true;const f=await fixture((url,o)=>o.method==='GET'?response(url.includes('/memberships?')?page:url.includes('/invitations?')?invitations:{items:[],page:{hasMore:false,nextCursor:null}}):fail?status===0?Promise.reject(Error('lost')):response({},status):response({status:'accepted'},202));
+ await f.store.change({action:'role',target:other,match:'"2"',body:{role:'OBSERVER'}});const original=f.journal.read(id,id,id)!;
+ f.actor(other);await f.session.refresh();await f.workspace.select(id);await tick();expect(f.store.snapshot().attempt).toBeUndefined();expect(f.journal.read(id,id,id)).toEqual(original);
+ await f.store.change({action:'remove',target:third,match:'"7"'});const second=f.journal.read(other,id,id)!;expect(second).toBeDefined();
+ await f.workspace.select(other);await tick();await f.store.change({action:'revoke',target:third,match:'"'+revision+'"'});expect(f.journal.read(other,other,id)).toBeDefined();
+ f.store.abandonAttempt();expect(f.journal.read(other,other,id)).toBeUndefined();expect(f.journal.read(other,id,id)).toEqual(second);expect(f.journal.read(id,id,id)).toEqual(original);
+ await f.session.logout();expect(f.store.snapshot().members).toBeNull();expect(f.store.snapshot().attempt).toBeUndefined();expect(f.journal.read(id,id,id)).toEqual(original);expect(f.journal.read(other,id,id)).toEqual(second);
+ f.actor(id);await f.session.refresh();await f.workspace.select(id);await tick();expect(f.store.snapshot().attempt).toEqual(original);fail=false;expect(await f.store.retry()).toBe(true);
+ const requests=f.calls.filter(c=>c.o.method==='PATCH');expect(requests).toHaveLength(2);expect(requests[0].o.body).toBe(requests[1].o.body);expect(requests[0].o.headers).toEqual(requests[1].o.headers);expect(f.journal.read(id,id,id)).toBeUndefined();expect(f.journal.read(other,id,id)).toEqual(second);f.stop();
+});

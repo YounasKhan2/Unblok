@@ -4,6 +4,10 @@ Candidate branch: `codex/fe-integration-01b`. Baseline `12403c798b5320490a11c359
 
 **Stop for PM review. No merge, deployment, shared QA change or FE-INTEGRATION-01C work.**
 
+## Final PM correction
+
+See [Administration journal correction](FE-INTEGRATION-01B-JOURNAL-CORRECTION.md) for the follow-up to reviewed HEAD `548946490bcf3fb5394bf82120e3a163ea8e3fa6`, its explicit logout policy and fresh verification. The original results and source manifest below remain historical evidence for the implementation commit; they are not relabeled as correction-run results.
+
 ## Result and UX boundary
 
 The actual prototype member settings page, member rows, invitation rows and invitation form now render real administration data through a presentation binding. `/settings/members` and `/workspaces/:workspaceId/members` use the actual SettingsLayout, existing shell and validated selected Workspace. The scoped route retains its explicit Workspace on reload. No prototype data/provider is mounted in live routes.

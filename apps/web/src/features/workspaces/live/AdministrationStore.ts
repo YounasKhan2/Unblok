@@ -16,13 +16,34 @@ function parseAttempt(value:unknown):Attempt{
  const pattern=r.action==='role'||r.action==='remove'?/^"[1-9][0-9]{0,18}"$/:/^"inv2-[0-9a-f-]{36}-[0-9a-f]{64}"$/;if(!r.match||!pattern.test(r.match))throw Error('Invalid request');
  if(r.action==='role')return {...r,body:administrationRoleSchema.parse(r.body)};if(r.body!==undefined)throw Error('Invalid request');return r;
 }
+// A tab journal retains uncertain requests across sign-out. It is not authorization:
+// only the exact, currently authorized actor/Workspace/membership may restore an entry.
+const sameScope=(a:Attempt,b:Attempt)=>a.actor===b.actor&&a.workspace===b.workspace&&a.membership===b.membership;
+const requestIdentity=(r:Attempt)=>JSON.stringify([r.actor,r.workspace,r.membership,r.key,r.action,r.target,r.match,r.body]);
 export class AdministrationJournal {
  constructor(private readonly storage:Pick<Storage,'getItem'|'setItem'|'removeItem'>){}
- private rows(){const raw=this.storage.getItem(slot);if(!raw)return [];if(raw.length>40000)throw Error('Invalid journal');const rows:unknown=JSON.parse(raw);if(!Array.isArray(rows)||rows.length>8)throw Error('Invalid journal');return rows.map(parseAttempt);}
+ private rows():Attempt[]{
+  const raw=this.storage.getItem(slot);if(raw===null)return [];if(raw.length>40000)throw Error('Invalid journal');
+  const values:unknown=JSON.parse(raw);if(!Array.isArray(values)||values.length>8)throw Error('Invalid journal');
+  const rows=values.map(parseAttempt);
+  if(rows.some((r,i)=>rows.slice(0,i).some(previous=>sameScope(previous,r))))throw Error('Ambiguous journal');
+  return rows;
+ }
  read(actor:string,workspace:string,membership:string){return this.rows().find(r=>r.actor===actor&&r.workspace===workspace&&r.membership===membership);}
- write(op:Attempt){const rows=this.rows().filter(r=>r.actor===op.actor&&r.workspace!==op.workspace);if(rows.length>=8)throw Error('Pending request limit');this.storage.setItem(slot,JSON.stringify([...rows,parseAttempt(op)]));}
- remove(op:Attempt){this.storage.setItem(slot,JSON.stringify(this.rows().filter(r=>r.actor===op.actor&&r.workspace!==op.workspace)));}
- clear(){this.storage.removeItem(slot);}
+ write(value:Attempt){
+  const op=parseAttempt(value),rows=this.rows(),existing=rows.find(r=>sameScope(r,op));
+  if(existing){if(requestIdentity(existing)!==requestIdentity(op))throw Error('Pending request needs reconciliation');return;}
+  if(rows.length>=8)throw Error('Pending request limit');
+  const raw=JSON.stringify([...rows,op]);if(raw.length>40000)throw Error('Pending request limit');this.storage.setItem(slot,raw);
+ }
+ remove(value:Attempt){
+  const op=parseAttempt(value),rows=this.rows(),existing=rows.find(r=>sameScope(r,op));
+  if(!existing)return;
+  if(requestIdentity(existing)!==requestIdentity(op))throw Error('Pending request changed');
+  this.storage.setItem(slot,JSON.stringify(rows.filter(r=>!sameScope(r,op))));
+ }
+ // No bulk clear: success, definite precommit rejection or explicit cancellation removes
+ // one exact request. Logout/account switching only invalidates private in-memory state.
 }
 const initial=()=>({allowed:false,canMutate:false,loading:false,busy:false,error:'',notice:'',members:null as MemberPage|null,invitations:null as InvitationPage|null,teams:null as TeamPage|null,filters:{status:'ACTIVE',search:'',role:'ALL',teamId:'ALL'} as Filters,attempt:undefined as Attempt|undefined,legacyAttempt:undefined as InviteAttempt|undefined,blocked:false});
 export class AdministrationStore {
@@ -33,7 +54,7 @@ export class AdministrationStore {
  start(){this.sync();const stops=[this.session.subscribe(()=>this.sync()),this.workspace.subscribe(()=>this.sync())];return()=>{stops.forEach(f=>f());this.identity='';this.invalidate();this.state=initial();};}
  private invalidate(){this.version++;this.reads.forEach(c=>c.abort());this.reads.clear();this.mutation?.abort();}
  private sync(){const s=this.session.snapshot(),w=this.workspace.snapshot(),c=w.context,actor=s.status==='authenticated'?s.user!.id:'';
-  if(this.logout!==this.session.explicitLogoutGeneration()||(actor&&this.actor&&actor!==this.actor)){try{this.journal?.clear();this.legacyJournal?.clear();}catch{}this.actor='';}
+  if(this.logout!==this.session.explicitLogoutGeneration()||(actor&&this.actor&&actor!==this.actor)){try{this.legacyJournal?.clear();}catch{}this.actor='';}
   this.logout=this.session.explicitLogoutGeneration();if(actor)this.actor=actor;
   const allowed=!!actor&&!s.pending&&!!s.user?.emailVerified&&!!c&&!w.selecting&&w.selected===c.workspace.id&&c.self.role==='ADMIN'&&c.self.membershipStatus==='ACTIVE';
   const identity=allowed?JSON.stringify([actor,this.session.generation(),c!.workspace.id,c!.workspace.status,c!.self.membershipId,c!.self.role,c!.self.membershipStatus,s.user?.emailVerified]):'';

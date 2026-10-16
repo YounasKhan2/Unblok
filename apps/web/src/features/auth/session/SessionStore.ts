@@ -38,7 +38,8 @@ export class SessionStore {
     const {user}=await this.api.me();this.publish({status:'authenticated',user,pending:true});
   });}
   async logout(all=false) {return this.submit(async()=>{
-    // Intentional sign-out abandons pending client mutations, even on an unknown response.
+    // Fence in-flight client work even on an unknown sign-out response. Each consumer
+    // owns its journal policy; uncertain administration intents survive for explicit reconciliation.
     this.logoutVersion++;this.publish({...this.state});
     try{const result=await this.api.logout(all);this.clear();return result;}
     catch(error){if(error instanceof AuthApiError&&error.status===401){this.clear();return null;}throw error;}
