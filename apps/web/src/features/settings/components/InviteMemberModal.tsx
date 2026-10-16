@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { Modal } from '../../../components/ui/Modal';
 import { Button } from '../../../components/ui/Button';
 import { UserRole, Team } from '../../../types';
-import { useSettings } from '../context/SettingsContext';
+import {useMemberBindings} from './MemberBindings';
 
 interface InviteMemberModalProps {
   isOpen: boolean;
   onClose: () => void;
-  teams: Team[];
+  teams: Pick<Team,'id'|'name'|'key'>[];
 }
 
 export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
@@ -15,7 +15,8 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
   onClose,
   teams,
 }) => {
-  const { inviteMember } = useSettings();
+  const binding=useMemberBindings();
+  const {inviteMember}=binding;
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<UserRole>('MEMBER');
   const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
@@ -27,16 +28,18 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
     );
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if(binding.live&&selectedTeamIds.length>20){setError('Choose at most 20 initial Teams.');return;}
 
     try {
-      inviteMember({
+      const result=await inviteMember({
         email: email.trim(),
         role,
         teamIds: selectedTeamIds,
       });
+      if(result===false)return;
       // Reset form and close
       setEmail('');
       setRole('MEMBER');
@@ -56,9 +59,9 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
       maxWidth="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
-        {error && (
-          <div className="p-2.5 rounded-md bg-danger/10 border border-danger/30 text-xs text-danger font-medium">
-            {error}
+        {(error||binding.live&&binding.error) && (
+          <div role={binding.live?'alert':undefined} className="p-2.5 rounded-md bg-danger/10 border border-danger/30 text-xs text-danger font-medium">
+            {error||binding.error}
           </div>
         )}
 
@@ -67,6 +70,7 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
             Email Address <span className="text-danger">*</span>
           </label>
           <input
+            disabled={binding.live&&(!binding.canMutate||binding.busy)}
             id="invite-email"
             type="email"
             required
@@ -82,6 +86,7 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
             Role <span className="text-danger">*</span>
           </label>
           <select
+            disabled={binding.live&&(!binding.canMutate||binding.busy)}
             id="invite-role"
             value={role}
             onChange={e => setRole(e.target.value as UserRole)}
@@ -104,6 +109,7 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
                 className="flex items-center gap-2 p-1.5 rounded hover:bg-surface-muted cursor-pointer text-xs"
               >
                 <input
+                  disabled={binding.live&&(!binding.canMutate||binding.busy)}
                   type="checkbox"
                   checked={selectedTeamIds.includes(team.id)}
                   onChange={() => handleToggleTeam(team.id)}
@@ -116,11 +122,13 @@ export const InviteMemberModal: React.FC<InviteMemberModalProps> = ({
           </div>
         </div>
 
+        {binding.live&&binding.retryInvite&&<Button size="sm" type="button" disabled={binding.busy} onClick={async()=>{if(await binding.retryInvite?.()){setEmail('');setRole('MEMBER');setSelectedTeamIds([]);onClose();}}}>Retry same request</Button>}
+        {binding.live&&binding.teamFooter}
         <div className="flex justify-end gap-2 pt-3 border-t border-border">
           <Button variant="secondary" size="sm" type="button" onClick={onClose}>
             Cancel
           </Button>
-          <Button variant="primary" size="sm" type="submit">
+          <Button variant="primary" size="sm" type="submit" disabled={binding.live&&(!binding.canMutate||binding.busy)}>
             Send Invitation
           </Button>
         </div>

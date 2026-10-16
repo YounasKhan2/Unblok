@@ -1,0 +1,1047 @@
+{
+  "base": "12403c798b5320490a11c359e0d32f1a442a2ef2",
+  "isolation": "Owned PostgreSQL + Valkey + disposable sentinel-protected Mailpit; ephemeral loopback ports; no shared volumes or QA environment files",
+  "commands": [],
+  "passed": [
+    "real registration verification and Workspace",
+    "existing scoped member route retains validated Workspace and actual SettingsLayout",
+    "lost issuance response explicitly retries exact body and durable idempotency key",
+    "ADMIN invitation with authoritative eligible initial Team and keyboard modal",
+    "private preview denial and proof absent from persistent storage",
+    "invitation continuation through signup login verification and atomic Team acceptance",
+    "OBSERVER invitation history resend revoke and terminal controls",
+    "MEMBER issuance and no fabricated delivery acknowledgment",
+    "member role change and immediate removal with existing confirmation pattern",
+    "desktop mobile light dark authoritative member screenshots",
+    "nonadmin and revoked membership hide administration",
+    "real Workspace switching and cross-Workspace isolation",
+    "real server session revocation clears private administration",
+    "same-tab account switch cannot restore previous administration",
+    "same-origin CSRF on all real mutations; no runtime errors; Mailpit sentinels preserved"
+  ],
+  "failures": [],
+  "migrations": {
+    "applied": 13,
+    "scope": "owned disposable test database only"
+  },
+  "api": {
+    "ready": 200,
+    "live": 200
+  },
+  "frontendIsolation": {
+    "envFiles": false,
+    "authApiOrigin": "owned same-origin proxy",
+    "hmr": false,
+    "watch": false
+  },
+  "http": [
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/signup",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/email-verification/request",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/email-verification/confirm",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/email-verification/status",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 201,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/teams",
+      "status": 201,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspace-invitations/preview",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/signup",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/email-verification/request",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/email-verification/confirm",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/email-verification/status",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspace-invitations/preview",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspace-invitations/accept",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspace-invitations/preview",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations/e0a30b87-1647-4851-9839-66b14658c288/resend",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations/95f4ec0f-328b-42da-84eb-06530279713c/revoke",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships/ce8289b7-dedf-4663-a951-e9f87023d8e9",
+      "status": 202,
+      "method": "PATCH"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships/ce8289b7-dedf-4663-a951-e9f87023d8e9",
+      "status": 202,
+      "method": "DELETE"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 404,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 404,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 201,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces/068f08c1-4edd-47c7-bd36-702aa912d50d/administration/memberships",
+      "status": 404,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/068f08c1-4edd-47c7-bd36-702aa912d50d",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/068f08c1-4edd-47c7-bd36-702aa912d50d/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/068f08c1-4edd-47c7-bd36-702aa912d50d/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/068f08c1-4edd-47c7-bd36-702aa912d50d/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/068f08c1-4edd-47c7-bd36-702aa912d50d/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/068f08c1-4edd-47c7-bd36-702aa912d50d/teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/068f08c1-4edd-47c7-bd36-702aa912d50d/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/068f08c1-4edd-47c7-bd36-702aa912d50d/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/068f08c1-4edd-47c7-bd36-702aa912d50d/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/logout-all",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/068f08c1-4edd-47c7-bd36-702aa912d50d/administration/invitations",
+      "status": 404,
+      "method": "GET"
+    }
+  ],
+  "pacingBeforeInvitations": {
+    "milliseconds": 60000,
+    "reason": "Respect original coarse read window after authentication and continuation"
+  },
+  "pacing": {
+    "milliseconds": 60000,
+    "reason": "Respect unchanged production read rate window before the next independent journey"
+  },
+  "pacingBeforeIsolation": {
+    "milliseconds": 60000
+  },
+  "mutationSecurity": [
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/signup",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/email-verification/request",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/email-verification/confirm",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/teams",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspace-invitations/preview",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/signup",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/email-verification/request",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/email-verification/confirm",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspace-invitations/preview",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspace-invitations/accept",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspace-invitations/preview",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations/e0a30b87-1647-4851-9839-66b14658c288/resend",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations/95f4ec0f-328b-42da-84eb-06530279713c/revoke",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/invitations",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships/ce8289b7-dedf-4663-a951-e9f87023d8e9",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/03fa02fb-416f-4ef5-9561-c2ef03a6182c/administration/memberships/ce8289b7-dedf-4663-a951-e9f87023d8e9",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/logout-all",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "csrf": true,
+      "origin": true
+    }
+  ],
+  "mail": {
+    "sentinelsPreserved": 2,
+    "sharedMailpitAccessed": false,
+    "deletions": 0
+  }
+}

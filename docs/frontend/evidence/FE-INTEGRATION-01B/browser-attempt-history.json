@@ -1,0 +1,338 @@
+[
+  {
+    "attempt": "implementation-browser-1",
+    "passedGates": 0,
+    "failures": [
+      "real registration verification and Workspace: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('link', { name: 'Create a workspace', exact: true })\u001b[22m\n"
+    ],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "migrations": {
+      "applied": 13,
+      "scope": "owned disposable test database only"
+    }
+  },
+  {
+    "attempt": "implementation-browser-2",
+    "passedGates": 0,
+    "failures": [
+      "real registration verification and Workspace: Expected values to be strictly equal:\n\n400 !== 201\n"
+    ],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "migrations": {
+      "applied": 13,
+      "scope": "owned disposable test database only"
+    }
+  },
+  {
+    "attempt": "implementation-browser-3",
+    "passedGates": 1,
+    "failures": [
+      "ADMIN invitation with authoritative eligible initial Team and keyboard modal: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('heading', { name: 'Members & Permissions', exact: true }) to be visible\u001b[22m\n"
+    ],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "migrations": {
+      "applied": 13,
+      "scope": "owned disposable test database only"
+    }
+  },
+  {
+    "attempt": "implementation-browser-4",
+    "passedGates": 0,
+    "failures": [
+      "real registration verification and Workspace: page.goto: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:51787/signup\", waiting until \"load\"\u001b[22m\n"
+    ],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "migrations": {
+      "applied": 13,
+      "scope": "owned disposable test database only"
+    }
+  },
+  {
+    "attempt": "implementation-browser-5",
+    "passedGates": 0,
+    "failures": [
+      "spawnSync docker ETIMEDOUT",
+      "Sentinel setup incomplete"
+    ],
+    "mail": null,
+    "migrations": null
+  },
+  {
+    "attempt": "implementation-browser-6",
+    "passedGates": 3,
+    "failures": [
+      "invitation continuation through signup login verification and atomic Team acceptance: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Accept invitation', exact: true }) to be visible\u001b[22m\n"
+    ],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "migrations": {
+      "applied": 13,
+      "scope": "owned disposable test database only"
+    }
+  },
+  {
+    "attempt": "implementation-browser-7",
+    "passedGates": 4,
+    "failures": [
+      "OBSERVER invitation history resend revoke and terminal controls: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('SUPERSEDED', { exact: true }) to be visible\u001b[22m\n"
+    ],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "migrations": {
+      "applied": 13,
+      "scope": "owned disposable test database only"
+    }
+  },
+  {
+    "attempt": "implementation-browser-8",
+    "passedGates": 6,
+    "failures": [
+      "member role change and immediate removal with existing confirmation pattern: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('dialog') to be hidden\u001b[22m\n\u001b[2m    62 \u00d7 locator resolved to visible <div role=\"dialog\" aria-modal=\"true\" aria-label=\"Remove Workspace member\" class=\"fixed inset-0 z-50 flex items-center justify-center p-4\">\u2026</div>\u001b[22m\n"
+    ],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "migrations": {
+      "applied": 13,
+      "scope": "owned disposable test database only"
+    }
+  },
+  {
+    "attempt": "implementation-browser-9",
+    "passedGates": 4,
+    "failures": [
+      "OBSERVER invitation history resend revoke and terminal controls: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('REVOKED', { exact: true }) to be visible\u001b[22m\n"
+    ],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "migrations": {
+      "applied": 13,
+      "scope": "owned disposable test database only"
+    }
+  },
+  {
+    "attempt": "implementation-browser-10",
+    "passedGates": 6,
+    "failures": [
+      "member role change and immediate removal with existing confirmation pattern: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('heading', { name: /Active Members \\(/ }) to be visible\u001b[22m\n"
+    ],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "migrations": {
+      "applied": 13,
+      "scope": "owned disposable test database only"
+    }
+  },
+  {
+    "attempt": "implementation-browser-11",
+    "passedGates": 4,
+    "failures": [
+      "OBSERVER invitation history resend revoke and terminal controls: Expected values to be strictly equal:\n\n409 !== 202\n"
+    ],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "migrations": {
+      "applied": 13,
+      "scope": "owned disposable test database only"
+    }
+  },
+  {
+    "attempt": "implementation-browser-12",
+    "passedGates": 4,
+    "failures": [
+      "OBSERVER invitation history resend revoke and terminal controls: Expected values to be strictly equal:\n\n412 !== 202\n"
+    ],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "migrations": {
+      "applied": 13,
+      "scope": "owned disposable test database only"
+    }
+  },
+  {
+    "attempt": "implementation-browser-13",
+    "passedGates": 1,
+    "failures": [
+      "ADMIN invitation with authoritative eligible initial Team and keyboard modal: locator.check: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('dialog').getByRole('checkbox')\u001b[22m\n"
+    ],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "migrations": {
+      "applied": 13,
+      "scope": "owned disposable test database only"
+    }
+  },
+  {
+    "attempt": "implementation-browser-14",
+    "passedGates": 4,
+    "failures": [
+      "OBSERVER invitation history resend revoke and terminal controls: waitDelivered is not defined"
+    ],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "migrations": {
+      "applied": 13,
+      "scope": "owned disposable test database only"
+    }
+  },
+  {
+    "attempt": "implementation-browser-15",
+    "passedGates": 10,
+    "failures": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "migrations": {
+      "applied": 13,
+      "scope": "owned disposable test database only"
+    }
+  },
+  {
+    "attempt": "implementation-browser-16",
+    "passedGates": 10,
+    "failures": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "migrations": {
+      "applied": 13,
+      "scope": "owned disposable test database only"
+    }
+  },
+  {
+    "attempt": "implementation-browser-17",
+    "passedGates": 6,
+    "failures": [
+      "MEMBER issuance and no fabricated delivery acknowledgment: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('navigation', { name: 'Application Navigation' }).getByRole('link', { name: 'Settings', exact: true })\u001b[22m\n\u001b[2m    - locator resolved to <a href=\"/settings\" aria-current=\"page\" data-discover=\"true\" class=\"w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-[5px] transition-colors cursor-pointer bg-surface-muted font-semibold text-text-primary\">\u2026</a>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 \u00d7 waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity\"></div> from <div class=\"flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-canvas relative\">\u2026</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 \u00d7 waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is visible, enabled and stable\u001b[22m\n\u001b[2m      - scrolling into view if needed\u001b[22m\n\u001b[2m      - done scrolling\u001b[22m\n\u001b[2m      - <div class=\"fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity\"></div> from <div class=\"flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-canvas relative\">\u2026</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    58 \u00d7 waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is visible, enabled and stable\u001b[22m\n\u001b[2m       - scrolling into view if needed\u001b[22m\n\u001b[2m       - done scrolling\u001b[22m\n\u001b[2m       - <div class=\"fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity\"></div> from <div class=\"flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-canvas relative\">\u2026</div> subtree intercepts pointer events\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n"
+    ],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "migrations": {
+      "applied": 13,
+      "scope": "owned disposable test database only"
+    }
+  },
+  {
+    "attempt": "implementation-browser-18",
+    "passedGates": 7,
+    "failures": [
+      "member role change and immediate removal with existing confirmation pattern: page.goto: net::ERR_NETWORK_IO_SUSPENDED at http://127.0.0.1:56490/workspaces/892f8999-24d0-4f70-af3b-a91084387a63\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:56490/workspaces/892f8999-24d0-4f70-af3b-a91084387a63\", waiting until \"load\"\u001b[22m\n"
+    ],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "migrations": {
+      "applied": 13,
+      "scope": "owned disposable test database only"
+    }
+  },
+  {
+    "attempt": "implementation-browser-19",
+    "passedGates": 11,
+    "failures": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "migrations": {
+      "applied": 13,
+      "scope": "owned disposable test database only"
+    }
+  },
+  {
+    "attempt": "implementation-browser-20",
+    "passedGates": 12,
+    "failures": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "migrations": {
+      "applied": 13,
+      "scope": "owned disposable test database only"
+    }
+  },
+  {
+    "attempt": "implementation-browser-21",
+    "passedGates": 11,
+    "failures": [
+      "real Workspace switching and cross-Workspace isolation: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByText('fe01b-member-83f858c560@example.test', { exact: true }) to be visible\u001b[22m\n"
+    ],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "migrations": {
+      "applied": 13,
+      "scope": "owned disposable test database only"
+    }
+  },
+  {
+    "attempt": "implementation-browser-22",
+    "passedGates": 15,
+    "failures": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "migrations": {
+      "applied": 13,
+      "scope": "owned disposable test database only"
+    }
+  }
+]

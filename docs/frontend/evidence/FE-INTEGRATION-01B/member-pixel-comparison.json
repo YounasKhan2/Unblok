@@ -1,0 +1,44 @@
+[
+  {
+    "left": "baseline-members-light.png",
+    "right": "current-members-light.png",
+    "sameDimensions": true,
+    "differentPixels": 0,
+    "bounds": null
+  },
+  {
+    "left": "baseline-members-dark.png",
+    "right": "current-members-dark.png",
+    "sameDimensions": true,
+    "differentPixels": 0,
+    "bounds": null
+  },
+  {
+    "left": "baseline-invite-light.png",
+    "right": "current-invite-light.png",
+    "sameDimensions": true,
+    "differentPixels": 0,
+    "bounds": null
+  },
+  {
+    "left": "baseline-invite-dark.png",
+    "right": "current-invite-dark.png",
+    "sameDimensions": true,
+    "differentPixels": 0,
+    "bounds": null
+  },
+  {
+    "left": "baseline-members-mobile-light.png",
+    "right": "current-members-mobile-light.png",
+    "sameDimensions": true,
+    "differentPixels": 0,
+    "bounds": null
+  },
+  {
+    "left": "baseline-members-mobile-dark.png",
+    "right": "current-members-mobile-dark.png",
+    "sameDimensions": true,
+    "differentPixels": 0,
+    "bounds": null
+  }
+]

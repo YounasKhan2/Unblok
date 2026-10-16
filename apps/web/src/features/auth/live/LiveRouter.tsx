@@ -38,7 +38,7 @@ import {SessionGuard} from './SessionGuard';
 import {AccountPage} from './AccountPage';
 import {VerificationPage} from './VerificationPage';
 import {MembersProvider} from '../../workspaces/live/MembersContext';
-import {MembersPage} from '../../workspaces/live/MembersPage';
+import {AdministrationPage} from '../../workspaces/live/AdministrationPage';
 import {InvitationPage} from '../../workspaces/live/InvitationPage';
 import {LiveWorkspaceProvider,useLiveWorkspace} from '../../workspaces/live/WorkspaceContext';
 
@@ -80,11 +80,11 @@ export function LiveRoutes() {
       <Route path="/teams/*" element={<LiveTeamDirectoryRedirect/>}/>
       <Route path="/workspaces/:workspaceId/teams" element={<TeamDirectoryPage/>}/>
       <Route path="/workspaces/:workspaceId/teams/:teamId" element={<LiveTeamHubPage/>}/>
-      <Route path="/workspaces/:workspaceId/members" element={<MembersPage/>}/>
+      <Route path="/workspaces/:workspaceId/members" element={<SettingsLayout/>}><Route index element={<AdministrationPage/>}/></Route>
       <Route path="/settings" element={<SettingsLayout/>}>
         <Route index element={<Navigate to="preferences" replace/>}/>
         <Route path="preferences" element={<PreferencesSettingsPage/>}/>
-        <Route path="members" element={<LiveMembersRedirect/>}/>
+        <Route path="members" element={<AdministrationPage/>}/>
         <Route path="teams" element={<LiveTeamDirectoryRedirect/>}/>
         <Route path="workspace" element={<WorkspaceSettingsPageFrame unavailable/>}/>
         <Route path="integrations" element={<IntegrationsSettingsPageFrame unavailable/>}/>
@@ -97,4 +97,3 @@ export function LiveRoutes() {
 export function LiveRouter(){return <LiveWorkspaceProvider><BrowserRouter><LiveRoutes/></BrowserRouter></LiveWorkspaceProvider>;}
 
 function LiveTeamDirectoryRedirect(){const w=useLiveWorkspace();return w.context?<Navigate to={'/workspaces/'+w.context.workspace.id+'/teams'} replace/>:null;}
-function LiveMembersRedirect(){const w=useLiveWorkspace();return w.context?<Navigate to={'/workspaces/'+w.context.workspace.id+'/members'} replace/>:null;}

@@ -121,6 +121,7 @@ async function main(){
   }catch(error){result.failures.push(kind+': '+error.message);await capture('failure').catch(()=>{});}
   finally{await context.close();}
  }
+ if(process.env.FE_DEMO_MEMBERS==='true')await require('./fe-integration-01b-demo.cjs')({browser,origins,out,result});
  for(const key of Object.keys(result.sides.baseline.contracts)){
   try{assert.deepEqual(result.sides.current.contracts[key],result.sides.baseline.contracts[key]);result.comparisons.push({name:key,equal:true});}
   catch{result.comparisons.push({name:key,equal:false});result.failures.push('Contract differs: '+key);}
