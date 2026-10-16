@@ -1,14 +1,14 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
- * 
+ *
  * UX-13 Workspace Switcher Component
  * Section 8, 9, 32, 49: Accessible workspace switcher popover in shell header.
  */
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useWorkspace } from '../context/WorkspaceContext';
+import {useShell} from '../../../app/shell/ShellBindings';
 import {
   Building2,
   ChevronDown,
@@ -22,34 +22,12 @@ import {
 import { WorkspaceRole } from '../types';
 
 export const WorkspaceSwitcher: React.FC = () => {
-  const {
-    workspaces,
-    memberships,
-    activeWorkspace,
-    activeWorkspaceId,
-    switchWorkspace,
-  } = useWorkspace();
-
+  const {workspaces:availableWorkspaces,activeWorkspace,activeWorkspaceId,switchWorkspace,createAvailable}=useShell();
   const [isOpen, setIsOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-
-  // Combine workspace entities with current user's membership
-  const availableWorkspaces = memberships
-    .map((m) => {
-      const ws = workspaces.find((w) => w.id === m.workspaceId);
-      if (!ws) return null;
-      return {
-        workspace: ws,
-        membership: m,
-      };
-    })
-    .filter(Boolean) as Array<{
-    workspace: (typeof workspaces)[0];
-    membership: (typeof memberships)[0];
-  }>;
 
   const closeMenu = useCallback(() => {
     setIsOpen(false);
@@ -270,6 +248,7 @@ export const WorkspaceSwitcher: React.FC = () => {
           <button
             type="button"
             role="menuitem"
+            disabled={!createAvailable}
             onClick={handleCreateWorkspace}
             className={`w-full flex items-center gap-2 px-3 py-2 text-accent hover:bg-surface-muted transition-colors cursor-pointer font-medium ${
               focusedIndex === availableWorkspaces.length ? 'bg-surface-muted' : ''

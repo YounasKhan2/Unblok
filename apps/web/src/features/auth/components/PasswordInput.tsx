@@ -1,7 +1,7 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
- * 
+ *
  * UX-12 Accessible Password Input
  * Section 8: Show/hide toggle, live requirements, Caps Lock detection, autocomplete attributes.
  */
@@ -12,6 +12,7 @@ import { evaluatePassword, MIN_PASSWORD_LENGTH } from '../domain/passwordRules';
 
 export interface PasswordInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
   appearance?: 'public' | 'application';
+  requirements?: 'prototype' | 'server';
   id: string;
   name: string;
   label: string;
@@ -26,6 +27,7 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
   (
     {
       appearance = 'public',
+      requirements = 'prototype',
       id,
       name,
       label,
@@ -157,17 +159,17 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
           <ul className="space-y-1 text-xs">
             <li
               className={`flex items-center gap-1.5 ${
-                rules.hasMinLength ? 'text-emerald-700 font-medium' : 'text-[var(--color-pub-text-secondary)]'
+                (requirements==='server' ? value.length>=16&&value.length<=128 : rules.hasMinLength) ? 'text-emerald-700 font-medium' : 'text-[var(--color-pub-text-secondary)]'
               }`}
             >
-              {rules.hasMinLength ? (
+              {(requirements==='server' ? value.length>=16&&value.length<=128 : rules.hasMinLength) ? (
                 <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
               ) : (
                 <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-pub-border)] mx-1 shrink-0" />
               )}
-              <span>At least {MIN_PASSWORD_LENGTH} characters</span>
+              <span>{requirements==='server'?'Use 16–128 characters. Spaces are allowed; no special character mix is required.':<>At least {MIN_PASSWORD_LENGTH} characters</>}</span>
             </li>
-            <li
+            {requirements==='prototype' && <><li
               className={`flex items-center gap-1.5 ${
                 rules.hasLetter ? 'text-emerald-700 font-medium' : 'text-[var(--color-pub-text-secondary)]'
               }`}
@@ -192,7 +194,7 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
                 <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-pub-border)] mx-1 shrink-0" />
               )}
               <span>At least one number or special character</span>
-            </li>
+            </li></>}
           </ul>
         </div>
       )}

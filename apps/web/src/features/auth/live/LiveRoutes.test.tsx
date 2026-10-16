@@ -16,11 +16,11 @@ describe('real account surfaces and guards',()=>{
     const html=page(await session(),'/account');expect(html).toContain('Server Account');expect(html).toContain('server@example.com');expect(html).toContain('Your workspaces');expect(html).not.toContain('NEXUS Commerce');expect(html).not.toContain('nav-rail');
   });
   it.each(['/login','/signup','/forgot-password','/reset-password'])('renders accessible anonymous form at %s',async path=>{
-    const html=page(await session(401),path);expect(html).toContain('<form');expect(html).toContain('for="real-email"');expect(html).toContain('autoComplete="email"');expect(html).not.toContain('nav-rail');
+    const html=page(await session(401),path);expect(html).toContain('<form');const id=path==='/login'?'login-email':path==='/signup'?'signup-email':path==='/forgot-password'?'forgot-email':'reset-email';expect(html).toContain('for="'+id+'"');expect(html).toContain('id="'+id+'"');expect(html).toContain('autoComplete="email"');expect(html).not.toContain('nav-rail');
   });
   it('does not render private account content for anonymous visitors',async()=>{expect(page(await session(401),'/account')).not.toContain('server@example.com');});
   it('does not render sign-in form for an authenticated visitor',async()=>{expect(page(await session(),'/login')).not.toContain('<form');});
-  it('keeps recovery accessible for an authenticated user',async()=>{expect(page(await session(),'/reset-password')).toContain('Choose a new password');});
+  it('keeps recovery accessible for an authenticated user',async()=>{expect(page(await session(),'/reset-password')).toContain('Set new password');});
   it('shows verification without fabricating workspace authorization',async()=>{const html=page(await session(),'/verify-email');expect(html).toContain('Code from your email');expect(html).not.toContain('NEXUS Commerce');});
   it('blocks private routes during restoration and outage',async()=>{
     const loading=new SessionStore(new AuthApi());expect(page(loading,'/account')).toContain('Checking your session');
@@ -40,6 +40,34 @@ describe('real account surfaces and guards',()=>{
   it('explains manual verification and invitation expiry without a mail promise',async()=>{
     expect(page(await session(401),'/signup')).toContain('sign in and request email verification');
     expect(page(await session(401),'/invite')).toContain('24 hours after issuance');
+  });
+
+  it('preserves only the exact allowed invitation continuation through real auth links',async()=>{
+    const anonymous=await session(401);
+    for(const path of ['/signup','/forgot-password','/reset-password'])expect(page(anonymous,path+'?returnTo=%2Finvite')).toContain('href="/login?returnTo=%2Finvite"');
+    expect(page(anonymous,'/login?returnTo=%2Finvite')).toContain('href="/forgot-password?returnTo=%2Finvite"');
+    expect(page(anonymous,'/login?returnTo=https%3A%2F%2Fevil.example')).not.toContain('evil.example');
+  });
+
+  it('keeps verified Workspace creation available across a delayed read-only session refresh',async()=>{
+    let restore:((response:Response)=>void)|undefined;
+    let first=true;
+    const verified={...user,emailVerified:true};
+    const store=new SessionStore(new AuthApi('',(async()=>{
+      if(first){first=false;return new Response(JSON.stringify({user:verified}));}
+      return new Promise<Response>(resolve=>{restore=resolve;});
+    }) as typeof fetch));
+    await store.refresh();
+    const refreshing=store.refresh();
+    for(const path of ['/onboarding/workspace','/onboarding/workspace?mode=create']){
+      const html=page(store,path);
+      expect(html).toContain('Create your workspace');
+      expect(html).toContain('id="workspace-name"');
+      expect(html).not.toContain('Checking your session');
+      expect(html).not.toContain('Application Navigation');
+    }
+    restore!(new Response(JSON.stringify({user:verified})));await refreshing;
+    expect(page(store,'/onboarding/workspace')).toContain('Create your workspace');
   });
 
 });

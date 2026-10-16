@@ -1,29 +1,31 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
- * 
+ *
  * UX-12 Sign Up Page
  * Section 7, 8, 13, 21, 24, 26, 29: Identity-only account registration.
  * Does not create workspace/team/project. Routes new users to /onboarding boundary,
  * and invited users directly to their invited workspace.
  */
 
+import {signupSchema} from '@unblok/contracts';
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../../features/auth/context/AuthContext';
+import { useAuth } from '../../features/auth/context/AuthBindings';
 import { evaluatePassword } from '../../features/auth/domain/passwordRules';
 import { AuthCard } from '../../features/auth/components/AuthCard';
 import { PasswordInput } from '../../features/auth/components/PasswordInput';
 import { AlertCircle, ArrowRight, Loader2, MailCheck } from 'lucide-react';
 
 export const SignupPage: React.FC = () => {
-  const { signup, adapter, isLoading } = useAuth();
+  const { signup, adapter, isLoading, mode } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   const inviteToken = searchParams.get('inviteToken');
   const prefilledEmail = searchParams.get('email') || '';
 
+  const [accepted,setAccepted]=useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState(prefilledEmail);
   const [password, setPassword] = useState('');
@@ -71,8 +73,8 @@ export const SignupPage: React.FC = () => {
     if (!password) {
       setPasswordError('Password is required');
       isValid = false;
-    } else if (!passwordRules.isValid) {
-      setPasswordError('Password must meet all requirement criteria below');
+    } else if (mode==='live'?!signupSchema.shape.password.safeParse(password).success:!passwordRules.isValid) {
+      setPasswordError(mode==='live'?'Use 16–128 characters. Spaces are allowed; no special character mix is required.':'Password must meet all requirement criteria below');
       isValid = false;
     }
 
@@ -91,11 +93,12 @@ export const SignupPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    if(isLoading)return;
     if (!validateForm()) return;
 
     try {
       const result = await signup({ name, email, password });
+      if(mode==='live'&&result.success){setPassword('');setAccepted(true);return;}
       if (result.success && result.user) {
         // Section 21: If user was invited, accept invitation and enter workspace directly
         if (inviteToken) {
@@ -108,17 +111,18 @@ export const SignupPage: React.FC = () => {
       } else {
         setFormError(result.error || 'Failed to create account. Please check your information.');
       }
-    } catch {
-      setFormError('An unexpected registration error occurred. Please try again.');
+    } catch (cause) {
+      setFormError(cause instanceof Error?cause.message:'An unexpected registration error occurred. Please try again.');
     }
   };
 
+  if(accepted)return <AuthCard title="Request received" subtitle="Sign in to continue, then verify your email from your account." footer={<Link to={searchParams.get('returnTo')==='/invite'?'/login?returnTo=%2Finvite':'/login'} className="pub-btn-primary w-full justify-center">Continue to sign in</Link>}><p role="status" className="text-xs text-[var(--color-pub-text-secondary)]">Registration does not sign you in or send a verification email automatically. New and existing addresses receive the same response.</p></AuthCard>;
   return (
     <AuthCard
       title="Create your account"
-      subtitle="Start tracking dependencies, eliminating blockers, and delivering with clarity."
+      subtitle={mode==='live'?'After registering, sign in and request email verification from your account.':'Start tracking dependencies, eliminating blockers, and delivering with clarity.'}
       banner={
-        inviteToken ? (
+        inviteToken && mode!=='live' ? (
           <div
             className="flex items-start gap-2.5 p-3 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-900 text-xs leading-relaxed"
             role="status"
@@ -134,7 +138,7 @@ export const SignupPage: React.FC = () => {
       footer={
         <div>
           Already have an account?{' '}
-          <Link to="/login" className="text-[var(--color-pub-accent)] font-semibold hover:underline">
+          <Link to={mode==='live'&&searchParams.get('returnTo')==='/invite'?'/login?returnTo=%2Finvite':'/login'} className="text-[var(--color-pub-accent)] font-semibold hover:underline">
             Sign in
           </Link>
         </div>
@@ -246,6 +250,7 @@ export const SignupPage: React.FC = () => {
             }}
             disabled={isLoading}
             autoComplete="new-password"
+            requirements={mode==='live'?'server':'prototype'}
             showRequirements={true}
             error={passwordError}
             required

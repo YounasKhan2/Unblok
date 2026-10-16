@@ -1,19 +1,21 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
- * 
+ *
  * UX-12 Forgot Password Page
  * Section 11: Work email entry with honest prototype request acceptance state.
  */
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../../features/auth/context/AuthContext';
+import { Link,useSearchParams } from 'react-router-dom';
+import { useAuth } from '../../features/auth/context/AuthBindings';
 import { AuthCard } from '../../features/auth/components/AuthCard';
 import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Loader2, KeyRound } from 'lucide-react';
 
 export const ForgotPasswordPage: React.FC = () => {
-  const { adapter, isLoading } = useAuth();
+  const { adapter, isLoading, mode } = useAuth();
+  const [params]=useSearchParams();
+  const authSuffix=mode==='live'&&params.get('returnTo')==='/invite'?'?returnTo=%2Finvite':'';
 
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -31,6 +33,7 @@ export const ForgotPasswordPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if(isSubmitting||isLoading)return;
     setEmailError('');
 
     const cleanEmail = email.trim();
@@ -51,6 +54,8 @@ export const ForgotPasswordPage: React.FC = () => {
       await adapter.requestPasswordReset(cleanEmail);
       setSubmittedEmail(cleanEmail);
       setIsSubmitted(true);
+    } catch(cause) {
+      setEmailError(cause instanceof Error?cause.message:'We couldn’t confirm your request. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -65,11 +70,11 @@ export const ForgotPasswordPage: React.FC = () => {
           </div>
         }
         title="Reset request accepted"
-        subtitle={`If an Unblok account exists for ${submittedEmail}, password reset instructions will be delivered when identity infrastructure is connected.`}
+        subtitle={mode==='live'?'If this address is eligible for recovery, we’ll attempt to send instructions. Email delivery is not guaranteed.':`If an Unblok account exists for ${submittedEmail}, password reset instructions will be delivered when identity infrastructure is connected.`}
         footer={
           <div>
             <Link
-              to="/login"
+              to={"/login"+authSuffix}
               className="pub-btn-secondary w-full justify-center text-sm py-2"
             >
               <ArrowLeft className="w-4 h-4 mr-1.5" />
@@ -81,26 +86,26 @@ export const ForgotPasswordPage: React.FC = () => {
         <div className="space-y-4">
           <div className="p-4 rounded-xl bg-[var(--color-pub-surface-subtle)] border border-[var(--color-pub-border)] text-xs text-[var(--color-pub-text-secondary)] leading-relaxed space-y-2">
             <p className="font-semibold text-[var(--color-pub-text-primary)]">
-              Prototype Verification Environment
+              {mode==='live'?'Recovery requires verified email ownership':'Prototype Verification Environment'}
             </p>
             <p>
-              This prototype simulates the password reset ceremony without dispatching external email. You can directly inspect the reset ceremony using our deterministic token links:
+              {mode==='live'?'Check your inbox and spam folder. If you can sign in, verify your email from your account. If you have never verified it and cannot sign in, recovery is unavailable through this form.':'This prototype simulates the password reset ceremony without dispatching external email. You can directly inspect the reset ceremony using our deterministic token links:'}
             </p>
             <div className="pt-2 flex flex-col gap-1.5 font-medium">
               <Link
-                to="/reset-password?token=rst_valid"
+                to={mode==='live'?'/reset-password'+authSuffix:'/reset-password?token=rst_valid'}
                 className="inline-flex items-center gap-1.5 text-[var(--color-pub-accent)] hover:underline"
               >
                 <KeyRound className="w-3.5 h-3.5" />
-                <span>Test with valid reset token →</span>
+                <span>{mode==='live'?'Enter email code →':'Test with valid reset token →'}</span>
               </Link>
-              <Link
+              {mode!=='live' && <Link
                 to="/reset-password?token=rst_expired"
                 className="inline-flex items-center gap-1.5 text-amber-700 hover:underline"
               >
                 <KeyRound className="w-3.5 h-3.5" />
                 <span>Test with expired reset token →</span>
-              </Link>
+              </Link>}
             </div>
           </div>
         </div>
@@ -115,7 +120,7 @@ export const ForgotPasswordPage: React.FC = () => {
       footer={
         <div>
           Remember your password?{' '}
-          <Link to="/login" className="text-[var(--color-pub-accent)] font-semibold hover:underline">
+          <Link to={"/login"+authSuffix} className="text-[var(--color-pub-accent)] font-semibold hover:underline">
             Sign in
           </Link>
         </div>

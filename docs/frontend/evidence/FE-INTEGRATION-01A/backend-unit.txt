@@ -1,0 +1,128 @@
+bun test v1.4.2 (744846f84)
+
+scripts\backend\architecture.test.ts:
+(fail) repository follows BE-00D boundaries; BE-00C type-only backlink is explicit [5073.64ms]
+  ^ this test timed out after 5000ms.
+(pass) package and browser boundaries reject real import mutations > web cannot load bare database [66.54ms]
+(pass) package and browser boundaries reject real import mutations > web cannot load relative database [49.03ms]
+(pass) package and browser boundaries reject real import mutations > web cannot load configured alias [48.84ms]
+(pass) package and browser boundaries reject real import mutations > web cannot load dynamic runtime [48.42ms]
+(pass) package and browser boundaries reject real import mutations > web cannot load CommonJS runtime [59.22ms]
+(pass) package and browser boundaries reject real import mutations > manifest dev dependency cannot conceal a forbidden workspace [63.11ms]
+(pass) package and browser boundaries reject real import mutations > contracts remain transport-safe: import type { Prisma } from "@prisma/client"; [56.29ms]
+(pass) package and browser boundaries reject real import mutations > contracts remain transport-safe: export { Injectable } from "@nestjs/common"; [57.18ms]
+(pass) package and browser boundaries reject real import mutations > contracts remain transport-safe: import { readFile } from "node:fs"; [54.65ms]
+(pass) package and browser boundaries reject real import mutations > runtime cannot acquire unrelated business ownership [46.06ms]
+(pass) package and browser boundaries reject real import mutations > deep workspace import is forbidden even if it cannot resolve [57.95ms]
+(pass) application, controller and worker persistence boundaries > password persistence remains privileged: import { AccountCredentials } from "@unblok/database"; [61.61ms]
+(pass) application, controller and worker persistence boundaries > password persistence remains privileged: import { Tenancy } from "@unblok/database"; const grants = new Tenancy(); [68.47ms]
+(pass) application, controller and worker persistence boundaries > auth lifecycle capability is privileged and cannot be disguised as Tenancy [71.95ms]
+(pass) application, controller and worker persistence boundaries > business handlers cannot import auth lifecycle capability directly [64.60ms]
+(pass) application, controller and worker persistence boundaries > business service rejects raw capability: import { Database as Store } from "@unblok/database"; [57.74ms]
+(pass) application, controller and worker persistence boundaries > business service rejects raw capability: import * as db from "@unblok/database"; [51.88ms]
+(pass) application, controller and worker persistence boundaries > business service rejects raw capability: const db = require("@unblok/database"); [51.07ms]
+(pass) application, controller and worker persistence boundaries > business service rejects raw capability: import type { PrismaClient } from "@prisma/client"; [48.09ms]
+(pass) application, controller and worker persistence boundaries > raw SQL cannot be concealed behind a property receiver [47.61ms]
+(pass) application, controller and worker persistence boundaries > controller cannot directly consume even scoped persistence [46.89ms]
+(pass) application, controller and worker persistence boundaries > a controller cannot hide in application or worker organization [58.32ms]
+(pass) application, controller and worker persistence boundaries > absolute module path cannot bypass ownership [56.73ms]
+(pass) application, controller and worker persistence boundaries > worker cannot bypass scoped persistence with Database [44.73ms]
+(pass) application, controller and worker persistence boundaries > worker cannot reuse API private implementation [54.97ms]
+(pass) application, controller and worker persistence boundaries > existing bootstrap/raw database infrastructure and named application scope are legal [61.77ms]
+(pass) feature privacy, layer direction and cycles > private cross-feature type imports fail; explicit public facade passes [82.66ms]
+(pass) feature privacy, layer direction and cycles > wildcard feature facade fails [47.81ms]
+(pass) feature privacy, layer direction and cycles > domain rule cannot couple to framework or transport [48.92ms]
+(pass) feature privacy, layer direction and cycles > application does not depend on controller [52.50ms]
+(pass) feature privacy, layer direction and cycles > type-only cross-feature cycle fails [52.74ms]
+(pass) feature privacy, layer direction and cycles > BE-00C backlink exception never accepts a value cycle [62.74ms]
+(pass) feature privacy, layer direction and cycles > new loose backend service is rejected rather than creating a second organization [45.48ms]
+(pass) feature privacy, layer direction and cycles > API modules and worker jobs use their own feature containers [50.13ms]
+(pass) deny-default foundation cannot become a public business fixture > namespace/local Nest decorator N.Controller cannot hide in application [62.80ms]
+(pass) deny-default foundation cannot become a public business fixture > namespace/local Nest decorator C cannot hide in application [51.98ms]
+(pass) deny-default foundation cannot become a public business fixture > named re-exported Nest decorator cannot hide its origin [66.77ms]
+(pass) deny-default foundation cannot become a public business fixture > namespace/local public health capability A.PublicHealth is rejected [44.42ms]
+(pass) deny-default foundation cannot become a public business fixture > namespace/local public health capability Open is rejected [48.70ms]
+(pass) deny-default foundation cannot become a public business fixture > renamed public health re-export and imported metadata cannot launder access [53.55ms]
+(pass) deny-default foundation cannot become a public business fixture > renamed raw Database from exempt composition root remains forbidden [48.74ms]
+(pass) deny-default foundation cannot become a public business fixture > an allowed scoped export name cannot disguise the raw Database class [44.40ms]
+(pass) deny-default foundation cannot become a public business fixture > destructured namespace decorator alias remains a transport controller [56.18ms]
+(pass) deny-default foundation cannot become a public business fixture > aliased PublicHealth cannot grant a business route [49.11ms]
+(pass) deny-default foundation cannot become a public business fixture > class-wide health decorator and new health route both fail [44.41ms]
+(pass) deny-default foundation cannot become a public business fixture > existing live/ready method decorators are accepted [52.73ms]
+(pass) deny-default foundation cannot become a public business fixture > raw public metadata is rejected outside the access foundation [64.07ms]
+(pass) deny-default foundation cannot become a public business fixture > production cannot import test fixtures, process bootstrap or computed loaders [82.59ms]
+(pass) outbox delivery is private to worker bootstrap; direct and disguised business imports are rejected [135.15ms]
+(pass) recovery capabilities cannot escape composition through direct or aliased imports [100.71ms]
+(pass) invitation delivery capability stays composition-only: apps/api/src/modules/workspaces/application/send.ts [75.27ms]
+(pass) invitation delivery capability stays composition-only: apps/worker/src/jobs/other/application/send.ts [48.91ms]
+
+apps\api\test\api.test.ts:
+(pass) API foundation over HTTP > root and versioned health return validated responses [646.42ms]
+(pass) API foundation over HTTP > db outage fails readiness while liveness stays independent [69.00ms]
+(pass) API foundation over HTTP > queue outage fails readiness while liveness stays independent [72.74ms]
+(pass) API foundation over HTTP > readiness drains before resource disposal and close is idempotent [77.18ms]
+(pass) API foundation over HTTP > unknown endpoints normalize errors without reflected secrets [68.49ms]
+(pass) API foundation over HTTP > invalid correlation IDs are replaced and secure headers are present [42.90ms]
+(pass) API foundation over HTTP > CORS accepts exact origins and rejects wildcard/subdomain/null attacks [262.24ms]
+(pass) API foundation over HTTP > preflight validates methods and header allowlist [37.39ms]
+(pass) API foundation over HTTP > oversized bodies and malformed JSON are normalized [70.44ms]
+(pass) API foundation over HTTP > rate limit exhaustion returns 429 and store failure fails closed [52.11ms]
+(pass) validation and safe errors > request validation rejects unknown fields [1.72ms]
+(pass) validation and safe errors > response validation refuses accidental internal fields [1.48ms]
+(pass) validation and safe errors > unexpected errors expose no stack or internal diagnostic text [0.20ms]
+(pass) future authentication boundary > new handlers fail closed until authentication is implemented [2.27ms]
+(pass) size and media-type boundaries cover raw and compressed payloads [33.69ms]
+(pass) central filter hides unexpected exception details and stack traces [1.76ms]
+
+apps\api\test\authentication.test.ts:
+(pass) strict auth contracts canonicalize ASCII email, bound password/name and reject authority fields [11.23ms]
+(pass) native Bun Argon2id uses bounded profile, unique salts and dummy verification; corrupt profiles do not run [543.72ms]
+(pass) public auth exemption is exact server-owned handler reference; arbitrary routes and health metadata cannot grant business access [0.43ms]
+(pass) credential resolver never trusts structural assertions or client identity fields [58.79ms]
+(pass) overlapping password failures and timeout retain admission until actual native completion, then recover [2273.57ms]
+
+apps\api\test\email-verification.test.ts:
+(pass) verification contracts are bounded and strict; trusted transport/key settings reject unsafe defaults [11.76ms]
+
+apps\api\test\password-recovery.test.ts:
+(pass) recovery strict anonymous contracts and independent required key [3.72ms]
+
+apps\api\test\session-store.test.ts:
+(pass) session settings require independent explicit secrets and namespace, reject broad/invalid proxy trust [3.86ms]
+(pass) state rejects injected grants, malformed epochs, future issuance and expired deadlines [2.01ms]
+(pass) lifetime boundaries enforce issuance, absolute ceilings and rolling idle windows without rejecting rotation [3.00ms]
+(pass) bounded callbacks fail once; late success is not cancellation and never changes result [28.06ms]
+(pass) malformed SID and malformed store data never produce usable state; touch cannot renew [1.16ms]
+
+apps\worker\test\worker.test.ts:
+(pass) diagnostic jobs have no side effects and repeated delivery is safe [0.56ms]
+(pass) unknown jobs and unvalidated payloads are rejected without futile retries [0.22ms]
+
+packages\backend-runtime\test\config.test.ts:
+(pass) fail-closed environment > accepts explicit configuration with bounded defaults [1.38ms]
+(pass) fail-closed environment > rejects missing NODE_ENV [0.63ms]
+(pass) fail-closed environment > rejects missing DATABASE_URL [0.27ms]
+(pass) fail-closed environment > rejects missing REDIS_URL [0.11ms]
+(pass) fail-closed environment > rejects missing CORS_ORIGINS [0.16ms]
+(pass) fail-closed environment > rejects unsafe CORS origin * [0.62ms]
+(pass) fail-closed environment > rejects unsafe CORS origin null [0.36ms]
+(pass) fail-closed environment > rejects unsafe CORS origin https://example.org/path [0.28ms]
+(pass) fail-closed environment > rejects unsafe CORS origin https://user:password@example.org [0.11ms]
+(pass) fail-closed environment > rejects unsafe CORS origin  [0.11ms]
+(pass) fail-closed environment > rejects unsafe CORS origin http://example.org/ [0.07ms]
+(pass) fail-closed environment > rejects credentials-free URLs and unbounded numeric controls [0.71ms]
+(pass) fail-closed environment > production never silently enables insecure development connections [1.12ms]
+(pass) fail-closed environment > configuration diagnostics contain field names without values [0.68ms]
+(pass) logging and lifecycle > redacts nested keys and exception messages case-insensitively [0.36ms]
+(pass) logging and lifecycle > logger applies redaction before serialization [0.78ms]
+(pass) logging and lifecycle > deadlines reject hanging work and preserve completed results [16.72ms]
+(pass) logging and lifecycle > bounded retries and deterministic idempotency keys [0.60ms]
+
+1 tests failed:
+(fail) repository follows BE-00D boundaries; BE-00C type-only backlink is explicit [5073.64ms]
+  ^ this test timed out after 5000ms.
+
+ 100 pass
+ 1 fail
+ 265 expect() calls
+Ran 101 tests across 8 files. [15.59s]

@@ -1,0 +1,56 @@
+{
+  "reviewedHead": "76b9391296804265913aa93a838d1381d85d1972",
+  "productionFilesChanged": [],
+  "focusedFrontend": {
+    "passed": 33,
+    "failed": 0
+  },
+  "fullFrontend": {
+    "failed": 3,
+    "historical": "NEXUS fixtures unchanged",
+    "passed": 886
+  },
+  "finalBrowser": {
+    "passed": 23,
+    "failed": 0
+  },
+  "finalCombinedUnit": {
+    "failed": 1,
+    "passed": 100,
+    "reason": "Existing architecture timeout at unchanged 5000 ms"
+  },
+  "idleUnit": {
+    "passed": 101,
+    "failed": 0
+  },
+  "authenticationSession": {
+    "passed": 57,
+    "failed": 0
+  },
+  "tenancy": {
+    "passed": 59,
+    "failed": 0
+  },
+  "demo": {
+    "baselineChecks": 10,
+    "equalContracts": 10,
+    "currentChecks": 10
+  },
+  "preservation": {
+    "mailSentinels": 2,
+    "sharedQAAccess": false,
+    "ownedMigrations": 12
+  },
+  "unresolved": [
+    "Original verified-account-to-creation navigation timeout",
+    "One intermediate isolation run stopped after a new navigation; cause unresolved",
+    "Residual avatar/overlay edge raster differences; exact renderer cause not established",
+    "Pre-existing demo test-role menu overflow; offscreen entries not certified"
+  ],
+  "notRerun": [
+    "Production build",
+    "Backend typecheck/lint",
+    "Historical queue and SIGTERM suites",
+    "Production performance"
+  ]
+}

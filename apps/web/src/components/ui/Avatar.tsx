@@ -2,7 +2,7 @@ import React from 'react';
 import { User } from '../../types';
 
 export interface AvatarProps {
-  user?: User;
+  user?: Partial<User> & Pick<User, 'name'>;
   size?: 'xs' | 'sm' | 'md' | 'lg';
   className?: string;
 }
@@ -39,7 +39,7 @@ export const Avatar: React.FC<AvatarProps> = ({ user, size = 'sm', className = '
         src={user.avatar}
         alt={user.name}
         className={`rounded-full object-cover shrink-0 border border-[#e5e3df] ${sizeClasses[size]} ${className}`}
-        title={`${user.name} (${user.role})`}
+        title={`${user.name}${user.role?` (${user.role})`:''}`}
       />
     );
   }
@@ -47,7 +47,7 @@ export const Avatar: React.FC<AvatarProps> = ({ user, size = 'sm', className = '
   return (
     <div
       className={`rounded-full bg-[#e6e0f5] text-[#5645d4] font-semibold flex items-center justify-center shrink-0 border border-[#d2c6ed] ${sizeClasses[size]} ${className}`}
-      title={`${user.name} (${user.role})`}
+      title={`${user.name}${user.role?` (${user.role})`:''}`}
     >
       {initials}
     </div>

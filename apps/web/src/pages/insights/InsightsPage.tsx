@@ -1,3 +1,4 @@
+import {InsightsPageFrame} from './InsightsPageFrame';
 import React, { useMemo, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useProject } from '../../context/ProjectContext';
@@ -86,9 +87,7 @@ export const InsightsPage: React.FC = () => {
   }, [issues, dependencies, projects, teams, milestones, cycles, activities, filters]);
 
   return (
-    <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-canvas">
-      {/* Page Header — matches border-b pattern of other pages */}
-      <div className="border-b border-border bg-surface-base px-6 py-3.5 shrink-0">
+    <InsightsPageFrame header={<div className="border-b border-border bg-surface-base px-6 py-3.5 shrink-0">
         <div className="flex items-center gap-2">
           <BarChart2 className="w-4 h-4 text-accent" />
           <h1 className="text-sm font-bold text-text-primary tracking-tight">
@@ -98,7 +97,9 @@ export const InsightsPage: React.FC = () => {
         <p className="text-xs text-text-secondary mt-0.5">
           Deterministic delivery risk, active blockers, and dependency bottlenecks across your workspace.
         </p>
-      </div>
+      </div>}>
+      {/* Page Header — matches border-b pattern of other pages */}
+
 
       {/* Scrollable body */}
       <div className="flex-1 overflow-y-auto min-h-0">
@@ -171,6 +172,6 @@ export const InsightsPage: React.FC = () => {
         </section>
       </div>
       </div>
-    </div>
+    </InsightsPageFrame>
   );
 };

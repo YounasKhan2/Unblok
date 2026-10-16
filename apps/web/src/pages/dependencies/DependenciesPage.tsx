@@ -1,3 +1,4 @@
+import {DependenciesPageFrame} from './DependenciesPageFrame';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -249,9 +250,7 @@ export const DependenciesPage: React.FC = () => {
   );
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-surface-base">
-      {/* 1. Page Header (Compact high-density engineering control surface) */}
-      <header className="border-b border-border bg-surface-base px-4 py-2.5 flex items-center justify-between shrink-0 select-none">
+    <DependenciesPageFrame header={<header className="border-b border-border bg-surface-base px-4 py-2.5 flex items-center justify-between shrink-0 select-none">
         <div>
           <div className="flex items-center gap-2">
             <Network className="w-4 h-4 text-accent" />
@@ -284,7 +283,9 @@ export const DependenciesPage: React.FC = () => {
             <span>Add Dependency</span>
           </button>
         )}
-      </header>
+      </header>}>
+      {/* 1. Page Header (Compact high-density engineering control surface) */}
+
 
       {/* 2. Summary Strip */}
       <DependencySummaryBar
@@ -382,6 +383,6 @@ export const DependenciesPage: React.FC = () => {
           onAddDependency={addDependency}
         />
       )}
-    </div>
+    </DependenciesPageFrame>
   );
 };

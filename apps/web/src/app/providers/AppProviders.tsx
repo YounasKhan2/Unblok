@@ -4,6 +4,7 @@
  */
 
 import React, { useEffect } from 'react';
+import {DemoShellBindings} from '../shell/DemoShellBindings';
 import { ProjectProvider, useProject } from '../../context/ProjectContext';
 import { SettingsProvider } from '../../features/settings/context/SettingsContext';
 import { CollaborationProvider } from '../../features/collaboration/context/CollaborationContext';
@@ -62,7 +63,7 @@ export const AppProviders: React.FC<AppProvidersProps> = ({
           <ProjectAuthBridge>
             <SettingsProvider>
               <CollaborationProvider>
-                <KeyboardProvider>{children}</KeyboardProvider>
+                <KeyboardProvider><DemoShellBindings>{children}</DemoShellBindings></KeyboardProvider>
               </CollaborationProvider>
             </SettingsProvider>
           </ProjectAuthBridge>

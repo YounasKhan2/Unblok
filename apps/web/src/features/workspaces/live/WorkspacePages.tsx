@@ -22,10 +22,11 @@ export function CreateLiveWorkspacePage(){
     <Link to="/account" className="block text-sm text-accent">Back to your workspaces</Link>
   </form></AuthCard>;
 }
-export function LiveWorkspacePage(){
+export function LiveWorkspacePage({manageSelection=true}:{manageSelection?:boolean}={}){
   const {workspaceId}=useParams(),{store,context,selected,selecting,contextError}=useLiveWorkspace();
   const {store:session,status,pending}=useSession(),generation=session.generation();
-  useEffect(()=>{if(workspaceId&&status==='authenticated'&&!pending)void store.select(workspaceId);},[store,workspaceId,status,pending,generation]);
+  // A shell route can own selection while reusing this existing loading/error UI.
+  useEffect(()=>{if(manageSelection&&workspaceId&&status==='authenticated'&&!pending)void store.select(workspaceId);},[store,workspaceId,status,pending,generation,manageSelection]);
   const current=selected===workspaceId?context:null;
   return <AuthCard appearance="application" title={current?.workspace.name??'Workspace'} subtitle="Your authenticated workspace">
     <div className="space-y-4 text-sm">{selecting&&<p role="status">Opening workspace…</p>}{contextError&&<p role="alert" className="text-danger">{contextError}</p>}
@@ -34,7 +35,7 @@ export function LiveWorkspacePage(){
         <Link className="block text-accent" to={'/workspaces/'+current.workspace.id+'/teams'}>View Teams</Link>
         <section aria-label="Empty workspace" className="rounded-lg border border-border p-4 space-y-2"><h2 className="font-semibold">Your workspace is ready</h2><p className="text-text-secondary">Projects and issues are not connected yet. Teams are available through the Team directory. This workspace contains no demo data.</p></section></>}
       {workspaceId&&<Button size="sm" disabled={selecting} onClick={()=>void store.select(workspaceId)}>Check workspace access</Button>}
-      <WorkspacePicker/><Link to="/account" className="block text-accent">Your account</Link>
+      <WorkspacePicker showContextError={false}/><Link to="/account" className="block text-accent">Your account</Link>
     </div>
   </AuthCard>;
 }

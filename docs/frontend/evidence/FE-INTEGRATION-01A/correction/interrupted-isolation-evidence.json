@@ -1,0 +1,423 @@
+{
+  "base": "76b9391296804265913aa93a838d1381d85d1972",
+  "isolation": "Owned PostgreSQL + Valkey + disposable sentinel-protected Mailpit; ephemeral loopback ports; no shared volumes or QA environment files",
+  "commands": [],
+  "passed": [
+    "anonymous protected navigation",
+    "unknown account invalid credentials without expiry",
+    "new and duplicate signup identical neutral receipt",
+    "unverified recovery eligibility and no delivery promise",
+    "wrong password same public denial",
+    "real login and explicit verification",
+    "verified account creation navigation survives delayed session restoration",
+    "real Workspace creation and immediate discovery",
+    "lost creation response keeps exact idempotency key and body",
+    "switching, real identity, no demo controls or fabricated counts",
+    "unsupported destinations preserve visible navigation and deny business actions",
+    "existing light/dark preference controls and responsive shell",
+    "keyboard rail toggle, sequence and switcher focus"
+  ],
+  "failures": [
+    "existing real Team route remains functional: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('navigation', { name: 'Application Navigation' }).getByRole('link', { name: 'Teams', exact: true })\u001b[22m\n\u001b[2m    - waiting for \"http://127.0.0.1:57672/my-work\" navigation to finish...\u001b[22m\n\u001b[2m    - navigated to \"http://127.0.0.1:57672/my-work\"\u001b[22m\n"
+  ],
+  "migrations": {
+    "applied": 12,
+    "scope": "owned disposable test database only"
+  },
+  "api": {
+    "ready": 200,
+    "live": 200
+  },
+  "frontendIsolation": {
+    "envFiles": false,
+    "authApiOrigin": "owned same-origin proxy"
+  },
+  "navigation": [
+    {
+      "step": "anonymous protected navigation",
+      "path": "/my-work"
+    },
+    {
+      "step": "anonymous protected navigation",
+      "path": "/my-work"
+    },
+    {
+      "step": "anonymous protected navigation",
+      "path": "/login"
+    },
+    {
+      "step": "new and duplicate signup identical neutral receipt",
+      "path": "/signup"
+    },
+    {
+      "step": "new and duplicate signup identical neutral receipt",
+      "path": "/signup"
+    },
+    {
+      "step": "new and duplicate signup identical neutral receipt",
+      "path": "/signup"
+    },
+    {
+      "step": "unverified recovery eligibility and no delivery promise",
+      "path": "/forgot-password"
+    },
+    {
+      "step": "unverified recovery eligibility and no delivery promise",
+      "path": "/forgot-password"
+    },
+    {
+      "step": "wrong password same public denial",
+      "path": "/login"
+    },
+    {
+      "step": "wrong password same public denial",
+      "path": "/login"
+    },
+    {
+      "step": "real login and explicit verification",
+      "path": "/login"
+    },
+    {
+      "step": "real login and explicit verification",
+      "path": "/account"
+    },
+    {
+      "step": "real login and explicit verification",
+      "path": "/account"
+    },
+    {
+      "step": "real login and explicit verification",
+      "path": "/verify-email"
+    },
+    {
+      "step": "real login and explicit verification",
+      "path": "/account"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/onboarding/workspace"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/account"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/account"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/onboarding/workspace"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/account"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/account"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/onboarding/workspace"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/account"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/account"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/onboarding/workspace"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/account"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/account"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/onboarding/workspace"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/account"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/account"
+    },
+    {
+      "step": "verified account creation navigation survives delayed session restoration",
+      "path": "/onboarding/workspace"
+    },
+    {
+      "step": "real Workspace creation and immediate discovery",
+      "path": "/workspaces/a2ec72f5-aad2-49a1-b732-ace15fe99c49"
+    },
+    {
+      "step": "real Workspace creation and immediate discovery",
+      "path": "/my-work"
+    },
+    {
+      "step": "lost creation response keeps exact idempotency key and body",
+      "path": "/onboarding/workspace"
+    },
+    {
+      "step": "lost creation response keeps exact idempotency key and body",
+      "path": "/workspaces/e45c95e7-71d9-4cf9-8246-93edc0fdcf42"
+    },
+    {
+      "step": "lost creation response keeps exact idempotency key and body",
+      "path": "/my-work"
+    },
+    {
+      "step": "switching, real identity, no demo controls or fabricated counts",
+      "path": "/my-work"
+    },
+    {
+      "step": "unsupported destinations preserve visible navigation and deny business actions",
+      "path": "/projects"
+    },
+    {
+      "step": "unsupported destinations preserve visible navigation and deny business actions",
+      "path": "/cycles"
+    },
+    {
+      "step": "unsupported destinations preserve visible navigation and deny business actions",
+      "path": "/milestones"
+    },
+    {
+      "step": "unsupported destinations preserve visible navigation and deny business actions",
+      "path": "/roadmap"
+    },
+    {
+      "step": "unsupported destinations preserve visible navigation and deny business actions",
+      "path": "/dependencies"
+    },
+    {
+      "step": "unsupported destinations preserve visible navigation and deny business actions",
+      "path": "/insights"
+    },
+    {
+      "step": "unsupported destinations preserve visible navigation and deny business actions",
+      "path": "/inbox"
+    },
+    {
+      "step": "unsupported destinations preserve visible navigation and deny business actions",
+      "path": "/my-work"
+    },
+    {
+      "step": "existing light/dark preference controls and responsive shell",
+      "path": "/settings/preferences"
+    },
+    {
+      "step": "keyboard rail toggle, sequence and switcher focus",
+      "path": "/my-work"
+    },
+    {
+      "step": "existing real Team route remains functional",
+      "path": "/my-work"
+    },
+    {
+      "step": "existing real Team route remains functional",
+      "path": "/account"
+    },
+    {
+      "step": "existing real Team route remains functional",
+      "path": "/account"
+    }
+  ],
+  "unavailableControls": [
+    {
+      "page": "Projects",
+      "controls": [
+        {
+          "tag": "INPUT",
+          "label": "Filter projects... (/)",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "",
+          "disabled": true
+        },
+        {
+          "tag": "SELECT",
+          "label": "Filter by team",
+          "disabled": true
+        },
+        {
+          "tag": "SELECT",
+          "label": "Filter by execution posture",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Reset",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Create project",
+          "disabled": true
+        }
+      ]
+    },
+    {
+      "page": "Cycles",
+      "controls": [
+        {
+          "tag": "SELECT",
+          "label": "All Teams",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Create Cycle",
+          "disabled": true
+        }
+      ]
+    },
+    {
+      "page": "Milestones",
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "label": "Create Milestone",
+          "disabled": true
+        }
+      ]
+    },
+    {
+      "page": "Roadmap",
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "label": "By Team",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "By Assignee",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Previous date range",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Today",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Next date range",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Schedule Work",
+          "disabled": true
+        },
+        {
+          "tag": "INPUT",
+          "label": "Filter by key or title...",
+          "disabled": true
+        },
+        {
+          "tag": "SELECT",
+          "label": "All Teams",
+          "disabled": true
+        },
+        {
+          "tag": "SELECT",
+          "label": "All Assignees",
+          "disabled": true
+        },
+        {
+          "tag": "SELECT",
+          "label": "All Cycles",
+          "disabled": true
+        },
+        {
+          "tag": "SELECT",
+          "label": "All Milestones",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Blocked Only",
+          "disabled": true
+        }
+      ]
+    },
+    {
+      "page": "Dependencies",
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "label": "Add Dependency",
+          "disabled": true
+        }
+      ]
+    },
+    {
+      "page": "Insights",
+      "controls": []
+    },
+    {
+      "page": "Inbox",
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "label": "Mark all read",
+          "disabled": true
+        }
+      ]
+    },
+    {
+      "page": "My Work",
+      "controls": [
+        {
+          "tag": "INPUT",
+          "label": "Filter tasks... (/)",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "",
+          "disabled": true
+        },
+        {
+          "tag": "SELECT",
+          "label": "Filter by state",
+          "disabled": true
+        },
+        {
+          "tag": "SELECT",
+          "label": "Filter by priority",
+          "disabled": true
+        },
+        {
+          "tag": "BUTTON",
+          "label": "Create TaskNewC",
+          "disabled": true
+        }
+      ]
+    }
+  ],
+  "mail": {
+    "sentinelsPreserved": 2,
+    "sharedMailpitAccessed": false,
+    "deletions": 0
+  }
+}

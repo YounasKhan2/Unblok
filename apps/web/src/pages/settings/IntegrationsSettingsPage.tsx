@@ -1,3 +1,4 @@
+import {IntegrationsSettingsPageFrame} from './IntegrationsSettingsPageFrame';
 import React, { useState } from 'react';
 import { useSettings } from '../../features/settings/context/SettingsContext';
 import { SettingsSection } from '../../features/settings/components/SettingsSection';
@@ -32,16 +33,16 @@ export const IntegrationsSettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="pb-2">
+    <IntegrationsSettingsPageFrame header={<div className="pb-2">
         <h2 className="text-base font-bold text-text-primary tracking-tight">
           Integrations & Connections
         </h2>
         <p className="text-xs text-text-muted mt-0.5">
           Configure code repository sync, webhook delivery endpoints, and workflow connections.
         </p>
-      </div>
+      </div>}>
+      {/* Header */}
+
 
       {/* 1. Code Repositories */}
       <SettingsSection
@@ -213,6 +214,6 @@ export const IntegrationsSettingsPage: React.FC = () => {
         isOpen={isAddWebhookOpen}
         onClose={() => setIsAddWebhookOpen(false)}
       />
-    </div>
+    </IntegrationsSettingsPageFrame>
   );
 };

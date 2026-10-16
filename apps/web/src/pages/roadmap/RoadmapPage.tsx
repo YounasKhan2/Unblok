@@ -1,3 +1,4 @@
+import {RoadmapPageFrame} from './RoadmapPageFrame';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -135,9 +136,7 @@ export const RoadmapPage: React.FC = () => {
   );
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-surface-subtle overflow-hidden select-none">
-      {/* 1. Header Toolbar */}
-      <RoadmapToolbar
+    <RoadmapPageFrame header={<RoadmapToolbar
         filters={filters}
         onFilterChange={updateFilters}
         onResetFilters={resetFilters}
@@ -151,7 +150,9 @@ export const RoadmapPage: React.FC = () => {
         cycles={cycles}
         milestones={milestones}
         isObserver={isObserver}
-      />
+      />}>
+      {/* 1. Header Toolbar */}
+
 
       {/* 2. Desktop Timeline Canvas (hidden on mobile) */}
       <div className="hidden md:flex flex-1 overflow-hidden">
@@ -172,6 +173,6 @@ export const RoadmapPage: React.FC = () => {
         isOpen={isScheduleModalOpen}
         onClose={() => setIsScheduleModalOpen(false)}
       />
-    </div>
+    </RoadmapPageFrame>
   );
 };

@@ -1,3 +1,4 @@
+import {WorkspaceSettingsPageFrame} from './WorkspaceSettingsPageFrame';
 import React, { useState, useEffect } from 'react';
 import { useSettings } from '../../features/settings/context/SettingsContext';
 import { SettingsSection } from '../../features/settings/components/SettingsSection';
@@ -90,9 +91,7 @@ export const WorkspaceSettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2">
+    <WorkspaceSettingsPageFrame header={<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2">
         <div>
           <h2 className="text-base font-bold text-text-primary tracking-tight">
             Workspace Settings
@@ -109,7 +108,9 @@ export const WorkspaceSettingsPage: React.FC = () => {
             {workspace.id}
           </code>
         </div>
-      </div>
+      </div>}>
+      {/* Page Header */}
+
 
       {/* 1. Workspace Profile Section */}
       <SettingsSection
@@ -239,6 +240,6 @@ export const WorkspaceSettingsPage: React.FC = () => {
 
       {/* 3. Danger Zone */}
       <DangerZone workspaceName={workspace.name} workspaceKey={workspace.key} />
-    </div>
+    </WorkspaceSettingsPageFrame>
   );
 };

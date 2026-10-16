@@ -1,0 +1,77 @@
+import React from 'react';
+import { Modal } from '../ui/Modal';
+import { Button } from '../ui/Button';
+import { Keyboard } from 'lucide-react';
+
+export function ShortcutsHelpView({isHelpModalOpen,setIsHelpModalOpen,live=false}:{isHelpModalOpen:boolean;setIsHelpModalOpen:(value:boolean)=>void;live?:boolean}) {
+
+  const shortcutGroups = [
+    {
+      group: 'Navigation & Triage',
+      shortcuts: [
+        { key: 'Cmd / Ctrl + K', action: 'Universal Command Palette' },
+        { key: 'J / ↓', action: 'Next issue in list/board' },
+        { key: 'K / ↑', action: 'Previous issue in list/board' },
+        { key: 'X', action: 'Toggle multi-select for current issue' },
+        { key: 'Cmd / Ctrl + A', action: 'Select all filtered issues' },
+        { key: 'Enter / Space', action: 'Toggle issue detail drawer' },
+        { key: 'V', action: 'Switch view (List ↔ Board ↔ DAG Matrix)' },
+        { key: '[ / \\', action: 'Toggle navigation sidebar' },
+        { key: '/', action: 'Focus search input (Supports syntax: is:blocked, team:eng, etc.)' },
+      ],
+    },
+    {
+      group: 'Instant Issue Property Triage',
+      shortcuts: [
+        { key: 'S', action: 'Open Status selector for selected issue' },
+        { key: 'P', action: 'Open Priority selector for selected issue' },
+        { key: 'A', action: 'Open Assignee selector for selected issue' },
+        { key: 'B', action: 'Open Add Blocker dialog for selected issue' },
+        { key: 'C', action: 'Create a new issue' },
+      ],
+    },
+    {
+      group: 'Scope & Esc Hierarchy',
+      shortcuts: [
+        { key: 'Esc', action: 'Close active popover → Drawer → Clear selection' },
+        { key: '?', action: 'Open this keyboard shortcuts cheatsheet' },
+      ],
+    },
+  ];
+
+  return (
+    <Modal
+      isOpen={isHelpModalOpen}
+      onClose={() => setIsHelpModalOpen(false)}
+      title="Keyboard-First Execution Cheatsheet"
+      description={live?'Navigation shortcuts are available. Business shortcuts require integrations that are not connected yet.':'Operate Unblok at high velocity without needing pointer interaction.'}
+      maxWidth="lg"
+    >
+      <div className="space-y-4 text-xs">
+        {shortcutGroups.map(group => (
+          <div key={group.group} className="border border-border rounded-lg overflow-hidden">
+            <div className="bg-surface-subtle px-3 py-1.5 font-semibold text-[11px] text-text-muted uppercase tracking-wider border-b border-border">
+              {group.group}
+            </div>
+            <div className="divide-y divide-border">
+              {shortcutGroups.find(g => g.group === group.group)?.shortcuts.map(sc => (
+                <div key={sc.key} className="flex items-center justify-between px-3 py-2 bg-surface-base">
+                  <span className="text-text-primary">{sc.action}</span>
+                  <kbd className="font-mono text-xs px-2 py-0.5 rounded bg-surface-muted text-text-primary border border-border shadow-2xs font-semibold">
+                    {sc.key}
+                  </kbd>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+
+        <div className="flex justify-end pt-2">
+          <Button variant="primary" size="md" onClick={() => setIsHelpModalOpen(false)}>
+            Got it
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+};

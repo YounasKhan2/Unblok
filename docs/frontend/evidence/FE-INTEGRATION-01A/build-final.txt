@@ -1,0 +1,21 @@
+$ bun --filter @unblok/web build
+@unblok/web build: (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+@unblok/web build:   - `__dirname` (vite.config.ts:11:27). Use `import.meta.dirname` instead
+@unblok/web build: Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+@unblok/web build: vite v8.3.2 building client environment for production...
+@unblok/web build: transforming...
+@unblok/web build: ✓ 2040 modules transformed.
+@unblok/web build: rendering chunks...
+@unblok/web build: computing gzip size...
+@unblok/web build: dist/index.html                           1.40 kB │ gzip:   0.61 kB
+@unblok/web build: dist/assets/index-BSo_8b9W.css          111.24 kB │ gzip:  18.48 kB
+@unblok/web build: dist/assets/index-tUd7Lz0S.js           636.28 kB │ gzip: 169.84 kB
+@unblok/web build: dist/assets/DemoExperience-B0d8a4Z1.js  651.15 kB │ gzip: 134.56 kB
+@unblok/web build:
+@unblok/web build: [plugin builtin:vite-reporter]
+@unblok/web build: (!) Some chunks are larger than 500 kB after minification. Consider:
+@unblok/web build: - Using dynamic import() to code-split the application
+@unblok/web build: - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+@unblok/web build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+@unblok/web build: ✓ built in 1.49s
+@unblok/web build: Exited with code 0

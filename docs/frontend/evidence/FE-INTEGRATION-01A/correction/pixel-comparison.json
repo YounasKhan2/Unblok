@@ -1,0 +1,294 @@
+[
+  {
+    "left": "baseline-projects-0.png",
+    "right": "current-projects-0.png",
+    "sameDimensions": true,
+    "differentPixels": 16,
+    "bounds": [
+      15,
+      968,
+      24,
+      983
+    ]
+  },
+  {
+    "left": "baseline-projects-1.png",
+    "right": "current-projects-1.png",
+    "sameDimensions": true,
+    "differentPixels": 16,
+    "bounds": [
+      15,
+      968,
+      24,
+      983
+    ]
+  },
+  {
+    "left": "baseline-projects-2.png",
+    "right": "current-projects-2.png",
+    "sameDimensions": true,
+    "differentPixels": 16,
+    "bounds": [
+      15,
+      968,
+      24,
+      983
+    ]
+  },
+  {
+    "left": "baseline-projects-0.png",
+    "right": "baseline-projects-1.png",
+    "sameDimensions": true,
+    "differentPixels": 11,
+    "bounds": [
+      782,
+      77,
+      985,
+      80
+    ]
+  },
+  {
+    "left": "baseline-projects-0.png",
+    "right": "baseline-projects-2.png",
+    "sameDimensions": true,
+    "differentPixels": 0,
+    "bounds": null
+  },
+  {
+    "left": "current-projects-0.png",
+    "right": "current-projects-1.png",
+    "sameDimensions": true,
+    "differentPixels": 11,
+    "bounds": [
+      782,
+      77,
+      985,
+      80
+    ]
+  },
+  {
+    "left": "current-projects-0.png",
+    "right": "current-projects-2.png",
+    "sameDimensions": true,
+    "differentPixels": 0,
+    "bounds": null
+  },
+  {
+    "left": "baseline-teams-0.png",
+    "right": "current-teams-0.png",
+    "sameDimensions": true,
+    "differentPixels": 16,
+    "bounds": [
+      15,
+      968,
+      24,
+      983
+    ]
+  },
+  {
+    "left": "baseline-teams-1.png",
+    "right": "current-teams-1.png",
+    "sameDimensions": true,
+    "differentPixels": 16,
+    "bounds": [
+      15,
+      968,
+      24,
+      983
+    ]
+  },
+  {
+    "left": "baseline-teams-2.png",
+    "right": "current-teams-2.png",
+    "sameDimensions": true,
+    "differentPixels": 16,
+    "bounds": [
+      15,
+      968,
+      24,
+      983
+    ]
+  },
+  {
+    "left": "baseline-teams-0.png",
+    "right": "baseline-teams-1.png",
+    "sameDimensions": true,
+    "differentPixels": 0,
+    "bounds": null
+  },
+  {
+    "left": "baseline-teams-0.png",
+    "right": "baseline-teams-2.png",
+    "sameDimensions": true,
+    "differentPixels": 0,
+    "bounds": null
+  },
+  {
+    "left": "current-teams-0.png",
+    "right": "current-teams-1.png",
+    "sameDimensions": true,
+    "differentPixels": 0,
+    "bounds": null
+  },
+  {
+    "left": "current-teams-0.png",
+    "right": "current-teams-2.png",
+    "sameDimensions": true,
+    "differentPixels": 0,
+    "bounds": null
+  },
+  {
+    "left": "baseline-dependencies-0.png",
+    "right": "current-dependencies-0.png",
+    "sameDimensions": true,
+    "differentPixels": 0,
+    "bounds": null
+  },
+  {
+    "left": "baseline-dependencies-1.png",
+    "right": "current-dependencies-1.png",
+    "sameDimensions": true,
+    "differentPixels": 7,
+    "bounds": [
+      598,
+      212,
+      742,
+      214
+    ]
+  },
+  {
+    "left": "baseline-dependencies-2.png",
+    "right": "current-dependencies-2.png",
+    "sameDimensions": true,
+    "differentPixels": 0,
+    "bounds": null
+  },
+  {
+    "left": "baseline-dependencies-0.png",
+    "right": "baseline-dependencies-1.png",
+    "sameDimensions": true,
+    "differentPixels": 7,
+    "bounds": [
+      598,
+      212,
+      742,
+      214
+    ]
+  },
+  {
+    "left": "baseline-dependencies-0.png",
+    "right": "baseline-dependencies-2.png",
+    "sameDimensions": true,
+    "differentPixels": 0,
+    "bounds": null
+  },
+  {
+    "left": "current-dependencies-0.png",
+    "right": "current-dependencies-1.png",
+    "sameDimensions": true,
+    "differentPixels": 0,
+    "bounds": null
+  },
+  {
+    "left": "current-dependencies-0.png",
+    "right": "current-dependencies-2.png",
+    "sameDimensions": true,
+    "differentPixels": 0,
+    "bounds": null
+  },
+  {
+    "left": "baseline-drawer.png",
+    "right": "current-drawer.png",
+    "sameDimensions": true,
+    "differentPixels": 10,
+    "bounds": [
+      15,
+      968,
+      20,
+      984
+    ]
+  },
+  {
+    "left": "baseline-create-issue.png",
+    "right": "current-create-issue.png",
+    "sameDimensions": true,
+    "differentPixels": 13,
+    "bounds": [
+      13,
+      969,
+      30,
+      993
+    ]
+  },
+  {
+    "left": "baseline-palette.png",
+    "right": "current-palette.png",
+    "sameDimensions": true,
+    "differentPixels": 18,
+    "bounds": [
+      13,
+      969,
+      27,
+      990
+    ]
+  },
+  {
+    "left": "baseline-help.png",
+    "right": "current-help.png",
+    "sameDimensions": true,
+    "differentPixels": 254,
+    "bounds": [
+      13,
+      66,
+      958,
+      993
+    ]
+  },
+  {
+    "left": "baseline-project-filter.png",
+    "right": "current-project-filter.png",
+    "sameDimensions": true,
+    "differentPixels": 0,
+    "bounds": null
+  },
+  {
+    "left": "baseline-dependency-matrix.png",
+    "right": "current-dependency-matrix.png",
+    "sameDimensions": true,
+    "differentPixels": 0,
+    "bounds": null
+  },
+  {
+    "left": "baseline-dependency-blockers.png",
+    "right": "current-dependency-blockers.png",
+    "sameDimensions": true,
+    "differentPixels": 0,
+    "bounds": null
+  },
+  {
+    "left": "baseline-test-roles.png",
+    "right": "current-test-roles.png",
+    "sameDimensions": true,
+    "differentPixels": 20,
+    "bounds": [
+      1071,
+      77,
+      1194,
+      80
+    ]
+  },
+  {
+    "left": "baseline-mobile-light.png",
+    "right": "current-mobile-light.png",
+    "sameDimensions": true,
+    "differentPixels": 0,
+    "bounds": null
+  },
+  {
+    "left": "baseline-mobile-dark.png",
+    "right": "current-mobile-dark.png",
+    "sameDimensions": true,
+    "differentPixels": 0,
+    "bounds": null
+  }
+]

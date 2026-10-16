@@ -8,7 +8,7 @@ import type {MemberFilter,MemberSort} from './MembersApi';
 import {InviteDialog} from './InviteDialog';
 export function MembersPage(){
  const {workspaceId}=useParams(),{store:workspace,context,selected,selecting,contextError}=useLiveWorkspace(),{store:session,user,status,pending}=useSession(),members=useMembers();const [open,setOpen]=useState(false),close=useCallback(()=>setOpen(false),[]),generation=session.generation();
- useEffect(()=>{if(workspaceId&&status==='authenticated'&&!pending)void workspace.select(workspaceId);},[workspaceId,workspace,status,pending,generation]);
+ useEffect(()=>{const scope=workspace.snapshot();if(workspaceId&&status==='authenticated'&&!pending&&(scope.selected!==workspaceId||(!scope.context&&!scope.selecting&&!scope.contextError)))void workspace.select(workspaceId);},[workspaceId,workspace,status,pending,generation]);
  useEffect(()=>{setOpen(false);},[workspaceId,generation,members.canInvite]);
  const current=selected===workspaceId?context:null;
  return <section className="w-full rounded-lg border border-border bg-surface-base p-4 sm:p-5 space-y-4" aria-label="Workspace members">

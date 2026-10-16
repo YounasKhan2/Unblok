@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSettings } from '../../features/settings/context/SettingsContext';
+import { usePreferences } from '../../features/settings/context/PreferenceBindings';
 import { SettingsSection } from '../../features/settings/components/SettingsSection';
 import { SettingsField } from '../../features/settings/components/SettingsField';
 import { SettingsSaveBar } from '../../features/settings/components/SettingsSaveBar';
@@ -7,7 +7,7 @@ import { ThemePreference, DensityPreference } from '../../features/settings/type
 import { Sun, Moon, Laptop, Eye, Layers } from 'lucide-react';
 
 export const PreferencesSettingsPage: React.FC = () => {
-  const { preferences, updatePreferences, currentUser } = useSettings();
+  const { preferences, updatePreferences, currentUser,live } = usePreferences();
 
   // Local drafts for personal preferences
   const [theme, setTheme] = useState<ThemePreference>(preferences.theme);
@@ -182,15 +182,16 @@ export const PreferencesSettingsPage: React.FC = () => {
       {/* 2. Notification Preferences Section */}
       <SettingsSection
         title="Personal Notifications"
-        description="Choose which signals create personal notifications. Note: Activity history and audit logs remain canonical."
+        description={live?'Notification delivery is not connected to a live API. These controls are unavailable.':'Choose which signals create personal notifications. Note: Activity history and audit logs remain canonical.'}
       >
         <div className="space-y-2">
           <SettingsField
-            label="Mentions (@Sarah Chen)"
+            label={live?'Mentions':'Mentions (@Sarah Chen)'}
             description="Notify when you are explicitly mentioned in comments or issue descriptions."
             horizontal
           >
             <input
+              disabled={live}
               type="checkbox"
               checked={mentions}
               onChange={e => setMentions(e.target.checked)}
@@ -204,6 +205,7 @@ export const PreferencesSettingsPage: React.FC = () => {
             horizontal
           >
             <input
+              disabled={live}
               type="checkbox"
               checked={assignments}
               onChange={e => setAssignments(e.target.checked)}
@@ -217,6 +219,7 @@ export const PreferencesSettingsPage: React.FC = () => {
             horizontal
           >
             <input
+              disabled={live}
               type="checkbox"
               checked={blockerChanges}
               onChange={e => setBlockerChanges(e.target.checked)}
@@ -230,6 +233,7 @@ export const PreferencesSettingsPage: React.FC = () => {
             horizontal
           >
             <input
+              disabled={live}
               type="checkbox"
               checked={cycleUpdates}
               onChange={e => setCycleUpdates(e.target.checked)}
@@ -241,7 +245,7 @@ export const PreferencesSettingsPage: React.FC = () => {
         <div className="p-3 bg-surface-subtle rounded-md border border-border text-[11px] text-text-muted space-y-1">
           <p className="font-semibold text-text-primary">Inbox & Activity History Notice:</p>
           <p>
-            Notification preferences only configure presentation alerting. The canonical Inbox event log and team activity streams are immutable projections and are never deleted when a preference is toggled.
+            {live?'Notification and activity APIs are not connected in live mode. These controls do not send or change notifications.':'Notification preferences only configure presentation alerting. The canonical Inbox event log and team activity streams are immutable projections and are never deleted when a preference is toggled.'}
           </p>
         </div>
       </SettingsSection>

@@ -1,3 +1,4 @@
+import {ProjectsDirectoryPageFrame} from './ProjectsDirectoryPageFrame';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -76,9 +77,7 @@ export const ProjectsDirectoryPage: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-canvas select-none">
-      {/* 1. Header Toolbar */}
-      <div className="border-b border-border bg-surface-base px-4 py-2 shrink-0 flex flex-wrap items-center justify-between gap-3">
+    <ProjectsDirectoryPageFrame header={<div className="border-b border-border bg-surface-base px-4 py-2 shrink-0 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <FolderKanban className="w-4 h-4 text-accent" />
           <h1 className="text-sm font-bold text-text-primary tracking-tight">Projects Directory</h1>
@@ -161,7 +160,9 @@ export const ProjectsDirectoryPage: React.FC = () => {
             </Button>
           )}
         </div>
-      </div>
+      </div>}>
+      {/* 1. Header Toolbar */}
+
 
       {/* 2. Main High-Density Projects Table */}
       <div className="flex-1 overflow-y-auto min-h-0 bg-canvas">
@@ -310,6 +311,6 @@ export const ProjectsDirectoryPage: React.FC = () => {
         isOpen={isCreateProjectOpen}
         onClose={() => setIsCreateProjectOpen(false)}
       />
-    </div>
+    </ProjectsDirectoryPageFrame>
   );
 };

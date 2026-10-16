@@ -1,3 +1,4 @@
+import {MilestonesPageFrame} from './MilestonesPageFrame';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -24,9 +25,7 @@ export const MilestonesPage: React.FC = () => {
   );
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-surface-subtle overflow-y-auto select-none">
-      {/* 1. Header */}
-      <div className="bg-surface-base border-b border-border px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+    <MilestonesPageFrame header={<div className="bg-surface-base border-b border-border px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Target className="w-5 h-5 text-accent" />
@@ -48,7 +47,9 @@ export const MilestonesPage: React.FC = () => {
             Create Milestone
           </Button>
         )}
-      </div>
+      </div>}>
+      {/* 1. Header */}
+
 
       {/* 2. Main Content Body */}
       <div className="p-6 space-y-8 max-w-7xl mx-auto w-full">
@@ -108,6 +109,6 @@ export const MilestonesPage: React.FC = () => {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
       />
-    </div>
+    </MilestonesPageFrame>
   );
 };

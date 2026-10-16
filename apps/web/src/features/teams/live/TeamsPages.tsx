@@ -9,7 +9,7 @@ import { TeamDialog } from './TeamDialog';
 import type { TeamFilter } from './TeamsApi';
 function useScope() {
     const { workspaceId, teamId } = useParams(), w = useLiveWorkspace(), s = useSession(), t = useTeams(), generation = s.store.generation();
-    useEffect(() => { if (workspaceId && s.status === 'authenticated' && !s.pending)
+    useEffect(() => { const scope=w.store.snapshot();if (workspaceId && s.status === 'authenticated' && !s.pending && (scope.selected!==workspaceId||(!scope.context&&!scope.selecting&&!scope.contextError)))
         void w.store.select(workspaceId); }, [workspaceId, w.store, s.status, s.pending, generation]);
     useEffect(() => { t.store.route(teamId); }, [teamId, t.store]);
     return { workspaceId, teamId, w, s, t, current: w.selected === workspaceId ? w.context : null };

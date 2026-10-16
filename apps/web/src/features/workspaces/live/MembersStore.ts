@@ -14,8 +14,8 @@ export class MembersStore {
  private sync(){const s=this.session.snapshot(),w=this.workspaces.snapshot(),actor=s.status==='authenticated'?s.user!.id:'';
   if(this.logout!==this.session.explicitLogoutGeneration()||(actor&&this.actor&&actor!==this.actor)){try{this.journal?.clear();}catch{}this.actor='';}
   this.logout=this.session.explicitLogoutGeneration();if(actor)this.actor=actor;
-  const c=w.context,allowed=!!actor&&!s.pending&&!!c&&c.self.role==='ADMIN'&&c.self.membershipStatus==='ACTIVE',canInvite=allowed&&c!.workspace.status==='ACTIVE'&&!!s.user?.emailVerified;
-  const identity=allowed?`${actor}:${this.session.generation()}:${c!.workspace.id}:${canInvite}`:'';
+  const c=w.context,allowed=!!actor&&!s.pending&&!!c&&w.selected===c.workspace.id&&c.self.role==='ADMIN'&&c.self.membershipStatus==='ACTIVE',canInvite=allowed&&c!.workspace.status==='ACTIVE'&&!!s.user?.emailVerified;
+  const identity=allowed?`${actor}:${this.session.generation()}:${c!.workspace.id}:${c!.self.membershipId}:${c!.self.role}:${c!.self.membershipStatus}:${c!.workspace.status}:${canInvite}`:'';
   if(identity===this.identity)return;this.identity=identity;this.version++;this.read?.abort();this.mutation?.abort();this.state=empty();this.publish({allowed,canInvite});
   if(allowed){try{this.publish({attempt:this.journal?.read(actor,c!.workspace.id)});}catch{this.publish({blocked:true,inviteError:'We couldn’t restore the previous request. Reopen this tab after checking your invitation before starting another.'});}void this.load();}
  }

@@ -1,3 +1,4 @@
+import {IssueUnavailable} from '../../features/issues/components/IssueUnavailable';
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -83,25 +84,7 @@ export const IssueDetailPage: React.FC = () => {
   // 1. Invalid / Not Found State
   if (!issueData) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-surface-base text-center">
-        <div className="w-14 h-14 rounded-2xl bg-warning/10 border border-warning/30 flex items-center justify-center text-warning mb-4 shadow-sm">
-          <AlertCircle className="w-7 h-7" />
-        </div>
-
-        <h1 className="text-xl font-bold text-text-primary mb-2">Issue not found</h1>
-        <p className="text-sm text-text-muted max-w-md mb-6 leading-relaxed">
-          The requested issue <span className="font-mono font-semibold text-text-primary">{issueKey || ''}</span> does
-          not exist or you do not have permission to view it in this workspace.
-        </p>
-
-        <Link
-          to="/my-work"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-accent hover:opacity-90 text-white text-xs font-semibold rounded-lg shadow-sm transition-opacity cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Return to My Work</span>
-        </Link>
-      </div>
+      <IssueUnavailable issueKey={issueKey}/>
     );
   }
 

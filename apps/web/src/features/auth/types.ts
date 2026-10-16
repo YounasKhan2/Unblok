@@ -1,7 +1,7 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
- * 
+ *
  * UX-12 Authentication & Account Lifecycle Domain Types
  * Core contracts for authentication, identity vs workspace membership, and invitations.
  */
@@ -90,7 +90,7 @@ export interface AuthAdapter {
   login(credentials: { email: string; password: string }): Promise<AuthResult>;
   signup(data: { name: string; email: string; password: string }): Promise<AuthResult>;
   requestPasswordReset(email: string): Promise<PasswordResetRequestResult>;
-  resetPassword(data: { token: string; newPassword: string }): Promise<ResetPasswordResult>;
+  resetPassword(data: { token: string; newPassword: string; email?: string }): Promise<ResetPasswordResult>;
   validateInvitation(token: string): Promise<InvitationDetails>;
   acceptInvitation(token: string, userId: string): Promise<InvitationAcceptResult>;
 }
