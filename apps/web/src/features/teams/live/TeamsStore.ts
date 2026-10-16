@@ -35,6 +35,7 @@ export class TeamsStore {
     private actor = '';
     private membership = '';
     private membersRead?:AbortController;
+    private memberCursors = new Set<string>();
     private version = 0;
     private target: string | undefined;
     private read?: AbortController;
@@ -45,7 +46,7 @@ export class TeamsStore {
     subscribe = (fn: () => void) => { this.listeners.add(fn); return () => { this.listeners.delete(fn); }; };
     private publish(change: Partial<TeamsState>) { this.state = { ...this.state, ...change }; for (const fn of this.listeners)
         fn(); }
-    private abort() { this.read?.abort(); this.detailRead?.abort(); this.mutation?.abort(); this.membersRead?.abort(); }
+    private abort() { this.read?.abort(); this.detailRead?.abort(); this.mutation?.abort(); this.membersRead?.abort(); this.memberCursors.clear(); }
     start() { this.sync(); const off = [this.session.subscribe(() => this.sync()), this.workspaces.subscribe(() => this.sync())]; return () => { off.forEach(f => f()); this.version++; this.identity = ''; this.abort(); }; }
     private restoreAttempt() { try {
         const attempt = this.journal?.read(this.actor, this.state.workspace, this.target, this.membership);
@@ -141,14 +142,39 @@ export class TeamsStore {
                 {this.publish({ opening: false });if(this.state.team)void this.loadMembers();}
         }
     }
-    async loadMembers(next=false){
-        const team=this.state.team;if(!team||!this.state.allowed||this.state.opening||this.state.membersLoading)return;
-        const after=next?this.state.members?.page.nextCursor:undefined;if(next&&!after)return;
-        this.membersRead?.abort();const c=this.membersRead=new AbortController(),v=this.version;
-        this.publish({members:null,membersLoading:true,membersError:''});
-        try{const members=await this.api.members(this.state.workspace,team.id,c.signal,after??undefined);if(this.current(v,c)&&this.state.team?.id===team.id)this.publish({members});}
-        catch(e){if(this.current(v,c))this.publish({members:null,membersError:e instanceof AuthApiError&&[403,404].includes(e.status)?'Team membership details are unavailable.':e instanceof AuthApiError?e.message:'Team membership details are unavailable.'});}
-        finally{if(this.current(v,c))this.publish({membersLoading:false});}
+    async loadMembers(next = false) {
+        const team = this.state.team;
+        if (!team || !this.state.allowed || this.state.opening || this.state.membersLoading) return;
+        const previous = next ? this.state.members : null;
+        const after = previous?.page.nextCursor;
+        if (next && (!previous?.page.hasMore || !after)) return;
+        if (!next) this.memberCursors.clear();
+        this.membersRead?.abort();
+        const c = this.membersRead = new AbortController(), v = this.version, workspace = this.state.workspace;
+        this.publish({ members: previous, membersLoading: true, membersError: '' });
+        try {
+            const page = await this.api.members(workspace, team.id, c.signal, after ?? undefined);
+            if (!this.current(v, c) || this.state.team?.id !== team.id) return;
+            const ids = new Set(previous?.items.map(m => m.membershipId));
+            for (const member of page.items) {
+                if (ids.has(member.membershipId)) throw Error('Invalid member continuation');
+                ids.add(member.membershipId);
+            }
+            const cursor = page.page.nextCursor;
+            if (cursor && (cursor === after || this.memberCursors.has(cursor))) throw Error('Invalid member continuation');
+            if (after) this.memberCursors.add(after);
+            this.publish({ members: { items: [...(previous?.items ?? []), ...page.items], page: page.page } });
+        } catch (e) {
+            if (this.current(v, c)) {
+                const denied = e instanceof AuthApiError && [401, 403, 404, 409].includes(e.status);
+                // Keep only already validated rows on transport/invalid-continuation failure.
+                // Stop continuation until an explicit fresh reload; authority loss clears everything.
+                this.publish({ members: previous && !denied ? { items: previous.items, page: { hasMore: false, nextCursor: null } } : null,
+                    membersError: 'Team membership details are unavailable.' });
+            }
+        } finally {
+            if (this.current(v, c)) this.publish({ membersLoading: false });
+        }
     }
     async create(input: CreateInput) { if (!this.state.canCreate)
         return null; return this.send(createTeamSchema.parse(input)); }

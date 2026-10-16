@@ -2,6 +2,10 @@
 
 Status: implemented for draft PM review; not a merge/deployment authorization. Baseline `894488746e134bd3cebb21091edbae2cb12dfb19` (PR #51 merged), branch `codex/fe-integration-01c`. Exact candidate HEAD is recorded in the draft PR/handoff. PM approved the three live-only contract adaptations after the external preflight at `D:\Full_Stack_Apps\Unblok-FE-INTEGRATION-01C-20261016\FE-INTEGRATION-01C-PREFLIGHT.md`.
 
+## PM correction — 2026-10-17
+
+The final membership-pagination correction and fresh verification are recorded at the end of this report. Earlier counts and source manifests describe implementation HEAD `9861aa6aff5ecd768021ed30dedc566f442d5784`; correction evidence is in `evidence/FE-INTEGRATION-01C/correction/`.
+
 ## Existing functionality retained versus new integration
 
 The four foundation endpoints, TeamsApi/TeamsStore/TeamsContext, UUID routes, creation and metadata receipts, revision conflicts, CSRF transport and server status pagination already existed. They are reused rather than reimplemented.
@@ -125,3 +129,46 @@ These are owned disposable records, not NEXUS or shared QA data. Demo baseline/c
 - `scripts/frontend/fe-integration-01c-journeys.cjs`
 
 The complete inventory JSON includes this report and every individual evidence artifact.
+
+
+## Final PM correction: accumulating Team membership pages
+
+Review: https://github.com/YounasKhan2/Unblok/pull/52#issuecomment-6224773875. Parent/reviewed HEAD: `9861aa6aff5ecd768021ed30dedc566f442d5784`. The correction commit SHA is recorded in PR #52 after commit/push.
+
+**Confirmed root cause:** `loadMembers(true)` set `members=null` and then published only the next response, replacing the first 20 records. It now snapshots the validated prior page, issues one bounded request, checks the original session/actor/Workspace/membership generation and Team plus aborted-request fence, and appends only a valid response in that context. Fresh reload replaces records from page one and clears cursor history. Route/authority changes abort the read, clear projections and consumed cursor history; their eventual completions cannot append. The membership endpoint has a fixed ALL filter in this milestone; directory filtering continues its separate fresh server-page behavior.
+
+Duplicate membership IDs within a page or overlapping earlier pages, malformed/overlarge DTOs, empty nonterminal pages, repeated/current/previously-consumed cursors are rejected. Previously validated rows remain after an invalid continuation/transport failure, continuation stops, and the existing inline unavailable feedback appears; Reload Teams explicitly reloads from page one. Authorization/session denial (401/403/404) or stale-context 409 clears earlier pages instead of presenting them as current. No automatic retry, deduplication, silent overwrite, inferred aggregate total or backend change is introduced. Existing member loading presentation and Next members control are retained. TeamJournal and its recovery semantics are untouched.
+
+### Correction changed source files
+
+- `apps/web/src/features/teams/live/TeamsStore.ts`: accumulation, duplicate/cursor checks and scope-safe invalidation.
+- `apps/web/src/features/teams/live/TeamsApi.ts`: reject empty nonterminal bounded member responses.
+- `apps/web/src/features/teams/live/TeamsPages.tsx`: reuse existing inline error text alongside retained validated rows.
+- `apps/web/src/features/teams/live/Teams.test.tsx`: 17 new cases; the earlier bounded-page fixture now returns a genuinely distinct second member rather than repeating the first ID.
+- `scripts/frontend/fe-integration-01a.cjs`: isolated, label-checked owner-bound 21-member fixture callback.
+- `scripts/frontend/fe-integration-01c-journeys.cjs`: targeted --members-only real API/Chromium path.
+
+Report and correction evidence/logs/screenshots are the only other changes. No CSS, shared presentation frame, demo adapter, shell, fixture, journal, backend, schema or migration edits.
+
+### Fresh correction checks
+
+Commands (repository root, Bun on PATH; GOMAXPROCS=2 and RAYON_NUM_THREADS=2):
+
+```powershell
+bun run --cwd apps/web test src/features/teams/live/Teams.test.tsx src/features/teams/teams.test.tsx src/features/settings/domain/teamAdministration.test.ts --maxWorkers=2
+bun run lint:web
+bun run build:web
+$env:PLAYWRIGHT_MODULE='C:\Users\youna\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\node_modules\playwright'
+$env:FE_INTEGRATION_EVIDENCE_DIR='D:\Full_Stack_Apps\Unblok-FE-INTEGRATION-01C-CORRECTION-20261017\browser-2'
+node scripts/frontend/fe-integration-01a.cjs --01c --browser-only --production --members-only
+```
+
+- **101/101 focused tests pass, 3/3 files**, including 20+2 ordered accumulation, no extra request after exhaustion, duplicate concurrent-click suppression, fresh reload, six invalid-continuation cases, multi-step cursor cycles, 401/403/404/409 clearing, and delayed next-page responses across actor/Workspace/membership/Team/logout changes.
+- **Typecheck passes** (`lint:web` is the repository TypeScript check); **production build passes**. Existing native-config/chunk-size warnings remain.
+- **1/1 targeted Chromium gate passes**, production bundle with real API/worker, owned disposable PostgreSQL/Valkey/Mailpit, **13/13 migrations** in that disposable database. Signup/login/verification used real UI; Workspace/Team setup used real same-origin CSRF APIs, then 21 additional owned fixture memberships were inserted only in the labeled disposable DB after owner checks. The real owner directory returned **20 and 2** rows through exactly **two** limit=20/status=ALL HTTP200 requests (second with the backend-issued cursor). Browser asserted **22 unique displayed member names**, every prior 20 retained, all expected fixture names and the owner present. No aggregate count was inferred/displayed. Both sentinel messages survive, zero mail deletions, zero runtime errors. Shared QA unchanged.
+- Evidence: [browser JSON](evidence/FE-INTEGRATION-01C/correction/browser-members.json), [first 20 screenshot](evidence/FE-INTEGRATION-01C/correction/members-first-20.png), [after second page screenshot](evidence/FE-INTEGRATION-01C/correction/members-all-22.png), [source hashes/results](evidence/FE-INTEGRATION-01C/correction/verification.json). Screenshots capture the current viewport of the shell's scrollable member area; the 22-name assertion checks the complete rendered DOM.
+- **One failed browser setup is retained**, not counted as passing: browser-1 clicked Create workspace after email verification and timed out waiting for Workspace name while still on Your account. No runtime errors; exact cause remains unresolved, consistent with the historical navigation flake. Evidence/screenshot preserved in correction/. Targeted membership setup now uses the existing real Workspace API instead; this does not claim the UI navigation defect is fixed. No timeout increased, counter reset or assertion weakened.
+- Strict prototype pixel comparison **not rerun** for this data-only correction. Prior **15/16 exact; one pixel differs** remains a strict failed visual result. Current compiled CSS hash remains `219e9d0180c254fe27c0a48a6cac9ca6fc2ea9e6f72adba24d4be5c37d4be51a`. No CSS change/tolerance weakening.
+- Broad backend/full-frontend/13-gate browser suites were **not rerun** in this focused correction; their earlier results above are historical evidence, not fresh results for this commit. Three historical NEXUS failures, architecture timeout, queue/SIGTERM issues and navigation flake remain documented and unresolved. No claim of shared QA migration/application readiness is made.
+
+Draft PR #52 remains for PM re-review; no merge/deploy/01D work.

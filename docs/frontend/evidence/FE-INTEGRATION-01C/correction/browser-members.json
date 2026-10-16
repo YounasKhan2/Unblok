@@ -1,0 +1,233 @@
+{
+  "base": "9861aa6aff5ecd768021ed30dedc566f442d5784",
+  "isolation": "Owned PostgreSQL + Valkey + disposable sentinel-protected Mailpit; ephemeral loopback ports; no shared volumes or QA environment files",
+  "commands": [],
+  "passed": [
+    "real 20+2 member pages accumulate all 22 unique members; first 20 retained; two bounded API reads; CSRF and sentinel preservation"
+  ],
+  "failures": [],
+  "migrations": {
+    "applied": 13,
+    "scope": "owned disposable test database only"
+  },
+  "api": {
+    "ready": 200,
+    "live": 200
+  },
+  "frontendIsolation": {
+    "envFiles": false,
+    "authApiOrigin": "owned same-origin proxy",
+    "hmr": false,
+    "watch": false
+  },
+  "pacingWindows": [],
+  "http": [
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/signup",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 401,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/email-verification/request",
+      "status": 202,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/email-verification/confirm",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/email-verification/status",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 201,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/b6c648b3-7b67-4c3a-8b3a-65b9d7a56a83/teams",
+      "status": 201,
+      "method": "POST"
+    },
+    {
+      "path": "/api/v1/workspaces/b6c648b3-7b67-4c3a-8b3a-65b9d7a56a83/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/b6c648b3-7b67-4c3a-8b3a-65b9d7a56a83/me",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/b6c648b3-7b67-4c3a-8b3a-65b9d7a56a83",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/b6c648b3-7b67-4c3a-8b3a-65b9d7a56a83/administration/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/b6c648b3-7b67-4c3a-8b3a-65b9d7a56a83/administration/eligible-teams",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/b6c648b3-7b67-4c3a-8b3a-65b9d7a56a83/administration/invitations",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/b6c648b3-7b67-4c3a-8b3a-65b9d7a56a83/teams/63426c31-f547-45ae-b4aa-2dbb8749f08e",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/b6c648b3-7b67-4c3a-8b3a-65b9d7a56a83/teams/63426c31-f547-45ae-b4aa-2dbb8749f08e/memberships",
+      "status": 200,
+      "method": "GET"
+    },
+    {
+      "path": "/api/v1/workspaces/b6c648b3-7b67-4c3a-8b3a-65b9d7a56a83/teams/63426c31-f547-45ae-b4aa-2dbb8749f08e/memberships",
+      "status": 200,
+      "method": "GET"
+    }
+  ],
+  "memberFixtureSeed": {
+    "members": 21,
+    "scope": "owned disposable database only; real owner plus 21 fixture members; real bounded API reads"
+  },
+  "memberPagination": {
+    "requests": 2,
+    "boundedLimit": 20,
+    "pageSizes": [
+      20,
+      2
+    ],
+    "rendered": 22,
+    "priorNamesRetained": true,
+    "uniqueNames": 22
+  },
+  "mutationSecurity": [
+    {
+      "path": "/api/v1/auth/signup",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/auth/login",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/auth/email-verification/request",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/auth/email-verification/confirm",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/workspaces",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "path": "/api/v1/workspaces/b6c648b3-7b67-4c3a-8b3a-65b9d7a56a83/teams",
+      "csrf": true,
+      "origin": true
+    }
+  ],
+  "mail": {
+    "sentinelsPreserved": 2,
+    "sharedMailpitAccessed": false,
+    "deletions": 0
+  }
+}

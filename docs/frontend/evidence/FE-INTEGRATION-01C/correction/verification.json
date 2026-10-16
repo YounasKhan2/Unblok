@@ -1,0 +1,33 @@
+{
+  "reviewedHead": "9861aa6aff5ecd768021ed30dedc566f442d5784",
+  "reviewComment": "https://github.com/YounasKhan2/Unblok/pull/52#issuecomment-6224773875",
+  "sha256Utf8LF": {
+    "apps/web/src/features/teams/live/TeamsStore.ts": "0526995075b45613f3d208a8193f20ed9a3d2869940a34dc2acc7cc6f3c018d5",
+    "apps/web/src/features/teams/live/TeamsApi.ts": "d02b6ec3b271e4de70ac2141ab0fc3baceeb646a64af2de53983156bbc41186c",
+    "apps/web/src/features/teams/live/TeamsPages.tsx": "4f41959a86eeac63184d94bb6f9775dc69b7ef596a7fe7d0b529a81e543a50e9",
+    "apps/web/src/features/teams/live/Teams.test.tsx": "05962384bb855bd32c1c85810e5a077b59566b457cf54b662fc32e619c4bb82e",
+    "scripts/frontend/fe-integration-01a.cjs": "0077e2884e2cbcf41d2cd9c5b43f107dedda395ad826f91acb62062433044766",
+    "scripts/frontend/fe-integration-01c-journeys.cjs": "be756a7cf909e8b1c9675c954f5a28c627a83289d3187438d458b31d23af7af9"
+  },
+  "focusedTests": {
+    "passed": 101,
+    "failed": 0,
+    "addedCases": 17
+  },
+  "typecheck": "pass",
+  "build": "pass",
+  "browser": {
+    "passedGates": 1,
+    "pageSizes": [
+      20,
+      2
+    ],
+    "renderedMembers": 22,
+    "retainedPriorRecords": 20,
+    "requests": 2,
+    "failedSetupAttempts": 1
+  },
+  "cssSha256": "219e9d0180c254fe27c0a48a6cac9ca6fc2ea9e6f72adba24d4be5c37d4be51a",
+  "visual": "Not rerun. Prior strict result remains 15/16 exact, 1 pixel differs; CSS unchanged.",
+  "scope": "Only focused frontend suites, typecheck/build and dedicated real membership Chromium path rerun. Earlier broad backend/browser/full frontend results are historical, not fresh correction results."
+}
