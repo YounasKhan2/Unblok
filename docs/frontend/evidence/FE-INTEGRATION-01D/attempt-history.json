@@ -1,0 +1,286 @@
+[
+  {
+    "run": "backend-1",
+    "passed": 0,
+    "failures": [
+      "team-management"
+    ],
+    "commands": [
+      {
+        "label": "teams",
+        "command": "bun test --no-env-file --preload <evidence>/prisma-node-preload.ts scripts/backend/teams.test.ts",
+        "exitCode": 0
+      },
+      {
+        "label": "team-management",
+        "command": "bun test --no-env-file --preload <evidence>/prisma-node-preload.ts scripts/backend/team-management.test.ts",
+        "exitCode": 1
+      },
+      {
+        "label": "tenancy",
+        "command": "bun test --no-env-file --preload <evidence>/prisma-node-preload.ts scripts/backend/tenancy.test.ts",
+        "exitCode": 0
+      },
+      {
+        "label": "auth-fences",
+        "command": "bun test --no-env-file --preload <evidence>/prisma-node-preload.ts scripts/backend/auth-fences.test.ts",
+        "exitCode": 0
+      }
+    ],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "readiness": null
+  },
+  {
+    "run": "backend-2",
+    "passed": 0,
+    "failures": [],
+    "commands": [
+      {
+        "label": "team-management",
+        "command": "bun test --no-env-file --preload <evidence>/prisma-node-preload.ts scripts/backend/team-management.test.ts",
+        "exitCode": 0
+      }
+    ],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "readiness": null
+  },
+  {
+    "run": "browser-1",
+    "passed": 1,
+    "failures": [
+      "real role change, removal and add: locator.selectOption: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('Team role', { exact: true })\u001b[22m\n"
+    ],
+    "commands": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "readiness": null
+  },
+  {
+    "run": "browser-10",
+    "passed": 9,
+    "failures": [],
+    "commands": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "readiness": null
+  },
+  {
+    "run": "browser-11",
+    "passed": 0,
+    "failures": [
+      "Owned API did not become ready"
+    ],
+    "commands": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "readiness": null
+  },
+  {
+    "run": "browser-12",
+    "passed": 0,
+    "failures": [
+      "Owned API did not become ready"
+    ],
+    "commands": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "readiness": null
+  },
+  {
+    "run": "browser-13",
+    "passed": 9,
+    "failures": [],
+    "commands": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "readiness": {
+      "responses": {
+        "200": 1
+      },
+      "connectionErrors": {
+        "ECONNREFUSED": 24
+      }
+    }
+  },
+  {
+    "run": "browser-2",
+    "passed": 2,
+    "failures": [
+      "archive response loss and exact replay: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true })\u001b[22m\n"
+    ],
+    "commands": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "readiness": null
+  },
+  {
+    "run": "browser-3",
+    "passed": 6,
+    "failures": [],
+    "commands": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "readiness": null
+  },
+  {
+    "run": "browser-4",
+    "passed": 0,
+    "failures": [
+      "real setup and cross-Workspace isolation: Expected values to be strictly equal:\n\n412 !== 409\n"
+    ],
+    "commands": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "readiness": null
+  },
+  {
+    "run": "browser-5",
+    "passed": 1,
+    "failures": [
+      "real Team Settings presentation: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('heading', { name: 'Team Management', exact: true }) to be visible\u001b[22m\n"
+    ],
+    "commands": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "readiness": null
+  },
+  {
+    "run": "browser-6",
+    "passed": 8,
+    "failures": [],
+    "commands": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "readiness": null
+  },
+  {
+    "run": "browser-7",
+    "passed": 7,
+    "failures": [
+      "light dark desktop mobile management captures: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Add member', exact: true }) to be visible\u001b[22m\n"
+    ],
+    "commands": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "readiness": null
+  },
+  {
+    "run": "browser-8",
+    "passed": 4,
+    "failures": [
+      "real expired consent is unavailable for acceptance: spawnSync docker ETIMEDOUT"
+    ],
+    "commands": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "readiness": null
+  },
+  {
+    "run": "browser-9",
+    "passed": 9,
+    "failures": [],
+    "commands": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "readiness": null
+  },
+  {
+    "run": "conflict-1",
+    "passed": 4,
+    "failures": [],
+    "commands": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "readiness": {
+      "responses": {
+        "200": 1
+      },
+      "connectionErrors": {
+        "ECONNREFUSED": 18
+      }
+    }
+  },
+  {
+    "run": "members-regression",
+    "passed": 0,
+    "failures": [
+      "browserContext.newPage: Target crashed "
+    ],
+    "commands": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "readiness": null
+  },
+  {
+    "run": "members-regression-2",
+    "passed": 1,
+    "failures": [],
+    "commands": [],
+    "mail": {
+      "sentinelsPreserved": 2,
+      "sharedMailpitAccessed": false,
+      "deletions": 0
+    },
+    "readiness": {
+      "responses": {
+        "200": 1
+      },
+      "connectionErrors": {
+        "ECONNREFUSED": 14
+      }
+    }
+  }
+]

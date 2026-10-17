@@ -1,0 +1,227 @@
+{
+  "base": "16e157deb0e405b1e768fd1b5dbc4843bdb68dbf",
+  "isolation": "Owned PostgreSQL + Valkey + disposable sentinel-protected Mailpit; ephemeral loopback ports; no shared volumes or QA environment files",
+  "commands": [],
+  "passed": [
+    "real verified actors, two Workspaces, ADMIN is not Team owner and tenant 404 boundaries",
+    "real Team Settings presentation",
+    "real role change, removal and add",
+    "archive response loss and exact replay",
+    "real expired consent is unavailable for acceptance",
+    "recipient rejects a request without changing ownership",
+    "two-context exact recipient ownership consent",
+    "light dark desktop mobile management captures",
+    "revoked session clears private management; no runtime errors; both Mailpit sentinels preserved"
+  ],
+  "failures": [],
+  "migrations": {
+    "applied": 13,
+    "scope": "owned disposable test database only"
+  },
+  "readiness": {
+    "responses": {
+      "200": 1
+    },
+    "connectionErrors": {
+      "ECONNREFUSED": 24
+    }
+  },
+  "api": {
+    "ready": 200,
+    "live": 200
+  },
+  "frontendIsolation": {
+    "envFiles": false,
+    "authApiOrigin": "owned same-origin proxy",
+    "hmr": false,
+    "watch": false
+  },
+  "pacing": [
+    "Original Team read window before lifecycle and replay",
+    "Original Team read window before ownership consent",
+    "Original read window after expired consent",
+    "Original read window after rejected consent",
+    "Original Team read window before responsive captures and logout",
+    "Original read window before Light capture group",
+    "Original read window before Dark capture group"
+  ],
+  "consentExpiryFixture": {
+    "scope": "owned disposable database only",
+    "effect": "Inserted a past test intent using actual constraints; no issued consent mutation or trigger bypass"
+  },
+  "mutationSecurity": [
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/signup",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/email-verification/request",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/email-verification/confirm",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/signup",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/login",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/email-verification/request",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/email-verification/confirm",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/4781f573-ec7d-4a59-9df4-5b8a9fb4f937/teams",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/4781f573-ec7d-4a59-9df4-5b8a9fb4f937/administration/invitations",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspace-invitations/preview",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspace-invitations/accept",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspace-invitations/preview",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/4781f573-ec7d-4a59-9df4-5b8a9fb4f937/teams/d1448104-bb27-4562-97df-d8f3882f7fcd/memberships/ecbcff80-50b5-49a6-9445-5bcee801f82b",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/workspaces/4781f573-ec7d-4a59-9df4-5b8a9fb4f937/teams/d1448104-bb27-4562-97df-d8f3882f7fcd/memberships/1ad46a97-a7af-4d02-8e09-f66448e14d23",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/v1/workspaces/4781f573-ec7d-4a59-9df4-5b8a9fb4f937/teams/d1448104-bb27-4562-97df-d8f3882f7fcd/memberships/1ad46a97-a7af-4d02-8e09-f66448e14d23",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/4781f573-ec7d-4a59-9df4-5b8a9fb4f937/teams/d1448104-bb27-4562-97df-d8f3882f7fcd/memberships",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/4781f573-ec7d-4a59-9df4-5b8a9fb4f937/teams/d1448104-bb27-4562-97df-d8f3882f7fcd/archive",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/4781f573-ec7d-4a59-9df4-5b8a9fb4f937/teams/d1448104-bb27-4562-97df-d8f3882f7fcd/archive",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/workspaces/4781f573-ec7d-4a59-9df4-5b8a9fb4f937/teams/d1448104-bb27-4562-97df-d8f3882f7fcd/memberships/1ad46a97-a7af-4d02-8e09-f66448e14d23",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/4781f573-ec7d-4a59-9df4-5b8a9fb4f937/teams/d1448104-bb27-4562-97df-d8f3882f7fcd/restore",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/4781f573-ec7d-4a59-9df4-5b8a9fb4f937/teams/d1448104-bb27-4562-97df-d8f3882f7fcd/ownership-transfer-requests",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/4781f573-ec7d-4a59-9df4-5b8a9fb4f937/teams/d1448104-bb27-4562-97df-d8f3882f7fcd/ownership-transfer-requests/2875cd42-db00-4394-934f-55a9ae8f7ff4/reject",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/4781f573-ec7d-4a59-9df4-5b8a9fb4f937/teams/d1448104-bb27-4562-97df-d8f3882f7fcd/ownership-transfer-requests",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workspaces/4781f573-ec7d-4a59-9df4-5b8a9fb4f937/teams/d1448104-bb27-4562-97df-d8f3882f7fcd/ownership-transfer-requests/0fbb69c7-3723-46b1-86b3-fca7bb7a50b5/accept",
+      "csrf": true,
+      "origin": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/auth/logout-all",
+      "csrf": true,
+      "origin": true
+    }
+  ],
+  "mail": {
+    "sentinelsPreserved": 2,
+    "sharedMailpitAccessed": false,
+    "deletions": 0
+  }
+}

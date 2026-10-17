@@ -1,3 +1,4 @@
+import {TeamsSettingsPageFrame} from './TeamsSettingsPageFrame';
 import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { useSettings } from '../../features/settings/context/SettingsContext';
@@ -21,77 +22,7 @@ export const TeamsSettingsPage: React.FC = () => {
   const activeTeams = teams.filter(t => !(t as any).archivedAt);
   const archivedTeams = teams.filter(t => Boolean((t as any).archivedAt));
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2">
-        <div>
-          <h2 className="text-base font-bold text-text-primary tracking-tight">
-            Team Management
-          </h2>
-          <p className="text-xs text-text-muted mt-0.5">
-            Configure engineering squads, project ownership domains, and squad assignments.
-          </p>
-        </div>
-        <Button
-          variant="primary"
-          size="sm"
-          icon={<Plus className="w-3.5 h-3.5" />}
-          onClick={() => setIsCreateModalOpen(true)}
-        >
-          Create Team
-        </Button>
-      </div>
-
-      {/* 1. Active Teams Section */}
-      <SettingsSection
-        title={`Active Teams (${activeTeams.length})`}
-        description="Engineering squads actively owning projects, cycles, and issues."
-      >
-        <div className="space-y-2">
-          {activeTeams.length > 0 ? (
-            activeTeams.map(team => (
-              <TeamAdminRow
-                key={team.id}
-                team={team}
-                users={users}
-                projects={projects}
-                cycles={cycles}
-                onEdit={t => setEditingTeam(t)}
-                onArchive={t => setArchivingTeam(t)}
-              />
-            ))
-          ) : (
-            <div className="text-center py-6 text-xs text-text-muted bg-surface-subtle rounded-lg border border-border">
-              No active teams configured.
-            </div>
-          )}
-        </div>
-      </SettingsSection>
-
-      {/* 2. Archived Teams Section */}
-      {archivedTeams.length > 0 && (
-        <SettingsSection
-          title={`Archived Teams (${archivedTeams.length})`}
-          description="Decommissioned teams with zero active project dependencies."
-        >
-          <div className="space-y-2">
-            {archivedTeams.map(team => (
-              <TeamAdminRow
-                key={team.id}
-                team={team}
-                users={users}
-                projects={projects}
-                cycles={cycles}
-                onEdit={t => setEditingTeam(t)}
-                onArchive={t => setArchivingTeam(t)}
-                onRestore={t => restoreTeam(t.id)}
-              />
-            ))}
-          </div>
-        </SettingsSection>
-      )}
-
+  return (<TeamsSettingsPageFrame activeTeams={activeTeams} archivedTeams={archivedTeams} users={users} projects={projects} cycles={cycles} onCreate={()=>setIsCreateModalOpen(true)} onEdit={setEditingTeam} onArchive={setArchivingTeam} onRestore={t=>restoreTeam(t.id)}>
       {/* Create Team Modal */}
       <CreateTeamModal
         isOpen={isCreateModalOpen}
@@ -114,6 +45,6 @@ export const TeamsSettingsPage: React.FC = () => {
         projects={projects}
         cycles={cycles}
       />
-    </div>
+    </TeamsSettingsPageFrame>
   );
 };
