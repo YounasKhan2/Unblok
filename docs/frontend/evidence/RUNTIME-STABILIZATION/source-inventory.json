@@ -1,0 +1,34 @@
+[
+  {
+    "path": "apps/web/src/features/teams/live/TeamsContext.tsx",
+    "sha256LF": "e94b551ae3a8903f76b85f42f27c7c46a601924685f6286470cc16e2e63460c0"
+  },
+  {
+    "path": "apps/web/src/features/teams/live/TeamsStoreContext.ts",
+    "sha256LF": "dacdde81bba3c62a386dd927747017f7fccca72555ee352c1f6f0d3433cd5ae3"
+  },
+  {
+    "path": "apps/web/src/features/workspaces/live/Administration.test.ts",
+    "sha256LF": "8011df5a8b7d6c0c821893bb9d868694b95399645a9747fb5f05c0267cb44b46"
+  },
+  {
+    "path": "apps/web/src/features/workspaces/live/AdministrationPage.tsx",
+    "sha256LF": "2862c5a6a891a898e050d39ae6a7c5d392b8673c99e118653c555bdb0c5a1cd4"
+  },
+  {
+    "path": "apps/web/src/features/workspaces/live/AdministrationStore.ts",
+    "sha256LF": "e322962171eef0c3ad18be58786488999e5fbf2c12741b8c8e3c61d804fd13f2"
+  },
+  {
+    "path": "scripts/frontend/fe-integration-01a.cjs",
+    "sha256LF": "075f8daef344d7d0b4ed736c4152c05a4aa7101cbfcee88fe90a2f98a79260fe"
+  },
+  {
+    "path": "scripts/frontend/fe-integration-01d-journeys.cjs",
+    "sha256LF": "2aaf655eebcdc3de961046c79a62af9f62aa15ffbce0368d7fcabf939d8d6faa"
+  },
+  {
+    "path": "scripts/frontend/runtime-stabilization-journeys.cjs",
+    "sha256LF": "b37285ece934bf8ba6f6325e77d2b59ce74c5c0f2b5f55f16ce576e2e2ac28c2"
+  }
+]

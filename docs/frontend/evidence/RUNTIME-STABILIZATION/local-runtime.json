@@ -1,0 +1,20 @@
+{
+  "observationDate": "2026-10-17",
+  "scope": "read-only; no shared QA account or database mutation",
+  "gitBaseline": "0b85cea814a25f1ea29c8f1a12ae8bb0cd71c923",
+  "frontend": "http://127.0.0.1:3000",
+  "api": "http://127.0.0.1:4000",
+  "apiReady": 200,
+  "unauthenticatedMe": 401,
+  "postgresHealthy": true,
+  "valkeyDockerHealth": "healthy",
+  "appliedMigrations": 12,
+  "requiredMigrations": 13,
+  "missingMigration": "20261016000000_workspace_administration",
+  "absentTables": [
+    "workspace_administration_revisions",
+    "workspace_invitation_teams"
+  ],
+  "capturedOriginalAuthenticatedSession": false,
+  "apiProcessLogAccess": false
+}

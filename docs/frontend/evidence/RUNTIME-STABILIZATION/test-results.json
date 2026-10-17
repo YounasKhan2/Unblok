@@ -1,0 +1,32 @@
+{
+  "focused": {
+    "passed": 293,
+    "failed": 0
+  },
+  "fullFrontend": {
+    "passed": 1019,
+    "failed": 3,
+    "historicalOnly": true
+  },
+  "typecheckExit": 0,
+  "buildExit": 0,
+  "backend": {
+    "passed": 127,
+    "failed": 0,
+    "assertions": 2073
+  },
+  "developmentChromium": {
+    "passedGates": 7,
+    "failed": 0,
+    "hotUpdates": 3
+  },
+  "productionChromium": {
+    "passedGates": 6,
+    "failed": 0
+  },
+  "unresolved": [
+    "original provider crash attribution",
+    "unexpected original session loss",
+    "shared QA unapplied migration13"
+  ]
+}
