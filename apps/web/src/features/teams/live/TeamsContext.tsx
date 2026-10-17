@@ -1,9 +1,9 @@
-import React, { createContext, useContext, useEffect, useState, useSyncExternalStore } from 'react';
+import React, { useContext, useEffect, useState, useSyncExternalStore } from 'react';
 import { useSession } from '../../auth/session/SessionContext';
 import { useLiveWorkspace } from '../../workspaces/live/WorkspaceContext';
 import { TeamsStore } from './TeamsStore';
 import { TabTeamJournal } from './TeamJournal';
-const Context = createContext<TeamsStore | null>(null);
+import { TeamsStoreContext as Context } from './TeamsStoreContext';
 export function TeamsProvider({ children, store: injected }: {
     children: React.ReactNode;
     store?: TeamsStore;

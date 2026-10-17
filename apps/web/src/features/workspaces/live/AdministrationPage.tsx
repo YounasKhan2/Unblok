@@ -10,10 +10,10 @@ import {Button} from '../../../components/ui/Button';
 export function AdministrationPage(){
  const [confirmNew,setConfirmNew]=useState(false);
  const a=useAdministration(),w=useLiveWorkspace(),s=useSession(),{workspaceId}=useParams();
- useEffect(()=>{if(workspaceId&&workspaceId!==w.selected&&!w.selecting)void w.store.select(workspaceId);},[workspaceId,w.selected,w.selecting,w.store]);
+ useEffect(()=>{const current=w.store.snapshot();if(workspaceId&&workspaceId!==current.selected&&!current.selecting&&!current.contextError)void w.store.select(workspaceId);},[workspaceId,w.store,s.status,s.pending]);
  const filter=useCallback((search:string,role:string,teamId:string,status:string)=>{const f=a.store.snapshot().filters;if(f.search!==search||f.role!==role||f.teamId!==teamId||f.status!==status)a.store.filter({search,role,teamId,status});},[a.store]);
  const context=w.context,scope=!!context&&!w.selecting&&(!workspaceId||workspaceId===context.workspace.id)&&w.selected===context.workspace.id;
- useEffect(()=>{if(scope&&a.allowed)void a.store.load();},[a.store,scope,a.allowed]);
+ // AdministrationStore owns the initial scope load; mounting this view must not retry it.
  if(!scope||!a.allowed)return <p role="status" className="text-xs text-text-muted">{w.selecting?'Checking Workspace access…':'Workspace administration is unavailable for this account.'}</p>;
  const members=a.members?.items??[],invitations=a.invitations?.items??[],eligible=a.teams?.items??[];
  const teamMap=new Map([...eligible,...members.flatMap(m=>m.teams.items),...invitations.flatMap(i=>i.teams)].map(t=>[t.id,t]));

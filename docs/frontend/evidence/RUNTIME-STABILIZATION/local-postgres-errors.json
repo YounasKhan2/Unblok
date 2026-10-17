@@ -1,0 +1,15 @@
+{
+  "scope": "read-only tail2000; SQL statements and values excluded",
+  "groups": {
+    "ERROR:  canceling statement due to lock timeout": {
+      "count": 1,
+      "first": "2026-10-15 07:46:14.921",
+      "last": "2026-10-15 07:46:14.921"
+    },
+    "ERROR:  relation \"workspace_administration_revisions\" does not exist at character 436": {
+      "count": 248,
+      "first": "2026-10-16 17:23:58.385",
+      "last": "2026-10-17 12:06:40.074"
+    }
+  }
+}

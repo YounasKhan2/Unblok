@@ -1,0 +1,39 @@
+{
+  "base": "0b85cea814a25f1ea29c8f1a12ae8bb0cd71c923",
+  "isolation": "Owned PostgreSQL + Valkey + disposable sentinel-protected Mailpit; ephemeral loopback ports; no shared volumes or QA environment files",
+  "commands": [],
+  "passed": [
+    "real verified actors, two Workspaces, ADMIN is not Team owner and tenant 404 boundaries",
+    "Team context module reevaluation retains provider identity"
+  ],
+  "failures": [
+    "real setup and cross-Workspace isolation: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   'eligible-teams': 2,\n+   invitations: 2,\n+   memberships: 2\n-   'eligible-teams': 1,\n-   invitations: 1,\n-   memberships: 1\n  }\n"
+  ],
+  "migrations": {
+    "applied": 13,
+    "scope": "owned disposable test database only"
+  },
+  "readiness": {
+    "responses": {
+      "200": 1
+    },
+    "connectionErrors": {
+      "ECONNREFUSED": 18
+    }
+  },
+  "api": {
+    "ready": 200,
+    "live": 200
+  },
+  "frontendIsolation": {
+    "envFiles": false,
+    "authApiOrigin": "owned same-origin proxy",
+    "hmr": false,
+    "watch": false
+  },
+  "mail": {
+    "sentinelsPreserved": 2,
+    "sharedMailpitAccessed": false,
+    "deletions": 0
+  }
+}

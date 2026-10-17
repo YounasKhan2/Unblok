@@ -1,0 +1,95 @@
+[
+  {
+    "run": "backend",
+    "passed": 0,
+    "failures": [],
+    "commands": [
+      {
+        "label": "teams",
+        "command": "bun test --no-env-file --preload <evidence>/prisma-node-preload.ts scripts/backend/teams.test.ts",
+        "exitCode": 0
+      },
+      {
+        "label": "team-management",
+        "command": "bun test --no-env-file --preload <evidence>/prisma-node-preload.ts scripts/backend/team-management.test.ts",
+        "exitCode": 0
+      },
+      {
+        "label": "tenancy",
+        "command": "bun test --no-env-file --preload <evidence>/prisma-node-preload.ts scripts/backend/tenancy.test.ts",
+        "exitCode": 0
+      },
+      {
+        "label": "auth-fences",
+        "command": "bun test --no-env-file --preload <evidence>/prisma-node-preload.ts scripts/backend/auth-fences.test.ts",
+        "exitCode": 0
+      }
+    ]
+  },
+  {
+    "run": "baseline-hmr",
+    "passed": 1,
+    "failures": [
+      "real setup and cross-Workspace isolation: Team context module not loaded"
+    ],
+    "commands": []
+  },
+  {
+    "run": "baseline-hmr-2",
+    "passed": 2,
+    "failures": [
+      "real setup and cross-Workspace isolation: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   'eligible-teams': 2,\n+   invitations: 2,\n+   memberships: 2\n-   'eligible-teams': 1,\n-   invitations: 1,\n-   memberships: 1\n  }\n"
+    ],
+    "commands": []
+  },
+  {
+    "run": "corrected-dev",
+    "passed": 2,
+    "failures": [
+      "real setup and cross-Workspace isolation: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Invite member', exact: true }) to be visible\u001b[22m\n"
+    ],
+    "commands": []
+  },
+  {
+    "run": "corrected-dev-2",
+    "passed": 3,
+    "failures": [
+      "real setup and cross-Workspace isolation: locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('heading', { name: 'Team Management', exact: true }) to be visible\u001b[22m\n"
+    ],
+    "commands": []
+  },
+  {
+    "run": "corrected-dev-3",
+    "passed": 5,
+    "failures": [
+      "real setup and cross-Workspace isolation: locator.fill: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('Work email')\u001b[22m\n"
+    ],
+    "commands": []
+  },
+  {
+    "run": "corrected-dev-4",
+    "passed": 5,
+    "failures": [
+      "real setup and cross-Workspace isolation: Expected values to be strictly equal:\n\n429 !== 200\n"
+    ],
+    "commands": []
+  },
+  {
+    "run": "corrected-dev-5",
+    "passed": 7,
+    "failures": [],
+    "commands": []
+  },
+  {
+    "run": "corrected-production",
+    "passed": 6,
+    "failures": [],
+    "commands": []
+  },
+  {
+    "run": "verified-hmr",
+    "passed": 7,
+    "failures": [],
+    "commands": []
+  }
+]
