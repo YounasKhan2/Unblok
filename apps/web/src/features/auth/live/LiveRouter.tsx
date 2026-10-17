@@ -1,3 +1,4 @@
+import {LiveTeamSettings} from '../../teams/live/TeamSettings';
 import {IssueUnavailable} from '../../issues/components/IssueUnavailable';
 import {WorkspaceSettingsPageFrame} from '../../../pages/settings/WorkspaceSettingsPageFrame';
 import {IntegrationsSettingsPageFrame} from '../../../pages/settings/IntegrationsSettingsPageFrame';
@@ -80,12 +81,13 @@ export function LiveRoutes() {
       <Route path="/teams/*" element={<LiveTeamDirectoryRedirect/>}/>
       <Route path="/workspaces/:workspaceId/teams" element={<TeamDirectoryPage/>}/>
       <Route path="/workspaces/:workspaceId/teams/:teamId" element={<LiveTeamHubPage/>}/>
+      <Route path="/workspaces/:workspaceId/teams/:teamId/ownership-transfer-requests/:requestId" element={<LiveTeamHubPage/>}/>
       <Route path="/workspaces/:workspaceId/members" element={<SettingsLayout/>}><Route index element={<AdministrationPage/>}/></Route>
       <Route path="/settings" element={<SettingsLayout/>}>
         <Route index element={<Navigate to="preferences" replace/>}/>
         <Route path="preferences" element={<PreferencesSettingsPage/>}/>
         <Route path="members" element={<AdministrationPage/>}/>
-        <Route path="teams" element={<LiveTeamDirectoryRedirect/>}/>
+        <Route path="teams" element={<LiveTeamSettings/>}/>
         <Route path="workspace" element={<WorkspaceSettingsPageFrame unavailable/>}/>
         <Route path="integrations" element={<IntegrationsSettingsPageFrame unavailable/>}/>
         <Route path="*" element={<WorkspaceSettingsPageFrame unavailable/>}/>

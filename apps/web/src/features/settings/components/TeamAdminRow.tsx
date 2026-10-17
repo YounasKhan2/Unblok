@@ -10,6 +10,7 @@ interface TeamAdminRowProps {
   cycles: Cycle[];
   onEdit: (team: Team) => void;
   onArchive: (team: Team) => void;
+  live?:{status:string};
   onRestore?: (team: Team) => void;
 }
 
@@ -20,9 +21,9 @@ export const TeamAdminRow: React.FC<TeamAdminRowProps> = ({
   cycles,
   onEdit,
   onArchive,
-  onRestore,
+  onRestore,live,
 }) => {
-  const isArchived = Boolean((team as any).archivedAt);
+  const isArchived = live?live.status==='ARCHIVED':Boolean((team as any).archivedAt);
 
   // Metrics with multi-team membership support
   const memberCount = users.filter(u =>
@@ -60,9 +61,9 @@ export const TeamAdminRow: React.FC<TeamAdminRowProps> = ({
           </p>
         )}
         <div className="flex items-center gap-3 mt-1.5 text-[11px] text-text-muted">
-          <span>{memberCount} member{memberCount === 1 ? '' : 's'}</span>
+          <span>{live?'Members unavailable':<>{memberCount} member{memberCount === 1 ? '' : 's'}</>}</span>
           <span>•</span>
-          <span>{ownedProjects.length} owned project{ownedProjects.length === 1 ? '' : 's'}</span>
+          <span>{live?'Projects unavailable':<>{ownedProjects.length} owned project{ownedProjects.length === 1 ? '' : 's'}</>}</span>
           {activeCycle && (
             <>
               <span>•</span>

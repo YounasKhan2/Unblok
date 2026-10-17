@@ -1,0 +1,170 @@
+[
+  {
+    "scene": "team-directory-1440-light",
+    "baselineElements": 118,
+    "currentElements": 118,
+    "differentElements": 0,
+    "differences": []
+  },
+  {
+    "scene": "team-create-1440-light",
+    "baselineElements": 137,
+    "currentElements": 137,
+    "differentElements": 0,
+    "differences": []
+  },
+  {
+    "scene": "team-hub-1440-light",
+    "baselineElements": 82,
+    "currentElements": 82,
+    "differentElements": 0,
+    "differences": []
+  },
+  {
+    "scene": "team-edit-1440-light",
+    "baselineElements": 167,
+    "currentElements": 167,
+    "differentElements": 0,
+    "differences": []
+  },
+  {
+    "scene": "team-settings-1440-light",
+    "baselineElements": 120,
+    "currentElements": 120,
+    "differentElements": 0,
+    "differences": []
+  },
+  {
+    "scene": "team-archive-1440-light",
+    "baselineElements": 129,
+    "currentElements": 129,
+    "differentElements": 0,
+    "differences": []
+  },
+  {
+    "scene": "team-directory-390-light",
+    "baselineElements": 39,
+    "currentElements": 39,
+    "differentElements": 0,
+    "differences": []
+  },
+  {
+    "scene": "team-create-390-light",
+    "baselineElements": 58,
+    "currentElements": 58,
+    "differentElements": 0,
+    "differences": []
+  },
+  {
+    "scene": "team-hub-390-light",
+    "baselineElements": 39,
+    "currentElements": 39,
+    "differentElements": 0,
+    "differences": []
+  },
+  {
+    "scene": "team-edit-390-light",
+    "baselineElements": 124,
+    "currentElements": 124,
+    "differentElements": 0,
+    "differences": []
+  },
+  {
+    "scene": "team-settings-390-light",
+    "baselineElements": 77,
+    "currentElements": 77,
+    "differentElements": 0,
+    "differences": []
+  },
+  {
+    "scene": "team-archive-390-light",
+    "baselineElements": 86,
+    "currentElements": 86,
+    "differentElements": 0,
+    "differences": []
+  },
+  {
+    "scene": "team-directory-1440-dark",
+    "baselineElements": 118,
+    "currentElements": 118,
+    "differentElements": 0,
+    "differences": []
+  },
+  {
+    "scene": "team-create-1440-dark",
+    "baselineElements": 137,
+    "currentElements": 137,
+    "differentElements": 0,
+    "differences": []
+  },
+  {
+    "scene": "team-hub-1440-dark",
+    "baselineElements": 82,
+    "currentElements": 82,
+    "differentElements": 0,
+    "differences": []
+  },
+  {
+    "scene": "team-edit-1440-dark",
+    "baselineElements": 167,
+    "currentElements": 167,
+    "differentElements": 0,
+    "differences": []
+  },
+  {
+    "scene": "team-settings-1440-dark",
+    "baselineElements": 120,
+    "currentElements": 120,
+    "differentElements": 0,
+    "differences": []
+  },
+  {
+    "scene": "team-archive-1440-dark",
+    "baselineElements": 129,
+    "currentElements": 129,
+    "differentElements": 0,
+    "differences": []
+  },
+  {
+    "scene": "team-directory-390-dark",
+    "baselineElements": 39,
+    "currentElements": 39,
+    "differentElements": 0,
+    "differences": []
+  },
+  {
+    "scene": "team-create-390-dark",
+    "baselineElements": 58,
+    "currentElements": 58,
+    "differentElements": 0,
+    "differences": []
+  },
+  {
+    "scene": "team-hub-390-dark",
+    "baselineElements": 39,
+    "currentElements": 39,
+    "differentElements": 0,
+    "differences": []
+  },
+  {
+    "scene": "team-edit-390-dark",
+    "baselineElements": 124,
+    "currentElements": 124,
+    "differentElements": 0,
+    "differences": []
+  },
+  {
+    "scene": "team-settings-390-dark",
+    "baselineElements": 77,
+    "currentElements": 77,
+    "differentElements": 0,
+    "differences": []
+  },
+  {
+    "scene": "team-archive-390-dark",
+    "baselineElements": 86,
+    "currentElements": 86,
+    "differentElements": 0,
+    "differences": []
+  }
+]

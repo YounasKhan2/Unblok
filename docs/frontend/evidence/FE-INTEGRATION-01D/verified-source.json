@@ -1,0 +1,81 @@
+{
+  "baseline": "16e157deb0e405b1e768fd1b5dbc4843bdb68dbf",
+  "files": [
+    {
+      "path": "apps/web/src/features/auth/api/authApi.ts",
+      "sha256LF": "3d6881c07b49d7b85e6d607b2c8721c06e5b0936ed122103e72a969176cffd28"
+    },
+    {
+      "path": "apps/web/src/features/auth/live/LiveRouter.tsx",
+      "sha256LF": "024fde19510851e25d9f87d97165caf1802c45ca272ea063a17a8eea6a317e35"
+    },
+    {
+      "path": "apps/web/src/features/settings/components/ArchiveTeamModal.tsx",
+      "sha256LF": "44c5747606ce0a51237fbb881b12d26b277b51250e91821d2fc14729b8a46db6"
+    },
+    {
+      "path": "apps/web/src/features/settings/components/ArchiveTeamModalFrame.tsx",
+      "sha256LF": "7ca8782f2f30c9bad2aef2cc69342652ac5ed75c37a0a09df4e1787d509a840c"
+    },
+    {
+      "path": "apps/web/src/features/settings/components/TeamAdminRow.tsx",
+      "sha256LF": "ee6f3f912b8aabb0b104b0802842595eb96114670ca4179e12ee31a0c4ce9d07"
+    },
+    {
+      "path": "apps/web/src/features/teams/live/TeamJournal.ts",
+      "sha256LF": "99394beac55100af462053a4b4035c33d023bfd3943800ae79e9622f7a9473dd"
+    },
+    {
+      "path": "apps/web/src/features/teams/live/TeamManagement.tsx",
+      "sha256LF": "e712dd5fd93e0e0d0575e6681eb0ef13a51a5f2dd4364463fdb023d5628e2a6b"
+    },
+    {
+      "path": "apps/web/src/features/teams/live/TeamSettings.tsx",
+      "sha256LF": "31f9776092abffb0a34295a01c1acfeb76a83c9438ce42419feb49e3401c6ac5"
+    },
+    {
+      "path": "apps/web/src/features/teams/live/Teams.test.tsx",
+      "sha256LF": "505b0c86411eac014a0504dd63d8cf59a35e892fe220902ab88d3009ca926efe"
+    },
+    {
+      "path": "apps/web/src/features/teams/live/TeamsApi.ts",
+      "sha256LF": "d441bb24f4c066b8ba62239205410004a794c73bdfa94575cea55698f297a3e9"
+    },
+    {
+      "path": "apps/web/src/features/teams/live/TeamsPages.tsx",
+      "sha256LF": "10301b57f030b0cd39cf627495dd756d97bff143512e3bc06d7ce0d163715af2"
+    },
+    {
+      "path": "apps/web/src/features/teams/live/TeamsStore.ts",
+      "sha256LF": "f17040c4eeac78975d82bd200433947dc2a250b4cafbdca083872ad9406e7796"
+    },
+    {
+      "path": "apps/web/src/pages/settings/TeamsSettingsPage.tsx",
+      "sha256LF": "ca912d7d3b69b2dcb7fd9bdf6ecbbbf9dc4ff13bca12a2c8797e03b0f7dd01fd"
+    },
+    {
+      "path": "apps/web/src/pages/settings/TeamsSettingsPageFrame.tsx",
+      "sha256LF": "d8ca4ea4a39ca98ed6a85f8ce97baa2fedede16fbf63f0680b92c6d913bb86bc"
+    },
+    {
+      "path": "scripts/frontend/fe-integration-01a.cjs",
+      "sha256LF": "7e278b5395cbf07a69798c84865c604587dfd759829beacfe1a1eebc45befd15"
+    },
+    {
+      "path": "scripts/frontend/fe-integration-01c-compare.py",
+      "sha256LF": "245279dab5e3dbb277702340c7ed9462f2f836adca3d9698c584f136b7b7bffa"
+    },
+    {
+      "path": "scripts/frontend/fe-integration-01c-demo.cjs",
+      "sha256LF": "beeeb330c2d61f3157508d9718ee97964ec8ab94980d96fe43feab42bb9d947d"
+    },
+    {
+      "path": "scripts/frontend/fe-integration-01c-journeys.cjs",
+      "sha256LF": "096c5df32398472578549e5ff17782c269df56a2345884b9e5cd79714075ccbb"
+    },
+    {
+      "path": "scripts/frontend/fe-integration-01d-journeys.cjs",
+      "sha256LF": "4b38ed7b5c4ed45833a1457ef27072616cae4ec546550a5d32d20e702c9d82dc"
+    }
+  ]
+}

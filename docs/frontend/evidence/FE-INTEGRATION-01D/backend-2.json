@@ -1,0 +1,32 @@
+{
+  "base": "16e157deb0e405b1e768fd1b5dbc4843bdb68dbf",
+  "isolation": "Owned PostgreSQL + Valkey + disposable sentinel-protected Mailpit; ephemeral loopback ports; no shared volumes or QA environment files",
+  "commands": [
+    {
+      "label": "team-management",
+      "command": "bun test --no-env-file --preload <evidence>/prisma-node-preload.ts scripts/backend/team-management.test.ts",
+      "exitCode": 0
+    }
+  ],
+  "passed": [],
+  "failures": [],
+  "migrations": {
+    "applied": 13,
+    "scope": "owned disposable test database only"
+  },
+  "api": {
+    "ready": 200,
+    "live": 200
+  },
+  "skipped": [
+    {
+      "suite": "Chromium",
+      "reason": "Explicit --backend-only selection; browser gates are reported separately."
+    }
+  ],
+  "mail": {
+    "sentinelsPreserved": 2,
+    "sharedMailpitAccessed": false,
+    "deletions": 0
+  }
+}

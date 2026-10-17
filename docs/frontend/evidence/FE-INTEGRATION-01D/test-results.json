@@ -1,0 +1,40 @@
+{
+  "focusedTeams": {
+    "passed": 141,
+    "failed": 0
+  },
+  "focusedAuthWorkspaceTeams": {
+    "passed": 354,
+    "failed": 0
+  },
+  "fullFrontend": {
+    "passed": 1017,
+    "failed": 3,
+    "historicalFailuresOnly": true
+  },
+  "typecheckExit": 0,
+  "buildExit": 0,
+  "backendLatestPerSuite": {
+    "passed": 127,
+    "assertions": 2073,
+    "runs": [
+      "backend-1",
+      "backend-2"
+    ],
+    "combinedInitialRunFailed": true
+  },
+  "chromium": {
+    "browser-13": 9,
+    "conflict-1": 4,
+    "members-regression-2": 1
+  },
+  "strictPixelPairs": {
+    "exact": 22,
+    "total": 24,
+    "failed": 2
+  },
+  "geometryStylePairs": {
+    "exact": 24,
+    "total": 24
+  }
+}

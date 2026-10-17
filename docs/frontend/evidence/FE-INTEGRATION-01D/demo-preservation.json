@@ -1,0 +1,92 @@
+{
+  "scope": "Fresh isolated browser contexts; /demo only; API requests blocked",
+  "failures": [],
+  "rawEvidence": "D:/Full_Stack_Apps/Unblok-FE-INTEGRATION-01D-20261017/visual-3/demo-preservation.json",
+  "rawSHA256": "d81ad002e58f3547f17abc8cd7f0ecf34c13542c20bc66d4173c5b3e45b7c15f",
+  "teams": {
+    "baseline": {
+      "captures": [
+        "team-directory-1440-light",
+        "team-create-1440-light",
+        "team-create-1440-light-repeat",
+        "team-hub-1440-light",
+        "team-edit-1440-light",
+        "team-settings-1440-light",
+        "team-settings-1440-light-repeat",
+        "team-archive-1440-light",
+        "team-directory-390-light",
+        "team-create-390-light",
+        "team-create-390-light-repeat",
+        "team-hub-390-light",
+        "team-edit-390-light",
+        "team-settings-390-light",
+        "team-settings-390-light-repeat",
+        "team-archive-390-light",
+        "team-directory-1440-dark",
+        "team-create-1440-dark",
+        "team-create-1440-dark-repeat",
+        "team-hub-1440-dark",
+        "team-edit-1440-dark",
+        "team-settings-1440-dark",
+        "team-settings-1440-dark-repeat",
+        "team-archive-1440-dark",
+        "team-directory-390-dark",
+        "team-create-390-dark",
+        "team-create-390-dark-repeat",
+        "team-hub-390-dark",
+        "team-edit-390-dark",
+        "team-settings-390-dark",
+        "team-settings-390-dark-repeat",
+        "team-archive-390-dark"
+      ],
+      "checks": [
+        "1440-light actual directory, create key suggestion, hub tabs and editable demo metadata",
+        "390-light actual directory, create key suggestion, hub tabs and editable demo metadata",
+        "1440-dark actual directory, create key suggestion, hub tabs and editable demo metadata",
+        "390-dark actual directory, create key suggestion, hub tabs and editable demo metadata"
+      ]
+    },
+    "current": {
+      "captures": [
+        "team-directory-1440-light",
+        "team-create-1440-light",
+        "team-create-1440-light-repeat",
+        "team-hub-1440-light",
+        "team-edit-1440-light",
+        "team-settings-1440-light",
+        "team-settings-1440-light-repeat",
+        "team-archive-1440-light",
+        "team-directory-390-light",
+        "team-create-390-light",
+        "team-create-390-light-repeat",
+        "team-hub-390-light",
+        "team-edit-390-light",
+        "team-settings-390-light",
+        "team-settings-390-light-repeat",
+        "team-archive-390-light",
+        "team-directory-1440-dark",
+        "team-create-1440-dark",
+        "team-create-1440-dark-repeat",
+        "team-hub-1440-dark",
+        "team-edit-1440-dark",
+        "team-settings-1440-dark",
+        "team-settings-1440-dark-repeat",
+        "team-archive-1440-dark",
+        "team-directory-390-dark",
+        "team-create-390-dark",
+        "team-create-390-dark-repeat",
+        "team-hub-390-dark",
+        "team-edit-390-dark",
+        "team-settings-390-dark",
+        "team-settings-390-dark-repeat",
+        "team-archive-390-dark"
+      ],
+      "checks": [
+        "1440-light actual directory, create key suggestion, hub tabs and editable demo metadata",
+        "390-light actual directory, create key suggestion, hub tabs and editable demo metadata",
+        "1440-dark actual directory, create key suggestion, hub tabs and editable demo metadata",
+        "390-dark actual directory, create key suggestion, hub tabs and editable demo metadata"
+      ]
+    }
+  }
+}
